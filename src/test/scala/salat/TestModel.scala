@@ -9,9 +9,11 @@ import com.bumnetworks.salat.test._
 case class A(x: String,         y: Option[String], z: B)
 case class B(p: Option[Int],    q: Int,            r: C)
 case class C(l: Seq[String],    m: List[Int],      n: List[D])
-case class D(h: Map[String, A], i: Seq[A],         j: B)
+case class D(h: Map[String, A], i: Seq[A],         j: Option[B])
 
 object `package` {
   implicit object GraterA extends Grater(classOf[A])
   implicit object GraterB extends Grater(classOf[B])
+  implicit object GraterC extends Grater(classOf[C])
+  implicit object GraterD extends Grater(classOf[D])
 }

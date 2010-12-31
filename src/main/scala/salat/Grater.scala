@@ -1,3 +1,7 @@
 package com.bumnetworks.salat
 
-abstract class Grater[X <: AnyRef](clazz: Class[X]) extends CasbahLogging
+import tools.scalap.scalax.rules.scalasig._
+
+abstract class Grater[X <: AnyRef](clazz: Class[X]) extends CasbahLogging {
+  protected val sig = ScalaSigParser.parse(clazz).get.topLevelClasses.head
+}

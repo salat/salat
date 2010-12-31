@@ -6,6 +6,8 @@ class SalatProject(info: ProjectInfo) extends DefaultProject(info) {
 
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.4"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.0rc3"
+  val scalap = "org.scala-lang" % "scalap" % "2.8.1"
+
   val specs = "org.scala-tools.testing" %% "specs" % "1.6.6" % "test->default"
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default"
 
