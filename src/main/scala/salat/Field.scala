@@ -16,7 +16,7 @@ object IsOption {
 object IsMap {
   def unapply(t: Type): Option[(Type, Type)] =
     t match {
-      case TypeRefType(_, symbol, k :: v :: Nil) if symbol.path.endsWith("\\.Map") => Some(k -> v)
+      case TypeRefType(_, symbol, k :: v :: Nil) if symbol.path.endsWith(".Map") => Some(k -> v)
       case _ => None
     }
 }
@@ -24,7 +24,10 @@ object IsMap {
 object IsSeq {
   def unapply(t: Type): Option[Type] =
     t match {
-      case TypeRefType(_, symbol, List(e)) if symbol.path.endsWith("\\.Seq") => Some(e)
+      case TypeRefType(_, symbol, List(e)) =>
+	if (symbol.path.endsWith(".Seq")) Some(e)
+	else if (symbol.path.endsWith(".List")) Some(e)
+	else None
       case _ => None
     }
 }

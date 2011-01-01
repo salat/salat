@@ -51,11 +51,49 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
     }
 
     "correctly detect Map[_, _]" in {
-      fail
-    } pendingUntilFixed
+      "with primitive value type" in {
+        val arg = implicitly[Grater[D]].names("i").typeRefType match {
+          case IsMap(k, v @ TypeRefType(_,_,_)) => Some(v)
+          case _ => None
+        }
+        arg must beSome[TypeRefType].which {
+          t => t.symbol.path.split("\\.").last must_== "Int"
+        }
+      }
+
+      "with something in context" in {
+        val arg = implicitly[Grater[D]].names("h").typeRefType match {
+          case IsMap(k, v @ TypeRefType(_,_,_)) => Some(v)
+          case _ => None
+        }
+        arg must beSome[TypeRefType].which {
+          t => t.symbol.path must_== classOf[A].getName
+	  implicitly[Grater[D]].ctx.graters must haveKey(t.symbol.path)
+        }
+      }
+    }
 
     "correctly detect Seq[_]" in {
-      fail
-    } pendingUntilFixed
+      "with primitive value type" in {
+        val arg = implicitly[Grater[C]].names("l").typeRefType match {
+          case IsSeq(e @ TypeRefType(_,_,_)) => Some(e)
+          case _ => None
+        }
+        arg must beSome[TypeRefType].which {
+          t => t.symbol.path.split("\\.").last must_== "String"
+        }
+      }
+
+      "with something in context" in {
+        val arg = implicitly[Grater[C]].names("n").typeRefType match {
+          case IsSeq(e @ TypeRefType(_,_,_)) => Some(e)
+          case _ => None
+        }
+        arg must beSome[TypeRefType].which {
+          t => t.symbol.path must_== classOf[D].getName
+	  implicitly[Grater[C]].ctx.graters must haveKey(t.symbol.path)
+        }
+      }
+    }
   }
 }

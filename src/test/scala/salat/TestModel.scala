@@ -10,10 +10,10 @@ import com.bumnetworks.salat.test._
 import scala.collection.immutable.{Map => IMap}
 import scala.collection.mutable.{Map => MMap}
 
-case class A(x: String,          y: Option[String],  z: B)
-case class B(p: Option[Int],     q: Int,             r: C)
-case class C(l: Seq[String],     m: List[Int],       n: List[D])
-case class D(h: IMap[String, A], i: MMap[String, C], j: Option[B])
+case class A(x: String,          y: Option[String],    z: B)
+case class B(p: Option[Int],     q: Int,               r: C)
+case class C(l: Seq[String],     m: List[Int],         n: List[D])
+case class D(h: IMap[String, A], i: MMap[String, Int], j: Option[B])
 
 object `package` {
   implicit object GraterA extends Grater(classOf[A])
