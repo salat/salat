@@ -3,6 +3,8 @@ package com.bumnetworks.salat.test
 import com.bumnetworks.salat._
 import com.bumnetworks.salat.test.model._
 
+import scala.tools.scalap.scalax.rules.scalasig._
+
 import org.specs._
 import org.specs.specification.PendingUntilFixed
 
@@ -22,5 +24,38 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
       implicitly[Grater[A]] must notBe(GraterB)
       implicitly[Grater[B]] must notBe(GraterA)
     }
+  }
+
+  "field unapplies" should {
+    "correctly detect Option[_]" in {
+      "primitive Option[_]" in {
+        val arg = implicitly[Grater[A]].names("y").typeRefType match {
+          case IsOption(ot @ TypeRefType(_,_,_)) => Some(ot)
+          case _ => None
+        }
+        arg must beSome[TypeRefType].which {
+          t => t.symbol.path.split("\\.").last must_== "String"
+        }
+      }
+
+      "Option[_] with type arg in context" in {
+        val arg = implicitly[Grater[D]].names("j").typeRefType match {
+          case IsOption(ot @ TypeRefType(_,_,_)) => Some(ot)
+          case _ => None
+        }
+        arg must beSome[TypeRefType].which {
+          t => t.symbol.path must_== classOf[B].getName
+	  implicitly[Grater[D]].ctx.graters must haveKey(t.symbol.path)
+        }
+      }
+    }
+
+    "correctly detect Map[_, _]" in {
+      fail
+    } pendingUntilFixed
+
+    "correctly detect Seq[_]" in {
+      fail
+    } pendingUntilFixed
   }
 }
