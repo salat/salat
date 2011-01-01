@@ -1,6 +1,7 @@
 package com.bumnetworks.salat
 
 import scala.tools.scalap.scalax.rules.scalasig._
+import com.mongodb.casbah.Imports._
 
 abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Context) extends CasbahLogging {
   ctx.accept(this)
@@ -16,4 +17,9 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   def named_?(name: String) = caseAccessors.filter(_.name == name).headOption
   def named(name: String) = named_?(name).getOrElse(throw new IllegalArgumentException("no such field '%s' in '%s'".format(name, clazz)))
+
+  def asDBObject(o: X): DBObject =
+    MongoDBObject("_typeHint" -> clazz.getName)
+
+  def asObject(dbo: DBObject): X = clazz.newInstance.asInstanceOf[X]
 }

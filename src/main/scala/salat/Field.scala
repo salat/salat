@@ -34,4 +34,11 @@ object IsSeq {
 
 case class Field(ms: MethodSymbol, typeRefType: TypeRefType) {
   import Field._
+
+  lazy val valueType = typeRefType match {
+    case IsOption(t) => t
+    case IsSeq(t) => t
+    case IsMap(_, t) => t
+    case _ => typeRefType
+  }
 }

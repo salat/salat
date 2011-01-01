@@ -1,5 +1,6 @@
 package com.bumnetworks.salat
 
+import java.math.{RoundingMode, MathContext}
 import scala.collection.mutable.{Map => MMap, HashMap}
 import com.mongodb.casbah.commons.Logging
 
@@ -20,4 +21,5 @@ object `package` {
 
 package object global {
   implicit val ctx = new Context { val name = Some("global") }
+  implicit val mathCtx = new MathContext(16, RoundingMode.HALF_UP)
 }
