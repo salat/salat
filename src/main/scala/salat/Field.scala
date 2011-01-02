@@ -26,14 +26,14 @@ object IsSeq {
   def unapply(t: Type): Option[Type] =
     t match {
       case TypeRefType(_, symbol, List(e)) =>
-	if (symbol.path.endsWith(".Seq")) Some(e)
-	else if (symbol.path.endsWith(".List")) Some(e)
-	else None
+        if (symbol.path.endsWith(".Seq")) Some(e)
+        else if (symbol.path.endsWith(".List")) Some(e)
+        else None
       case _ => None
     }
 }
 
-case class Field(typeRefType: TypeRefType)(implicit val ctx: Context) {
+case class Field(typeRefType: TypeRefType)(implicit val ctx: Context) extends CasbahLogging {
   import Field._
 
   lazy val valueType = typeRefType match {
@@ -46,8 +46,8 @@ case class Field(typeRefType: TypeRefType)(implicit val ctx: Context) {
   lazy val outTransformer: MaterializedTransformer = {
     out.*.foldLeft(out.Fallback) {
       case (accumulate, pf) =>
-	if (pf.isDefinedAt(typeRefType -> null)) pf orElse accumulate
-	else accumulate
+        if (pf.isDefinedAt(typeRefType -> null)) pf orElse accumulate
+        else accumulate
     }.lift
   }
 }

@@ -23,20 +23,26 @@ object out extends CasbahLogging {
   }
 
   def JBigDecimalToDouble(implicit ctx: Context): Transformer = {
-    case (_, jbd: JavaBigDecimal) => jbd.round(implicitly[MathContext]).doubleValue
+    case (TypeRefType(_, symbol, _), x) if symbol.path == classOf[JavaBigDecimal].getName =>
+      x match {
+        case jbd: JavaBigDecimal => jbd.round(implicitly[MathContext]).doubleValue
+      }
   }
 
   def SBigDecimalToDouble(implicit ctx: Context): Transformer = {
-    case (_, sbd: ScalaBigDecimal) => sbd(implicitly[MathContext]).toDouble
+    case (TypeRefType(_, symbol, _), x) if symbol.path == classOf[ScalaBigDecimal] =>
+      x match {
+	case sbd: ScalaBigDecimal => sbd(implicitly[MathContext]).toDouble
+      }
   }
 
   def InContext(implicit ctx: Context): Transformer = {
-    case (t @ TypeRefType(_, symbol, _), o: Any) if ctx.graters.contains(symbol.path) =>
+    case (t @ TypeRefType(_, symbol, _), o) if ctx.graters.contains(symbol.path) =>
       ctx.graters(symbol.path).asInstanceOf[Grater[AnyRef]].asDBObject(o.asInstanceOf[AnyRef])
   }
 
   def *(implicit ctx: Context) =
-    (InContext _) :: (SBigDecimalToDouble _) :: (JBigDecimalToDouble _) :: (Fallback _) :: Nil
+    (InContext _) :: (SBigDecimalToDouble _) :: (JBigDecimalToDouble _) :: Nil
 }
 
 object in extends CasbahLogging {
