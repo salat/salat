@@ -9,7 +9,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
   lazy val sym = ScalaSigParser.parse(clazz).get.topLevelClasses.head
   lazy val caseAccessors = sym.children.filter(_.isCaseAccessor).filter(!_.isPrivate).map(_.asInstanceOf[MethodSymbol])
   lazy val typeRefTypes = caseAccessors.map(typeRefType _)
-  lazy val names = collection.SortedMap.empty[String, Field] ++ caseAccessors.map(ms => ms.name -> Field(ms, typeRefType(ms)))
+  lazy val names = collection.SortedMap.empty[String, Field] ++ caseAccessors.map(ms => ms.name -> Field(typeRefType(ms)))
 
   def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
     case PolyType(tr @ TypeRefType(_, _, _), _) => tr

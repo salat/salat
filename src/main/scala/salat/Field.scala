@@ -1,6 +1,7 @@
 package com.bumnetworks.salat
 
 import scala.tools.scalap.scalax.rules.scalasig._
+import com.bumnetworks.salat.transformers._
 
 object Field {
 }
@@ -32,7 +33,7 @@ object IsSeq {
     }
 }
 
-case class Field(ms: MethodSymbol, typeRefType: TypeRefType) {
+case class Field(typeRefType: TypeRefType)(implicit val ctx: Context) {
   import Field._
 
   lazy val valueType = typeRefType match {
@@ -40,5 +41,13 @@ case class Field(ms: MethodSymbol, typeRefType: TypeRefType) {
     case IsSeq(t) => t
     case IsMap(_, t) => t
     case _ => typeRefType
+  }
+
+  lazy val outTransformer: MaterializedTransformer = {
+    out.*.foldLeft(out.Fallback) {
+      case (accumulate, pf) =>
+	if (pf.isDefinedAt(typeRefType -> null)) pf orElse accumulate
+	else accumulate
+    }.lift
   }
 }
