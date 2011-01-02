@@ -15,7 +15,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   lazy val constructor: Method = companion.getMethod("apply")
   lazy val defaults: Seq[Option[Method]] = indexedFields.map {
     field => try {
-      Some(companion.getMethod("apply$default$%d".format(field.idx)))
+      Some(companion.getMethod("apply$default$%d".format(field.idx + 1)))
     } catch {
       case _ => None
     }
