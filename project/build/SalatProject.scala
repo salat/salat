@@ -2,7 +2,7 @@ import sbt._
 
 class SalatProject(info: ProjectInfo) extends DefaultProject(info) {
   override def managedStyle = ManagedStyle.Maven
-  super.compileOptions ++ Seq(Unchecked, ExplainTypes, Deprecation)
+  override def compileOptions = super.compileOptions ++ Seq(Unchecked, ExplainTypes, Deprecation)
 
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.4"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.0rc3"
