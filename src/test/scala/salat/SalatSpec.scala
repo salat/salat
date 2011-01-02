@@ -64,11 +64,11 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
     }
 
     "instantiate case class instances using data from DBObject-s" in {
-      // "cover primitive types" in {
-      //   val e = numbers
-      //   val e_* = GraterE.asObject(GraterE.asDBObject(e))
-      //   e_* must_== e
-      // }
+      "cover primitive types" in {
+        val e = numbers
+        val e_* = GraterE.asObject(GraterE.asDBObject(e))
+        e_* must_== e
+      }
 
       "and object graphs" in {
         // val a = graph
