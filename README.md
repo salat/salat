@@ -43,7 +43,7 @@ serialization. These features include:
 
 ### Requires ScalaSig
 
-I hereby thank paulp for the wonderfully undocumented
+I hereby thank EPFL for the wonderfully undocumented
 ScalaSig. Fortunately, its source code reads like a work of art and
 isn't hard to comprehend. Obviously, if the previous section hasn't
 ruled out Java support, this certainly does.
