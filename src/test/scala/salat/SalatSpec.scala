@@ -37,14 +37,11 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
 
     "make DBObject-s out of case class instances" in {
       "properly treat primitive values and optional values" in {
-        val e = E(a = "a value",                    aa = None, aaa = Some("aaa value"),
-                  b = 2,                            bb = None, bbb = Some(22),
-                  c = ScalaBigDecimal(3.30003),     cc = None, ccc = Some(ScalaBigDecimal(33.30003)),
-                  d = new JavaBigDecimal(4.400004), dd = None, ddd = Some(new JavaBigDecimal(44.400004)))
-
+        val e = numbers
         val dbo: MongoDBObject = GraterE.asDBObject(e)
-	log.info("before: %s", e)
-	log.info("after : %s", dbo.asDBObject)
+
+        log.info("before: %s", e)
+        log.info("after : %s", dbo.asDBObject)
 
         dbo must havePair("a" -> e.a)
         dbo must notHaveKey("aa")
@@ -60,12 +57,24 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
       }
 
       "work with object graphs" in {
-	val a = graph
-	val dbo: MongoDBObject = GraterA.asDBObject(a)
-	log.info("before: %s", a)
-	log.info("after : %s", dbo.asDBObject)
-	dbo must havePair("x" -> "x")
+        val a = graph
+        val dbo: MongoDBObject = GraterA.asDBObject(a)
+        log.info("before: %s", a)
+        log.info("after : %s", dbo.asDBObject)
+        dbo must havePair("x" -> "x")
       }
+    }
+
+    "instantiate case class instances using data from DBObject-s" in {
+      "cover primitive types" in {
+        val e = numbers
+        val e_* = GraterE.asObject(GraterE.asDBObject(e))
+        e_* must_== e
+      }
+
+      "and object graphs" in {
+        fail
+      } pendingUntilFixed
     }
   }
 

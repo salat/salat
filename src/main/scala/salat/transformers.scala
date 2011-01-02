@@ -44,25 +44,30 @@ object out extends CasbahLogging {
 
 object in extends CasbahLogging {
   def Fallback(implicit ctx: Context): Transformer = {
-    case (t, x) => {
-      log.warning("left alone: %s @ %s", x, t)
-      x
-    }
+    case (t, x) => x
   }
 
   def DoubleToJBigDecimal(implicit ctx: Context): Transformer = {
-    case (t @ TypeRefType(_, symbol, _), d: Double) if symbol.path == classOf[JavaBigDecimal].getName =>
-      new JavaBigDecimal(d.toString, implicitly[MathContext])
+    case (t @ TypeRefType(_, symbol, _), x) if symbol.path == classOf[JavaBigDecimal].getName =>
+      x match {
+        case d: Double => new JavaBigDecimal(d.toString, implicitly[MathContext])
+      }
   }
 
   def DoubleToSBigDecimal(implicit ctx: Context): Transformer = {
-    case (t @ TypeRefType(_, symbol, _), d: Double) if symbol.path == classOf[ScalaBigDecimal].getName =>
-      ScalaBigDecimal(d.toString, implicitly[MathContext])
+    case (t @ TypeRefType(_, symbol, _), x) if symbol.path == classOf[ScalaBigDecimal].getName =>
+      x match {
+        case d: Double => ScalaBigDecimal(d.toString, implicitly[MathContext])
+      }
   }
 
   def InContext(implicit ctx: Context): Transformer = {
-    case (t @ TypeRefType(_, symbol, _), dbo: DBObject) if ctx.graters.contains(symbol.path) =>
-      ctx.graters(symbol.path).asInstanceOf[Grater[CaseClass]].asObject(dbo).asInstanceOf[CaseClass]
+    case (t @ TypeRefType(_, symbol, _), x) if ctx.lookup(symbol.path).isDefined =>
+      x match {
+        case dbo: DBObject => ctx.lookup(symbol.path, dbo).map {
+          grater => grater.asObject(dbo).asInstanceOf[CaseClass]
+        }.getOrElse(throw new Exception("no grater found for '%s' OR '%s'".format(symbol.path, dbo(ctx.typeHint))))
+      }
   }
 
   def *(implicit ctx: Context) =

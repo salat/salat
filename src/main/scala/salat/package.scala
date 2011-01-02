@@ -20,9 +20,9 @@ trait Context extends Logging {
   def lookup(clazz: String): Option[Grater[_ <: CaseClass]] = graters.get(clazz)
 
   def lookup(clazz: String, dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
-    graters.get(clazz) match {
+    lookup(dbo) match {
       case yes @ Some(grater) => yes
-      case _ => lookup(dbo)
+      case _ => lookup(clazz)
     }
 
   def lookup(dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =

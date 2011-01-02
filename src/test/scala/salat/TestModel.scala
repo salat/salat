@@ -18,9 +18,9 @@ case class B(p: Option[Int], q: Int = 1067, r: C)
 case class C(l: Seq[String] = Nil, m: List[Int], n: List[D])
 case class D(h: IMap[String, A], i: MMap[String, Int] = MMap.empty, j: Option[B])
 
-case class E(a:          String,    b:        Int,        c:        ScalaBigDecimal,    d:        JavaBigDecimal,
-             aa:  Option[String],  bb: Option[Int],      cc: Option[ScalaBigDecimal],  dd: Option[JavaBigDecimal],
-             aaa: Option[String], bbb: Option[Int],     ccc: Option[ScalaBigDecimal], ddd: Option[JavaBigDecimal])
+case class E(a:          String,    b:        Int,           c:        ScalaBigDecimal,           d:        JavaBigDecimal,
+             aa:  Option[String] = None,  bb: Option[Int] = None,  cc: Option[ScalaBigDecimal] = None,  dd: Option[JavaBigDecimal] = None,
+             aaa: Option[String],        bbb: Option[Int],        ccc: Option[ScalaBigDecimal],        ddd: Option[JavaBigDecimal])
 
 object `package` {
   implicit object GraterA extends Grater(classOf[A])
@@ -37,4 +37,9 @@ object `package` {
                       Some(B(
                         None, 24, C(
                           List("l3", "l4"), List(1, 2, 3), Nil))))))))
+
+  def numbers = E(a = "a value",                    aa = None, aaa = Some("aaa value"),
+                  b = 2,                            bb = None, bbb = Some(22),
+                  c = ScalaBigDecimal(3.30003),     cc = None, ccc = Some(ScalaBigDecimal(33.30003)),
+                  d = new JavaBigDecimal(4.400004), dd = None, ddd = Some(new JavaBigDecimal(44.400004)))
 }
