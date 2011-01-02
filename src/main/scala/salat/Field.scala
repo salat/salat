@@ -38,6 +38,7 @@ object IsSeq {
 case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val ctx: Context) extends CasbahLogging {
   import Field._
 
+  @deprecated("not useful, because conditional type unwrapping has moved to transformers")
   lazy val valueType = typeRefType match {
     case IsOption(t) => t
     case IsSeq(t) => t
@@ -45,8 +46,8 @@ case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val 
     case _ => typeRefType
   }
 
-  lazy val inTransformer  =  in.pickTransformer(valueType)
-  lazy val outTransformer = out.pickTransformer(valueType)
+  lazy val inTransformer  =  in.pickTransformer(typeRefType).lift
+  lazy val outTransformer = out.pickTransformer(typeRefType).lift
 
   def in_!(value: Any): Option[Any] = {
     typeRefType match {
@@ -54,8 +55,8 @@ case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val 
         case v if v != null => {
           val transformed = inTransformer.apply(valueType, v)
           typeRefType match {
-	    case IsOption(_) => Some(transformed)
-	    case _ => transformed
+            case IsOption(_) => Some(transformed)
+            case _ => transformed
           }
         }
         case _ => typeRefType match {
@@ -66,39 +67,5 @@ case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val 
     }
   }
 
-  def out_!(element: Any): Option[Any] = {
-    typeRefType match {
-      case IsOption(_) => element match {
-        case Some(value) => outTransformer.apply(valueType, value)
-        case _ => None
-      }
-
-      case IsSeq(_) =>
-        element match {
-          case seq: Seq[_] =>
-            Some(MongoDBList(seq.map {
-              case el =>
-                outTransformer.apply(valueType, el) match {
-                  case Some(value) => value
-                  case _ => None // XXX: this isn't DWIM and should never happen.
-                }
-            } : _*))
-          case _ => None
-        }
-
-      case IsMap(_, _) =>
-        element match {
-          case map: scala.collection.Map[String, _] =>
-            Some(map.foldLeft(MongoDBObject()) {
-              case (dbo, (k, el)) =>
-                outTransformer.apply(valueType, el) match {
-                  case Some(value) => dbo ++ MongoDBObject((k match { case s: String => s case x => x.toString }) -> value)
-                  case _ => dbo
-                }
-            })
-          case _ => None
-        }
-      case _ => outTransformer.apply(typeRefType, element)
-    }
-  }
+  def out_!(element: Any): Option[Any] = outTransformer.apply(typeRefType, element)
 }

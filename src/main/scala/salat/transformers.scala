@@ -17,17 +17,51 @@ trait CanPickTransformer {
   def Fallback(implicit ctx: Context): Transformer
   def *(implicit ctx: Context): Seq[Transformer]
 
-  def pickTransformer(t: Type)(implicit ctx: Context): MaterializedTransformer =
+  def pickTransformer(t: Type)(implicit ctx: Context): Transformer =
     *.foldLeft(Fallback) {
       case (accumulate, pf) =>
         if (pf.isDefinedAt(t -> null)) pf orElse accumulate
         else accumulate
-    }.lift
+    }
 }
 
 object out extends CasbahLogging with CanPickTransformer {
   def Fallback(implicit ctx: Context): Transformer = {
     case (t, x) => x
+  }
+
+  def OptionExtractor(implicit ctx: Context): Transformer = {
+    case (IsOption(underlying), x) => x match {
+      case Some(value) => pickTransformer(underlying).lift.apply(underlying, value).get
+      case _ => None
+    }
+  }
+
+  def SeqExtractor(implicit ctx: Context): Transformer = {
+    case (IsSeq(underlying @ TypeRefType(_, symbol, _)), x) => x match {
+      case seq: Seq[_] => {
+        Some(MongoDBList(seq.map {
+          case el => pickTransformer(underlying).lift.apply(underlying, el) match {
+            case Some(value) => value
+            case _ => None // XXX: this isn't DWIM and should never happen.
+          }
+        } : _*))
+      }
+    }
+  }
+
+  def MapExtractor(implicit ctx: Context): Transformer = {
+    case (IsMap(_, underlying), x) => x match {
+      case map: scala.collection.Map[String, _] =>
+        Some(map.foldLeft(MongoDBObject()) {
+          case (dbo, (k, el)) =>
+            pickTransformer(underlying).lift.apply(underlying, el) match {
+              case Some(value) => dbo ++ MongoDBObject((k match { case s: String => s case x => x.toString }) -> value)
+              case _ => dbo
+            }
+        })
+      case _ => None
+    }
   }
 
   def SBigDecimalToDouble(implicit ctx: Context): Transformer = {
@@ -43,7 +77,7 @@ object out extends CasbahLogging with CanPickTransformer {
   }
 
   def *(implicit ctx: Context) =
-    (InContext _) :: (SBigDecimalToDouble _) :: Nil
+    (OptionExtractor _) :: (SeqExtractor _ ) :: (MapExtractor _) :: (InContext _) :: (SBigDecimalToDouble _) :: Nil
 }
 
 object in extends CasbahLogging with CanPickTransformer {
@@ -55,6 +89,7 @@ object in extends CasbahLogging with CanPickTransformer {
     case (t @ TypeRefType(_, symbol, _), x) if symbol.path == classOf[ScalaBigDecimal].getName =>
       x match {
         case d: Double => ScalaBigDecimal(d.toString, implicitly[MathContext])
+        case _ => throw new Exception("expected Double, got: %s @ %s".format(x, x.asInstanceOf[AnyRef].getClass))
       }
   }
 

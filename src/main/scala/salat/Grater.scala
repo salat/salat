@@ -37,14 +37,18 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       case (dbo, (null, _)) => dbo
       case (dbo, (element, field)) => {
         field.out_!(element) match {
-          case Some(serialized) => dbo ++ MongoDBObject(field.name -> serialized)
+	  case Some(None) => dbo
+          case Some(serialized) =>
+            dbo ++ MongoDBObject(field.name -> (serialized match {
+              case Some(unwrapped) => unwrapped
+              case _ => serialized
+            }))
           case _ => dbo
         }
       }
     }
 
   def asObject(dbo: MongoDBObject): X = {
-    log.info("[%s] asObject( %s )", clazz.getSimpleName, dbo)
     val args = indexedFields.map {
       field => dbo.get(field.name) match {
         case Some(value) => field.in_!(value)
