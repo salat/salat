@@ -3,7 +3,7 @@ package com.bumnetworks.salat
 import scala.tools.scalap.scalax.rules.scalasig._
 import com.mongodb.casbah.Imports._
 
-abstract class Grater[X <: AnyRef with Product](val clazz: Class[X])(implicit val ctx: Context) extends CasbahLogging {
+abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends CasbahLogging {
   ctx.accept(this)
 
   lazy val sym = ScalaSigParser.parse(clazz).get.topLevelClasses.head

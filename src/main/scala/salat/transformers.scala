@@ -35,7 +35,7 @@ object out extends CasbahLogging {
 
   def InContext(implicit ctx: Context): Transformer = {
     case (t @ TypeRefType(_, symbol, _), o) if ctx.graters.contains(symbol.path) =>
-      ctx.graters(symbol.path).asInstanceOf[Grater[AnyRef with Product]].asDBObject(o.asInstanceOf[AnyRef with Product])
+      ctx.graters(symbol.path).asInstanceOf[Grater[CaseClass]].asDBObject(o.asInstanceOf[CaseClass])
   }
 
   def *(implicit ctx: Context) =
@@ -62,6 +62,6 @@ object in extends CasbahLogging {
 
   def InContext(implicit ctx: Context): Transformer = {
     case (t @ TypeRefType(_, symbol, _), dbo: DBObject) if ctx.graters.contains(symbol.path) =>
-      ctx.graters(symbol.path).asInstanceOf[Grater[AnyRef with Product]].asObject(dbo).asInstanceOf[AnyRef with Product]
+      ctx.graters(symbol.path).asInstanceOf[Grater[CaseClass]].asObject(dbo).asInstanceOf[CaseClass]
   }
 }
