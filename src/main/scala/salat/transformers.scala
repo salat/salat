@@ -64,4 +64,7 @@ object in extends CasbahLogging {
     case (t @ TypeRefType(_, symbol, _), dbo: DBObject) if ctx.graters.contains(symbol.path) =>
       ctx.graters(symbol.path).asInstanceOf[Grater[CaseClass]].asObject(dbo).asInstanceOf[CaseClass]
   }
+
+  def *(implicit ctx: Context) =
+    (InContext _) :: (DoubleToSBigDecimal _) :: (DoubleToJBigDecimal _) :: Nil
 }
