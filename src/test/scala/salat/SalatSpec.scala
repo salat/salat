@@ -71,7 +71,10 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
       }
 
       "and object graphs" in {
-        fail
+        // val a = graph
+        // val a_* = GraterA.asObject(GraterA.asDBObject(a))
+        // a_* must_== a
+	fail
       } pendingUntilFixed
     }
   }
