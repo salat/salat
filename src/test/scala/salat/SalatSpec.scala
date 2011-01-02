@@ -13,6 +13,9 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
 
   doBeforeSpec {
     GraterA
+    GraterB
+    GraterC
+    GraterD
   }
 
   "a grater" should {
