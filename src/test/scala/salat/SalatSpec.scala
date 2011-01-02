@@ -29,7 +29,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
   "field unapplies" should {
     "correctly detect Option[_]" in {
       "primitive Option[_]" in {
-        val arg = implicitly[Grater[A]].names("y").typeRefType match {
+        val arg = implicitly[Grater[A]].fields("y").typeRefType match {
           case IsOption(ot @ TypeRefType(_,_,_)) => Some(ot)
           case _ => None
         }
@@ -39,7 +39,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
       }
 
       "Option[_] with type arg in context" in {
-        val arg = implicitly[Grater[D]].names("j").typeRefType match {
+        val arg = implicitly[Grater[D]].fields("j").typeRefType match {
           case IsOption(ot @ TypeRefType(_,_,_)) => Some(ot)
           case _ => None
         }
@@ -52,7 +52,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
 
     "correctly detect Map[_, _]" in {
       "with primitive value type" in {
-        val arg = implicitly[Grater[D]].names("i").typeRefType match {
+        val arg = implicitly[Grater[D]].fields("i").typeRefType match {
           case IsMap(k, v @ TypeRefType(_,_,_)) => Some(v)
           case _ => None
         }
@@ -62,7 +62,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
       }
 
       "with something in context" in {
-        val arg = implicitly[Grater[D]].names("h").typeRefType match {
+        val arg = implicitly[Grater[D]].fields("h").typeRefType match {
           case IsMap(k, v @ TypeRefType(_,_,_)) => Some(v)
           case _ => None
         }
@@ -75,7 +75,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
 
     "correctly detect Seq[_]" in {
       "with primitive value type" in {
-        val arg = implicitly[Grater[C]].names("l").typeRefType match {
+        val arg = implicitly[Grater[C]].fields("l").typeRefType match {
           case IsSeq(e @ TypeRefType(_,_,_)) => Some(e)
           case _ => None
         }
@@ -85,7 +85,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
       }
 
       "with something in context" in {
-        val arg = implicitly[Grater[C]].names("n").typeRefType match {
+        val arg = implicitly[Grater[C]].fields("n").typeRefType match {
           case IsSeq(e @ TypeRefType(_,_,_)) => Some(e)
           case _ => None
         }
