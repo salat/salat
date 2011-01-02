@@ -12,7 +12,7 @@ import java.math.{BigDecimal => JavaBigDecimal}
 import org.specs._
 import org.specs.specification.PendingUntilFixed
 
-class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging {
+object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging {
   detailedDiffs()
 
   doBeforeSpec {
@@ -44,7 +44,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
 
         val dbo: MongoDBObject = GraterE.asDBObject(e)
 	log.info("before: %s", e)
-	log.info("after : %s", dbo)
+	log.info("after : %s", dbo.asDBObject)
 
         dbo must havePair("a" -> e.a)
         dbo must notHaveKey("aa")
@@ -65,8 +65,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
 	log.info("before: %s", a)
 	log.info("after : %s", dbo.asDBObject)
 	dbo must havePair("x" -> "x")
-	fail
-      } pendingUntilFixed
+      }
     }
   }
 

@@ -16,10 +16,7 @@ object `package` {
 
 object out extends CasbahLogging {
   def Fallback(implicit ctx: Context): Transformer = {
-    case (t, x) => {
-      log.warning("left alone: %s @ %s", x, t)
-      x
-    }
+    case (t, x) => x
   }
 
   def JBigDecimalToDouble(implicit ctx: Context): Transformer = {
@@ -32,7 +29,7 @@ object out extends CasbahLogging {
   def SBigDecimalToDouble(implicit ctx: Context): Transformer = {
     case (TypeRefType(_, symbol, _), x) if symbol.path == classOf[ScalaBigDecimal].getName =>
       x match {
-	case sbd: ScalaBigDecimal => sbd(implicitly[MathContext]).toDouble
+        case sbd: ScalaBigDecimal => sbd(implicitly[MathContext]).toDouble
       }
   }
 

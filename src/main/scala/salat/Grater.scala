@@ -15,29 +15,16 @@ abstract class Grater[X <: AnyRef with Product](val clazz: Class[X])(implicit va
     case PolyType(tr @ TypeRefType(_, _, _), _) => tr
   }
 
-  def asDBObject(o: X): DBObject = {
-    val builder = MongoDBObject.newBuilder
-
-    o.productIterator.zip(indexedFields.iterator).foreach {
-      case (element, field) => {
-        val value = field.typeRefType match {
-          case IsOption(_) => element match {
-            case Some(v) => Some(v)
-            case _ => None
-          }
-	  case _ => Some(element)
+  def asDBObject(o: X): DBObject =
+    o.productIterator.zip(indexedFields.iterator).foldLeft(MongoDBObject("_typeHint" -> clazz.getName)) {
+      case (dbo, (null, _)) => dbo
+      case (dbo, (element, field)) => {
+        field.out_!(element) match {
+          case Some(serialized) => dbo ++ MongoDBObject(field.name -> serialized)
+          case _ => dbo
         }
-
-	value match {
-	  case Some(bareValue) => builder += field.name -> field.out_!(bareValue).get
-	  case _ =>
-	}
       }
     }
-
-    builder += "_typeHint" -> clazz.getName
-    builder.result
-  }
 
   def asObject(dbo: DBObject): X = clazz.newInstance.asInstanceOf[X]
 }

@@ -1,7 +1,9 @@
 package com.bumnetworks.salat
 
 import scala.tools.scalap.scalax.rules.scalasig._
+
 import com.bumnetworks.salat.transformers._
+import com.mongodb.casbah.Imports._
 
 object Field {
 }
@@ -51,5 +53,39 @@ case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val 
     }.lift
   }
 
-  def out_!(element: Any) = outTransformer.apply(valueType, element)
+  def out_!(element: Any): Option[Any] = {
+    typeRefType match {
+      case IsOption(_) => element match {
+        case Some(value) => outTransformer.apply(valueType, value)
+        case _ => None
+      }
+
+      case IsSeq(_) =>
+        element match {
+          case seq: Seq[_] =>
+            Some(MongoDBList(seq.map {
+              case el =>
+                outTransformer.apply(valueType, el) match {
+                  case Some(value) => value
+                  case _ => None // XXX: this isn't DWIM and should never happen.
+                }
+            } : _*))
+          case _ => None
+        }
+
+      case IsMap(_, _) =>
+        element match {
+          case map: scala.collection.Map[String, _] =>
+            Some(map.foldLeft(MongoDBObject()) {
+              case (dbo, (k, el)) =>
+                outTransformer.apply(valueType, el) match {
+                  case Some(value) => dbo ++ MongoDBObject((k match { case s: String => s case x => x.toString }) -> value)
+                  case _ => dbo
+                }
+            })
+          case _ => None
+        }
+      case _ => outTransformer.apply(typeRefType, element)
+    }
+  }
 }

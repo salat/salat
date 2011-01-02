@@ -32,8 +32,9 @@ object `package` {
   def graph = A("x", Some("y"),
                 B(Some(80), 81,
                   C(Seq("l1", "l2"), List(1, 2), List(
-                    D(IMap.empty, MMap.empty, None),
-                    D(IMap.empty, MMap.empty, None),
-                    D(IMap.empty, MMap.empty, None)
-                  ))))
+                    D(IMap("foo1" -> A("foo", None, null), "baz1" -> A("baz", Some("quux"), null)),
+                      MMap("a1" -> 1, "c1" -> 2),
+                      Some(B(
+                        None, 24, C(
+                          List("l3", "l4"), List(1, 2, 3), Nil))))))))
 }
