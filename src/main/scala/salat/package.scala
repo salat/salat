@@ -5,10 +5,10 @@ import scala.collection.mutable.{Map => MMap, HashMap}
 import com.mongodb.casbah.commons.Logging
 
 trait Context extends Logging {
-  private[salat] val graters: MMap[String, Grater[_ <: AnyRef]] = HashMap.empty
+  private[salat] val graters: MMap[String, Grater[_ <: AnyRef with Product]] = HashMap.empty
   val name: Option[String]
 
-  def accept(grater: Grater[_ <: AnyRef]): Unit =
+  def accept(grater: Grater[_ <: AnyRef with Product]): Unit =
     if (!graters.contains(grater.clazz.getName)) {
       graters += grater.clazz.getName -> grater
       log.info("Context(%s) accepted Grater[%s]", name.getOrElse("<no name>"), grater.clazz)

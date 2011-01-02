@@ -33,7 +33,7 @@ object IsSeq {
     }
 }
 
-case class Field(name: String, typeRefType: TypeRefType)(implicit val ctx: Context) extends CasbahLogging {
+case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val ctx: Context) extends CasbahLogging {
   import Field._
 
   lazy val valueType = typeRefType match {
