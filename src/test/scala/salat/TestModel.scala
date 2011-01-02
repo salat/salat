@@ -13,10 +13,10 @@ import scala.math.{BigDecimal => ScalaBigDecimal}
 
 import java.math.{BigDecimal => JavaBigDecimal}
 
-case class A(x: String,           y: Option[String],    z: B)
-case class B(p: Option[Int],      q: Int,               r: C)
-case class C(l: Seq[String],      m: List[Int],         n: List[D])
-case class D(h: IMap[String, A],  i: MMap[String, Int], j: Option[B])
+case class A(x: String, y: Option[String] = Some("default y"), z: B)
+case class B(p: Option[Int], q: Int = 1067, r: C)
+case class C(l: Seq[String] = Nil, m: List[Int], n: List[D])
+case class D(h: IMap[String, A], i: MMap[String, Int] = MMap.empty, j: Option[B])
 
 case class E(a:          String,    b:        Int,        c:        ScalaBigDecimal,    d:        JavaBigDecimal,
              aa:  Option[String],  bb: Option[Int],      cc: Option[ScalaBigDecimal],  dd: Option[JavaBigDecimal],

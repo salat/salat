@@ -1,5 +1,6 @@
 package com.bumnetworks.salat
 
+import java.lang.reflect.Method
 import scala.tools.scalap.scalax.rules.scalasig._
 import com.mongodb.casbah.Imports._
 
@@ -10,6 +11,15 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   lazy val caseAccessors = sym.children.filter(_.isCaseAccessor).filter(!_.isPrivate).map(_.asInstanceOf[MethodSymbol])
   lazy val indexedFields = caseAccessors.zipWithIndex.map { case (ms, idx) => Field(idx, ms.name, typeRefType(ms)) }
   lazy val fields = collection.SortedMap.empty[String, Field] ++ indexedFields.map { f => f.name -> f }
+  lazy val companion = Class.forName("%s$".format(clazz.getName))
+  lazy val constructor: Method = companion.getMethod("apply")
+  lazy val defaults: Seq[Option[Method]] = indexedFields.map {
+    field => try {
+      Some(companion.getMethod("apply$default$%d".format(field.idx)))
+    } catch {
+      case _ => None
+    }
+  }
 
   def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
     case PolyType(tr @ TypeRefType(_, _, _), _) => tr
@@ -26,5 +36,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       }
     }
 
-  def asObject(dbo: DBObject): X = clazz.newInstance.asInstanceOf[X]
+  def asObject(dbo: DBObject): X = {
+    clazz.newInstance.asInstanceOf[X]
+  }
 }
