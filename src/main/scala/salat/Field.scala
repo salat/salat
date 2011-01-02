@@ -46,8 +46,10 @@ case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val 
   lazy val outTransformer: MaterializedTransformer = {
     out.*.foldLeft(out.Fallback) {
       case (accumulate, pf) =>
-        if (pf.isDefinedAt(typeRefType -> null)) pf orElse accumulate
+        if (pf.isDefinedAt(valueType -> null)) pf orElse accumulate
         else accumulate
     }.lift
   }
+
+  def out_!(element: Any) = outTransformer.apply(valueType, element)
 }

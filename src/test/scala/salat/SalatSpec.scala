@@ -2,8 +2,12 @@ package com.bumnetworks.salat.test
 
 import com.bumnetworks.salat._
 import com.bumnetworks.salat.test.model._
+import com.mongodb.casbah.Imports._
 
 import scala.tools.scalap.scalax.rules.scalasig._
+import scala.math.{BigDecimal => ScalaBigDecimal}
+
+import java.math.{BigDecimal => JavaBigDecimal}
 
 import org.specs._
 import org.specs.specification.PendingUntilFixed
@@ -12,10 +16,13 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
   detailedDiffs()
 
   doBeforeSpec {
+    com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
+
     GraterA
     GraterB
     GraterC
     GraterD
+    GraterE
   }
 
   "a grater" should {
@@ -26,6 +33,31 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
     "perhaps even multiple times" in {
       implicitly[Grater[A]] must notBe(GraterB)
       implicitly[Grater[B]] must notBe(GraterA)
+    }
+
+    "make DBObject-s out of case class instances" in {
+      "properly treat primitive values and optional values" in {
+        val e = E(a = "a value",                    aa = None, aaa = Some("aaa value"),
+                  b = 2,                            bb = None, bbb = Some(22),
+                  c = ScalaBigDecimal(3.30003),     cc = None, ccc = Some(ScalaBigDecimal(33.30003)),
+                  d = new JavaBigDecimal(4.400004), dd = None, ddd = Some(new JavaBigDecimal(44.400004)))
+
+        val dbo: MongoDBObject = GraterE.asDBObject(e)
+	log.info("before: %s", e)
+	log.info("after : %s", dbo)
+
+        dbo must havePair("a" -> e.a)
+        dbo must notHaveKey("aa")
+        dbo must havePair("aaa" -> e.aaa.get)
+
+        dbo must havePair("b" -> e.b)
+        dbo must notHaveKey("bb")
+        dbo must havePair("bbb" -> e.bbb.get)
+
+        dbo must havePair("c" -> e.c)
+        dbo must notHaveKey("cc")
+        dbo must havePair("ccc" -> e.ccc.get)
+      }
     }
   }
 
@@ -48,7 +80,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
         }
         arg must beSome[TypeRefType].which {
           t => t.symbol.path must_== classOf[B].getName
-	  implicitly[Grater[D]].ctx.graters must haveKey(t.symbol.path)
+          implicitly[Grater[D]].ctx.graters must haveKey(t.symbol.path)
         }
       }
     }
@@ -71,7 +103,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
         }
         arg must beSome[TypeRefType].which {
           t => t.symbol.path must_== classOf[A].getName
-	  implicitly[Grater[D]].ctx.graters must haveKey(t.symbol.path)
+          implicitly[Grater[D]].ctx.graters must haveKey(t.symbol.path)
         }
       }
     }
@@ -94,7 +126,7 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
         }
         arg must beSome[TypeRefType].which {
           t => t.symbol.path must_== classOf[D].getName
-	  implicitly[Grater[C]].ctx.graters must haveKey(t.symbol.path)
+          implicitly[Grater[C]].ctx.graters must haveKey(t.symbol.path)
         }
       }
     }

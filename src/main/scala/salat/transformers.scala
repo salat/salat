@@ -30,7 +30,7 @@ object out extends CasbahLogging {
   }
 
   def SBigDecimalToDouble(implicit ctx: Context): Transformer = {
-    case (TypeRefType(_, symbol, _), x) if symbol.path == classOf[ScalaBigDecimal] =>
+    case (TypeRefType(_, symbol, _), x) if symbol.path == classOf[ScalaBigDecimal].getName =>
       x match {
 	case sbd: ScalaBigDecimal => sbd(implicitly[MathContext]).toDouble
       }

@@ -8,15 +8,36 @@ abstract class Grater[X <: AnyRef with Product](val clazz: Class[X])(implicit va
 
   lazy val sym = ScalaSigParser.parse(clazz).get.topLevelClasses.head
   lazy val caseAccessors = sym.children.filter(_.isCaseAccessor).filter(!_.isPrivate).map(_.asInstanceOf[MethodSymbol])
-  lazy val typeRefTypes = caseAccessors.map(typeRefType _)
-  lazy val fields = collection.SortedMap.empty[String, Field] ++ caseAccessors.zipWithIndex.map { case (ms, idx) => ms.name -> Field(idx, ms.name, typeRefType(ms)) }
+  lazy val indexedFields = caseAccessors.zipWithIndex.map { case (ms, idx) => Field(idx, ms.name, typeRefType(ms)) }
+  lazy val fields = collection.SortedMap.empty[String, Field] ++ indexedFields.map { f => f.name -> f }
 
   def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
     case PolyType(tr @ TypeRefType(_, _, _), _) => tr
   }
 
-  def asDBObject(o: X): DBObject =
-    MongoDBObject("_typeHint" -> clazz.getName)
+  def asDBObject(o: X): DBObject = {
+    val builder = MongoDBObject.newBuilder
+
+    o.productIterator.zip(indexedFields.iterator).foreach {
+      case (element, field) => {
+        val value = field.typeRefType match {
+          case IsOption(_) => element match {
+            case Some(v) => Some(v)
+            case _ => None
+          }
+	  case _ => Some(element)
+        }
+
+	value match {
+	  case Some(bareValue) => builder += field.name -> field.out_!(bareValue).get
+	  case _ =>
+	}
+      }
+    }
+
+    builder += "_typeHint" -> clazz.getName
+    builder.result
+  }
 
   def asObject(dbo: DBObject): X = clazz.newInstance.asInstanceOf[X]
 }
