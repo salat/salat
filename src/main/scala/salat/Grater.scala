@@ -28,11 +28,3 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
   def asObject(dbo: DBObject): X = clazz.newInstance.asInstanceOf[X]
 }
-
-object Grater {
-  def detect(dbo: MongoDBObject)(implicit ctx: Context): Option[Grater[_ <: CaseClass]] =
-    dbo.get(ctx.typeHint) match {
-      case Some(typeHint: String) => ctx.graters.get(typeHint)
-      case _ => None
-    }
-}
