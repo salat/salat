@@ -44,6 +44,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     }
 
   def asObject(dbo: MongoDBObject): X = {
+    log.info("[%s] asObject( %s )", clazz.getSimpleName, dbo)
     val args = indexedFields.map {
       field => dbo.get(field.name) match {
         case Some(value) => field.in_!(value)

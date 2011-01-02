@@ -26,10 +26,10 @@ trait Context extends Logging {
     }
 
   def lookup(dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
-    dbo.get(typeHint) match {
+    if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHint) match {
       case Some(typeHint: String) => graters.get(typeHint)
       case _ => None
-    }
+    } else throw new IllegalArgumentException(dbo.underlying.getClass.getName)
 }
 
 object `package` {
