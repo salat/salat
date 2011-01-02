@@ -58,6 +58,15 @@ class SalatSpec extends Specification with PendingUntilFixed with CasbahLogging 
         dbo must notHaveKey("cc")
         dbo must havePair("ccc" -> e.ccc.get)
       }
+
+      "work with object graphs" in {
+	val a = graph
+	val dbo: MongoDBObject = GraterA.asDBObject(a)
+	log.info("before: %s", a)
+	log.info("after : %s", dbo.asDBObject)
+	dbo must havePair("x" -> "x")
+	fail
+      } pendingUntilFixed
     }
   }
 

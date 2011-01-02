@@ -31,5 +31,9 @@ object `package` {
 
   def graph = A("x", Some("y"),
                 B(Some(80), 81,
-                  C(Seq("l1", "l2"), List(1, 2), Nil)))
+                  C(Seq("l1", "l2"), List(1, 2), List(
+                    D(IMap.empty, MMap.empty, None),
+                    D(IMap.empty, MMap.empty, None),
+                    D(IMap.empty, MMap.empty, None)
+                  ))))
 }
