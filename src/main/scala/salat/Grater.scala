@@ -16,7 +16,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   }
 
   def asDBObject(o: X): DBObject =
-    o.productIterator.zip(indexedFields.iterator).foldLeft(MongoDBObject("_typeHint" -> clazz.getName)) {
+    o.productIterator.zip(indexedFields.iterator).foldLeft(MongoDBObject(ctx.typeHint -> clazz.getName)) {
       case (dbo, (null, _)) => dbo
       case (dbo, (element, field)) => {
         field.out_!(element) match {
@@ -27,4 +27,12 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     }
 
   def asObject(dbo: DBObject): X = clazz.newInstance.asInstanceOf[X]
+}
+
+object Grater {
+  def detect(dbo: MongoDBObject)(implicit ctx: Context): Option[Grater[_ <: CaseClass]] =
+    dbo.get(ctx.typeHint) match {
+      case Some(typeHint: String) => ctx.graters.get(typeHint)
+      case _ => None
+    }
 }

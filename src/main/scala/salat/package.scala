@@ -6,7 +6,9 @@ import com.mongodb.casbah.commons.Logging
 
 trait Context extends Logging {
   private[salat] val graters: MMap[String, Grater[_ <: CaseClass]] = HashMap.empty
+
   val name: Option[String]
+  val typeHint = TypeHint
 
   def accept(grater: Grater[_ <: CaseClass]): Unit =
     if (!graters.contains(grater.clazz.getName)) {
@@ -18,6 +20,7 @@ trait Context extends Logging {
 object `package` {
   type CasbahLogging = Logging
   type CaseClass = AnyRef with Product
+  val TypeHint = "_typeHint"
 }
 
 package object global {
