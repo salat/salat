@@ -13,7 +13,19 @@ object `package` {
   type MaterializedTransformer = Function1[(Type, Any), Option[Any]]
 }
 
-object out extends CasbahLogging {
+trait CanPickTransformer {
+  def Fallback(implicit ctx: Context): Transformer
+  def *(implicit ctx: Context): Seq[Transformer]
+
+  def pickTransformer(t: Type)(implicit ctx: Context): MaterializedTransformer =
+    *.foldLeft(Fallback) {
+      case (accumulate, pf) =>
+        if (pf.isDefinedAt(t -> null)) pf orElse accumulate
+        else accumulate
+    }.lift
+}
+
+object out extends CasbahLogging with CanPickTransformer {
   def Fallback(implicit ctx: Context): Transformer = {
     case (t, x) => x
   }
@@ -34,7 +46,7 @@ object out extends CasbahLogging {
     (InContext _) :: (SBigDecimalToDouble _) :: Nil
 }
 
-object in extends CasbahLogging {
+object in extends CasbahLogging with CanPickTransformer {
   def Fallback(implicit ctx: Context): Transformer = {
     case (t, x) => x
   }

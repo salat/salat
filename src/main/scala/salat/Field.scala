@@ -45,15 +45,8 @@ case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val 
     case _ => typeRefType
   }
 
-  lazy val inTransformer  = pickTransformer(in.*,   in.Fallback)
-  lazy val outTransformer = pickTransformer(out.*, out.Fallback)
-
-  protected def pickTransformer(pool: List[Transformer], fallback: Transformer): MaterializedTransformer =
-    pool.foldLeft(fallback) {
-      case (accumulate, pf) =>
-        if (pf.isDefinedAt(valueType -> null)) pf orElse accumulate
-        else accumulate
-    }.lift
+  lazy val inTransformer  =  in.pickTransformer(valueType)
+  lazy val outTransformer = out.pickTransformer(valueType)
 
   def in_!(value: Any): Option[Any] = {
     typeRefType match {
