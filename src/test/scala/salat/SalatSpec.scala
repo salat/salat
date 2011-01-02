@@ -7,8 +7,6 @@ import com.mongodb.casbah.Imports._
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{BigDecimal => ScalaBigDecimal}
 
-import java.math.{BigDecimal => JavaBigDecimal}
-
 import org.specs._
 import org.specs.specification.PendingUntilFixed
 

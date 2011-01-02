@@ -2,8 +2,7 @@ package com.bumnetworks.salat.transformers
 
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{BigDecimal => ScalaBigDecimal}
-
-import java.math.{BigDecimal => JavaBigDecimal, RoundingMode, MathContext}
+import java.math.MathContext
 
 import com.bumnetworks.salat._
 import com.bumnetworks.salat.global.mathCtx
@@ -19,13 +18,6 @@ object out extends CasbahLogging {
     case (t, x) => x
   }
 
-  def JBigDecimalToDouble(implicit ctx: Context): Transformer = {
-    case (TypeRefType(_, symbol, _), x) if symbol.path == classOf[JavaBigDecimal].getName =>
-      x match {
-        case jbd: JavaBigDecimal => jbd.round(implicitly[MathContext]).doubleValue
-      }
-  }
-
   def SBigDecimalToDouble(implicit ctx: Context): Transformer = {
     case (TypeRefType(_, symbol, _), x) if symbol.path == classOf[ScalaBigDecimal].getName =>
       x match {
@@ -39,19 +31,12 @@ object out extends CasbahLogging {
   }
 
   def *(implicit ctx: Context) =
-    (InContext _) :: (SBigDecimalToDouble _) :: (JBigDecimalToDouble _) :: Nil
+    (InContext _) :: (SBigDecimalToDouble _) :: Nil
 }
 
 object in extends CasbahLogging {
   def Fallback(implicit ctx: Context): Transformer = {
     case (t, x) => x
-  }
-
-  def DoubleToJBigDecimal(implicit ctx: Context): Transformer = {
-    case (t @ TypeRefType(_, symbol, _), x) if symbol.path == classOf[JavaBigDecimal].getName =>
-      x match {
-        case d: Double => new JavaBigDecimal(d.toString, implicitly[MathContext])
-      }
   }
 
   def DoubleToSBigDecimal(implicit ctx: Context): Transformer = {
@@ -71,5 +56,5 @@ object in extends CasbahLogging {
   }
 
   def *(implicit ctx: Context) =
-    (InContext _) :: (DoubleToSBigDecimal _) :: (DoubleToJBigDecimal _) :: Nil
+    (InContext _) :: (DoubleToSBigDecimal _) :: Nil
 }
