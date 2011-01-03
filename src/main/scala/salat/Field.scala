@@ -49,23 +49,6 @@ case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val 
   lazy val inTransformer  =  in.pickTransformer(typeRefType).lift
   lazy val outTransformer = out.pickTransformer(typeRefType).lift
 
-  def in_!(value: Any): Option[Any] = {
-    typeRefType match {
-      case _ => value match {
-        case v if v != null => {
-          val transformed = inTransformer.apply(valueType, v)
-          typeRefType match {
-            case IsOption(_) => Some(transformed)
-            case _ => transformed
-          }
-        }
-        case _ => typeRefType match {
-          case IsOption(_) => Some(None)
-          case _ => None
-        }
-      }
-    }
-  }
-
+  def in_!(value: Any): Option[Any] = inTransformer.apply(typeRefType, value)
   def out_!(element: Any): Option[Any] = outTransformer.apply(typeRefType, element)
 }

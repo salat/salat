@@ -21,6 +21,7 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
     GraterC
     GraterD
     GraterE
+    GraterF
   }
 
   "a grater" should {
@@ -70,12 +71,20 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
         e_* must_== e
       }
 
-      "and object graphs" in {
-        // val a = graph
-        // val a_* = GraterA.asObject(GraterA.asDBObject(a))
-        // a_* must_== a
-	fail
-      } pendingUntilFixed
+      "and silly object graphs" in {
+        val a = graph
+        val a_* = GraterA.asObject(GraterA.asDBObject(a))
+	// these two checks are *very* naive, but it's hard to compare
+	// unordered maps and expect them to come out equal.
+        a_*.z.p must_== a.z.p
+        a_*.z.q must_== a.z.q
+      }
+
+      "and also object graphs of even sillier shapes" in {
+	val f = mucho_numbers
+	val f_* = GraterF.asObject(GraterF.asDBObject(f))
+	f_* must_== f
+      }
     }
   }
 

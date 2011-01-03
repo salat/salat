@@ -20,17 +20,21 @@ case class E(a:          String,           b:        Int,           c:        Sc
              aa:  Option[String] = None,  bb: Option[Int] = None,  cc: Option[ScalaBigDecimal] = None,
              aaa: Option[String],        bbb: Option[Int],        ccc: Option[ScalaBigDecimal])
 
+case class F(es: List[E])
+
 object `package` {
   implicit object GraterA extends Grater(classOf[A])
   implicit object GraterB extends Grater(classOf[B])
   implicit object GraterC extends Grater(classOf[C])
   implicit object GraterD extends Grater(classOf[D])
   implicit object GraterE extends Grater(classOf[E])
+  implicit object GraterF extends Grater(classOf[F])
 
   def graph = A("x", Some("y"),
                 B(Some(80), 81,
                   C(Seq("l1", "l2"), List(1, 2), List(
-                    D(IMap("foo1" -> A("foo", None, null), "baz1" -> A("baz", Some("quux"), null)),
+                    D(IMap("foo1" -> A("foo", None, B(p = None, r = C(m = Nil, n = Nil))),
+                           "baz1" -> A("baz", Some("quux"), B(p = None, r = C(m = Nil, n = Nil)))),
                       MMap("a1" -> 1, "c1" -> 2),
                       Some(B(
                         None, 24, C(
@@ -39,4 +43,12 @@ object `package` {
   def numbers = E(a = "a value",                    aa = None, aaa = Some("aaa value"),
                   b = 2,                            bb = None, bbb = Some(22),
                   c = ScalaBigDecimal(3.30003),     cc = None, ccc = Some(ScalaBigDecimal(33.30003)))
+
+  def mucho_numbers = F((0 until 10).toList.map {
+    i =>
+      E(
+        a = "a %d".format(i), aa = Some("aa %d".format(i)), aaa = None,
+        b = i*i*123, bb = None, bbb = Some(i*i*321),
+        c = ScalaBigDecimal((i*i).toDouble/123d, mathCtx), cc = None, ccc = None
+      )})
 }

@@ -1,16 +1,57 @@
 package com.bumnetworks.salat.transformers
 
+import java.math.MathContext
+
+import scala.collection.immutable.{List => IList, Map => IMap}
+import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap}
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{BigDecimal => ScalaBigDecimal}
-import java.math.MathContext
 
 import com.bumnetworks.salat._
 import com.bumnetworks.salat.global.mathCtx
 import com.mongodb.casbah.Imports._
 
-object `package` {
+object `package` extends CasbahLogging {
   type Transformer = PartialFunction[(Type, Any), Any]
   type MaterializedTransformer = Function1[(Type, Any), Option[Any]]
+
+  object ImplClasses {
+    val IListClass = classOf[IList[_]].getName
+    val BufferClass = classOf[Buffer[_]].getName
+    val SeqClass = classOf[scala.collection.Seq[_]].getName
+
+    val IMapClass = classOf[IMap[_,_]].getName
+    val MMapClass = classOf[MMap[_,_]].getName
+  }
+
+  def seqImpl(name: String, real: collection.Seq[_]): scala.collection.Seq[_] = name match {
+    case ImplClasses.IListClass => IList.empty ++ real
+    case ImplClasses.BufferClass => Buffer.empty ++ real
+    case ImplClasses.SeqClass => IList.empty ++ real
+    case x => throw new IllegalArgumentException("failed to find proper Seq[_] impl for %s".format(x))
+  }
+
+  def seqImpl(t: Type, real: collection.Seq[_]): scala.collection.Seq[_] =
+    t match {
+      case TypeRefType(_, symbol, _) => symbol.path match {
+        case "scala.package.Seq" => seqImpl(ImplClasses.SeqClass, real)
+        case "scala.package.List" => seqImpl(ImplClasses.IListClass, real)
+        case x => seqImpl(x, real)
+      }
+    }
+
+  def mapImpl(name: String, real: collection.Map[_,_]): scala.collection.Map[_,_] = name match {
+    case ImplClasses.IMapClass => IMap.empty ++ real
+    case ImplClasses.MMapClass => MMap.empty ++ real
+    case x => throw new IllegalArgumentException("failed to find proper Map[_,_] impl for %s".format(x))
+  }
+
+  def mapImpl(t: Type, real: collection.Map[_,_]): scala.collection.Map[_,_] =
+    t match {
+      case TypeRefType(_, symbol, _) => symbol.path match {
+        case x => mapImpl(x, real)
+      }
+    }
 }
 
 trait CanPickTransformer {
@@ -38,7 +79,7 @@ object out extends CasbahLogging with CanPickTransformer {
   }
 
   def SeqExtractor(implicit ctx: Context): Transformer = {
-    case (IsSeq(underlying @ TypeRefType(_, symbol, _)), x) => x match {
+    case (IsSeq(underlying), x) => x match {
       case seq: Seq[_] => {
         Some(MongoDBList(seq.map {
           case el => pickTransformer(underlying).lift.apply(underlying, el) match {
@@ -85,6 +126,35 @@ object in extends CasbahLogging with CanPickTransformer {
     case (t, x) => x
   }
 
+  def OptionInjector(implicit ctx: Context): Transformer = {
+    case (IsOption(underlying), x) => x match {
+      case x if x != null => Some(pickTransformer(underlying).lift.apply(underlying, x))
+      case _ => None
+    }
+  }
+
+  def SeqInjector(implicit ctx: Context): Transformer = {
+    case (wrapper @ IsSeq(underlying), x) => x match {
+      case x: BasicDBList => {
+        val list: MongoDBList = x
+        seqImpl(wrapper, list.toList.map {
+          el => pickTransformer(underlying).lift.apply(underlying, el).get
+        })
+      }
+    }
+  }
+
+  def MapInjector(implicit ctx: Context): Transformer = {
+    case (wrapper @ IsMap(_, underlying), x) => x match {
+      case x: DBObject if x != null => {
+        val dbo: MongoDBObject = x
+	mapImpl(wrapper, dbo.map {
+          case (k, v) => k -> pickTransformer(underlying).lift.apply(underlying, v).get
+        }.asInstanceOf[collection.Map[_,_]])
+      }
+    }
+  }
+
   def DoubleToSBigDecimal(implicit ctx: Context): Transformer = {
     case (t @ TypeRefType(_, symbol, _), x) if symbol.path == classOf[ScalaBigDecimal].getName =>
       x match {
@@ -103,5 +173,5 @@ object in extends CasbahLogging with CanPickTransformer {
   }
 
   def *(implicit ctx: Context) =
-    (InContext _) :: (DoubleToSBigDecimal _) :: Nil
+    (OptionInjector _ ) :: (SeqInjector _) :: (MapInjector _) :: (InContext _) :: (DoubleToSBigDecimal _) :: Nil
 }

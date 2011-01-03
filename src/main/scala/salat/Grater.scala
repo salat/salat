@@ -51,11 +51,17 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   def asObject(dbo: MongoDBObject): X = {
     val args = indexedFields.map {
       field => dbo.get(field.name) match {
-        case Some(value) => field.in_!(value)
+        case Some(value) => field.in_!(value) match {
+	  case Some(Some(x)) => Some(x)
+	  case x => x
+	}
         case _ =>
           generateDefault(field.idx) match {
             case yes @ Some(default) => yes
-            case _ => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
+            case _ => field.typeRefType match {
+	      case IsOption(_) => Some(None)
+	      case _ => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
+	    }
           }
       }
     }.map(_.get.asInstanceOf[AnyRef])
