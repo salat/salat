@@ -26,6 +26,14 @@ case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaB
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
 case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])
 
+trait Node {
+  val name: String
+  val cheat: String
+}
+
+case class ListNode(name: String, children: List[Node] = Nil, cheat: String = "list") extends Node
+case class MapNode(name: String, children: Map[String, Node] = Map.empty[String, Node], cheat: String = "map") extends Node
+
 object `package` {
   implicit object GraterA extends Grater(classOf[A])
   implicit object GraterB extends Grater(classOf[B])
@@ -33,6 +41,9 @@ object `package` {
   implicit object GraterD extends Grater(classOf[D])
   implicit object GraterE extends Grater(classOf[E])
   implicit object GraterF extends Grater(classOf[F])
+
+  implicit object GraterListNode extends Grater(classOf[ListNode])
+  implicit object GraterMapNode extends Grater(classOf[MapNode])
 
   implicit object GraterEmployee extends Grater(classOf[Employee])
   implicit object GraterDepartment extends Grater(classOf[Department])
@@ -52,11 +63,11 @@ object `package` {
                   b = 2,                            bb = None, bbb = Some(22),
                   c = ScalaBigDecimal(3.30003),     cc = None, ccc = Some(ScalaBigDecimal(33.30003)))
 
-  def mucho_numbers = F((0 until 10).toList.map {
+  def mucho_numbers(factor: Long = 10) = F((0L until factor).toList.map {
     i =>
       E(
         a = "a %d".format(i), aa = Some("aa %d".format(i)), aaa = None,
-        b = i*i*123, bb = None, bbb = Some(i*i*321),
+        b = (i*i*123/1000).toInt, bb = None, bbb = Some((i*i*321/100).toInt),
         c = ScalaBigDecimal((i*i).toDouble/123d, mathCtx), cc = None, ccc = None
       )})
 

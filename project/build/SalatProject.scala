@@ -2,7 +2,7 @@ import sbt._
 
 class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterous.Publish {
   override def managedStyle = ManagedStyle.Maven
-  override def compileOptions = super.compileOptions ++ Seq(Unchecked, ExplainTypes, Deprecation)
+  override def compileOptions = super.compileOptions ++ Seq(Unchecked, Deprecation)
 
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.4"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.0rc3"
@@ -14,6 +14,7 @@ class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterou
   }
   val specs = "org.scala-tools.testing" %% "specs" % specsVersion % "test->default"
 
+  val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default"
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default"
 
   val publishTo = Resolver.sftp("repobum", "repobum", "/home/public/%s".format(

@@ -1,9 +1,11 @@
 package com.bumnetworks.salat.test
 
 import com.bumnetworks.salat._
+import com.bumnetworks.salat.global._
 import com.bumnetworks.salat.test.model._
 import com.mongodb.casbah.Imports._
 
+import scala.collection.mutable.{Buffer, ArrayBuffer}
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{BigDecimal => ScalaBigDecimal}
 
@@ -85,7 +87,7 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
       }
 
       "and also object graphs of even sillier shapes" in {
-        val f = mucho_numbers
+        val f = mucho_numbers()
         val f_* = GraterF.asObject(GraterF.asDBObject(f))
         f_* must_== f
       }
@@ -164,8 +166,9 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
   }
 
   "usage example for the README" should {
+    val deflate_me = evil_empire
+
     "print out some sample JSON" in {
-      val deflate_me = evil_empire
       val deflated = GraterCompany.asDBObject(deflate_me)
       log.info("""
 
