@@ -21,6 +21,7 @@ trait Context extends Logging {
     { new Grater[CaseClass](Class.forName(clazz).asInstanceOf[Class[CaseClass]])(this) {} }.asInstanceOf[Grater[CaseClass]]
 
   def lookup(clazz: String): Option[Grater[_ <: CaseClass]] = graters.get(clazz)
+
   def lookup_!(clazz: String): Grater[_ <: CaseClass] =
     lookup(clazz).getOrElse(generate(clazz))
 
@@ -29,6 +30,14 @@ trait Context extends Logging {
       case Some(hint: String) => Some(hint)
       case _ => None
     } else None
+
+  def lookup(x: CaseClass): Option[Grater[_ <: CaseClass]] = lookup(x.getClass.getName)
+
+  def lookup(clazz: String, x: CaseClass): Option[Grater[_ <: CaseClass]] =
+    lookup(clazz) match {
+      case yes @ Some(grater) => yes
+      case _ => lookup(x)
+    }
 
   def lookup(clazz: String, dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
     lookup(dbo) match {

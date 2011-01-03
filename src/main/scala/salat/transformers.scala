@@ -69,7 +69,13 @@ trait CanPickTransformer {
 
 object out extends CasbahLogging with CanPickTransformer {
   def Fallback(implicit ctx: Context): Transformer = {
-    case (t, x) => x
+    case (t, x) => x match {
+      case x: CaseClass => ctx.lookup(x) match {
+	case Some(grater) => grater.asInstanceOf[Grater[CaseClass]].asDBObject(x.asInstanceOf[CaseClass])
+	case _ => x
+      }
+      case _ => x
+    }
   }
 
   def OptionExtractor(implicit ctx: Context): Transformer = {
@@ -114,8 +120,8 @@ object out extends CasbahLogging with CanPickTransformer {
   }
 
   def InContext(implicit ctx: Context): Transformer = {
-    case (t @ TypeRefType(_, symbol, _), o) if ctx.graters.contains(symbol.path) =>
-      ctx.graters(symbol.path).asInstanceOf[Grater[CaseClass]].asDBObject(o.asInstanceOf[CaseClass])
+    case (t @ TypeRefType(_, symbol, _), o) if ctx.lookup(symbol.path).isDefined =>
+      ctx.lookup_!(symbol.path).asInstanceOf[Grater[CaseClass]].asDBObject(o.asInstanceOf[CaseClass])
   }
 
   def *(implicit ctx: Context) =
