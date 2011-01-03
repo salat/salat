@@ -59,6 +59,13 @@ object `package` {
   type CasbahLogging = Logging
   type CaseClass = AnyRef with Product
   val TypeHint = "_typeHint"
+
+  def timeAndLog[T](f: => T)(l: Long => Unit): T = {
+    val t = System.currentTimeMillis
+    val r = f
+    l.apply(System.currentTimeMillis - t)
+    r
+  }
 }
 
 package object global {

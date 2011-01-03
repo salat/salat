@@ -49,7 +49,7 @@ object `package` extends CasbahLogging {
   def mapImpl(t: Type, real: collection.Map[_,_]): scala.collection.Map[_,_] =
     t match {
       case TypeRefType(_, symbol, _) => symbol.path match {
-	case "scala.Predef.Map" => mapImpl(ImplClasses.IMapClass, real)
+        case "scala.Predef.Map" => mapImpl(ImplClasses.IMapClass, real)
         case x => mapImpl(x, real)
       }
     }
@@ -71,8 +71,8 @@ object out extends CasbahLogging with CanPickTransformer {
   def Fallback(implicit ctx: Context): Transformer = {
     case (t, x) => x match {
       case x: CaseClass => ctx.lookup(x) match {
-	case Some(grater) => grater.asInstanceOf[Grater[CaseClass]].asDBObject(x.asInstanceOf[CaseClass])
-	case _ => x
+        case Some(grater) => grater.asInstanceOf[Grater[CaseClass]].asDBObject(x.asInstanceOf[CaseClass])
+        case _ => x
       }
       case _ => x
     }
@@ -100,14 +100,17 @@ object out extends CasbahLogging with CanPickTransformer {
 
   def MapExtractor(implicit ctx: Context): Transformer = {
     case (IsMap(_, underlying), x) => x match {
-      case map: scala.collection.Map[String, _] =>
-        Some(map.foldLeft(MongoDBObject()) {
-          case (dbo, (k, el)) =>
+      case map: scala.collection.Map[String, _] => {
+        val builder = MongoDBObject.newBuilder
+        map.foreach {
+          case (k, el) =>
             pickTransformer(underlying).lift.apply(underlying, el) match {
-              case Some(value) => dbo ++ MongoDBObject((k match { case s: String => s case x => x.toString }) -> value)
-              case _ => dbo
+              case Some(value) => builder += (k match { case s: String => s case x => x.toString }) -> value
+              case _ =>
             }
-        })
+        }
+        Some(builder.result)
+      }
       case _ => None
     }
   }
@@ -155,7 +158,7 @@ object in extends CasbahLogging with CanPickTransformer {
     case (wrapper @ IsMap(_, underlying), x) => x match {
       case x: DBObject if x != null => {
         val dbo: MongoDBObject = x
-	mapImpl(wrapper, dbo.map {
+        mapImpl(wrapper, dbo.map {
           case (k, v) => k -> pickTransformer(underlying).lift.apply(underlying, v).get
         }.asInstanceOf[collection.Map[_,_]])
       }

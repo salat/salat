@@ -32,36 +32,40 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   def generateDefault(idx: Int): Option[_] =
     defaults(idx).map(m => Some(m.invoke(companionObject))).getOrElse(None)
 
-  def asDBObject(o: X): DBObject =
-    o.productIterator.zip(indexedFields.iterator).foldLeft(MongoDBObject(ctx.typeHint -> clazz.getName)) {
-      case (dbo, (null, _)) => dbo
-      case (dbo, (element, field)) => {
+  def asDBObject(o: X): DBObject = {
+    val builder = MongoDBObject.newBuilder
+
+    o.productIterator.zip(indexedFields.iterator).foreach {
+      case (null, _) => {}
+      case (element, field) => {
         field.out_!(element) match {
-	  case Some(None) => dbo
+          case Some(None) => {}
           case Some(serialized) =>
-            dbo ++ MongoDBObject(field.name -> (serialized match {
+            builder += field.name -> (serialized match {
               case Some(unwrapped) => unwrapped
               case _ => serialized
-            }))
-          case _ => dbo
+            })
+          case _ => {}
         }
       }
     }
+    builder.result
+  }
 
   def asObject(dbo: MongoDBObject): X = {
     val args = indexedFields.map {
       field => dbo.get(field.name) match {
         case Some(value) => field.in_!(value) match {
-	  case Some(Some(x)) => Some(x)
-	  case x => x
-	}
+          case Some(Some(x)) => Some(x)
+          case x => x
+        }
         case _ =>
           generateDefault(field.idx) match {
             case yes @ Some(default) => yes
             case _ => field.typeRefType match {
-	      case IsOption(_) => Some(None)
-	      case _ => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
-	    }
+              case IsOption(_) => Some(None)
+              case _ => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
+            }
           }
       }
     }.map(_.get.asInstanceOf[AnyRef])
