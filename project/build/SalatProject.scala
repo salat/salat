@@ -8,7 +8,12 @@ class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterou
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.0rc3"
   val scalap = "org.scala-lang" % "scalap" % "2.8.1"
 
-  val specs = "org.scala-tools.testing" %% "specs" % "1.6.6" % "test->default"
+  val specsVersion = crossScalaVersionString match {
+    case "2.8.0" => "1.6.5"
+    case "2.8.1" => "1.6.6"
+  }
+  val specs = "org.scala-tools.testing" %% "specs" % specsVersion % "test->default"
+
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default"
 
   val publishTo = Resolver.sftp("repobum", "repobum", "/home/public/%s".format(
