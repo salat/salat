@@ -1,0 +1,8 @@
+Initial public preview release of *Salat*. Spec-ed (and tested) to
+support basic (de)serialization operations only.
+
+This is a call for comments, suggestions, feature requests, and
+patches. Please get in touch through [GitHub][github-link] if you can
+offer any.
+
+[github-link]: https://github.com/maxaf/salat

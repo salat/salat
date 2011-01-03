@@ -1,6 +1,6 @@
 import sbt._
 
-class SalatProject(info: ProjectInfo) extends DefaultProject(info) {
+class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterous.Publish {
   override def managedStyle = ManagedStyle.Maven
   override def compileOptions = super.compileOptions ++ Seq(Unchecked, ExplainTypes, Deprecation)
 
