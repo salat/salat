@@ -51,6 +51,11 @@ ruled out Java support, this certainly does.
 ScalaSig does not appear to digest very well classes written in pure
 Java. Not a big deal, because we only support case classes anyway.
 
+*NB*: it turns out that ScalaSig is incapable of "parsing" classes
+ defined in the REPL, since there really is no `.class` file to
+ parse. **None of this code will work with classes that have no
+ corresponding `.class` file.**
+
 ### Flexibility can wait
 
 There's currently no way to alter default behavior of Salat's critical
