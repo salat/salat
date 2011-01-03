@@ -17,7 +17,18 @@ trait Context extends Logging {
       log.info("Context(%s) accepted Grater[%s]", name.getOrElse("<no name>"), grater.clazz)
     }
 
+  protected def generate(clazz: String): Grater[_ <: CaseClass] =
+    { new Grater[CaseClass](Class.forName(clazz).asInstanceOf[Class[CaseClass]])(this) {} }.asInstanceOf[Grater[CaseClass]]
+
   def lookup(clazz: String): Option[Grater[_ <: CaseClass]] = graters.get(clazz)
+  def lookup_!(clazz: String): Grater[_ <: CaseClass] =
+    lookup(clazz).getOrElse(generate(clazz))
+
+  protected def extractTypeHint(dbo: MongoDBObject): Option[String] =
+    if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHint) match {
+      case Some(hint: String) => Some(hint)
+      case _ => None
+    } else None
 
   def lookup(clazz: String, dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
     lookup(dbo) match {
@@ -26,10 +37,13 @@ trait Context extends Logging {
     }
 
   def lookup(dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
-    if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHint) match {
-      case Some(typeHint: String) => graters.get(typeHint)
+    extractTypeHint(dbo) match {
+      case Some(hint: String) => graters.get(hint)
       case _ => None
-    } else throw new IllegalArgumentException(dbo.underlying.getClass.getName)
+    }
+
+  def lookup_!(dbo: MongoDBObject): Grater[_ <: CaseClass] =
+    generate(extractTypeHint(dbo).getOrElse(throw new Exception("no type hint found")))
 }
 
 object `package` {
