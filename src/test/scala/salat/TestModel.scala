@@ -22,6 +22,10 @@ case class E(a:          String,           b:        Int,           c:        Sc
 
 case class F(es: List[E])
 
+case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
+case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
+case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])
+
 object `package` {
   implicit object GraterA extends Grater(classOf[A])
   implicit object GraterB extends Grater(classOf[B])
@@ -29,6 +33,10 @@ object `package` {
   implicit object GraterD extends Grater(classOf[D])
   implicit object GraterE extends Grater(classOf[E])
   implicit object GraterF extends Grater(classOf[F])
+
+  implicit object GraterEmployee extends Grater(classOf[Employee])
+  implicit object GraterDepartment extends Grater(classOf[Department])
+  implicit object GraterCompany extends Grater(classOf[Company])
 
   def graph = A("x", Some("y"),
                 B(Some(80), 81,
@@ -51,4 +59,26 @@ object `package` {
         b = i*i*123, bb = None, bbb = Some(i*i*321),
         c = ScalaBigDecimal((i*i).toDouble/123d, mathCtx), cc = None, ccc = None
       )})
+
+  def evil_empire = Company(name = "Evil Empire, Inc.",
+                            year_of_inception = 2000,
+                            departments = Map(
+                              "MoK" -> Department(name = "Murder of Kittens",
+                                                  head_honcho = Some(Employee("Dick Cheney", None, Some(ScalaBigDecimal(12345.6789)))),
+                                                  cya_factor = ScalaBigDecimal(0.01980082),
+                                                  minions = List(
+                                                    Employee("George W. Bush", Some(66), None),
+                                                    Employee(name = "Michael Eisner", age = None, annual_salary = None)
+                                                  )
+                                                ),
+                              "FOSS_Sabotage" -> Department(name = "Sabotage of F/OSS projects",
+                                                            head_honcho = Some(Employee("Bill Gates", None, Some(ScalaBigDecimal(28823.772383)))),
+                                                            cya_factor = ScalaBigDecimal(14.982023002),
+                                                            minions = List(
+                                                              Employee(name = "Darl McBridge", age = Some(123), annual_salary = None),
+                                                              Employee(name = "Patent Trolls Everywhere", age = None, annual_salary = Some(ScalaBigDecimal(1000000.00022303)))
+                                                            )
+                                                          )
+                            )
+                          )
 }

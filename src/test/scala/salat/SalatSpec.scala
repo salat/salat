@@ -22,6 +22,10 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
     GraterD
     GraterE
     GraterF
+
+    GraterEmployee
+    GraterDepartment
+    GraterCompany
   }
 
   "a grater" should {
@@ -74,16 +78,16 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
       "and silly object graphs" in {
         val a = graph
         val a_* = GraterA.asObject(GraterA.asDBObject(a))
-	// these two checks are *very* naive, but it's hard to compare
-	// unordered maps and expect them to come out equal.
+        // these two checks are *very* naive, but it's hard to compare
+        // unordered maps and expect them to come out equal.
         a_*.z.p must_== a.z.p
         a_*.z.q must_== a.z.q
       }
 
       "and also object graphs of even sillier shapes" in {
-	val f = mucho_numbers
-	val f_* = GraterF.asObject(GraterF.asDBObject(f))
-	f_* must_== f
+        val f = mucho_numbers
+        val f_* = GraterF.asObject(GraterF.asDBObject(f))
+        f_* must_== f
       }
     }
   }
@@ -156,6 +160,22 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
           implicitly[Grater[C]].ctx.graters must haveKey(t.symbol.path)
         }
       }
+    }
+  }
+
+  "usage example for the README" should {
+    "print out some sample JSON" in {
+      val deflate_me = evil_empire
+      val deflated = GraterCompany.asDBObject(deflate_me)
+      log.info("""
+
+               EVIL EMPIRE: %s
+
+               """, deflated)
+      val inflated = GraterCompany.asObject(deflated)
+      inflated.copy(departments = Map.empty) must_== deflate_me.copy(departments = Map.empty)
+      inflated.departments("MoK") must_== deflate_me.departments("MoK")
+      inflated.departments("FOSS_Sabotage") must_== deflate_me.departments("FOSS_Sabotage")
     }
   }
 }
