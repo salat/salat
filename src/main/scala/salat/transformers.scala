@@ -49,6 +49,7 @@ object `package` extends CasbahLogging {
   def mapImpl(t: Type, real: collection.Map[_,_]): scala.collection.Map[_,_] =
     t match {
       case TypeRefType(_, symbol, _) => symbol.path match {
+	case "scala.Predef.Map" => mapImpl(ImplClasses.IMapClass, real)
         case x => mapImpl(x, real)
       }
     }
