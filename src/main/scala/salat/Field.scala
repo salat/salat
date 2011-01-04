@@ -38,14 +38,6 @@ object IsSeq {
 case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val ctx: Context) extends CasbahLogging {
   import Field._
 
-  @deprecated("not useful, because conditional type unwrapping has moved to transformers")
-  lazy val valueType = typeRefType match {
-    case IsOption(t) => t
-    case IsSeq(t) => t
-    case IsMap(_, t) => t
-    case _ => typeRefType
-  }
-
   lazy val inTransformer  =  in.pickTransformer(typeRefType).lift
   lazy val outTransformer = out.pickTransformer(typeRefType).lift
 
