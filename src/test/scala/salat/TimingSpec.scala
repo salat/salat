@@ -81,10 +81,22 @@ class TimingSpec extends Specification with PendingUntilFixed with CasbahLogging
 	  }
         }
       }
+
+      val deflated = GraterListNode.asDBObject(tree)
+
+      (0 until 50).foreach {
+        _ => {
+	  timeAndLog { GraterListNode.asObject(deflated) } {
+	    m =>
+	      log.info("%s inflation time: %d msec", tree.getClass.getName, m)
+	    outTimes += m
+	  }
+        }
+      }
     }
   }
 
-  private def node(level: Int): Option[Node] =
+  private def node(level: Int): Option[Node] = {
     if (level == 0) None
     else {
       NodeCounter.n += 1
@@ -100,6 +112,7 @@ class TimingSpec extends Specification with PendingUntilFixed with CasbahLogging
         }.filter(_.isDefined).map(_.get)))
       }
     }
+  }
 
   private val many = 3
 

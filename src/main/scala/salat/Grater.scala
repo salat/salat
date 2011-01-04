@@ -34,6 +34,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
   def asDBObject(o: X): DBObject = {
     val builder = MongoDBObject.newBuilder
+    builder += ctx.typeHint -> clazz.getName
 
     o.productIterator.zip(indexedFields.iterator).foreach {
       case (null, _) => {}
@@ -49,16 +50,14 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
         }
       }
     }
+
     builder.result
   }
 
   def asObject(dbo: MongoDBObject): X = {
     val args = indexedFields.map {
       field => dbo.get(field.name) match {
-        case Some(value) => field.in_!(value) match {
-          case Some(Some(x)) => Some(x)
-          case x => x
-        }
+        case Some(value) => field.in_!(value)
         case _ =>
           generateDefault(field.idx) match {
             case yes @ Some(default) => yes

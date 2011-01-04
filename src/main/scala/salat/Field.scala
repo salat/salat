@@ -1,46 +1,21 @@
 package com.bumnetworks.salat
 
+import scala.math.{BigDecimal => ScalaBigDecimal}
 import scala.tools.scalap.scalax.rules.scalasig._
 
 import com.bumnetworks.salat.transformers._
 import com.mongodb.casbah.Imports._
 
 object Field {
+  def apply(idx: Int, name: String, t: TypeRefType)(implicit ctx: Context): Field = {
+    val _in = in.select(t)
+    val _out = out.select(t)
+    new Field(idx, name, t, _in, _out) {}
+  }
 }
 
-object IsOption {
-  def unapply(t: Type): Option[Type] =
-    t match {
-      case TypeRefType(_, symbol, List(arg)) if symbol.path == "scala.Option" => Some(arg)
-      case _ => None
-    }
-}
-
-object IsMap {
-  def unapply(t: Type): Option[(Type, Type)] =
-    t match {
-      case TypeRefType(_, symbol, k :: v :: Nil) if symbol.path.endsWith(".Map") => Some(k -> v)
-      case _ => None
-    }
-}
-
-object IsSeq {
-  def unapply(t: Type): Option[Type] =
-    t match {
-      case TypeRefType(_, symbol, List(e)) =>
-        if (symbol.path.endsWith(".Seq")) Some(e)
-        else if (symbol.path.endsWith(".List")) Some(e)
-        else None
-      case _ => None
-    }
-}
-
-case class Field(idx: Int, name: String, typeRefType: TypeRefType)(implicit val ctx: Context) extends CasbahLogging {
-  import Field._
-
-  lazy val inTransformer  =  in.pickTransformer(typeRefType).lift
-  lazy val outTransformer = out.pickTransformer(typeRefType).lift
-
-  def in_!(value: Any): Option[Any] = inTransformer.apply(typeRefType, value)
-  def out_!(element: Any): Option[Any] = outTransformer.apply(typeRefType, element)
+sealed abstract class Field(val idx: Int, val name: String, val typeRefType: TypeRefType,
+                            val in: Transformer, val out: Transformer)(implicit val ctx: Context) extends CasbahLogging {
+  def in_!(value: Any) = in.transform_!(value)
+  def out_!(value: Any) = out.transform_!(value)
 }
