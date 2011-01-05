@@ -25,6 +25,9 @@ trait Context extends Logging {
   def lookup_!(clazz: String): Grater[_ <: CaseClass] =
     lookup(clazz).getOrElse(generate(clazz))
 
+  def lookup_![X <: CaseClass : Manifest]: Grater[X] =
+    lookup_!(manifest[X].erasure.getName).asInstanceOf[Grater[X]]
+
   protected def extractTypeHint(dbo: MongoDBObject): Option[String] =
     if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHint) match {
       case Some(hint: String) => Some(hint)
