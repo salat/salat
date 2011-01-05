@@ -45,7 +45,10 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
   def asDBObject(o: X): DBObject = {
     val builder = MongoDBObject.newBuilder
-    builder += ctx.typeHint -> clazz.getName
+    ctx.typeHint match {
+      case Some(hint) => builder += hint -> clazz.getName
+      case _ =>
+    }
 
     o.productIterator.zip(indexedFields.iterator).foreach {
       case (_, field) if field.ignore => {}

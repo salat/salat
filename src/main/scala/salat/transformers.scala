@@ -218,7 +218,7 @@ package object in {
     private def transform0(dbo: MongoDBObject)(implicit ctx: Context) =
       ctx.lookup(path, dbo).map {
         grater => grater.asObject(dbo).asInstanceOf[CaseClass]
-      }.getOrElse(throw new Exception("no grater found for '%s' OR '%s'".format(path, dbo(ctx.typeHint))))
+      }.getOrElse(throw new Exception("no grater found for '%s' OR '%s'".format(path, dbo(ctx.typeHint.getOrElse(TypeHint)))))
 
     override def transform(value: Any): Any = value match {
       case dbo: DBObject => transform0(dbo)

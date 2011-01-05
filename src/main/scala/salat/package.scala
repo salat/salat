@@ -9,7 +9,7 @@ trait Context extends Logging {
   private[salat] val graters: MMap[String, Grater[_ <: CaseClass]] = HashMap.empty
 
   val name: Option[String]
-  val typeHint = TypeHint
+  val typeHint: Option[String] = Some(TypeHint)
 
   def accept(grater: Grater[_ <: CaseClass]): Unit =
     if (!graters.contains(grater.clazz.getName)) {
@@ -29,7 +29,7 @@ trait Context extends Logging {
     lookup_!(manifest[X].erasure.getName).asInstanceOf[Grater[X]]
 
   protected def extractTypeHint(dbo: MongoDBObject): Option[String] =
-    if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHint) match {
+    if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHint.getOrElse(TypeHint)) match {
       case Some(hint: String) => Some(hint)
       case _ => None
     } else None
@@ -73,5 +73,9 @@ object `package` {
 
 package object global {
   implicit val ctx = new Context { val name = Some("global") }
+  val NoTypeHints = new Context {
+    val name = Some("global-no-type-hints")
+    override val typeHint = None
+  }
   implicit val mathCtx = new MathContext(16, RoundingMode.HALF_UP)
 }
