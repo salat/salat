@@ -5,7 +5,11 @@ class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterou
   override def compileOptions = super.compileOptions ++ Seq(Unchecked, Deprecation)
 
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.4"
-  val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.0rc3"
+  val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.0.1"
+
+   // Should be crossScalaVersionString, but 2.8.0's scalap appears to
+   // be totally frakked, whereas 2.8.1's works fine with 2.8.0. Go
+   // figure.
   val scalap = "org.scala-lang" % "scalap" % "2.8.1"
 
   val specsVersion = crossScalaVersionString match {
