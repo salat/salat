@@ -93,6 +93,8 @@ class TimingSpec extends Specification with PendingUntilFixed with CasbahLogging
 	  }
         }
       }
+
+      1 must_== 1 // we're here, so not all is lost
     }
   }
 
