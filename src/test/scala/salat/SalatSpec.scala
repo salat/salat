@@ -88,8 +88,8 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
 
       "and also object graphs of even sillier shapes" in {
         val f = mucho_numbers()
-	val dbo = GraterF.asDBObject(f)
-	dbo must haveKey("complicated")
+	val dbo: MongoDBObject = GraterF.asDBObject(f)
+	dbo.get("complicated") must beSome[AnyRef]
         val f_* = GraterF.asObject(dbo)
         f_* must_== f
       }
