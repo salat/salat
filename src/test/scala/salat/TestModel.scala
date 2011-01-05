@@ -5,6 +5,7 @@ package com.bumnetworks.salat.test.model
 
 import com.bumnetworks.salat._
 import com.bumnetworks.salat.global._
+import com.bumnetworks.salat.annotations._
 import com.bumnetworks.salat.test._
 
 import scala.collection.immutable.{Map => IMap}
@@ -20,7 +21,7 @@ case class E(a:          String,           b:        Int,           c:        Sc
              aa:  Option[String] = None,  bb: Option[Int] = None,  cc: Option[ScalaBigDecimal] = None,
              aaa: Option[String],        bbb: Option[Int],        ccc: Option[ScalaBigDecimal])
 
-case class F(es: List[E])
+case class F(@Key("complicated") es: List[E])
 
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
