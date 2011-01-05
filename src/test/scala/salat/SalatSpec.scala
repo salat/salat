@@ -17,33 +17,13 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
 
   doBeforeSpec {
     com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
-
-    GraterA
-    GraterB
-    GraterC
-    GraterD
-    GraterE
-    GraterF
-
-    GraterEmployee
-    GraterDepartment
-    GraterCompany
   }
 
   "a grater" should {
-    "come to life" in {
-      implicitly[Grater[A]] must_== GraterA
-    }
-
-    "perhaps even multiple times" in {
-      implicitly[Grater[A]] must notBe(GraterB)
-      implicitly[Grater[B]] must notBe(GraterA)
-    }
-
     "make DBObject-s out of case class instances" in {
       "properly treat primitive values and optional values" in {
         val e = numbers
-        val dbo: MongoDBObject = GraterE.asDBObject(e)
+        val dbo: MongoDBObject = grater[E].asDBObject(e)
 
         log.info("before: %s", e)
         log.info("after : %s", dbo.asDBObject)
@@ -63,7 +43,7 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
 
       "work with object graphs" in {
         val a = graph
-        val dbo: MongoDBObject = GraterA.asDBObject(a)
+        val dbo: MongoDBObject = grater[A].asDBObject(a)
         log.info("before: %s", a)
         log.info("after : %s", dbo.asDBObject)
         dbo must havePair("x" -> "x")
@@ -73,13 +53,13 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
     "instantiate case class instances using data from DBObject-s" in {
       "cover primitive types" in {
         val e = numbers
-        val e_* = GraterE.asObject(GraterE.asDBObject(e))
+        val e_* = grater[E].asObject(grater[E].asDBObject(e))
         e_* must_== e
       }
 
       "and silly object graphs" in {
         val a = graph
-        val a_* = GraterA.asObject(GraterA.asDBObject(a))
+        val a_* = grater[A].asObject(grater[A].asDBObject(a))
         // these two checks are *very* naive, but it's hard to compare
         // unordered maps and expect them to come out equal.
         a_*.z.p must_== a.z.p
@@ -88,81 +68,10 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
 
       "and also object graphs of even sillier shapes" in {
         val f = mucho_numbers()
-	val dbo: MongoDBObject = GraterF.asDBObject(f)
-	dbo.get("complicated") must beSome[AnyRef]
-        val f_* = GraterF.asObject(dbo)
+        val dbo: MongoDBObject = grater[F].asDBObject(f)
+        dbo.get("complicated") must beSome[AnyRef]
+        val f_* = grater[F].asObject(dbo)
         f_* must_== f
-      }
-    }
-  }
-
-  "field unapplies" should {
-    "correctly detect Option[_]" in {
-      "primitive Option[_]" in {
-        val arg = implicitly[Grater[A]].fields("y").typeRefType match {
-          case IsOption(ot @ TypeRefType(_,_,_)) => Some(ot)
-          case _ => None
-        }
-        arg must beSome[TypeRefType].which {
-          t => t.symbol.path.split("\\.").last must_== "String"
-        }
-      }
-
-      "Option[_] with type arg in context" in {
-        val arg = implicitly[Grater[D]].fields("j").typeRefType match {
-          case IsOption(ot @ TypeRefType(_,_,_)) => Some(ot)
-          case _ => None
-        }
-        arg must beSome[TypeRefType].which {
-          t => t.symbol.path must_== classOf[B].getName
-          implicitly[Grater[D]].ctx.graters must haveKey(t.symbol.path)
-        }
-      }
-    }
-
-    "correctly detect Map[_, _]" in {
-      "with primitive value type" in {
-        val arg = implicitly[Grater[D]].fields("i").typeRefType match {
-          case IsMap(k, v @ TypeRefType(_,_,_)) => Some(v)
-          case _ => None
-        }
-        arg must beSome[TypeRefType].which {
-          t => t.symbol.path.split("\\.").last must_== "Int"
-        }
-      }
-
-      "with something in context" in {
-        val arg = implicitly[Grater[D]].fields("h").typeRefType match {
-          case IsMap(k, v @ TypeRefType(_,_,_)) => Some(v)
-          case _ => None
-        }
-        arg must beSome[TypeRefType].which {
-          t => t.symbol.path must_== classOf[A].getName
-          implicitly[Grater[D]].ctx.graters must haveKey(t.symbol.path)
-        }
-      }
-    }
-
-    "correctly detect Seq[_]" in {
-      "with primitive value type" in {
-        val arg = implicitly[Grater[C]].fields("l").typeRefType match {
-          case IsSeq(e @ TypeRefType(_,_,_)) => Some(e)
-          case _ => None
-        }
-        arg must beSome[TypeRefType].which {
-          t => t.symbol.path.split("\\.").last must_== "String"
-        }
-      }
-
-      "with something in context" in {
-        val arg = implicitly[Grater[C]].fields("n").typeRefType match {
-          case IsSeq(e @ TypeRefType(_,_,_)) => Some(e)
-          case _ => None
-        }
-        arg must beSome[TypeRefType].which {
-          t => t.symbol.path must_== classOf[D].getName
-          implicitly[Grater[C]].ctx.graters must haveKey(t.symbol.path)
-        }
       }
     }
   }
@@ -171,13 +80,8 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
     val deflate_me = evil_empire
 
     "print out some sample JSON" in {
-      val deflated = GraterCompany.asDBObject(deflate_me)
-      log.info("""
-
-               EVIL EMPIRE: %s
-
-               """, deflated)
-      val inflated = GraterCompany.asObject(deflated)
+      val deflated = grater[Company].asDBObject(deflate_me)
+      val inflated = grater[Company].asObject(deflated)
       inflated.copy(departments = Map.empty) must_== deflate_me.copy(departments = Map.empty)
       inflated.departments("MoK") must_== deflate_me.departments("MoK")
       inflated.departments("FOSS_Sabotage") must_== deflate_me.departments("FOSS_Sabotage")

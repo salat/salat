@@ -36,20 +36,6 @@ case class ListNode(name: String, children: List[Node] = Nil, cheat: String = "l
 case class MapNode(name: String, children: Map[String, Node] = Map.empty[String, Node], cheat: String = "map") extends Node
 
 object `package` {
-  implicit object GraterA extends Grater(classOf[A])
-  implicit object GraterB extends Grater(classOf[B])
-  implicit object GraterC extends Grater(classOf[C])
-  implicit object GraterD extends Grater(classOf[D])
-  implicit object GraterE extends Grater(classOf[E])
-  implicit object GraterF extends Grater(classOf[F])
-
-  implicit object GraterListNode extends Grater(classOf[ListNode])
-  implicit object GraterMapNode extends Grater(classOf[MapNode])
-
-  implicit object GraterEmployee extends Grater(classOf[Employee])
-  implicit object GraterDepartment extends Grater(classOf[Department])
-  implicit object GraterCompany extends Grater(classOf[Company])
-
   def graph = A("x", Some("y"),
                 B(Some(80), 81,
                   C(Seq("l1", "l2"), List(1, 2), List(

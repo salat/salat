@@ -42,6 +42,9 @@ trait Context extends Logging {
       case _ => lookup(x)
     }
 
+  def lookup_!(clazz: String, x: CaseClass): Grater[_ <: CaseClass] =
+    lookup(clazz, x).getOrElse(generate(x.getClass.getName))
+
   def lookup(clazz: String, dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
     lookup(dbo) match {
       case yes @ Some(grater) => yes
@@ -69,6 +72,8 @@ object `package` {
     l.apply(System.currentTimeMillis - t)
     r
   }
+
+  def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup_![X](m)
 }
 
 package object global {

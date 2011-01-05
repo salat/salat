@@ -25,20 +25,6 @@ class TimingSpec extends Specification with PendingUntilFixed with CasbahLogging
   doBeforeSpec {
     NodeCounter.n = 0
     com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
-
-    GraterA
-    GraterB
-    GraterC
-    GraterD
-    GraterE
-    GraterF
-
-    GraterEmployee
-    GraterDepartment
-    GraterCompany
-
-    GraterListNode
-    GraterMapNode
   }
 
   "performance" should {
@@ -50,7 +36,7 @@ class TimingSpec extends Specification with PendingUntilFixed with CasbahLogging
     //   val times: Buffer[Long] = ArrayBuffer.empty
     //   (0 until 50).foreach {
     //     _ => timeAndLog {
-    //       GraterF.asDBObject(numbers)
+    //       grater[F].asDBObject(numbers)
     //     } {
     //       m =>
     //         log.info("%s deflation time: %d msec", numbers.getClass.getName, m)
@@ -70,11 +56,11 @@ class TimingSpec extends Specification with PendingUntilFixed with CasbahLogging
 	ListNode(name = "top level", children = List(node(10).get))
       } { m => log.info("generated %d nodes in %d msec", NodeCounter.n, m) }
 
-      log.info("%s bytes deflated", GraterListNode.asDBObject(tree).toString.length)
+      log.info("%s bytes deflated", grater[ListNode].asDBObject(tree).toString.length)
 
       (0 until 50).foreach {
         _ => {
-	  timeAndLog { GraterListNode.asDBObject(tree) } {
+	  timeAndLog { grater[ListNode].asDBObject(tree) } {
 	    m =>
 	      log.info("%s deflation time: %d msec", tree.getClass.getName, m)
 	    outTimes += m
@@ -82,11 +68,11 @@ class TimingSpec extends Specification with PendingUntilFixed with CasbahLogging
         }
       }
 
-      val deflated = GraterListNode.asDBObject(tree)
+      val deflated = grater[ListNode].asDBObject(tree)
 
       (0 until 50).foreach {
         _ => {
-	  timeAndLog { GraterListNode.asObject(deflated) } {
+	  timeAndLog { grater[ListNode].asObject(deflated) } {
 	    m =>
 	      log.info("%s inflation time: %d msec", tree.getClass.getName, m)
 	    outTimes += m

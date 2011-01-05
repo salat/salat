@@ -34,8 +34,8 @@ package object out extends CasbahLogging {
         case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject
 
-	case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-	  new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject
+        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionExtractor
       }
@@ -47,11 +47,11 @@ package object out extends CasbahLogging {
         case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor
 
-	case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-	  new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor
+        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+          new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor
 
         case TypeRefType(_, symbol, _) =>
-	  new Transformer(symbol.path, t)(ctx) with SeqExtractor
+          new Transformer(symbol.path, t)(ctx) with SeqExtractor
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
@@ -61,8 +61,8 @@ package object out extends CasbahLogging {
         case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor
 
-	case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-	  new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor
+        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapExtractor
       }
@@ -74,8 +74,8 @@ package object out extends CasbahLogging {
         case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject
 
-	case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-	  new Transformer(symbol.path, t)(ctx) with InContextToDBObject
+        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with InContextToDBObject
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) {}
       }
@@ -92,11 +92,7 @@ package object out extends CasbahLogging {
   trait InContextToDBObject extends Transformer {
     self: Transformer =>
       override def transform(value: Any): Any = value match {
-        case cc: CaseClass => ctx.lookup(path, cc) match {
-          case Some(grater) => grater.asInstanceOf[Grater[CaseClass]].asDBObject(cc)
-          case _ =>
-            throw new Exception("expected to find grater for path %s and %s but found none".format(path, cc.getClass))
-        }
+        case cc: CaseClass => ctx.lookup_!(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc)
         case _ => MongoDBObject("failed-to-convert" -> value.toString)
       }
   }
@@ -150,8 +146,8 @@ package object in {
         case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext
 
-	case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-	  new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext
+        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionInjector
       }
@@ -163,8 +159,8 @@ package object in {
         case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SeqInjector { val parentType = pt }
 
-	case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-	  new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SeqInjector { val parentType = pt }
+        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SeqInjector { val parentType = pt }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with SeqInjector { val parentType = pt }
       }
@@ -176,8 +172,8 @@ package object in {
         case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector { val parentType = pt }
 
-	case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-	  new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector { val parentType = pt }
+        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector { val parentType = pt }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapInjector { val parentType = pt }
       }
@@ -189,8 +185,8 @@ package object in {
         case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext
 
-	case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-	  new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext
+        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+          new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, pt)(ctx) {}
       }
