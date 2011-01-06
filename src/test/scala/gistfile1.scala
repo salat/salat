@@ -32,7 +32,10 @@ case class Item (
 
 @RunWith(classOf[JUnitRunner])
 class ItemRepositoryTest extends FlatSpec with ShouldMatchers {
-    
+
+  grater[Tweet]
+  grater[Item]
+
     "Serialization of a nested case class instance with Salat" should "work as expected" in {
         object ItemSerializer extends Grater(classOf[Item])
         
