@@ -1,0 +1,40 @@
+Second preview release. Focusing on low-hanging performance
+improvements and basic feature completeness. This state of code is an
+important milestone in proving current approach as superior to that of
+casbah-mapper, in terms of performance and overall safety.
+
+In addition to code work, the project's [wiki on GitHub][wiki] is now
+populated with basic [docs on getting started][quick-start], overall
+[design considerations][design], and [components of
+Salat][components].
+
+Notable changes include:
+
+- [Re-wrote][transformer-commit] transformer chain creation code. Made
+  better use of memoized type information, dramatically improved
+  object inflation performance.
+
+- Added [@Ignore and @Key annotations][annotations-commit]. `@Ignore`,
+  when stuck on a field, excludes it from Salat's consideration. The
+  field won't be included in generated `DBObject`-s. When encountered
+  in `DBObject`-s during object inflation, the data will be dropped on
+  the floor. In any case, whether the key is present or not in a
+  `DBObject`, a default value is required. Best uesd with `Option[_]`
+  fields, where default value can be `None`. `@Key` takes one
+  argument, a string, and will use that value as the field's key in
+  each generated `DBObject`. Data extraction from `DBObject`-s will
+  also happen using this key.
+
+- Forklifted almost verbatim [casbah-mapper's timing
+  spec][timing-spec-commit], with the goal of comparing performance
+  characteristics. Preliminary results show that Salat's **deflation
+  code is 2x as fast** than casbah-mapper's corresponding
+  functionality. **Inflation is 15x faster than casbah-mapper**.
+
+[timing-spec-commit]: https://github.com/maxaf/salat/commit/0961df5df28bf33877be2ef154e55ce166a6d006
+[annotations-commit]: https://github.com/maxaf/salat/commit/52d67b790a7f6a99a4e66939825c6b9b35496af2
+[transformer-commit]: https://github.com/maxaf/salat/commit/443d91aefca413d577aeb0774c9e58313c81e79a
+[wiki]: https://github.com/maxaf/salat/wiki
+[quick-start]: https://github.com/maxaf/salat/wiki/Quick-start
+[design]: https://github.com/maxaf/salat/wiki/Design
+[components]: https://github.com/maxaf/salat/wiki/Components
