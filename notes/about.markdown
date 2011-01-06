@@ -3,6 +3,8 @@ produce a MongoDB `DBObject` from any Scala case class. It is
 similarly easy to re-inflate said `DBObject` back into an instance of
 the original case class.
 
+Documentation is [available on the wiki][wiki].
+
 Feature highlights:
 
 * Built on 10gen's *Casbah* and can leverage its full suite of BSON
@@ -28,3 +30,4 @@ report issues or contact the author.
 
 [github-link]: https://github.com/maxaf/salat
 [license]: https://github.com/maxaf/salat/blob/master/README.md
+[wiki]: https://github.com/maxaf/salat/wiki

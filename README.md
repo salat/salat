@@ -5,6 +5,8 @@ This project is an attempt to implement a *fast* MongoDB <-> Scala
 problem; this time, I'm focusing on speed more than flexibility,
 compatibility, and functionality.
 
+More information is availabe on the [wiki][wiki].
+
 ## Goals
 
 1. Convert an instance of *any* Scala case class to a `DBObject`
@@ -69,3 +71,5 @@ part of the case class constructor.
 "*Salat*" is a transliteration of the Russian word "салат", for
 "salad". I picked this name because salad is great for your health and
 will not slow you down through use of runtime reflection.
+
+[wiki]: https://github.com/maxaf/salat/wiki
