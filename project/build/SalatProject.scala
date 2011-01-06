@@ -17,6 +17,8 @@ class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterou
     case "2.8.1" => "1.6.6"
   }
   val specs = "org.scala-tools.testing" %% "specs" % specsVersion % "test->default"
+  val junit = "junit" % "junit" % "4.7"
+  val scalatest = "org.scalatest" % "scalatest" % "1.2-for-scala-2.8.0.final-SNAPSHOT" % "test"
 
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default"
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default"
