@@ -93,4 +93,6 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     }.map(_.get.asInstanceOf[AnyRef])
     constructor.invoke(companionObject, args :_*).asInstanceOf[X]
   }
+
+  override def toString = "Grater(%s @ %s)".format(clazz, ctx)
 }

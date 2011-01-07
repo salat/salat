@@ -27,6 +27,7 @@ case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaB
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
 case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])
 
+@Salat
 trait Node {
   val name: String
   val cheat: String

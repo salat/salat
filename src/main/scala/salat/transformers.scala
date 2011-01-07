@@ -24,18 +24,27 @@ abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ct
     }
 }
 
+trait InContextTransformer {
+  self: Transformer =>
+    val grater: Option[Grater[_ <: CaseClass]]
+}
+
 package object out extends CasbahLogging {
-  def select(t: TypeRefType)(implicit ctx: Context): Transformer = {
+  def select(t: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     t match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with SBigDecimalToDouble
 
-        case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject
+          new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionExtractor
       }
@@ -44,11 +53,15 @@ package object out extends CasbahLogging {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with SeqExtractor
 
-        case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-          new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor
+          new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor {
+            val grater = ctx.lookup(t.symbol.path)
+          }
 
         case TypeRefType(_, symbol, _) =>
           new Transformer(symbol.path, t)(ctx) with SeqExtractor
@@ -58,11 +71,15 @@ package object out extends CasbahLogging {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with MapExtractor
 
-        case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor
+          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapExtractor
       }
@@ -71,11 +88,15 @@ package object out extends CasbahLogging {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble
 
-        case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with InContextToDBObject {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject
+          new Transformer(symbol.path, t)(ctx) with InContextToDBObject {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) {}
       }
@@ -89,7 +110,7 @@ package object out extends CasbahLogging {
       }
   }
 
-  trait InContextToDBObject extends Transformer {
+  trait InContextToDBObject extends Transformer with InContextTransformer {
     self: Transformer =>
       override def transform(value: Any): Any = value match {
         case cc: CaseClass => ctx.lookup_!(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc)
@@ -137,17 +158,21 @@ package object out extends CasbahLogging {
 }
 
 package object in {
-  def select(pt: TypeRefType)(implicit ctx: Context): Transformer = {
+  def select(pt: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     pt match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToSBigDecimal
 
-        case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionInjector
       }
@@ -156,37 +181,62 @@ package object in {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with SeqInjector { val parentType = pt }
 
-        case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SeqInjector { val parentType = pt }
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SeqInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SeqInjector { val parentType = pt }
+          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SeqInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
 
-        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with SeqInjector { val parentType = pt }
+        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with SeqInjector {
+          val parentType = pt
+          val grater = ctx.lookup(symbol.path)
+        }
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
-          new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with MapInjector { val parentType = pt }
+          new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
 
-        case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector { val parentType = pt }
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector { val parentType = pt }
+          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
 
-        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapInjector { val parentType = pt }
+        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapInjector {
+          val parentType = pt
+          val grater = ctx.lookup(symbol.path)
+        }
       }
 
       case TypeRefType(_, symbol, _) => pt match {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, pt)(ctx) with DoubleToSBigDecimal
 
-        case TypeRefType(_, symbol, _) if ctx.lookup(symbol.path).isDefined =>
-          new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+          new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
-          new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext
+          new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext {
+            val grater = ctx.lookup(symbol.path)
+          }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, pt)(ctx) {}
       }
@@ -200,7 +250,7 @@ package object in {
       }
   }
 
-  trait DBObjectToInContext extends Transformer {
+  trait DBObjectToInContext extends Transformer with InContextTransformer {
     self: Transformer =>
       override def before(value: Any): Option[Any] = value match {
         case dbo: DBObject => {
@@ -212,7 +262,7 @@ package object in {
       }
 
     private def transform0(dbo: MongoDBObject)(implicit ctx: Context) =
-      ctx.lookup(path, dbo).map {
+      (grater orElse ctx.lookup(path, dbo)).map {
         grater => grater.asObject(dbo).asInstanceOf[CaseClass]
       }.getOrElse(throw new Exception("no grater found for '%s' OR '%s'".format(path, dbo(ctx.typeHint.getOrElse(TypeHint)))))
 

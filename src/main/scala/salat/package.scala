@@ -20,20 +20,12 @@ trait Context extends Logging {
       log.trace("Context(%s) accepted Grater[%s]", name.getOrElse("<no name>"), grater.clazz)
     }
 
-  protected def getClass(c: String): Option[Class[_]] = {
-    try { Some(Class.forName(c)) }
-    catch { case _ => None }
-  }
-
-  protected def getCaseClass(c: String): Option[Class[CaseClass]] =
-    getClass(c).map(_.asInstanceOf[Class[CaseClass]])
-
   // XXX: This check needs to be a little bit less naive. There are
   // other types (Joda Time, anyone?) that are either directly
   // interoperable with MongoDB, or are handled by Casbah's BSON
   // encoders.
   protected def suitable_?(clazz: String): Boolean =
-     !(clazz.startsWith("scala.") || clazz.startsWith("java.") || clazz.startsWith("javax.")) || getClass(clazz).map(_.annotated_?[Salat]).getOrElse(false)
+     !(clazz.startsWith("scala.") || clazz.startsWith("java.") || clazz.startsWith("javax.")) || getClassNamed(clazz).map(_.annotated_?[Salat]).getOrElse(false)
 
   protected def suitable_?(clazz: Class[_]): Boolean = suitable_?(clazz.getName)
 
@@ -107,6 +99,14 @@ object `package` {
   }
 
   def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup_![X](m)
+
+  protected[salat] def getClassNamed(c: String): Option[Class[_]] = {
+    try { Some(Class.forName(c)) }
+    catch { case _ => None }
+  }
+
+  protected[salat] def getCaseClass(c: String): Option[Class[CaseClass]] =
+    getClassNamed(c).map(_.asInstanceOf[Class[CaseClass]])
 }
 
 package object global {

@@ -1,6 +1,6 @@
 package com.bumnetworks.salat
 
-import java.lang.reflect.Method
+import java.lang.reflect.{Method, AnnotatedElement}
 import java.lang.annotation.Annotation
 
 import scala.annotation.target.getter
@@ -13,7 +13,7 @@ package object annotations {
     implicit def whatever2annotated(x: Any) = new {
       def annotation[A <: Annotation : Manifest]: Option[A] =
         x match {
-          case m: Method if m != null => m.getAnnotation[A](manifest[A].erasure.asInstanceOf[Class[A]]) match {
+          case x: AnnotatedElement if x != null => x.getAnnotation[A](manifest[A].erasure.asInstanceOf[Class[A]]) match {
             case a: A if a != null => Some(a)
             case _ => None
           }

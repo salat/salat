@@ -13,8 +13,9 @@ import com.mongodb.casbah.Imports._
 
 object Field {
   def apply(idx: Int, name: String, t: TypeRefType, method: Method)(implicit ctx: Context): Field = {
-    val _in = in.select(t)
-    val _out = out.select(t)
+    val _in = in.select(t, method.annotated_?[Salat])
+    val _out = out.select(t, method.annotated_?[Salat])
+
     new Field(idx, method.annotation[Key].map(_.value).getOrElse(name),
               t, _in, _out, method.annotation[Ignore].map(_ => true).getOrElse(false)) {}
   }
