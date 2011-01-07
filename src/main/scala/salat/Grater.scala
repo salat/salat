@@ -10,7 +10,12 @@ import com.bumnetworks.salat.annotations.util._
 abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends CasbahLogging {
   ctx.accept(this)
 
-  protected lazy val sym = ScalaSigParser.parse(clazz).get.topLevelClasses.head
+  protected lazy val sym = ScalaSigParser.parse(clazz) match {
+    case Some(x) =>
+      x.topLevelClasses.headOption.getOrElse(throw new Exception("parsed pickled Scala signature, but no expected type found: %s".format(clazz)))
+    case _ => throw new Exception("failed to parse pickled Scala signature from %s".format(clazz))
+  }
+
   protected lazy val indexedFields = {
     sym.children
     .filter(_.isCaseAccessor)
