@@ -17,10 +17,32 @@ trait Context extends Logging {
       log.trace("Context(%s) accepted Grater[%s]", name.getOrElse("<no name>"), grater.clazz)
     }
 
+  // XXX: This check needs to be a little bit less naive. There are
+  // other types (Joda Time, anyone?) that are either directly
+  // interoperable with MongoDB, or are handled by Casbah's BSON
+  // encoders.
+  protected def suitable_?(clazz: String): Boolean =
+    !(clazz.startsWith("scala.") || clazz.startsWith("java.") || clazz.startsWith("javax."))
+
+  protected def suitable_?(clazz: Class[_]): Boolean = suitable_?(clazz.getName)
+
+  protected def generate_?(c: String): Option[Grater[_ <: CaseClass]] =
+    if (suitable_?(c)) {
+      try {
+        val clazz = Class.forName(c).asInstanceOf[Class[CaseClass]]
+	if (clazz.isInterface) None
+	else Some({ new Grater[CaseClass](clazz)(this) {} }.asInstanceOf[Grater[CaseClass]])
+      }
+      catch { case _ => None }
+    } else None
+
   protected def generate(clazz: String): Grater[_ <: CaseClass] =
     { new Grater[CaseClass](Class.forName(clazz).asInstanceOf[Class[CaseClass]])(this) {} }.asInstanceOf[Grater[CaseClass]]
 
-  def lookup(clazz: String): Option[Grater[_ <: CaseClass]] = graters.get(clazz)
+  def lookup(clazz: String): Option[Grater[_ <: CaseClass]] = graters.get(clazz) match {
+    case yes @ Some(_) => yes
+    case _ => generate_?(clazz)
+  }
 
   def lookup_!(clazz: String): Grater[_ <: CaseClass] =
     lookup(clazz).getOrElse(generate(clazz))
