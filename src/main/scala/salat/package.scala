@@ -5,6 +5,9 @@ import scala.collection.mutable.{Map => MMap, HashMap}
 import com.mongodb.casbah.commons.Logging
 import com.mongodb.casbah.Imports._
 
+import com.bumnetworks.salat.annotations.raw._
+import com.bumnetworks.salat.annotations.util._
+
 trait Context extends Logging {
   private[salat] val graters: MMap[String, Grater[_ <: CaseClass]] = HashMap.empty
 
@@ -17,27 +20,35 @@ trait Context extends Logging {
       log.trace("Context(%s) accepted Grater[%s]", name.getOrElse("<no name>"), grater.clazz)
     }
 
+  protected def getClass(c: String): Option[Class[_]] = {
+    try { Some(Class.forName(c)) }
+    catch { case _ => None }
+  }
+
+  protected def getCaseClass(c: String): Option[Class[CaseClass]] =
+    getClass(c).map(_.asInstanceOf[Class[CaseClass]])
+
   // XXX: This check needs to be a little bit less naive. There are
   // other types (Joda Time, anyone?) that are either directly
   // interoperable with MongoDB, or are handled by Casbah's BSON
   // encoders.
   protected def suitable_?(clazz: String): Boolean =
-    !(clazz.startsWith("scala.") || clazz.startsWith("java.") || clazz.startsWith("javax."))
+     !(clazz.startsWith("scala.") || clazz.startsWith("java.") || clazz.startsWith("javax.")) || getClass(clazz).map(_.annotated_?[Salat]).getOrElse(false)
 
   protected def suitable_?(clazz: Class[_]): Boolean = suitable_?(clazz.getName)
 
   protected def generate_?(c: String): Option[Grater[_ <: CaseClass]] =
     if (suitable_?(c)) {
-      try {
-        val clazz = Class.forName(c).asInstanceOf[Class[CaseClass]]
-	if (clazz.isInterface) None
-	else Some({ new Grater[CaseClass](clazz)(this) {} }.asInstanceOf[Grater[CaseClass]])
+      getCaseClass(c) match {
+        case Some(clazz) =>
+          if (clazz.isInterface) None
+          else Some({ new Grater[CaseClass](clazz)(this) {} }.asInstanceOf[Grater[CaseClass]])
+        case _ => None
       }
-      catch { case _ => None }
     } else None
 
   protected def generate(clazz: String): Grater[_ <: CaseClass] =
-    { new Grater[CaseClass](Class.forName(clazz).asInstanceOf[Class[CaseClass]])(this) {} }.asInstanceOf[Grater[CaseClass]]
+    { new Grater[CaseClass](getCaseClass(clazz).map(_.asInstanceOf[Class[CaseClass]]).get)(this) {} }.asInstanceOf[Grater[CaseClass]]
 
   def lookup(clazz: String): Option[Grater[_ <: CaseClass]] = graters.get(clazz) match {
     case yes @ Some(_) => yes

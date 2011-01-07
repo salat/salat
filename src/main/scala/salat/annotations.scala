@@ -7,6 +7,7 @@ import scala.annotation.target.getter
 
 package object annotations {
   type Key = raw.Key @getter
+  type Salat = raw.Salat @getter
 
   object util {
     implicit def whatever2annotated(x: Any) = new {
