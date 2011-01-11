@@ -1,0 +1,20 @@
+This release [improves support for use of traits][traits-commit] as
+value types and with polymorphic collections, e.g. `Seq`-s and `Map`-s
+parameterized with a value type that is serializable by Salat. To
+enable use of such traits, there is a a new marker annotation,
+`@Salat`. It's supposed to be used on any trait that will be used to
+parameterize embedded collections. For more information, please
+consult the appropriate [wiki section][traits-wiki].
+
+Salat now also [supports Scala enums][enums-commit] anywhere a value
+type can be used. The wiki has been updated with an [enum usage
+example][enums-wiki].
+
+Lastly, there is now a [mailing list][mailing-list] where discussion
+of Salat-related matters shall commence.
+
+[traits-wiki]: https://github.com/maxaf/salat/wiki/Traits
+[traits-commit]: https://github.com/maxaf/salat/commit/ea48727383ffecb152d5cf51254edd11706a9e42
+[enums-wiki]: https://github.com/maxaf/salat/wiki/Enums
+[enums-commit]: https://github.com/maxaf/salat/commit/6f7085e092d6f9d31efcb0b84621be986b108a83
+[mailing-list]: http://groups.google.com/group/scala-salat

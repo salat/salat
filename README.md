@@ -5,7 +5,8 @@ This project is an attempt to implement a *fast* MongoDB <-> Scala
 problem; this time, I'm focusing on speed more than flexibility,
 compatibility, and functionality.
 
-More information is availabe on the [wiki][wiki].
+More information is availabe on the [wiki][wiki]. Salat-related
+discussion and questions belong on the [mailing list][mailing-list].
 
 ## Goals
 
@@ -73,3 +74,4 @@ part of the case class constructor.
 will not slow you down through use of runtime reflection.
 
 [wiki]: https://github.com/maxaf/salat/wiki
+[mailing-list]: http://groups.google.com/group/scala-salat
