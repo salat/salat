@@ -117,6 +117,11 @@ object `package` {
   implicit def explodeOID(oid: String) = new {
     def asObjectId = new ObjectId((new BigInteger(oid, 36)).toString(16))
   }
+
+  implicit def class2companion(clazz: Class[_]) = new {
+    def companionClass: Class[_] = Class.forName("%s$".format(clazz.getName))
+    def companionObject = companionClass.getField("MODULE$").get(null)
+  }
 }
 
 package object global {

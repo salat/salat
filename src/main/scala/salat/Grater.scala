@@ -29,8 +29,8 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   }
   lazy val fields = collection.SortedMap.empty[String, Field] ++ indexedFields.map { f => f.name -> f }
 
-  protected lazy val companionClass = Class.forName("%s$".format(clazz.getName))
-  protected lazy val companionObject = companionClass.getField("MODULE$").get(null)
+  lazy val companionClass = clazz.companionClass
+  lazy val companionObject = clazz.companionObject
 
   protected lazy val constructor: Method = companionClass.getMethods.filter(_.getName == "apply").head
   protected lazy val defaults: Seq[Option[Method]] = indexedFields.map {
