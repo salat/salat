@@ -68,3 +68,13 @@ object IsTrait extends CasbahLogging {
     case _ => None
   }
 }
+
+object IsEnum extends CasbahLogging {
+  def unapply(t: TypeRefType): Option[SingleType] = {
+    t match {
+      case TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" =>
+	Some(prefix)
+      case _ => None
+    }
+  }
+}

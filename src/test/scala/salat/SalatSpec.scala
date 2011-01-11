@@ -74,6 +74,22 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
         f_* must_== f
       }
     }
+
+    "be able to serialize Scala enums" in {
+      val me = Me("max")
+      val g = grater[Me]
+      val dbo: MongoDBObject = g.asDBObject(me)
+      dbo("_typeHint") must_== classOf[Me].getName
+      dbo("state") must_== Frakked.BeyondRepair.toString
+    }
+
+    "be able to deserialize Scala enums" in {
+      val me = Me("max")
+      val g = grater[Me]
+      val dbo = g.asDBObject(me)
+      val me_* = g.asObject(dbo)
+      me must_== me_*
+    }
   }
 
   "usage example for the README" should {

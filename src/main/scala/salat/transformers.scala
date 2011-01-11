@@ -1,10 +1,11 @@
 package com.bumnetworks.salat.transformers
 
+import java.lang.reflect.Method
 import java.math.MathContext
 
 import scala.collection.immutable.{List => IList, Map => IMap}
 import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap}
-import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
+import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{BigDecimal => ScalaBigDecimal}
 
 import com.bumnetworks.salat._
@@ -36,6 +37,10 @@ package object out extends CasbahLogging {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with SBigDecimalToDouble
 
+        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with OptionExtractor with EnumStringifier
+        }
+
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject {
             val grater = ctx.lookup(symbol.path)
@@ -52,6 +57,10 @@ package object out extends CasbahLogging {
       case IsSeq(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with SeqExtractor
+
+        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with SeqExtractor
+        }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor {
@@ -71,6 +80,9 @@ package object out extends CasbahLogging {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with MapExtractor
 
+        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined =>
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with MapExtractor
+
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor {
             val grater = ctx.lookup(symbol.path)
@@ -87,6 +99,10 @@ package object out extends CasbahLogging {
       case TypeRefType(_, symbol, _) => t match {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble
+
+        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier
+        }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject {
@@ -155,6 +171,13 @@ package object out extends CasbahLogging {
       case _ => None
     }
   }
+
+  trait EnumStringifier extends Transformer {
+    self: Transformer =>
+      override def transform(value: Any): Any = value match {
+        case ev: Enumeration#Value => ev.toString
+      }
+  }
 }
 
 package object in {
@@ -163,6 +186,10 @@ package object in {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToSBigDecimal
+
+        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with OptionInjector with EnumInflater
+        }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext {
@@ -180,6 +207,10 @@ package object in {
       case IsSeq(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with SeqInjector { val parentType = pt }
+
+        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater with SeqInjector { val parentType = pt }
+        }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SeqInjector {
@@ -206,6 +237,10 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
+        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater with MapInjector { val parentType = pt }
+        }
+
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector {
             val parentType = pt
@@ -227,6 +262,10 @@ package object in {
       case TypeRefType(_, symbol, _) => pt match {
         case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
           new Transformer(symbol.path, pt)(ctx) with DoubleToSBigDecimal
+
+        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater
+        }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
           new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext {
@@ -324,5 +363,20 @@ package object in {
     }
 
     val parentType: TypeRefType
+  }
+
+  trait EnumInflater extends Transformer {
+    self: Transformer =>
+
+      val clazz = Class.forName(path)
+    val companion: Any = clazz.companionObject
+    val withName: Method = {
+      val ms = clazz.getDeclaredMethods
+      ms.filter(_.getName == "withName").head
+    }
+
+    override def transform(value: Any): Any = value match {
+      case name: String => withName.invoke(companion, name)
+    }
   }
 }

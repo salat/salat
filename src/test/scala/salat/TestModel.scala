@@ -36,6 +36,15 @@ trait Node {
 case class ListNode(name: String, children: List[Node] = Nil, cheat: String = "list") extends Node
 case class MapNode(name: String, children: Map[String, Node] = Map.empty[String, Node], cheat: String = "map") extends Node
 
+object Frakked extends Enumeration {
+  val JustALittle = Value("just a little")
+  val QuiteABit = Value("quite a bit")
+  val Majorly = Value("majorly")
+  val BeyondRepair = Value("beyond repair")
+}
+
+case class Me(name: String, state: Frakked.Value = Frakked.BeyondRepair)
+
 object `package` {
   def graph = A("x", Some("y"),
                 B(Some(80), 81,
