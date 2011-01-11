@@ -107,6 +107,16 @@ object `package` {
 
   protected[salat] def getCaseClass(c: String): Option[Class[CaseClass]] =
     getClassNamed(c).map(_.asInstanceOf[Class[CaseClass]])
+
+  import java.math.BigInteger
+
+  implicit def shortenOID(oid: ObjectId) = new {
+    def asShortString = (new BigInteger(oid.toString, 16)).toString(36)
+  }
+
+  implicit def explodeOID(oid: String) = new {
+    def asObjectId = new ObjectId((new BigInteger(oid, 36)).toString(16))
+  }
 }
 
 package object global {

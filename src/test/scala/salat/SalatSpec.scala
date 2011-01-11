@@ -87,4 +87,18 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
       inflated.departments("FOSS_Sabotage") must_== deflate_me.departments("FOSS_Sabotage")
     }
   }
+
+  "an ObjectId shortener" should {
+    "shorten ObjectId-s" in {
+      val oid = new ObjectId("4d2ba030eb79807454ca5cbf")
+      val shortened = oid.asShortString
+      shortened must_== "2bcw4m7j7ycxzdvgzwf"
+    }
+
+    "explode ObjectId-s back from shortened strings" in {
+      val oid = new ObjectId
+      val shortened = oid.asShortString
+      shortened.asObjectId must_== oid
+    }
+  }
 }
