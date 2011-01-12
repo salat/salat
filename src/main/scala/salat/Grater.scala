@@ -10,9 +10,19 @@ import com.bumnetworks.salat.annotations.util._
 abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends CasbahLogging {
   ctx.accept(this)
 
-  protected lazy val sym = ScalaSigParser.parse(clazz) match {
+  protected def parseScalaSig = {
+    ScalaSigParser.parse(clazz) match {
+      case None if clazz.getName.endsWith("$") =>
+        ScalaSigParser.parse(Class.forName(clazz.getName.replaceFirst("\\$$", "")))
+      case x => x
+    }
+  }
+
+  protected lazy val sym = parseScalaSig match {
     case Some(x) =>
-      x.topLevelClasses.headOption.getOrElse(throw new Exception("parsed pickled Scala signature, but no expected type found: %s".format(clazz)))
+      x.topLevelClasses.headOption.getOrElse(
+        x.topLevelObjects.headOption.getOrElse(
+          throw new Exception("parsed pickled Scala signature, but no expected type found: %s".format(clazz))))
     case _ => throw new Exception("failed to parse pickled Scala signature from %s".format(clazz))
   }
 
@@ -32,7 +42,9 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   lazy val companionClass = clazz.companionClass
   lazy val companionObject = clazz.companionObject
 
-  protected lazy val constructor: Method = companionClass.getMethods.filter(_.getName == "apply").head
+  protected lazy val constructor: Option[Method] =
+    if (sym.isModule) None else companionClass.getMethods.filter(_.getName == "apply").headOption
+
   protected lazy val defaults: Seq[Option[Method]] = indexedFields.map {
     field => try {
       Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
@@ -83,16 +95,18 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       }
     }
 
-  def asObject(dbo: MongoDBObject): X = {
-    val args = indexedFields.map {
-      case field if field.ignore => safeDefault(field)
-      case field => dbo.get(field.name) match {
-        case Some(value) => field.in_!(value)
-        case _ => safeDefault(field)
-      }
-    }.map(_.get.asInstanceOf[AnyRef])
-    constructor.invoke(companionObject, args :_*).asInstanceOf[X]
-  }
+  def asObject(dbo: MongoDBObject): X =
+    if (sym.isModule) companionObject.asInstanceOf[X]
+    else {
+      val args = indexedFields.map {
+        case field if field.ignore => safeDefault(field)
+        case field => dbo.get(field.name) match {
+          case Some(value) => field.in_!(value)
+          case _ => safeDefault(field)
+        }
+      }.map(_.get.asInstanceOf[AnyRef])
+      constructor.get.invoke(companionObject, args :_*).asInstanceOf[X]
+    }
 
   override def toString = "Grater(%s @ %s)".format(clazz, ctx)
 }

@@ -45,6 +45,11 @@ object Frakked extends Enumeration {
 
 case class Me(name: String, state: Frakked.Value = Frakked.BeyondRepair)
 
+@Salat trait Suit
+case object Zoot extends Suit
+case object WhatArmstrongWore extends Suit
+case class Wardrobe(suits: List[Suit])
+
 object `package` {
   def graph = A("x", Some("y"),
                 B(Some(80), 81,

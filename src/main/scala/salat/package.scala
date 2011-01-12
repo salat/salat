@@ -119,7 +119,8 @@ object `package` {
   }
 
   implicit def class2companion(clazz: Class[_]) = new {
-    def companionClass: Class[_] = Class.forName("%s$".format(clazz.getName))
+    def companionClass: Class[_] =
+      Class.forName(if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName))
     def companionObject = companionClass.getField("MODULE$").get(null)
   }
 }

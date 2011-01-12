@@ -75,20 +75,44 @@ object SalatSpec extends Specification with PendingUntilFixed with CasbahLogging
       }
     }
 
-    "be able to serialize Scala enums" in {
-      val me = Me("max")
-      val g = grater[Me]
-      val dbo: MongoDBObject = g.asDBObject(me)
-      dbo("_typeHint") must_== classOf[Me].getName
-      dbo("state") must_== Frakked.BeyondRepair.toString
+    "work with Scala enums" in {
+      "be able to serialize Scala enums" in {
+        val me = Me("max")
+        val g = grater[Me]
+        val dbo: MongoDBObject = g.asDBObject(me)
+        dbo("_typeHint") must_== classOf[Me].getName
+        dbo("state") must_== Frakked.BeyondRepair.toString
+      }
+
+      "be able to deserialize Scala enums" in {
+        val me = Me("max")
+        val g = grater[Me]
+        val dbo = g.asDBObject(me)
+        val me_* = g.asObject(dbo)
+        me must_== me_*
+      }
     }
 
-    "be able to deserialize Scala enums" in {
-      val me = Me("max")
-      val g = grater[Me]
-      val dbo = g.asDBObject(me)
-      val me_* = g.asObject(dbo)
-      me must_== me_*
+    "support case objects" in {
+      "be able to serialize case objects" in {
+	val mine = Wardrobe(suits = List(Zoot))
+	log.info("mine: %s", mine)
+	val dbo: MongoDBObject = grater[Wardrobe].asDBObject(mine)
+	log.info("dbo : %s", dbo)
+	val suits = dbo.expand[BasicDBList]("suits")
+	suits must beSome[BasicDBList].which {
+	  suits => val suit: MongoDBObject = suits(0).asInstanceOf[DBObject]
+	  val th = suit.expand[String]("_typeHint")
+	  th must beSome[String].which { th => th == Zoot.getClass.getName }
+	}
+      }
+
+      "be able to deserialize case objects" in {
+	val mine = Wardrobe(suits = List(WhatArmstrongWore, Zoot))
+	val dbo = grater[Wardrobe].asDBObject(mine)
+	val mine_* = grater[Wardrobe].asObject(dbo)
+	mine must_== mine_*
+      }
     }
   }
 
