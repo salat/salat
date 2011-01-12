@@ -1,0 +1,22 @@
+I'm pleased to announce the release of version 0.0.4 of Salat, under
+the auspices of my startup, [Novus Partners, Inc][novus]. I'm
+convinced that this new corporate backing will instill new confidence
+in Salat's underpinnings.
+
+Novus' complex and unique data model will expose the code to use cases
+not always seen in contrived unit tests. Our challenging performance
+requirements and volume of data will also undoubtedly uncover
+bottlenecks within Salat. The benefits, as usual, are to be reaped by
+the entire community.
+
+As before, the library remains Free/Open Source software, made
+available under the MIT license.
+
+Please note that the repository location on GitHub and package names
+have all been updated to reflect this move.
+
+- Source code: <https://github.com/novus/salat>
+- Wiki: <https://github.com/novus/salat/wiki>
+- Package rename: `com.bumnetworks.salat` -> `com.novus.salat`
+
+[novus]: https://www.novus.com/
