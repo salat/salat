@@ -1,12 +1,12 @@
-package com.bumnetworks.salat.test.model
+package com.novus.salat.test.model
 
 // Just a dummy data model. It's totally contrived, so don't hold it
 // against me, neh?
 
-import com.bumnetworks.salat._
-import com.bumnetworks.salat.global._
-import com.bumnetworks.salat.annotations._
-import com.bumnetworks.salat.test._
+import com.novus.salat._
+import com.novus.salat.global._
+import com.novus.salat.annotations._
+import com.novus.salat.test._
 
 import scala.collection.immutable.{Map => IMap}
 import scala.collection.mutable.{Map => MMap}

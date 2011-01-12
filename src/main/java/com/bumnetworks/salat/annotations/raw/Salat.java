@@ -1,4 +1,4 @@
-package com.bumnetworks.salat.annotations.raw;
+package com.novus.salat.annotations.raw;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

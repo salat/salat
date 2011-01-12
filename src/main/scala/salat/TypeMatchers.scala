@@ -1,11 +1,11 @@
-package com.bumnetworks.salat
+package com.novus.salat
 
 import scala.math.{BigDecimal => ScalaBigDecimal}
 import scala.tools.scalap.scalax.rules.scalasig._
 
-import com.bumnetworks.salat.annotations.raw._
-import com.bumnetworks.salat.annotations.util._
-import com.bumnetworks.salat.transformers._
+import com.novus.salat.annotations.raw._
+import com.novus.salat.annotations.util._
+import com.novus.salat.transformers._
 import com.mongodb.casbah.Imports._
 
 private object TypeMatchers {
@@ -44,7 +44,7 @@ object IsScalaBigDecimal {
 
 object IsTrait extends CasbahLogging {
   private def noAnnotationOnTrait(t: Class[_]) =
-    throw new Exception("NB: trait %s must be annotated with @com.bumnetworks.salat.annotations.Salat " +
+    throw new Exception("NB: trait %s must be annotated with @com.novus.salat.annotations.Salat " +
                         "in order to be picked up by this library. See the docs for more details.".format(t.getName))
 
   def unapply(t: TypeRefType): Option[Type] = t match {

@@ -1,4 +1,4 @@
-package com.bumnetworks.salat
+package com.novus.salat
 
 import java.lang.reflect.{Method, AnnotatedElement}
 import java.lang.annotation.Annotation

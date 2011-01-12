@@ -1,4 +1,4 @@
-package com.bumnetworks.salat.impls
+package com.novus.salat.impls
 
 import scala.collection.immutable.{List => IList, Map => IMap}
 import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap}

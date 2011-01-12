@@ -1,12 +1,12 @@
-package com.bumnetworks.salat
+package com.novus.salat
 
 import java.math.{RoundingMode, MathContext}
 import scala.collection.mutable.{Map => MMap, HashMap}
 import com.mongodb.casbah.commons.Logging
 import com.mongodb.casbah.Imports._
 
-import com.bumnetworks.salat.annotations.raw._
-import com.bumnetworks.salat.annotations.util._
+import com.novus.salat.annotations.raw._
+import com.novus.salat.annotations.util._
 
 trait Context extends Logging {
   private[salat] val graters: MMap[String, Grater[_ <: CaseClass]] = HashMap.empty

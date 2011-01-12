@@ -1,4 +1,4 @@
-package com.bumnetworks.salat.transformers
+package com.novus.salat.transformers
 
 import java.lang.reflect.Method
 import java.math.MathContext
@@ -8,9 +8,9 @@ import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap}
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{BigDecimal => ScalaBigDecimal}
 
-import com.bumnetworks.salat._
-import com.bumnetworks.salat.impls._
-import com.bumnetworks.salat.global.mathCtx
+import com.novus.salat._
+import com.novus.salat.impls._
+import com.novus.salat.global.mathCtx
 import com.mongodb.casbah.Imports._
 
 abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) {

@@ -1,8 +1,8 @@
-package com.bumnetworks.salat.test
+package com.novus.salat.test
 
-import com.bumnetworks.salat._
-import com.bumnetworks.salat.global._
-import com.bumnetworks.salat.test.model._
+import com.novus.salat._
+import com.novus.salat.global._
+import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 
 import scala.collection.mutable.{Buffer, ArrayBuffer}
