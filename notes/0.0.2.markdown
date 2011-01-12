@@ -31,10 +31,10 @@ Notable changes include:
   code is 2x as fast** than casbah-mapper's corresponding
   functionality. **Inflation is 15x faster than casbah-mapper**.
 
-[timing-spec-commit]: https://github.com/maxaf/salat/commit/0961df5df28bf33877be2ef154e55ce166a6d006
-[annotations-commit]: https://github.com/maxaf/salat/commit/52d67b790a7f6a99a4e66939825c6b9b35496af2
-[transformer-commit]: https://github.com/maxaf/salat/commit/443d91aefca413d577aeb0774c9e58313c81e79a
-[wiki]: https://github.com/maxaf/salat/wiki
-[quick-start]: https://github.com/maxaf/salat/wiki/Quick-start
-[design]: https://github.com/maxaf/salat/wiki/Design
-[components]: https://github.com/maxaf/salat/wiki/Components
+[timing-spec-commit]: https://github.com/novus/salat/commit/0961df5df28bf33877be2ef154e55ce166a6d006
+[annotations-commit]: https://github.com/novus/salat/commit/52d67b790a7f6a99a4e66939825c6b9b35496af2
+[transformer-commit]: https://github.com/novus/salat/commit/443d91aefca413d577aeb0774c9e58313c81e79a
+[wiki]: https://github.com/novus/salat/wiki
+[quick-start]: https://github.com/novus/salat/wiki/Quick-start
+[design]: https://github.com/novus/salat/wiki/Design
+[components]: https://github.com/novus/salat/wiki/Components

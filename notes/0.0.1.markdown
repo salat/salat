@@ -5,4 +5,4 @@ This is a call for comments, suggestions, feature requests, and
 patches. Please get in touch through [GitHub][github-link] if you can
 offer any.
 
-[github-link]: https://github.com/maxaf/salat
+[github-link]: https://github.com/novus/salat

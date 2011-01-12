@@ -28,6 +28,6 @@ by the MIT license. See [LICENSE.md][license] at source root for more
 information. Please make use of the [GitHub project][github-link] to
 report issues or contact the author.
 
-[github-link]: https://github.com/maxaf/salat
-[license]: https://github.com/maxaf/salat/blob/master/README.md
-[wiki]: https://github.com/maxaf/salat/wiki
+[github-link]: https://github.com/novus/salat
+[license]: https://github.com/novus/salat/blob/master/README.md
+[wiki]: https://github.com/novus/salat/wiki

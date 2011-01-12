@@ -73,5 +73,5 @@ part of the case class constructor.
 "salad". I picked this name because salad is great for your health and
 will not slow you down through use of runtime reflection.
 
-[wiki]: https://github.com/maxaf/salat/wiki
+[wiki]: https://github.com/novus/salat/wiki
 [mailing-list]: http://groups.google.com/group/scala-salat
