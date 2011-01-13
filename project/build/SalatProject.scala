@@ -22,10 +22,10 @@ class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterou
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default"
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default"
 
-  val publishTo = Resolver.sftp("repobum", "repobum", "/home/public/%s".format(
+  val publishTo = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
     if (projectVersion.value.toString.endsWith("-SNAPSHOT")) "snapshots"
     else "releases"
-  )) as ("repobum_repobum", new java.io.File(Path.userHome + "/.ssh/repobum"))
+  )) as (System.getProperty("user.name"))
 
   val scalaToolsRepo = "Scala Tools Release Repository" at "http://scala-tools.org/repo-releases"
   val scalaToolsSnapRepo = "Scala Tools Snapshot Repository" at "http://scala-tools.org/repo-snapshots"
