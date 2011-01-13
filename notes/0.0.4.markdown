@@ -18,5 +18,6 @@ have all been updated to reflect this move.
 - Source code: <https://github.com/novus/salat>
 - Wiki: <https://github.com/novus/salat/wiki>
 - Package rename: `com.bumnetworks.salat` -> `com.novus.salat`
+- New repository location: <http://repo.novus.com/releases/>
 
 [novus]: https://www.novus.com/
