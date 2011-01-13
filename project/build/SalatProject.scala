@@ -29,6 +29,6 @@ class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterou
 
   val scalaToolsRepo = "Scala Tools Release Repository" at "http://scala-tools.org/repo-releases"
   val scalaToolsSnapRepo = "Scala Tools Snapshot Repository" at "http://scala-tools.org/repo-snapshots"
-  val bumRepo = "Bum Networks Release Repository" at "http://repo.bumnetworks.com/releases/"
-  val bumSnapsRepo = "Bum Networks Snapshots Repository" at "http://repo.bumnetworks.com/snapshots/"
+  val novusRepo = "Novus Release Repository" at "http://repo.novus.com/releases/"
+  val novusSnapsRepo = "Novus Snapshots Repository" at "http://repo.novus.com/snapshots/"
 }
