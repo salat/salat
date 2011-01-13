@@ -1,3 +1,23 @@
+/**
+* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+* For questions and comments about this product, please see the project page at:
+*
+* http://github.com/novus/salat
+*
+*/
 package com.novus.salat
 
 import java.math.{RoundingMode, MathContext}
@@ -84,52 +104,4 @@ trait Context extends Logging {
 
   def lookup_!(dbo: MongoDBObject): Grater[_ <: CaseClass] =
     generate(extractTypeHint(dbo).getOrElse(throw new Exception("no type hint found")))
-}
-
-object `package` {
-  type CasbahLogging = Logging
-  type CaseClass = AnyRef with Product
-  val TypeHint = "_typeHint"
-
-  def timeAndLog[T](f: => T)(l: Long => Unit): T = {
-    val t = System.currentTimeMillis
-    val r = f
-    l.apply(System.currentTimeMillis - t)
-    r
-  }
-
-  def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup_![X](m)
-
-  protected[salat] def getClassNamed(c: String): Option[Class[_]] = {
-    try { Some(Class.forName(c)) }
-    catch { case _ => None }
-  }
-
-  protected[salat] def getCaseClass(c: String): Option[Class[CaseClass]] =
-    getClassNamed(c).map(_.asInstanceOf[Class[CaseClass]])
-
-  import java.math.BigInteger
-
-  implicit def shortenOID(oid: ObjectId) = new {
-    def asShortString = (new BigInteger(oid.toString, 16)).toString(36)
-  }
-
-  implicit def explodeOID(oid: String) = new {
-    def asObjectId = new ObjectId((new BigInteger(oid, 36)).toString(16))
-  }
-
-  implicit def class2companion(clazz: Class[_]) = new {
-    def companionClass: Class[_] =
-      Class.forName(if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName))
-    def companionObject = companionClass.getField("MODULE$").get(null)
-  }
-}
-
-package object global {
-  implicit val ctx = new Context { val name = Some("global") }
-  val NoTypeHints = new Context {
-    val name = Some("global-no-type-hints")
-    override val typeHint = None
-  }
-  implicit val mathCtx = new MathContext(16, RoundingMode.HALF_UP)
 }

@@ -2,14 +2,15 @@ import sbt._
 
 class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterous.Publish {
   override def managedStyle = ManagedStyle.Maven
+
   override def compileOptions = super.compileOptions ++ Seq(Unchecked, Deprecation)
 
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.4"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.0.1"
 
-   // Should be crossScalaVersionString, but 2.8.0's scalap appears to
-   // be totally frakked, whereas 2.8.1's works fine with 2.8.0. Go
-   // figure.
+  // Should be crossScalaVersionString, but 2.8.0's scalap appears to
+  // be totally frakked, whereas 2.8.1's works fine with 2.8.0. Go
+  // figure.
   val scalap = "org.scala-lang" % "scalap" % "2.8.1"
 
   val specsVersion = crossScalaVersionString match {
@@ -24,7 +25,7 @@ class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterou
   val publishTo = Resolver.sftp("repobum", "repobum", "/home/public/%s".format(
     if (projectVersion.value.toString.endsWith("-SNAPSHOT")) "snapshots"
     else "releases"
-  )) as("repobum_repobum", new java.io.File(Path.userHome + "/.ssh/repobum"))
+  )) as ("repobum_repobum", new java.io.File(Path.userHome + "/.ssh/repobum"))
 
   val scalaToolsRepo = "Scala Tools Release Repository" at "http://scala-tools.org/repo-releases"
   val scalaToolsSnapRepo = "Scala Tools Snapshot Repository" at "http://scala-tools.org/repo-snapshots"
