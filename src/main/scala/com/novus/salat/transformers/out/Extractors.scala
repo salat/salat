@@ -28,9 +28,9 @@ import com.novus.salat.impls._
 import com.novus.salat.global.mathCtx
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
+import com.novus.salat.transformers.out._
 
-
-package object out extends Logging {
+package object out {
   def select(t: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     t match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
@@ -118,64 +118,71 @@ package object out extends Logging {
       }
     }
   }
+}
 
-  trait SBigDecimalToDouble extends Transformer {
-    self: Transformer =>
-      override def transform(value: Any): Any = value match {
-        case sbd: ScalaBigDecimal => sbd(mathCtx).toDouble
-      }
-  }
+package out {
 
-  trait InContextToDBObject extends Transformer with InContextTransformer {
-    self: Transformer =>
-      override def transform(value: Any): Any = value match {
-        case cc: CaseClass => ctx.lookup_!(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc)
-        case _ => MongoDBObject("failed-to-convert" -> value.toString)
-      }
-  }
-
-  trait OptionExtractor extends Transformer {
-    self: Transformer =>
-      override def before(value: Any): Option[Any] = value match {
-        case Some(value) => Some(super.transform(value))
-        case _ => None
-      }
-  }
-
-  trait SeqExtractor extends Transformer {
-    self: Transformer =>
-      override def transform(value: Any): Any = value
-
-    override def after(value: Any): Option[Any] = value match {
-      case seq: Seq[_] =>
-        Some(MongoDBList(seq.map {
-          case el => super.transform(el)
-        } : _*))
-      case _ => None
-    }
-  }
-
-  trait MapExtractor extends Transformer {
-    self: Transformer =>
-      override def transform(value: Any): Any = value
-
-    override def after(value: Any): Option[Any] = value match {
-      case map: Map[String, _] => {
-        val builder = MongoDBObject.newBuilder
-        map.foreach {
-          case (k, el) =>
-            builder += (k match { case s: String => s case x => x.toString }) -> super.transform(el)
-        }
-        Some(builder.result)
-      }
-      case _ => None
-    }
-  }
-
-  trait EnumStringifier extends Transformer {
-    self: Transformer =>
-      override def transform(value: Any): Any = value match {
-        case ev: Enumeration#Value => ev.toString
-      }
+trait SBigDecimalToDouble extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any): Any = value match {
+    case sbd: ScalaBigDecimal => sbd(mathCtx).toDouble
   }
 }
+
+trait InContextToDBObject extends Transformer with InContextTransformer {
+  self: Transformer =>
+  override def transform(value: Any): Any = value match {
+    case cc: CaseClass => ctx.lookup_!(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc)
+    case _ => MongoDBObject("failed-to-convert" -> value.toString)
+  }
+}
+
+trait OptionExtractor extends Transformer {
+  self: Transformer =>
+  override def before(value: Any): Option[Any] = value match {
+    case Some(value) => Some(super.transform(value))
+    case _ => None
+  }
+}
+
+trait SeqExtractor extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any): Any = value
+
+  override def after(value: Any): Option[Any] = value match {
+    case seq: Seq[_] =>
+      Some(MongoDBList(seq.map {
+        case el => super.transform(el)
+      }: _*))
+    case _ => None
+  }
+}
+
+trait MapExtractor extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any): Any = value
+
+  override def after(value: Any): Option[Any] = value match {
+    case map: Map[String, _] => {
+      val builder = MongoDBObject.newBuilder
+      map.foreach {
+        case (k, el) =>
+          builder += (k match {
+            case s: String => s case x => x.toString
+          }) -> super.transform(el)
+      }
+      Some(builder.result)
+    }
+    case _ => None
+  }
+}
+
+trait EnumStringifier extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any): Any = value match {
+    case ev: Enumeration#Value => ev.toString
+  }
+}
+
+}
+

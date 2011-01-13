@@ -33,6 +33,8 @@ import com.novus.salat.impls._
 import com.novus.salat.global.mathCtx
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
+import com.novus.salat.transformers._
+import com.novus.salat.transformers.in._
 
 package object in {
   def select(pt: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
@@ -135,102 +137,109 @@ package object in {
       }
     }
   }
+}
 
-  trait DoubleToSBigDecimal extends Transformer {
-    self: Transformer =>
-      override def transform(value: Any): Any = value match {
-        case d: Double => ScalaBigDecimal(d.toString, mathCtx)
-      }
+
+package in {
+
+trait DoubleToSBigDecimal extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any): Any = value match {
+    case d: Double => ScalaBigDecimal(d.toString, mathCtx)
+  }
+}
+
+trait DBObjectToInContext extends Transformer with InContextTransformer {
+  self: Transformer =>
+  override def before(value: Any): Option[Any] = value match {
+    case dbo: DBObject => {
+      val mdbo: MongoDBObject = dbo
+      Some(mdbo)
+    }
+    case mdbo: MongoDBObject => Some(mdbo)
+    case _ => None
   }
 
-  trait DBObjectToInContext extends Transformer with InContextTransformer {
-    self: Transformer =>
-      override def before(value: Any): Option[Any] = value match {
-        case dbo: DBObject => {
-          val mdbo: MongoDBObject = dbo
-          Some(mdbo)
-        }
-        case mdbo: MongoDBObject => Some(mdbo)
-        case _ => None
-      }
+  private def transform0(dbo: MongoDBObject)(implicit ctx: Context) =
+    (grater orElse ctx.lookup(path, dbo)).map {
+      grater => grater.asObject(dbo).asInstanceOf[CaseClass]
+    }.getOrElse(throw new Exception("no grater found for '%s' OR '%s'".format(path, dbo(ctx.typeHint.getOrElse(TypeHint)))))
 
-    private def transform0(dbo: MongoDBObject)(implicit ctx: Context) =
-      (grater orElse ctx.lookup(path, dbo)).map {
-        grater => grater.asObject(dbo).asInstanceOf[CaseClass]
-      }.getOrElse(throw new Exception("no grater found for '%s' OR '%s'".format(path, dbo(ctx.typeHint.getOrElse(TypeHint)))))
+  override def transform(value: Any): Any = value match {
+    case dbo: DBObject => transform0(dbo)
+    case mdbo: MongoDBObject => transform0(mdbo)
+  }
+}
 
-    override def transform(value: Any): Any = value match {
-      case dbo: DBObject => transform0(dbo)
-      case mdbo: MongoDBObject => transform0(mdbo)
+trait OptionInjector extends Transformer {
+  self: Transformer =>
+  override def after(value: Any): Option[Any] = value match {
+    case value if value != null => Some(Some(value))
+    case _ => Some(None)
+  }
+}
+
+trait SeqInjector extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any): Any = value
+
+  override def before(value: Any): Option[Any] = value match {
+    case dbl: BasicDBList => {
+      val list: MongoDBList = dbl
+      Some(list.toList)
     }
+    case _ => None
   }
 
-  trait OptionInjector extends Transformer {
-    self: Transformer =>
-      override def after(value: Any): Option[Any] = value match {
-        case value if value != null => Some(Some(value))
-        case _ => Some(None)
-      }
+  override def after(value: Any): Option[Any] = value match {
+    case list: Seq[Any] => Some(seqImpl(parentType, list.map {
+      el => super.transform(el)
+    }))
+    case _ => None
   }
 
-  trait SeqInjector extends Transformer {
-    self: Transformer =>
-      override def transform(value: Any): Any = value
+  val parentType: TypeRefType
+}
 
-    override def before(value: Any): Option[Any] = value match {
-      case dbl: BasicDBList => {
-        val list: MongoDBList = dbl
-        Some(list.toList)
-      }
-      case _ => None
+trait MapInjector extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any): Any = value
+
+  override def before(value: Any): Option[Any] = value match {
+    case dbo: DBObject => {
+      val mdbo: MongoDBObject = dbo
+      Some(mdbo)
     }
-
-    override def after(value: Any): Option[Any] = value match {
-      case list: Seq[Any] => Some(seqImpl(parentType, list.map { el => super.transform(el) }))
-      case _ => None
-    }
-
-    val parentType: TypeRefType
+    case _ => None
   }
 
-  trait MapInjector extends Transformer {
-    self: Transformer =>
-      override def transform(value: Any): Any = value
-
-    override def before(value: Any): Option[Any] = value match {
-      case dbo: DBObject => {
-        val mdbo: MongoDBObject = dbo
-        Some(mdbo)
+  override def after(value: Any): Option[Any] = value match {
+    case mdbo: MongoDBObject => {
+      val builder = MongoDBObject.newBuilder
+      mdbo.foreach {
+        case (k, v) => builder += k -> super.transform(v)
       }
-      case _ => None
+      Some(mapImpl(parentType, builder.result).asInstanceOf[Map[String, _]])
     }
-
-    override def after(value: Any): Option[Any] = value match {
-      case mdbo: MongoDBObject => {
-        val builder = MongoDBObject.newBuilder
-        mdbo.foreach {
-          case (k, v) => builder += k -> super.transform(v)
-        }
-        Some(mapImpl(parentType, builder.result).asInstanceOf[Map[String, _]])
-      }
-      case _ => None
-    }
-
-    val parentType: TypeRefType
+    case _ => None
   }
 
-  trait EnumInflater extends Transformer {
-    self: Transformer =>
+  val parentType: TypeRefType
+}
 
-    val clazz = Class.forName(path)
-    val companion: Any = clazz.companionObject
-    val withName: Method = {
-      val ms = clazz.getDeclaredMethods
-      ms.filter(_.getName == "withName").head
-    }
+trait EnumInflater extends Transformer {
+  self: Transformer =>
 
-    override def transform(value: Any): Any = value match {
-      case name: String => withName.invoke(companion, name)
-    }
+  val clazz = Class.forName(path)
+  val companion: Any = clazz.companionObject
+  val withName: Method = {
+    val ms = clazz.getDeclaredMethods
+    ms.filter(_.getName == "withName").head
   }
+
+  override def transform(value: Any): Any = value match {
+    case name: String => withName.invoke(companion, name)
+  }
+}
+
 }
