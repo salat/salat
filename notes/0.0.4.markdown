@@ -10,7 +10,7 @@ bottlenecks within Salat. The benefits, as usual, are to be reaped by
 the entire community.
 
 As before, the library remains Free/Open Source software, made
-available under the MIT license.
+available under the Apache 2 license.
 
 Please note that the repository location on GitHub and package names
 have all been updated to reflect this move.
