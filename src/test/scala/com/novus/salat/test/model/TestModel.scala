@@ -83,3 +83,10 @@ case object Zoot extends Suit
 case object WhatArmstrongWore extends Suit
 case class Wardrobe(suits: List[Suit])
 
+@Salat
+trait SomeTrait {
+  case class NestedCaseClassInATrait(foo: String, bar: Option[Int], baz: Option[BigDecimal])
+}
+
+object TestApp extends SomeTrait
+
