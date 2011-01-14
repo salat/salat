@@ -1,0 +1,73 @@
+/**
+* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+* For questions and comments about this product, please see the project page at:
+*
+* http://github.com/novus/salat
+*
+*/
+package com.novus.salat.test
+
+import com.novus.salat._
+import com.novus.salat.global._
+import com.novus.salat.test.model._
+import com.mongodb.casbah.Imports._
+
+class SalatSortedSeqSpec extends SalatSpec {
+  "a grater" should {
+    "persist and retrieve sorted things" in {
+
+      val arbitraryOrdering = new Ordering[String] {
+        def compare(x: String, y: String) = if (x.length == y.length) x.compare(y) else x.length.compare(y.length)
+      }
+
+      val expectedOrder = Seq("kings", "ships", "shoes", "cabbages", "sealing wax")
+      val walrus = Walrus(Seq("shoes", "ships", "sealing wax", "cabbages", "kings").sorted(arbitraryOrdering))
+
+      walrus.manyThings mustEqual expectedOrder
+      "a case class with a sorted list" in {
+        val dbo: MongoDBObject = grater[Walrus[String]].asDBObject(walrus)
+        dbo.get("manyThings") must beSome[AnyRef]
+
+        val walrus_* = grater[Walrus[String]].asObject(dbo)
+        walrus_*.manyThings mustEqual expectedOrder
+      }
+
+      "handle sorted sequences" in {
+        val expectedOrder2 = Seq("is", "and", "hot", "sea", "the", "why", "boiling")
+        val walrus2 = Walrus(Seq("and", "why", "the", "sea", "is", "boiling", "hot").sorted(arbitraryOrdering))
+        walrus2.manyThings mustEqual expectedOrder2
+        val expectedOrder3 = Seq("?", "and", "have", "pigs", "wings", "whether")
+        val walrus3 = Walrus(Seq("and", "whether", "pigs", "have", "wings", "?").sorted(arbitraryOrdering))
+        walrus3.manyThings mustEqual expectedOrder3
+
+        val expectedHerd = Seq(walrus2, walrus3, walrus)
+        val herd = Walrus(manyThings = Seq(walrus, walrus2, walrus3).sorted(new Ordering[Walrus[String]] {
+          def compare(x: Walrus[String], y: Walrus[String]) = y.manyThings.length.compare(x.manyThings.length)
+        }))
+        herd.manyThings mustEqual expectedHerd
+
+        val dbo: MongoDBObject = grater[Walrus[Walrus[String]]].asDBObject(herd)
+        dbo.get("manyThings") must beSome[AnyRef]
+
+        val herd_* = grater[Walrus[Walrus[String]]].asObject(dbo)
+        herd_*.manyThings mustEqual expectedHerd
+        herd_*.manyThings(0).manyThings mustEqual expectedOrder2
+        herd_*.manyThings(1).manyThings mustEqual expectedOrder3
+        herd_*.manyThings(2).manyThings mustEqual expectedOrder
+      }
+    }
+  }
+}

@@ -20,18 +20,23 @@
 */
 package com.novus.salat.test
 
-import com.mongodb.casbah.commons.Logging
-import org.specs.Specification
-import org.specs.specification.PendingUntilFixed
+import com.novus.salat._
+import com.novus.salat.global._
+import com.novus.salat.test.model._
+import com.mongodb.casbah.Imports._
 
+class ObjectIdSpec extends SalatSpec {
+  "an ObjectId shortener" should {
+    "shorten ObjectId-s" in {
+      val oid = new ObjectId("4d2ba030eb79807454ca5cbf")
+      val shortened = oid.asShortString
+      shortened must_== "2bcw4m7j7ycxzdvgzwf"
+    }
 
-trait SalatSpec extends Specification with PendingUntilFixed with Logging {
-
-  detailedDiffs()
-
-  doBeforeSpec {
-    com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
+    "explode ObjectId-s back from shortened strings" in {
+      val oid = new ObjectId
+      val shortened = oid.asShortString
+      shortened.asObjectId must_== oid
+    }
   }
-
-
 }

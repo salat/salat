@@ -20,18 +20,31 @@
 */
 package com.novus.salat.test
 
-import com.mongodb.casbah.commons.Logging
-import org.specs.Specification
-import org.specs.specification.PendingUntilFixed
+import com.novus.salat._
+import com.novus.salat.global._
+import com.novus.salat.test.model._
+import com.mongodb.casbah.Imports._
 
+class SalatEnumSupportSpec extends SalatSpec {
 
-trait SalatSpec extends Specification with PendingUntilFixed with Logging {
+  "a grater" should {
+    "work with Scala enums" in {
+      "be able to serialize Scala enums" in {
+        val me = Me("max")
+        val g = grater[Me]
+        val dbo: MongoDBObject = g.asDBObject(me)
+        dbo("_typeHint") must_== classOf[Me].getName
+        dbo("state") must_== Frakked.BeyondRepair.toString
+      }
 
-  detailedDiffs()
-
-  doBeforeSpec {
-    com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
+      "be able to deserialize Scala enums" in {
+        val me = Me("max")
+        val g = grater[Me]
+        val dbo = g.asDBObject(me)
+        val me_* = g.asObject(dbo)
+        me must_== me_*
+      }
+    }
   }
-
 
 }
