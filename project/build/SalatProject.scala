@@ -15,7 +15,7 @@ class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterou
 
   val specsVersion = crossScalaVersionString match {
     case "2.8.0" => "1.6.5"
-    case "2.8.1" => "1.6.6"
+    case "2.8.1" => "1.6.7"
   }
   val specs = "org.scala-tools.testing" %% "specs" % specsVersion % "test->default" withSources()
 
