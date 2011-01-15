@@ -1,15 +1,11 @@
-package com.novus.salat
+package com.novus
 
-import scala.collection.mutable.{Map => MMap, HashMap}
-import com.mongodb.casbah.commons.Logging
 import com.mongodb.casbah.Imports._
 
-import com.novus.salat.annotations.raw._
-import com.novus.salat.annotations.util._
-import java.math.{BigInteger, RoundingMode, MathContext}
+import java.math.BigInteger
+import com.novus.salat.{Grater, Context}
 
-
-object `package` {
+package object salat {
 
   type CaseClass = AnyRef with Product
   val TypeHint = "_typeHint"
@@ -24,8 +20,12 @@ object `package` {
   def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup_![X](m)
 
   protected[salat] def getClassNamed(c: String): Option[Class[_]] = {
-    try { Some(Class.forName(c)) }
-    catch { case _ => None }
+    try {
+      Some(Class.forName(c))
+    }
+    catch {
+      case _ => None
+    }
   }
 
   protected[salat] def getCaseClass(c: String): Option[Class[CaseClass]] =
@@ -42,6 +42,7 @@ object `package` {
   implicit def class2companion(clazz: Class[_]) = new {
     def companionClass: Class[_] =
       Class.forName(if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName))
+
     def companionObject = companionClass.getField("MODULE$").get(null)
   }
 }
