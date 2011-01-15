@@ -25,29 +25,30 @@ import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 
-class SalatLazyValSpec extends SalatSpec {
-
+class CaseObjectSupport extends SalatSpec {
   "a grater" should {
-    "work with case classes that have lazy values" in {
-      val l = LazyThing(excuses = Seq(1, 2, 3))
-      l.firstExcuse must beSome(1)
-      l.lastExcuse must beSome(3)
-      l.factorial mustEqual 6
-      l.nthDegree mustEqual Seq(1, 7, 13, 19, 25, 31) // a lazy value that depends on factorial lazy value
+    "support case objects" in {
+      "be able to serialize case objects" in {
+        val mine = Wardrobe(suits = List(Zoot))
+        log.info("mine: %s", mine)
+        val dbo: MongoDBObject = grater[Wardrobe].asDBObject(mine)
+        log.info("dbo : %s", dbo)
+        val suits = dbo.expand[BasicDBList]("suits")
+        suits must beSome[BasicDBList].which {
+          suits => val suit: MongoDBObject = suits(0).asInstanceOf[DBObject]
+          val th = suit.expand[String]("_typeHint")
+          th must beSome[String].which {
+            th => th == Zoot.getClass.getName
+          }
+        }
+      }
 
-      val dbo: MongoDBObject = grater[LazyThing].asDBObject(l)
-      dbo.get("excuses") must beSome[AnyRef]
-      dbo.get("firstExcuse") must beNone
-      dbo.get("lastExcuse") must beNone
-      dbo.get("factorial") must beNone
-      dbo.get("nthDegree") must beNone
-
-      val l_* = grater[LazyThing].asObject(dbo)
-      l_*.excuses mustEqual Seq(1, 2, 3)
-      l_*.firstExcuse must beSome(1)
-      l_*.lastExcuse must beSome(3)
-      l_*.factorial mustEqual 6
-      l_*.nthDegree mustEqual Seq(1, 7, 13, 19, 25, 31)
+      "be able to deserialize case objects" in {
+        val mine = Wardrobe(suits = List(WhatArmstrongWore, Zoot))
+        val dbo = grater[Wardrobe].asDBObject(mine)
+        val mine_* = grater[Wardrobe].asObject(dbo)
+        mine must_== mine_*
+      }
     }
   }
 }

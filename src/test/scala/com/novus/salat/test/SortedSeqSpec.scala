@@ -25,7 +25,7 @@ import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 
-class SalatSortedSeqSpec extends SalatSpec {
+class SortedSeqSpec extends SalatSpec {
   "a grater" should {
     "persist and retrieve sorted things" in {
 

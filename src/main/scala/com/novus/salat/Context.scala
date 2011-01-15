@@ -59,7 +59,7 @@ trait Context extends Logging {
       log.info("generate_?: c=%s, case class=%s", c, cc.getOrElse("[NOT FOUND]"))
       cc match {
         case  Some(clazz) if (clazz.isInterface) => {
-          log.warning("generate_?: clazz=%s is interface, no grater found")
+          log.warning("generate_?: clazz=%s is interface, no grater found", clazz)
           None
         }
         case Some(clazz) => {

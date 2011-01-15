@@ -25,7 +25,7 @@ import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 
-class SalatBasicCaseObjectSpec extends SalatSpec {
+class BasicCaseObjectSpec extends SalatSpec {
   "a grater" should {
     "make DBObject-s out of case class instances" in {
       "properly treat primitive values and optional values" in {

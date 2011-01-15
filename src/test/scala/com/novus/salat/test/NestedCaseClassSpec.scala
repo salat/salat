@@ -25,26 +25,28 @@ import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 
-class SalatEnumSupportSpec extends SalatSpec {
+class NestedCaseClassSpec extends SalatSpec {
+
+  // https://github.com/novus/salat/issues#issue/1
 
   "a grater" should {
-    "work with Scala enums" in {
-      "be able to serialize Scala enums" in {
-        val me = Me("max")
-        val g = grater[Me]
-        val dbo: MongoDBObject = g.asDBObject(me)
-        dbo("_typeHint") must_== classOf[Me].getName
-        dbo("state") must_== Frakked.BeyondRepair.toString
-      }
 
-      "be able to deserialize Scala enums" in {
-        val me = Me("max")
-        val g = grater[Me]
-        val dbo = g.asDBObject(me)
-        val me_* = g.asObject(dbo)
-        me must_== me_*
-      }
-    }
+    "handle a case object nested in a trait" in {
+
+      val e = TestApp.NestedCaseClassInATrait(foo = "Some Foo", bar = Some(-99), baz = Some(BigDecimal(scala.math.Pi.toString)))
+
+      // fails because signature can't be found  (parseScalaSig: clazz=com.novus.salat.test.model.SomeTrait$NestedCaseClassInATrait)
+      val dbo: MongoDBObject = grater[TestApp.NestedCaseClassInATrait].asDBObject(e)
+
+      dbo must havePair("foo" -> e.foo)
+      dbo must havePair("bar" -> e.bar.getOrElse(0))
+      dbo must havePair("baz" -> e.baz.getOrElse(BigDecimal("0")))
+
+      val e_* = grater[TestApp.NestedCaseClassInATrait].asObject(dbo)
+      e_* mustEqual e
+
+    } pendingUntilFixed
+
   }
 
 }

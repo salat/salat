@@ -90,3 +90,11 @@ trait SomeTrait {
 
 object TestApp extends SomeTrait
 
+
+
+@Salat
+trait SomeCommonTrait
+case class SomeSubclassExtendingSaidTrait(b: Int) extends SomeCommonTrait
+case class AnotherSubclassExtendingSaidTrait(d: Double) extends SomeCommonTrait
+
+case class SomeContainerClass(e: String, theListWhichNeedsToBeTested: List[SomeCommonTrait])
