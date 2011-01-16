@@ -22,6 +22,10 @@ class SalatProject(info: ProjectInfo) extends DefaultProject(info) with posterou
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default" withSources()
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default" withSources()
 
+  override def packageSrcJar= defaultJarPath("-sources.jar")
+  val sourceArtifact = Artifact.sources(artifactID)
+  override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
+
   val publishTo = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
     if (projectVersion.value.toString.endsWith("-SNAPSHOT")) "snapshots"
     else "releases"
