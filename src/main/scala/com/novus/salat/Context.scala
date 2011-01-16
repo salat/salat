@@ -114,7 +114,10 @@ trait Context extends Logging {
 
   def lookup(dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
     extractTypeHint(dbo) match {
-      case Some(hint: String) => graters.get(hint)
+      case Some(hint: String) => graters.get(hint) match {
+        case Some(g) => Some(g)
+        case None => generate_?(hint)
+      }
       case _ => None
     }
 

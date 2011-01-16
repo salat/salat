@@ -28,23 +28,64 @@ import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import com.mongodb.casbah.commons.Logging
 
+class MissingPickledSig(clazz: Class[_]) extends Error("Failed to parse pickled Scala signature from: %s".format(clazz))
+class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
+  .format(clazz))
+class MissingTopLevelClass(clazz: Class[_]) extends Error("Parsed pickled scala signature but found no top level class for: %s"
+  .format(clazz))
+class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String) extends Error("Didn't find owner=%s, outer=%s, inner=%s in pickled scala sig for %s"
+  .format(owner, outer, inner, clazz))
+
 abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends Logging {
   ctx.accept(this)
 
-  protected def parseScalaSig = {
-    ScalaSigParser.parse(clazz) match {
-      case None if clazz.getName.endsWith("$") =>
-        ScalaSigParser.parse(Class.forName(clazz.getName.replaceFirst("\\$$", "")))
+  protected def parseScalaSig: Option[ScalaSig] = {
+    // TODO: provide a cogent explanation for the process that is going on here, document the fork logic on the wiki
+    val firstPass = ScalaSigParser.parse(clazz)
+//    log.info("parseScalaSig: FIRST PASS on %s\n%s", clazz, firstPass)
+    firstPass match {
+      case Some(x) => {
+        log.info("1")
+        Some(x)
+      }
+      case None if clazz.getName.endsWith("$") => {
+//        log.info("2")
+        val clayy = Class.forName(clazz.getName.replaceFirst("\\$$", ""))
+        val secondPass = ScalaSigParser.parse(clayy)
+//        log.info("parseScalaSig: SECOND PASS on %s\n%s", clayy, secondPass)
+        secondPass
+      }
       case x => x
     }
   }
 
-  protected lazy val sym = parseScalaSig match {
-    case Some(x) =>
-      x.topLevelClasses.headOption.getOrElse(
-        x.topLevelObjects.headOption.getOrElse(
-          throw new Exception("parsed pickled Scala signature, but no expected type found: %s".format(clazz))))
-    case _ => throw new Exception("failed to parse pickled Scala signature from %s".format(clazz))
+  protected lazy val sym = {
+    val pss = parseScalaSig
+//    log.info("parseScalaSig: clazz=%\n%s", clazz, pss)
+    pss match {
+      case Some(x) => {
+        val topLevelClasses = x.topLevelClasses
+//        log.info("parseScalaSig: found top-level classes %s", topLevelClasses)
+        topLevelClasses.headOption match {
+          case Some(tlc) => {
+//            log.info("parseScalaSig: returning top-level class %s", tlc)
+            tlc
+          }
+          case None => {
+            val topLevelObjects = x.topLevelObjects
+//            log.info("parseScalaSig: found top-level objects %s", topLevelObjects)
+            topLevelObjects.headOption match {
+              case Some(tlo) => {
+//                log.info("parseScalaSig: returning top-level object %s", tlo)
+                tlo
+              }
+              case _ => throw new MissingExpectedType(clazz)
+            }
+          }
+        }
+      }
+      case None => throw new MissingPickledSig(clazz)
+    }
   }
 
   protected lazy val indexedFields = {
@@ -63,8 +104,19 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   lazy val companionClass = clazz.companionClass
   lazy val companionObject = clazz.companionObject
 
-  protected lazy val constructor: Option[Method] =
-    if (sym.isModule) None else companionClass.getMethods.filter(_.getName == "apply").headOption
+
+  protected lazy val constructor: Option[Method] = {
+//    log.info("constructor: sym=%s (isModule=%s)", sym, sym.isModule)
+    if (sym.isModule) {
+      None
+    }
+    else {
+//      log.info("companionClass: %s", companionClass)
+//      log.info("methods: %s", companionClass.getMethods.map(_.getName).mkString(", "))
+      companionClass.getMethods.filter(_.getName == "apply").headOption
+    }
+  }
+
 
   protected lazy val defaults: Seq[Option[Method]] = indexedFields.map {
     field => try {

@@ -12,23 +12,31 @@ class SalatTraitsCollectionsSpec extends SalatSpec {
   "a grater" should {
     "properly deserialize a raw DBObject" in {
 
-    // TODO: create an issue for this?
     // if you comment this block out, the second block fails with
     // no grater found for 'com.novus.salat.test.model.SomeCommonTrait' OR 'com.novus.salat.test.model.SomeSubclassExtendingSaidTrait' (Injectors.scala:166)
-      {
-        val obj = SomeContainerClass("1",
-          List(SomeSubclassExtendingSaidTrait(2),
-            AnotherSubclassExtendingSaidTrait(3.0),
-            SomeSubclassExtendingSaidTrait(4),
-            AnotherSubclassExtendingSaidTrait(5.0)))
-
-        val dbo: MongoDBObject = grater[SomeContainerClass].asDBObject(obj)
-
-        val obj_* = grater[SomeContainerClass].asObject(dbo)
-
-        obj must_== obj_*
-
-      }
+//      {
+//        val obj = SomeContainerClass("1",
+//          List(SomeSubclassExtendingSaidTrait(2),
+//            AnotherSubclassExtendingSaidTrait(3.0),
+//            SomeSubclassExtendingSaidTrait(4),
+//            AnotherSubclassExtendingSaidTrait(5.0)))
+//
+//        val dbo: MongoDBObject = grater[SomeContainerClass].asDBObject(obj)
+//        // Map(_typeHint -> com.novus.salat.test.model.SomeContainerClass,
+//        // e -> 1,
+//        // theListWhichNeedsToBeTested -> [
+//        // { "_typeHint" : "com.novus.salat.test.model.SomeSubclassExtendingSaidTrait" , "b" : 2} ,
+//        // { "_typeHint" : "com.novus.salat.test.model.AnotherSubclassExtendingSaidTrait" , "d" : 3.0} ,
+//        // { "_typeHint" : "com.novus.salat.test.model.SomeSubclassExtendingSaidTrait" , "b" : 4} ,
+//        // { "_typeHint" : "com.novus.salat.test.model.AnotherSubclassExtendingSaidTrait" , "d" : 5.0}
+//        // ]
+//        // )
+//
+//        val obj_* = grater[SomeContainerClass].asObject(dbo)
+//
+//        obj must_== obj_*
+//
+//      }
 
 
       {
@@ -56,7 +64,13 @@ class SalatTraitsCollectionsSpec extends SalatSpec {
 
         val dbo = containerClassBuilder.result
 
-        val obj = grater[SomeContainerClass].asObject(dbo)
+        val obj_* = grater[SomeContainerClass].asObject(dbo)
+
+        val obj = SomeContainerClass("some value for e",
+          List(SomeSubclassExtendingSaidTrait(2),
+            AnotherSubclassExtendingSaidTrait(3.0)))
+
+        obj_* mustEqual obj
 
       }
 
