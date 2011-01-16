@@ -46,7 +46,7 @@ trait Context extends Logging {
   // encoders.
   protected def suitable_?(clazz: String): Boolean = {
     val s = !(clazz.startsWith("scala.") || clazz.startsWith("java.") || clazz.startsWith("javax.")) || getClassNamed(clazz).map(_.annotated_?[Salat]).getOrElse(false)
-    log.info("suitable_?: clazz=%s, suitable=%s", clazz, s)
+//    log.info("suitable_?: clazz=%s, suitable=%s", clazz, s)
     s
   }
 
@@ -56,18 +56,18 @@ trait Context extends Logging {
   protected def generate_?(c: String): Option[Grater[_ <: CaseClass]] = {
     if (suitable_?(c)) {
       val cc = getCaseClass(c)
-      log.info("generate_?: c=%s, case class=%s", c, cc.getOrElse("[NOT FOUND]"))
+//      log.info("generate_?: c=%s, case class=%s", c, cc.getOrElse("[NOT FOUND]"))
       cc match {
         case  Some(clazz) if (clazz.isInterface) => {
-          log.warning("generate_?: clazz=%s is interface, no grater found", clazz)
+//          log.warning("generate_?: clazz=%s is interface, no grater found", clazz)
           None
         }
         case Some(clazz) => {
-          log.info("generate_?: creating Grater[CaseClass] for clazz=%s", clazz)
+//          log.info("generate_?: creating Grater[CaseClass] for clazz=%s", clazz)
           Some({ new Grater[CaseClass](clazz)(this) {} }.asInstanceOf[Grater[CaseClass]])
         }
         case unknown => {
-          log.warning("generate_?: no idea what to do with cc=%s", unknown)
+//          log.warning("generate_?: no idea what to do with cc=%s", unknown)
           None
         }
       }

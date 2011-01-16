@@ -45,7 +45,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 //    log.info("parseScalaSig: FIRST PASS on %s\n%s", clazz, firstPass)
     firstPass match {
       case Some(x) => {
-        log.info("1")
+//        log.info("1")
         Some(x)
       }
       case None if clazz.getName.endsWith("$") => {
