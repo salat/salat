@@ -28,5 +28,5 @@ package object global {
     val name = Some("global-no-type-hints")
     override val typeHint = None
   }
-  implicit val mathCtx = new MathContext(16, RoundingMode.HALF_UP)
+  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
 }

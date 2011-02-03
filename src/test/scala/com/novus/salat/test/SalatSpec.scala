@@ -33,5 +33,5 @@ trait SalatSpec extends Specification with PendingUntilFixed with Logging {
     com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
   }
 
-
+  val SalatSpecDb = "test_salat"
 }
