@@ -28,23 +28,23 @@ import scala.math.{BigDecimal => ScalaBigDecimal}
 
 package object test {
 
-  def graph = A("x", Some("y"),
-    B(Some(80), 81,
-      C(Seq("l1", "l2"), List(1, 2), List(
-        D(IMap("foo1" -> A("foo", None, B(p = None, r = C(m = Nil, n = Nil))),
-          "baz1" -> A("baz", Some("quux"), B(p = None, r = C(m = Nil, n = Nil)))),
+  def graph = Alice("x", Some("y"),
+    Basil(Some(80), 81,
+      Clara(Seq("l1", "l2"), List(1, 2), List(
+        Desmond(IMap("foo1" -> Alice("foo", None, Basil(p = None, r = Clara(m = Nil, n = Nil))),
+          "baz1" -> Alice("baz", Some("quux"), Basil(p = None, r = Clara(m = Nil, n = Nil)))),
           MMap("a1" -> 1, "c1" -> 2),
-          Some(B(
-            None, 24, C(
+          Some(Basil(
+            None, 24, Clara(
               List("l3", "l4"), List(1, 2, 3), Nil))))))))
 
-  def numbers = E(a = "a value", aa = None, aaa = Some("aaa value"),
+  def numbers = Edward(a = "a value", aa = None, aaa = Some("aaa value"),
     b = 2, bb = None, bbb = Some(22),
     c = ScalaBigDecimal(3.30003), cc = None, ccc = Some(ScalaBigDecimal(33.30003)))
 
-  def mucho_numbers(factor: Long = 10) = F((0L until factor).toList.map {
+  def mucho_numbers(factor: Long = 10) = Fanny((0L until factor).toList.map {
     i =>
-      E(
+      Edward(
         a = "a %d".format(i), aa = Some("aa %d".format(i)), aaa = None,
         b = (i * i * 123 / 1000).toInt, bb = None, bbb = Some((i * i * 321 / 100).toInt),
         c = ScalaBigDecimal((i * i).toDouble / 123d, mathCtx), cc = None, ccc = None

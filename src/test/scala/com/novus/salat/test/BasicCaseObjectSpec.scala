@@ -30,7 +30,7 @@ class BasicCaseObjectSpec extends SalatSpec {
     "make DBObject-s out of case class instances" in {
       "properly treat primitive values and optional values" in {
         val e = numbers
-        val dbo: MongoDBObject = grater[E].asDBObject(e)
+        val dbo: MongoDBObject = grater[Edward].asDBObject(e)
 
         log.info("before: %s", e)
         log.info("after : %s", dbo.asDBObject)
@@ -50,7 +50,7 @@ class BasicCaseObjectSpec extends SalatSpec {
 
       "work with object graphs" in {
         val a = graph
-        val dbo: MongoDBObject = grater[A].asDBObject(a)
+        val dbo: MongoDBObject = grater[Alice].asDBObject(a)
         log.info("before: %s", a)
         log.info("after : %s", dbo.asDBObject)
         dbo must havePair("x" -> "x")
@@ -60,13 +60,13 @@ class BasicCaseObjectSpec extends SalatSpec {
     "instantiate case class instances using data from DBObject-s" in {
       "cover primitive types" in {
         val e = numbers
-        val e_* = grater[E].asObject(grater[E].asDBObject(e))
+        val e_* = grater[Edward].asObject(grater[Edward].asDBObject(e))
         e_* must_== e
       }
 
       "and silly object graphs" in {
         val a = graph
-        val a_* = grater[A].asObject(grater[A].asDBObject(a))
+        val a_* = grater[Alice].asObject(grater[Alice].asDBObject(a))
         // these two checks are *very* naive, but it's hard to compare
         // unordered maps and expect them to come out equal.
         a_*.z.p must_== a.z.p
@@ -75,9 +75,9 @@ class BasicCaseObjectSpec extends SalatSpec {
 
       "and also object graphs of even sillier shapes" in {
         val f = mucho_numbers()
-        val dbo: MongoDBObject = grater[F].asDBObject(f)
+        val dbo: MongoDBObject = grater[Fanny].asDBObject(f)
         dbo.get("complicated") must beSome[AnyRef]
-        val f_* = grater[F].asObject(dbo)
+        val f_* = grater[Fanny].asObject(dbo)
         f_* must_== f
       }
     }

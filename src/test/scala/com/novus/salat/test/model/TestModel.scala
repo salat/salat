@@ -30,21 +30,22 @@ import com.novus.salat.test._
 
 import scala.collection.immutable.{Map => IMap}
 import scala.collection.mutable.{Map => MMap}
-import scala.math.{BigDecimal => ScalaBigDecimal}
 
-case class A(x: String, y: Option[String] = Some("default y"), z: B)
-case class B(p: Option[Int], q: Int = 1067, r: C)
-case class C(l: Seq[String] = Nil, m: List[Int], n: List[D])
-case class D(h: IMap[String, A], i: MMap[String, Int] = MMap.empty, j: Option[B])
+case class Alice(x: String, y: Option[String] = Some("default y"), z: Basil)
+case class Basil(p: Option[Int], q: Int = 1067, r: Clara)
+case class Clara(l: Seq[String] = Nil, m: List[Int], n: List[Desmond])
+case class Desmond(h: IMap[String, Alice], i: MMap[String, Int] = MMap.empty, j: Option[Basil])
 
-case class E(a:          String,           b:        Int,           c:        ScalaBigDecimal,
-             aa:  Option[String] = None,  bb: Option[Int] = None,  cc: Option[ScalaBigDecimal] = None,
-             aaa: Option[String],        bbb: Option[Int],        ccc: Option[ScalaBigDecimal])
+case class Edward(a:          String,           b:        Int,           c:        BigDecimal,
+             aa:  Option[String] = None,  bb: Option[Int] = None,  cc: Option[BigDecimal] = None,
+             aaa: Option[String],        bbb: Option[Int],        ccc: Option[BigDecimal])
 
-case class F(@Key("complicated") es: List[E])
+case class Fanny(@Key("complicated") es: List[Edward])
 
-case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
-case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
+case class George(number: BigDecimal, someNumber: Option[BigDecimal])
+
+case class Employee(name: String, age: Option[Int], annual_salary: Option[BigDecimal])
+case class Department(name: String, head_honcho: Option[Employee], cya_factor: BigDecimal, minions: List[Employee])
 case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])
 
 case class Walrus[W](manyThings: Seq[W])
