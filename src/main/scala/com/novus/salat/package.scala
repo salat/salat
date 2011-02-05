@@ -4,8 +4,9 @@ import com.mongodb.casbah.Imports._
 
 import java.math.BigInteger
 import com.novus.salat.{Grater, Context}
+import com.mongodb.casbah.commons.Logging
 
-package object salat {
+package object salat extends Logging {
 
   type CaseClass = AnyRef with Product
   val TypeHint = "_typeHint"
@@ -20,8 +21,10 @@ package object salat {
   def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup_![X](m)
 
   protected[salat] def getClassNamed(c: String)(implicit classLoaders: Seq[ClassLoader]): Option[Class[_]] = {
+//    log.info("getClassNamed(): looking for %s in %d classloaders", c, classLoaders.size)
     try {
       var clazz: Class[_] = null
+//      var count = 0
       val iter = classLoaders.iterator
       while (clazz == null && iter.hasNext) {
         try {
@@ -30,6 +33,9 @@ package object salat {
         catch {
           case e: ClassNotFoundException => // keep going, maybe it's in the next one
         }
+
+//        log.info("getClassNamed: %s %s in classloader %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), count, classLoaders.size)
+//        count += 1
       }
 
       if (clazz != null) Some(clazz) else None

@@ -32,12 +32,13 @@ trait Context extends Logging {
   private[salat] val graters: MMap[String, Grater[_ <: CaseClass]] = HashMap.empty
 
   val name: Option[String]
-  implicit val classLoaders: scala.collection.mutable.Seq[ClassLoader] = scala.collection.mutable.Seq(getClass.getClassLoader)
+  implicit var classLoaders: Seq[ClassLoader] = Seq(getClass.getClassLoader)
   val typeHint: Option[String] = Some(TypeHint)
 
   def registerClassLoader(cl: ClassLoader): Unit = {
     // any explicitly-registered classloader is assumed to take priority over the boot time classloader
-    cl +: classLoaders
+    classLoaders = (Seq.newBuilder[ClassLoader] += cl ++= classLoaders).result
+    log.info("Context: registering classloader %d", classLoaders.size)
   }
 
   def accept(grater: Grater[_ <: CaseClass]): Unit =
