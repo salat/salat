@@ -19,16 +19,27 @@ package object salat {
 
   def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup_![X](m)
 
-  protected[salat] def getClassNamed(c: String): Option[Class[_]] = {
+  protected[salat] def getClassNamed(c: String)(implicit classLoaders: Seq[ClassLoader]): Option[Class[_]] = {
     try {
-      Some(Class.forName(c))
+      var clazz: Class[_] = null
+      val iter = classLoaders.iterator
+      while (clazz == null && iter.hasNext) {
+        try {
+          clazz = Class.forName(c, true, iter.next)
+        }
+        catch {
+          case e: ClassNotFoundException => // keep going, maybe it's in the next one
+        }
+      }
+
+      if (clazz != null) Some(clazz) else None
     }
     catch {
       case _ => None
     }
   }
 
-  protected[salat] def getCaseClass(c: String): Option[Class[CaseClass]] =
+  protected[salat] def getCaseClass(c: String)(implicit classLoaders: Seq[ClassLoader]): Option[Class[CaseClass]] =
     getClassNamed(c).map(_.asInstanceOf[Class[CaseClass]])
 
   implicit def shortenOID(oid: ObjectId) = new {

@@ -71,7 +71,7 @@ object IsTrait extends Logging {
   def unapply(t: TypeRefType): Option[Type] = t match {
     case t @ TypeRefType(_, symbol, _) => {
       try {
-        getClassNamed(symbol.path) match {
+        getClassNamed(symbol.path)(com.novus.salat.global.ctx.classLoaders) match {
           case Some(clazz: Class[_]) => {
             val parsed = ScalaSigParser.parse(clazz).get.topLevelClasses.head
             if (parsed.isTrait) {

@@ -32,7 +32,13 @@ trait Context extends Logging {
   private[salat] val graters: MMap[String, Grater[_ <: CaseClass]] = HashMap.empty
 
   val name: Option[String]
+  implicit val classLoaders: scala.collection.mutable.Seq[ClassLoader] = scala.collection.mutable.Seq(getClass.getClassLoader)
   val typeHint: Option[String] = Some(TypeHint)
+
+  def registerClassLoader(cl: ClassLoader): Unit = {
+    // any explicitly-registered classloader is assumed to take priority over the boot time classloader
+    cl +: classLoaders
+  }
 
   def accept(grater: Grater[_ <: CaseClass]): Unit =
     if (!graters.contains(grater.clazz.getName)) {
@@ -45,7 +51,10 @@ trait Context extends Logging {
   // interoperable with MongoDB, or are handled by Casbah's BSON
   // encoders.
   protected def suitable_?(clazz: String): Boolean = {
-    val s = !(clazz.startsWith("scala.") || clazz.startsWith("java.") || clazz.startsWith("javax.")) || getClassNamed(clazz).map(_.annotated_?[Salat]).getOrElse(false)
+    val s = !(clazz.startsWith("scala.") ||
+      clazz.startsWith("java.") ||
+      clazz.startsWith("javax.")) ||
+      getClassNamed(clazz).map(_.annotated_?[Salat]).getOrElse(false)
 //    log.info("suitable_?: clazz=%s, suitable=%s", clazz, s)
     s
   }
