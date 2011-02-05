@@ -68,10 +68,10 @@ object IsTrait extends Logging {
     throw new Exception("NB: trait %s must be annotated with @com.novus.salat.annotations.Salat " +
                         "in order to be picked up by this library. See the docs for more details.".format(t.getName))
 
-  def unapply(t: TypeRefType): Option[Type] = t match {
+  def unapply(t: TypeRefType)(implicit ctx: Context): Option[Type] = t match {
     case t @ TypeRefType(_, symbol, _) => {
       try {
-        getClassNamed(symbol.path)(com.novus.salat.global.ctx.classLoaders) match {
+        getClassNamed(symbol.path)(ctx.classLoaders) match {
           case Some(clazz: Class[_]) => {
             val parsed = ScalaSigParser.parse(clazz).get.topLevelClasses.head
             if (parsed.isTrait) {
