@@ -20,12 +20,12 @@ package object salat extends Logging {
 
   def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup_![X](m)
 
-  protected[salat] def getClassNamed(c: String)(implicit classLoaders: Seq[ClassLoader]): Option[Class[_]] = {
-//    log.info("getClassNamed(): looking for %s in %d classloaders", c, classLoaders.size)
+  protected[salat] def getClassNamed(c: String)(implicit ctx: Context): Option[Class[_]] = {
+//    log.info("getClassNamed(): looking for %s in %d classloaders", c, ctx.classLoaders.size)
     try {
       var clazz: Class[_] = null
 //      var count = 0
-      val iter = classLoaders.iterator
+      val iter = ctx.classLoaders.iterator
       while (clazz == null && iter.hasNext) {
         try {
           clazz = Class.forName(c, true, iter.next)
@@ -34,7 +34,7 @@ package object salat extends Logging {
           case e: ClassNotFoundException => // keep going, maybe it's in the next one
         }
 
-//        log.info("getClassNamed: %s %s in classloader %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), count, classLoaders.size)
+//        log.info("getClassNamed: %s %s in classloader %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), count, ctx.classLoaders.size)
 //        count += 1
       }
 
@@ -45,7 +45,7 @@ package object salat extends Logging {
     }
   }
 
-  protected[salat] def getCaseClass(c: String)(implicit classLoaders: Seq[ClassLoader]): Option[Class[CaseClass]] =
+  protected[salat] def getCaseClass(c: String)(implicit ctx: Context): Option[Class[CaseClass]] =
     getClassNamed(c).map(_.asInstanceOf[Class[CaseClass]])
 
   implicit def shortenOID(oid: ObjectId) = new {

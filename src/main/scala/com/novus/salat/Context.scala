@@ -55,7 +55,7 @@ trait Context extends Logging {
     val s = !(clazz.startsWith("scala.") ||
       clazz.startsWith("java.") ||
       clazz.startsWith("javax.")) ||
-      getClassNamed(clazz).map(_.annotated_?[Salat]).getOrElse(false)
+      getClassNamed(clazz)(this).map(_.annotated_?[Salat]).getOrElse(false)
 //    log.info("suitable_?: clazz=%s, suitable=%s", clazz, s)
     s
   }
@@ -65,7 +65,7 @@ trait Context extends Logging {
 
   protected def generate_?(c: String): Option[Grater[_ <: CaseClass]] = {
     if (suitable_?(c)) {
-      val cc = getCaseClass(c)
+      val cc = getCaseClass(c)(this)
 //      log.info("generate_?: c=%s, case class=%s", c, cc.getOrElse("[NOT FOUND]"))
       cc match {
         case  Some(clazz) if (clazz.isInterface) => {

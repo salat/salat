@@ -4,9 +4,10 @@
 package com.novus.salat.test
 
 import org.specs.specification.PendingUntilFixed
-import com.novus.salat.test.model.Alice
+import com.novus.salat.test.model.{Alice, Walrus}
 import com.novus.salat._
 import scala.tools.nsc.util.ScalaClassLoader
+import com.mongodb.casbah.Imports._
 
 class CustomContextSpec extends SalatSpec with PendingUntilFixed {
 
@@ -24,7 +25,7 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
 
       // members of com.novus.salat.test.model can be resolved as expected
       ctx.classLoaders(0) mustEqual Alice.getClass.getClassLoader
-      getClassNamed(Alice.getClass.getName)(ctx.classLoaders) must beSome(Alice.getClass)
+      getClassNamed(Alice.getClass.getName)(ctx) must beSome(Alice.getClass)
     }
 
     "provide flexible classloader handling" in {
@@ -58,16 +59,25 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
         default mustEqual ctx.getClass.getClassLoader
 
         // we can resolve a class from the default classloader
-        getClassNamed(Alice.getClass.getName)(ctx.classLoaders) must beSome(Alice.getClass)
+        getClassNamed(Alice.getClass.getName)(ctx) must beSome(Alice.getClass)
         // we can resolve an imaginary text class from the custom classloader
-        getClassNamed(TestClassName)(ctx.classLoaders) must notBeEmpty
+        getClassNamed(TestClassName)(ctx) must beSome(Class.forName(TestClassName, true, customCl))
 
         // But from where?  Now try to force resolution from specific class loader and see what happens
-        getClassNamed(Alice.getClass.getName)(Seq(custom)) must beNone
-        getClassNamed(Alice.getClass.getName)(Seq(default)) must beSome(Alice.getClass)
-        getClassNamed(TestClassName)(Seq(custom)) must notBeEmpty
-        // well, with a full-on classloader mock, this might be possible - let's just settle for, it resolves in both but by order it
-        // is obviously resolving from the custom
+        getClassNamed(Alice.getClass.getName)(new Context() {
+          val name = Some("custom only")
+          classLoaders = Seq(custom)
+        }) must beNone
+        getClassNamed(Alice.getClass.getName)(new Context() {
+          val name = Some("default only")
+          classLoaders = Seq(default)
+        }) must beSome(Alice.getClass)
+        getClassNamed(TestClassName)(new Context() {
+          val name = Some("custom only")
+          classLoaders = Seq(custom)
+        }) must beSome(Class.forName(TestClassName, true, customCl))
+        // well, with a full-on classloader mock, this might be possible - let's just settle for, it resolves in both classloaders
+        // but by because custom precedes default it is obviously resolving from the custom
 //        getClassNamed(TestClassName)(Seq(default)) must beNone
       }
 
@@ -99,13 +109,35 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
         ctx.classLoaders must notContain(ctx.getClass.getClassLoader)
 
         // resolving a class from the default classloader doesn't work
-        getClassNamed(Alice.getClass.getName)(ctx.classLoaders) must beNone
+        getClassNamed(Alice.getClass.getName)(ctx) must beNone
         // resolving a class from our custom classloader does
-        getClassNamed(TestClassName)(ctx.classLoaders) must notBeEmpty
+        getClassNamed(TestClassName)(ctx) must notBeEmpty
+      }
+
+      "percolate a custom context down the entire chain" in {
+        val CustomContextName = "CustomContextSpec-4"
+        implicit val ctx = new Context {
+          val name = Some(CustomContextName)
+        }
+
+        ctx.name must beSome(CustomContextName)
+        ctx.classLoaders must haveSize(1)
+
+        ctx.registerClassLoader(customCl)
+        ctx.classLoaders must haveSize(2)
+
+        // we can resolve a class from the default classloader and get a working grater for it
+        getClassNamed(Walrus.getClass.getName) must beSome(Walrus.getClass)
+        val w = Walrus(Seq("a", "b", "C"))
+        val dbo: MongoDBObject = grater[Walrus[String]].asDBObject(w)
+        dbo.get("manyThings") must beSome[AnyRef]
+        val w_* = grater[Walrus[String]].asObject(dbo)
+        w_* mustEqual w
+
       }
 
     }
 
-  }
 
+  }
 }
