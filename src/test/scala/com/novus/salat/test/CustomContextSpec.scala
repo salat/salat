@@ -8,6 +8,7 @@ import com.novus.salat.test.model.{Alice, Walrus}
 import com.novus.salat._
 import scala.tools.nsc.util.ScalaClassLoader
 import com.mongodb.casbah.Imports._
+import scala.reflect.Manifest
 
 class CustomContextSpec extends SalatSpec with PendingUntilFixed {
 
@@ -31,14 +32,16 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
     "provide flexible classloader handling" in {
 
       val TestClassName = "com.novus.salat.test.CustomContextSpec$$anonfun$1$$anonfun$apply$10$$anon$2$Ida"
-      val customCl: ClassLoader = new ScalaClassLoader() {
-        case class Ida(lake: BigDecimal, drowned: Boolean)
+
+      val customCl = new ScalaClassLoader() {
+        case class Ida(lake: Int = 10, drowned: Boolean = true)
         override def findClass(name: String): Class[_] = if (name == TestClassName) {
-          log.info("CustomContextSpec: custom classloader returning %s for %s", classOf[Ida], name)
+          log.info("CustomContextSpec: custom classloader returning Class[_] %s for %s", classOf[Ida], name)
           classOf[Ida]
         }
         else throw new ClassNotFoundException
       }
+      val testClassForName = Class.forName(TestClassName, true, customCl)
 
       "allow registration of custom classloaders that precede the default classloader" in {
         val CustomContextName = "CustomContextSpec-2"
@@ -61,7 +64,7 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
         // we can resolve a class from the default classloader
         getClassNamed(Alice.getClass.getName)(ctx) must beSome(Alice.getClass)
         // we can resolve an imaginary text class from the custom classloader
-        getClassNamed(TestClassName)(ctx) must beSome(Class.forName(TestClassName, true, customCl))
+        getClassNamed(TestClassName)(ctx) must beSome(testClassForName)
 
         // But from where?  Now try to force resolution from specific class loader and see what happens
         getClassNamed(Alice.getClass.getName)(new Context() {
@@ -75,7 +78,7 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
         getClassNamed(TestClassName)(new Context() {
           val name = Some("custom only")
           classLoaders = Seq(custom)
-        }) must beSome(Class.forName(TestClassName, true, customCl))
+        }) must beSome(testClassForName)
         // well, with a full-on classloader mock, this might be possible - let's just settle for, it resolves in both classloaders
         // but by because custom precedes default it is obviously resolving from the custom
 //        getClassNamed(TestClassName)(Seq(default)) must beNone
@@ -134,8 +137,11 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
         val w_* = grater[Walrus[String]].asObject(dbo)
         w_* mustEqual w
 
-      }
+        // we can resolve a class from the custom classloader
+        getClassNamed(TestClassName) must beSome(testClassForName)
 
+        // TODO: try to get grubby hands on a grater
+      }
     }
 
 
