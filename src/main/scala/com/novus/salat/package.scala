@@ -34,7 +34,7 @@ package object salat extends Logging {
           case e: ClassNotFoundException => // keep going, maybe it's in the next one
         }
 
-//        log.info("getClassNamed: %s %s in classloader %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), count, ctx.classLoaders.size)
+//        log.info("getClassNamed: %s %s in classloader '%s' %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), ctx.name.getOrElse("N/A"), count, ctx.classLoaders.size)
 //        count += 1
       }
 
