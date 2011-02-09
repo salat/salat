@@ -35,11 +35,11 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
 
 abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) {
-  def transform(value: Any): Any = value
-  def before(value: Any): Option[Any] = Some(value)
-  def after(value: Any): Option[Any] = Some(value)
+  def transform(value: Any)(implicit ctx: Context): Any = value
+  def before(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
+  def after(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
 
-  def transform_!(x: Any): Option[Any] =
+  def transform_!(x: Any)(implicit ctx: Context): Option[Any] =
     before(x) match {
       case Some(x) => after(transform(x))
       case _ => None

@@ -21,13 +21,13 @@
 package com.novus.salat.test
 
 import com.novus.salat._
-import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 
 class EnumSupportSpec extends SalatSpec {
 
   "a grater" should {
+    import com.novus.salat.global._
     "work with Scala enums" in {
       "be able to serialize Scala enums" in {
         val me = Me("max")
@@ -45,6 +45,43 @@ class EnumSupportSpec extends SalatSpec {
         me must_== me_*
       }
     }
+  }
+
+  "a context" should {
+
+    val h = Hector(thug = ThugLevel.Three, doneIn = DoneIn.OhDear)
+
+    "provide a default enum handling strategy of toString" in {
+      import com.novus.salat.global._
+
+      ctx.defaultEnumStrategy mustEqual EnumStrategy.BY_VALUE
+
+      val dbo: MongoDBObject = grater[Hector].asDBObject(h)
+      dbo must havePair("thug" -> "Just a good boy who loves his mum")
+      dbo must havePair("doneIn" -> "OhDear")
+
+      val h_* = grater[Hector].asObject(dbo)
+      h_* mustEqual h
+    }
+
+    "allow for context-level custom enum handling strategy" in {
+      implicit val ctx = new Context {
+        val name = Some("EnumSupportSpec-1")
+        override val defaultEnumStrategy = EnumStrategy.BY_ID
+      }
+
+      ctx.defaultEnumStrategy mustEqual EnumStrategy.BY_ID
+
+      val dbo: MongoDBObject = grater[Hector].asDBObject(h)
+      dbo must havePair("thug" -> 2)
+      dbo must havePair("doneIn" -> 3)
+
+      val h_* = grater[Hector].asObject(dbo)
+      h_* mustEqual h
+
+    }
+
+
   }
 
 }

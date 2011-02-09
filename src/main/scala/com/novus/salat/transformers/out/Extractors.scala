@@ -124,14 +124,14 @@ package out {
 
 trait SBigDecimalToDouble extends Transformer {
   self: Transformer =>
-  override def transform(value: Any): Any = value match {
+  override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case sbd: ScalaBigDecimal => sbd(mathCtx).toDouble
   }
 }
 
 trait InContextToDBObject extends Transformer with InContextTransformer {
   self: Transformer =>
-  override def transform(value: Any): Any = value match {
+  override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case cc: CaseClass => ctx.lookup_!(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc)
     case _ => MongoDBObject("failed-to-convert" -> value.toString)
   }
@@ -139,7 +139,7 @@ trait InContextToDBObject extends Transformer with InContextTransformer {
 
 trait OptionExtractor extends Transformer {
   self: Transformer =>
-  override def before(value: Any): Option[Any] = value match {
+  override def before(value: Any)(implicit ctx: Context):Option[Any] = value match {
     case Some(value) => Some(super.transform(value))
     case _ => None
   }
@@ -147,9 +147,9 @@ trait OptionExtractor extends Transformer {
 
 trait SeqExtractor extends Transformer {
   self: Transformer =>
-  override def transform(value: Any): Any = value
+  override def transform(value: Any)(implicit ctx: Context): Any = value
 
-  override def after(value: Any): Option[Any] = value match {
+  override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
     case seq: Seq[_] =>
       Some(MongoDBList(seq.map {
         case el => super.transform(el)
@@ -160,9 +160,9 @@ trait SeqExtractor extends Transformer {
 
 trait MapExtractor extends Transformer {
   self: Transformer =>
-  override def transform(value: Any): Any = value
+  override def transform(value: Any)(implicit ctx: Context): Any = value
 
-  override def after(value: Any): Option[Any] = value match {
+  override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
     case map: Map[String, _] => {
       val builder = MongoDBObject.newBuilder
       map.foreach {
@@ -179,8 +179,9 @@ trait MapExtractor extends Transformer {
 
 trait EnumStringifier extends Transformer {
   self: Transformer =>
-  override def transform(value: Any): Any = value match {
-    case ev: Enumeration#Value => ev.toString
+  override def transform(value: Any)(implicit ctx: Context): Any = value match {
+    case ev: Enumeration#Value if ctx.defaultEnumStrategy == EnumStrategy.BY_VALUE => ev.toString
+    case ev: Enumeration#Value if ctx.defaultEnumStrategy == EnumStrategy.BY_ID => ev.id
   }
 }
 

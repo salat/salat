@@ -142,16 +142,18 @@ package object in {
 
 package in {
 
+import java.lang.Integer
+
 trait DoubleToSBigDecimal extends Transformer {
   self: Transformer =>
-  override def transform(value: Any): Any = value match {
+  override def transform(value: Any)(implicit ctx: Context):Any = value match {
     case d: Double => ScalaBigDecimal(d.toString, mathCtx)
   }
 }
 
 trait DBObjectToInContext extends Transformer with InContextTransformer with Logging {
   self: Transformer =>
-  override def before(value: Any): Option[Any] = value match {
+  override def before(value: Any)(implicit ctx: Context):Option[Any] = value match {
     case dbo: DBObject => {
       val mdbo: MongoDBObject = dbo
       Some(mdbo)
@@ -165,7 +167,7 @@ trait DBObjectToInContext extends Transformer with InContextTransformer with Log
       grater => grater.asObject(dbo).asInstanceOf[CaseClass]
     }.getOrElse(throw new Exception("no grater found for '%s' OR '%s'".format(path, dbo(ctx.typeHint.getOrElse(TypeHint)))))
 
-  override def transform(value: Any): Any = value match {
+  override def transform(value: Any)(implicit ctx: Context):Any = value match {
     case dbo: DBObject => transform0(dbo)
     case mdbo: MongoDBObject => transform0(mdbo)
   }
@@ -173,7 +175,7 @@ trait DBObjectToInContext extends Transformer with InContextTransformer with Log
 
 trait OptionInjector extends Transformer {
   self: Transformer =>
-  override def after(value: Any): Option[Any] = value match {
+  override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
     case value if value != null => Some(Some(value))
     case _ => Some(None)
   }
@@ -181,9 +183,9 @@ trait OptionInjector extends Transformer {
 
 trait SeqInjector extends Transformer {
   self: Transformer =>
-  override def transform(value: Any): Any = value
+  override def transform(value: Any)(implicit ctx: Context):Any = value
 
-  override def before(value: Any): Option[Any] = value match {
+  override def before(value: Any)(implicit ctx: Context):Option[Any] = value match {
     case dbl: BasicDBList => {
       val list: MongoDBList = dbl
       Some(list.toList)
@@ -191,7 +193,7 @@ trait SeqInjector extends Transformer {
     case _ => None
   }
 
-  override def after(value: Any): Option[Any] = value match {
+  override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
     case list: Seq[Any] => Some(seqImpl(parentType, list.map {
       el => super.transform(el)
     }))
@@ -203,9 +205,9 @@ trait SeqInjector extends Transformer {
 
 trait MapInjector extends Transformer {
   self: Transformer =>
-  override def transform(value: Any): Any = value
+  override def transform(value: Any)(implicit ctx: Context):Any = value
 
-  override def before(value: Any): Option[Any] = value match {
+  override def before(value: Any)(implicit ctx: Context):Option[Any] = value match {
     case dbo: DBObject => {
       val mdbo: MongoDBObject = dbo
       Some(mdbo)
@@ -213,7 +215,7 @@ trait MapInjector extends Transformer {
     case _ => None
   }
 
-  override def after(value: Any): Option[Any] = value match {
+  override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
     case mdbo: MongoDBObject => {
       val builder = MongoDBObject.newBuilder
       mdbo.foreach {
@@ -227,7 +229,7 @@ trait MapInjector extends Transformer {
   val parentType: TypeRefType
 }
 
-trait EnumInflater extends Transformer {
+trait EnumInflater extends Transformer with Logging {
   self: Transformer =>
 
   val clazz = Class.forName(path)
@@ -236,9 +238,34 @@ trait EnumInflater extends Transformer {
     val ms = clazz.getDeclaredMethods
     ms.filter(_.getName == "withName").head
   }
+  val applyInt: Method = {
+    val ms = clazz.getDeclaredMethods
+    ms.filter(_.getName == "apply").head
+  }
 
-  override def transform(value: Any): Any = value match {
-    case name: String => withName.invoke(companion, name)
+  object IsInt {
+    def unapply(s: String): Option[Int] = s match {
+      case s if s != null && s.nonEmpty => try {
+        Some(s.toInt)
+      }
+      catch {
+        case _: java.lang.NumberFormatException => None
+      }
+      case _ => None
+    }
+
+  }
+
+
+  override def transform(value: Any)(implicit ctx: Context): Any = value match {
+    case name: String if ctx.defaultEnumStrategy == EnumStrategy.BY_VALUE => withName.invoke(companion, name)
+    case id: Int if ctx.defaultEnumStrategy == EnumStrategy.BY_ID => applyInt.invoke(companion, id.asInstanceOf[Integer])
+    // TODO: not completely sure if this would happen or not, but give it a go...
+    case name: String if ctx.defaultEnumStrategy == EnumStrategy.BY_ID => name match {
+      case IsInt(id) => applyInt.invoke(companion, id.asInstanceOf[Integer])
+    }
+    case x => throw new UnsupportedOperationException("Not sure how to handle '%s' as enum of class %s using strategy %s".format(x,
+      clazz.getName, ctx.defaultEnumStrategy))
   }
 }
 

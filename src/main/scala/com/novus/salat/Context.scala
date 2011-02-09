@@ -35,6 +35,9 @@ trait Context extends Logging {
   implicit var classLoaders: Seq[ClassLoader] = Seq(getClass.getClassLoader)
   val typeHint: Option[String] = Some(TypeHint)
 
+  // sets up a default enum strategy of using toString to serialize/deserialize enums
+  val defaultEnumStrategy = EnumStrategy.BY_VALUE
+
   def registerClassLoader(cl: ClassLoader): Unit = {
     // any explicitly-registered classloader is assumed to take priority over the boot time classloader
     classLoaders = (Seq.newBuilder[ClassLoader] += cl ++= classLoaders).result
