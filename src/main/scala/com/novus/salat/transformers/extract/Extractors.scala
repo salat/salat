@@ -122,6 +122,8 @@ package object out {
 
 package out {
 
+import com.novus.salat.annotations.EnumAs
+
 trait SBigDecimalToDouble extends Transformer {
   self: Transformer =>
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
@@ -179,9 +181,15 @@ trait MapExtractor extends Transformer {
 
 trait EnumStringifier extends Transformer {
   self: Transformer =>
+
+  val strategy = Class.forName(path).getAnnotation(classOf[EnumAs]) match {
+    case specific: EnumAs => specific.strategy
+    case _ => ctx.defaultEnumStrategy
+  }
+
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
-    case ev: Enumeration#Value if ctx.defaultEnumStrategy == EnumStrategy.BY_VALUE => ev.toString
-    case ev: Enumeration#Value if ctx.defaultEnumStrategy == EnumStrategy.BY_ID => ev.id
+    case ev: Enumeration#Value if strategy == EnumStrategy.BY_VALUE => ev.toString
+    case ev: Enumeration#Value if strategy == EnumStrategy.BY_ID => ev.id
   }
 }
 

@@ -143,6 +143,7 @@ package object in {
 package in {
 
 import java.lang.Integer
+import com.novus.salat.annotations.EnumAs
 
 trait DoubleToSBigDecimal extends Transformer {
   self: Transformer =>
@@ -229,11 +230,15 @@ trait MapInjector extends Transformer {
   val parentType: TypeRefType
 }
 
+class EnumInflaterGlitch(clazz: Class[_], strategy: EnumStrategy, value: Any) extends Error("Not sure how to handle value='%s' as enum of class %s using strategy %s"
+  .format(value, clazz.getName, strategy))
+
 trait EnumInflater extends Transformer with Logging {
   self: Transformer =>
 
   val clazz = Class.forName(path)
   val companion: Any = clazz.companionObject
+
   val withName: Method = {
     val ms = clazz.getDeclaredMethods
     ms.filter(_.getName == "withName").head
@@ -253,20 +258,24 @@ trait EnumInflater extends Transformer with Logging {
       }
       case _ => None
     }
-
   }
 
-
-  override def transform(value: Any)(implicit ctx: Context): Any = value match {
-    case name: String if ctx.defaultEnumStrategy == EnumStrategy.BY_VALUE => withName.invoke(companion, name)
-    case id: Int if ctx.defaultEnumStrategy == EnumStrategy.BY_ID => applyInt.invoke(companion, id.asInstanceOf[Integer])
-    // TODO: not completely sure if this would happen or not, but give it a go...
-    case name: String if ctx.defaultEnumStrategy == EnumStrategy.BY_ID => name match {
-      case IsInt(id) => applyInt.invoke(companion, id.asInstanceOf[Integer])
+  override def transform(value: Any)(implicit ctx: Context): Any = {
+    val strategy = clazz.getAnnotation(classOf[EnumAs]) match {
+      case specific: EnumAs => specific.strategy
+      case _ => ctx.defaultEnumStrategy
     }
-    case x => throw new UnsupportedOperationException("Not sure how to handle '%s' as enum of class %s using strategy %s".format(x,
-      clazz.getName, ctx.defaultEnumStrategy))
-  }
-}
 
+    (strategy, value) match {
+      case (EnumStrategy.BY_VALUE, name: String) => withName.invoke(companion, name)
+      case (EnumStrategy.BY_ID, id: Int) => applyInt.invoke(companion, id.asInstanceOf[Integer])
+      case (EnumStrategy.BY_ID, idAsString: String) => idAsString match {
+        case IsInt(id) => applyInt.invoke(companion, id.asInstanceOf[Integer])
+        case _ => throw new EnumInflaterGlitch(clazz, strategy, value)
+      }
+      case _ => throw new EnumInflaterGlitch(clazz, strategy, value)
+    }
+  }
+
+}
 }

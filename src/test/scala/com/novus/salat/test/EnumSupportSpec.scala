@@ -21,6 +21,7 @@
 package com.novus.salat.test
 
 import com.novus.salat._
+import com.novus.salat.annotations._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 
@@ -78,6 +79,45 @@ class EnumSupportSpec extends SalatSpec {
 
       val h_* = grater[Hector].asObject(dbo)
       h_* mustEqual h
+
+    }
+
+    "allow an individual enum annotated with EnumAs to override default enum handling strategy" in {
+
+      import com.novus.salat.global._
+
+      ctx.defaultEnumStrategy mustEqual EnumStrategy.BY_VALUE
+      DoneInById.getClass.getAnnotation(classOf[EnumAs]).asInstanceOf[EnumAs].strategy mustEqual EnumStrategy.BY_ID
+
+      val h1 = HectorOverrideId(thug = ThugLevel.Two, doneInById = DoneInById.PiningForTheFjords)
+
+      val dbo: MongoDBObject = grater[HectorOverrideId].asDBObject(h1)
+      dbo must havePair("thug" -> "Honour student")
+      dbo must havePair("doneInById" -> 1)
+
+      val h1_* = grater[HectorOverrideId].asObject(dbo)
+      h1_* mustEqual h1
+
+    }
+
+    "allow an individual enum annotated with EnumAs to override custom enum handling strategy" in {
+
+      implicit val ctx = new Context {
+        val name = Some("EnumSupportSpec-4")
+        override val defaultEnumStrategy = EnumStrategy.BY_ID
+      }
+
+      ctx.defaultEnumStrategy mustEqual EnumStrategy.BY_ID
+      DoneInByValue.getClass.getAnnotation(classOf[EnumAs]).asInstanceOf[EnumAs].strategy mustEqual EnumStrategy.BY_VALUE
+
+      val h1 = HectorOverrideValue(thug = ThugLevel.Two, doneInByValue = DoneInByValue.PiningForTheFjords)
+
+      val dbo: MongoDBObject = grater[HectorOverrideValue].asDBObject(h1)
+      dbo must havePair("thug" -> 1)
+      dbo must havePair("doneInByValue" -> "PiningForTheFjords")
+
+      val h1_* = grater[HectorOverrideValue].asObject(dbo)
+      h1_* mustEqual h1
 
     }
 

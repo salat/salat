@@ -31,7 +31,6 @@ import com.novus.salat.test._
 import scala.collection.immutable.{Map => IMap}
 import scala.collection.mutable.{Map => MMap}
 import scala.math.{BigDecimal => ScalaBigDecimal}
-import com.novus.salat.annotations.raw.EnumAs
 
 case class Alice(x: String, y: Option[String] = Some("default y"), z: Basil)
 case class Basil(p: Option[Int], q: Int = 1067, r: Clara)
@@ -47,14 +46,24 @@ case class Fanny(@Key("complicated") es: List[Edward])
 case class George(number: ScalaBigDecimal, someNumber: Option[ScalaBigDecimal], noNumber: Option[ScalaBigDecimal])
 
 case class Hector(thug: ThugLevel.Value, doneIn: DoneIn.Value)
-case class HectorOverrideId(thug: ThugLevel.Value, @EnumAs(strategy = EnumStrategy.BY_ID) doneIn: DoneIn.Value)
-case class HectorOverrideValue(thug: ThugLevel.Value, @EnumAs(strategy = EnumStrategy.BY_VALUE) doneIn: DoneIn.Value)
+case class HectorOverrideId(thug: ThugLevel.Value, doneInById: DoneInById.Value)
+case class HectorOverrideValue(thug: ThugLevel.Value, doneInByValue: DoneInByValue.Value)
 
 object ThugLevel extends Enumeration("Fairplay Tony", "Honour student", "Just a good boy who loves his mum", "Trouble, you") {
   val One, Two, Three, Four = Value
 }
 
 object DoneIn extends Enumeration {
+  val Napping, PiningForTheFjords, IsThereADoctorInTheHouse, OhDear, Definitely = Value
+}
+
+@EnumAs(strategy = EnumStrategy.BY_ID)
+object DoneInById extends Enumeration {
+  val Napping, PiningForTheFjords, IsThereADoctorInTheHouse, OhDear, Definitely = Value
+}
+
+@EnumAs(strategy = EnumStrategy.BY_VALUE)
+object DoneInByValue extends Enumeration {
   val Napping, PiningForTheFjords, IsThereADoctorInTheHouse, OhDear, Definitely = Value
 }
 
