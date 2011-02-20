@@ -149,6 +149,7 @@ trait DoubleToSBigDecimal extends Transformer {
   self: Transformer =>
 
   override def transform(value: Any)(implicit ctx: Context):Any = value match {
+    case x: ScalaBigDecimal => x    // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
     case d: Double => ScalaBigDecimal(d.toString, mathCtx)
     case l: Long => ScalaBigDecimal(l.toString, mathCtx)  // sometimes BSON handles a whole number big decimal as a Long...
     case i: Int => ScalaBigDecimal(i.toString, mathCtx)
