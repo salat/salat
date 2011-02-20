@@ -34,7 +34,7 @@ package object out {
   def select(t: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     t match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with SBigDecimalToDouble
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
@@ -55,7 +55,7 @@ package object out {
       }
 
       case IsSeq(t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with SeqExtractor
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
@@ -77,7 +77,7 @@ package object out {
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with MapExtractor
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined =>
@@ -97,7 +97,7 @@ package object out {
       }
 
       case TypeRefType(_, symbol, _) => t match {
-        case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {

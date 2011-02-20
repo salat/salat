@@ -50,7 +50,7 @@ class BigDecimalPrecisionTest extends SalatSpec with PendingUntilFixed {
 
       val coll =  MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test")
       val wr = coll.insert(dbo)
-      println("WR: %s".format(wr))
+//      println("WR: %s".format(wr))
 
       val g_* = grater[George].asObject(coll.findOne().get)
       g_* mustEqual g
@@ -62,34 +62,68 @@ class BigDecimalPrecisionTest extends SalatSpec with PendingUntilFixed {
 
     }
 
-//    "preserve scala.BigDecimal precision to 16 places" in {
-//
-//      val mc = new MathContext(16, RoundingMode.HALF_UP)
-//      val PrecisePi = scala.BigDecimal("3.1415926535897932384626433832795028841971693993", mc)
-//
-//      val MorePrecisePi = scala.BigDecimal("3.1415926535897932384626433832795028841971693993", new MathContext(22, RoundingMode.HALF_UP))
-//
-//      val h = Hector(number = PrecisePi, someNumber = Some(PrecisePi), noNumber = None)
-//
-//      val dbo: MongoDBObject = grater[Hector].asDBObject(h)
-//      dbo must havePair("number" -> PrecisePi)
-//      dbo must havePair("someNumber" -> PrecisePi)
-//      dbo must notHaveKey("noNumber")
-//
-//      val coll =  MongoConnection()(SalatSpecDb)("scala_big_decimal_precision_test")
-//      val wr = coll.insert(dbo)
-////      println("WR: %s".format(wr))
-//
-//      val h_* = grater[Hector].asObject(coll.findOne().get)
-//      h_* mustEqual h
-//      h_*.number.precision mustEqual 16
-//      h_*.someNumber.get.precision mustEqual 16
-//
-//      h_*.number mustNotEq MorePrecisePi
-//      h_*.number mustEqual MorePrecisePi(mc)
-//
-//    }
+    "preserve scala.BigDecimal precision to 16 places" in {
+
+      val mc = new MathContext(16, RoundingMode.HALF_UP)
+      val PrecisePi = scala.BigDecimal("3.1415926535897932384626433832795028841971693993", mc)
+
+      val MorePrecisePi = scala.BigDecimal("3.1415926535897932384626433832795028841971693993", new MathContext(22, RoundingMode.HALF_UP))
+
+      val h = George2(number = PrecisePi, someNumber = Some(PrecisePi), noNumber = None)
+
+      val dbo: MongoDBObject = grater[George2].asDBObject(h)
+      dbo must havePair("number" -> PrecisePi)
+      dbo must havePair("someNumber" -> PrecisePi)
+      dbo must notHaveKey("noNumber")
+
+      val coll =  MongoConnection()(SalatSpecDb)("scala_big_decimal_precision_test")
+      val wr = coll.insert(dbo)
+//      println("WR: %s".format(wr))
+
+      val h_* = grater[George2].asObject(coll.findOne().get)
+      h_* mustEqual h
+      h_*.number.precision mustEqual 16
+      h_*.someNumber.get.precision mustEqual 16
+
+      h_*.number mustNotEq MorePrecisePi
+      h_*.number mustEqual MorePrecisePi(mc)
+
+    }
   }
 
+  "properly deserialize any number type out of Mongo back into a BigDecimal" in {
+    val mc = new MathContext(16, RoundingMode.HALF_UP)
+
+    "whole number" in {
+      val lake = BigDecimal(123.toString, mc)
+      val i = Ida(Some(lake))
+
+      val dbo: MongoDBObject = grater[Ida].asDBObject(i)
+      dbo must havePair("lake" -> lake)
+
+       val coll =  MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test_2")
+       val wr = coll.insert(dbo)
+//       println("WR: %s".format(wr))
+
+       val i_* = grater[Ida].asObject(coll.findOne().get)
+      i_* mustEqual i
+
+    }
+
+    "decimal" in {
+      val lake = BigDecimal((1.23).toString, mc)
+      val i = Ida(Some(lake))
+
+      val dbo: MongoDBObject = grater[Ida].asDBObject(i)
+      dbo must havePair("lake" -> lake)
+
+       val coll =  MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test_3")
+       val wr = coll.insert(dbo)
+//       println("WR: %s".format(wr))
+
+       val i_* = grater[Ida].asObject(coll.findOne().get)
+      i_* mustEqual i
+    }
+  }
 
 }

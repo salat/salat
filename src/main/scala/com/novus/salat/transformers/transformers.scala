@@ -18,21 +18,18 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat.test
+package com.novus.salat
 
-import com.mongodb.casbah.commons.Logging
-import org.specs.Specification
-import org.specs.specification.PendingUntilFixed
+package object transformers {
 
-
-trait SalatSpec extends Specification with PendingUntilFixed with Logging {
-
-  detailedDiffs()
-
-  doBeforeSpec {
-    com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
-    com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
+  /**
+   * Thanks to Predef....  the path name is not always the same.  @jsuereth is laughing somewhere...
+   */
+  def isBigDecimal(path: String) = path match {
+    case path if path == "scala.math.BigDecimal" => true
+    case path if path == "scala.package.BigDecimal" => true
+    case path if path == "scala.Predef.BigDecimal" => true
+    case path if path == "scala.BigDecimal" => true
+    case _ => false
   }
-
-  val SalatSpecDb = "test_salat"
 }

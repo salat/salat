@@ -40,7 +40,7 @@ package object in {
   def select(pt: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     pt match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToSBigDecimal
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
@@ -61,7 +61,7 @@ package object in {
       }
 
       case IsSeq(t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with SeqInjector { val parentType = pt }
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
@@ -87,7 +87,7 @@ package object in {
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with MapInjector {
             val parentType = pt
             val grater = ctx.lookup(symbol.path)
@@ -116,7 +116,7 @@ package object in {
       }
 
       case TypeRefType(_, symbol, _) => pt match {
-        case TypeRefType(_, symbol, _) if symbol.path == classOf[ScalaBigDecimal].getName =>
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with DoubleToSBigDecimal
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
@@ -147,8 +147,13 @@ import com.novus.salat.annotations.EnumAs
 
 trait DoubleToSBigDecimal extends Transformer {
   self: Transformer =>
+
   override def transform(value: Any)(implicit ctx: Context):Any = value match {
     case d: Double => ScalaBigDecimal(d.toString, mathCtx)
+    case l: Long => ScalaBigDecimal(l.toString, mathCtx)  // sometimes BSON handles a whole number big decimal as a Long...
+    case i: Int => ScalaBigDecimal(i.toString, mathCtx)
+    case f: Float => ScalaBigDecimal(f.toString, mathCtx)
+    case s: Short => ScalaBigDecimal(s.toString, mathCtx)
   }
 }
 

@@ -44,6 +44,7 @@ case class Edward(a:          String,           b:        Int,           c:     
 case class Fanny(@Key("complicated") es: List[Edward])
 
 case class George(number: ScalaBigDecimal, someNumber: Option[ScalaBigDecimal], noNumber: Option[ScalaBigDecimal])
+case class George2(number: scala.BigDecimal, someNumber: Option[scala.BigDecimal], noNumber: Option[scala.BigDecimal])
 
 case class Hector(thug: ThugLevel.Value, doneIn: DoneIn.Value)
 case class HectorOverrideId(thug: ThugLevel.Value, doneInById: DoneInById.Value)
@@ -66,6 +67,8 @@ object DoneInById extends Enumeration {
 object DoneInByValue extends Enumeration {
   val Napping, PiningForTheFjords, IsThereADoctorInTheHouse, OhDear, Definitely = Value
 }
+
+case class Ida(lake: Option[BigDecimal])
 
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
