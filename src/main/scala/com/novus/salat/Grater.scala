@@ -26,6 +26,7 @@ import com.mongodb.casbah.Imports._
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
+import com.novus.salat.util._
 import com.mongodb.casbah.commons.Logging
 
 class MissingPickledSig(clazz: Class[_]) extends Error("Failed to parse pickled Scala signature from: %s".format(clazz))
@@ -168,18 +169,38 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       }
     }
 
-  def asObject(dbo: MongoDBObject): X =
-    if (sym.isModule) companionObject.asInstanceOf[X]
-    else {
-      val args = indexedFields.map {
-        case field if field.ignore => safeDefault(field)
-        case field => dbo.get(field.name) match {
-          case Some(value) => field.in_!(value)
-          case _ => safeDefault(field)
-        }
-      }.map(_.get.asInstanceOf[AnyRef])
-      constructor.get.invoke(companionObject, args :_*).asInstanceOf[X]
+  def asObject(dbo: MongoDBObject): X = if (sym.isModule) {
+    companionObject.asInstanceOf[X]
+  }
+  else {
+    val args = indexedFields.map {
+      case field if field.ignore => safeDefault(field)
+      case field => dbo.get(field.name) match {
+        case Some(value) => field.in_!(value)
+        case _ => safeDefault(field)
+      }
+    }.map(_.get.asInstanceOf[AnyRef])
+    constructor match {
+      case Some(constructor) => try {
+        constructor.invoke(companionObject, args: _*).asInstanceOf[X]
+      }
+      catch {
+        case cause: Throwable => throw new ToObjectGlitch(this, sym, constructor, args, cause)
+      }
+      case None => throw new MissingConstructor(sym)
     }
+  }
 
   override def toString = "Grater(%s @ %s)".format(clazz, ctx)
 }
+
+class MissingConstructor(sym: SymbolInfoSymbol) extends Error("Coudln't find a constructor for %s".format(sym.path))
+class ToObjectGlitch[X<:CaseClass](grater: Grater[X], sym: SymbolInfoSymbol, constructor: Method, args: Seq[AnyRef], cause: Throwable) extends Error("""
+
+%s toObject failed on:
+SYM: %s
+CONSTRUCTOR: %s
+ARGS:
+%s
+
+""".format(grater.toString, sym.path, constructor, ArgsPrettyPrinter(args)), cause)

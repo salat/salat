@@ -70,6 +70,14 @@ object DoneInByValue extends Enumeration {
 
 case class Ida(lake: Option[BigDecimal])
 
+object James {
+  def apply(lye: String): James = James(lye, true)
+  def apply(byMistake: Boolean): James = James("Red Devil", byMistake)
+  def apply(h: Hector): James = James(lye = h.thug.toString, byMistake = h.thug.id % 2 == 0)
+}
+case class James(lye: String, byMistake: Boolean)
+
+
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
 case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])

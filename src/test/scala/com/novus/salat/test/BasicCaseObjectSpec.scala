@@ -95,4 +95,12 @@ class BasicCaseObjectSpec extends SalatSpec {
     }
   }
 
+  "provide helpful errors" in {
+    "when toObject fails" in {
+      val j = James("Draino", false)
+      val dbo = grater[James].asDBObject(j)
+      grater[James].asObject(dbo) must throwA[ToObjectGlitch[_]]
+    }
+  }
+
 }
