@@ -43,6 +43,9 @@ package object in {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToSBigDecimal
 
+        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToChar
+
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with OptionInjector with EnumInflater
         }
@@ -63,6 +66,9 @@ package object in {
       case IsSeq(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with SeqInjector { val parentType = pt }
+
+          case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with StringToChar with SeqInjector { val parentType = pt }
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater with SeqInjector { val parentType = pt }
@@ -93,6 +99,12 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
+        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with StringToChar with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
+
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater with MapInjector { val parentType = pt }
         }
@@ -118,6 +130,9 @@ package object in {
       case TypeRefType(_, symbol, _) => pt match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with DoubleToSBigDecimal
+
+        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, pt)(ctx) with StringToChar
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater
@@ -155,6 +170,14 @@ trait DoubleToSBigDecimal extends Transformer {
     case i: Int => ScalaBigDecimal(i.toString, mathCtx)
     case f: Float => ScalaBigDecimal(f.toString, mathCtx)
     case s: Short => ScalaBigDecimal(s.toString, mathCtx)
+  }
+}
+
+trait StringToChar extends Transformer {
+  self: Transformer =>
+
+  override def transform(value: Any)(implicit ctx: Context):Any = value match {
+    case s: String if s != null && s.length == 1 => s.charAt(0)
   }
 }
 

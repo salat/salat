@@ -77,6 +77,7 @@ object James {
 }
 case class James(lye: String, byMistake: Boolean)
 
+case class Kate(axe: java.lang.Character, struckWith: Char)
 
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])

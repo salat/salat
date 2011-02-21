@@ -37,6 +37,9 @@ package object out {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with SBigDecimalToDouble
 
+        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionExtractor with CharToString
+
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with OptionExtractor with EnumStringifier
         }
@@ -57,6 +60,9 @@ package object out {
       case IsSeq(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with SeqExtractor
+
+       case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with CharToString with SeqExtractor
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with SeqExtractor
@@ -80,6 +86,9 @@ package object out {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with MapExtractor
 
+        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with CharToString with MapExtractor
+
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined =>
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with MapExtractor
 
@@ -99,6 +108,9 @@ package object out {
       case TypeRefType(_, symbol, _) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble
+
+        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with CharToString
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier
@@ -128,6 +140,14 @@ trait SBigDecimalToDouble extends Transformer {
   self: Transformer =>
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case sbd: ScalaBigDecimal => sbd(mathCtx).toDouble
+  }
+}
+
+trait CharToString extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any)(implicit ctx: Context) = value match {
+    case c: Char => c.toString
+    case c: java.lang.Character => c.toString
   }
 }
 

@@ -32,4 +32,10 @@ package object transformers {
     case path if path == "scala.BigDecimal" => true
     case _ => false
   }
+
+  def isChar(path: String) = path match {
+    case path if path == "scala.Char" => true
+    case path if path == "java.lang.Character" => true
+    case _ => false
+  }
 }
