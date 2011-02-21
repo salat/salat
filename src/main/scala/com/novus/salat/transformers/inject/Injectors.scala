@@ -43,6 +43,9 @@ package object in {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToSBigDecimal
 
+        case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToBigInt
+
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToChar
 
@@ -67,7 +70,10 @@ package object in {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with SeqInjector { val parentType = pt }
 
-          case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+        case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with StringToBigInt with SeqInjector { val parentType = pt }
+
+        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with StringToChar with SeqInjector { val parentType = pt }
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
@@ -95,6 +101,12 @@ package object in {
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
+
+        case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with StringToBigInt with MapInjector {
             val parentType = pt
             val grater = ctx.lookup(symbol.path)
           }
@@ -130,6 +142,9 @@ package object in {
       case TypeRefType(_, symbol, _) => pt match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with DoubleToSBigDecimal
+
+        case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
+          new Transformer(symbol.path, pt)(ctx) with StringToBigInt
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with StringToChar
@@ -178,6 +193,19 @@ trait StringToChar extends Transformer {
 
   override def transform(value: Any)(implicit ctx: Context):Any = value match {
     case s: String if s != null && s.length == 1 => s.charAt(0)
+  }
+}
+
+trait StringToBigInt extends Transformer {
+  self: Transformer =>
+
+  override def transform(value: Any)(implicit ctx: Context):Any = value match {
+    case s: String => BigInt(x = s, radix = 10)
+    case ba: Array[Byte] => BigInt(ba)
+    case bi: BigInt => bi
+    case bi: java.math.BigInteger => bi
+    case l: Long => BigInt(l)
+    case i: Int => BigInt(i)
   }
 }
 

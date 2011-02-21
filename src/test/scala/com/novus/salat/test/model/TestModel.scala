@@ -79,6 +79,8 @@ case class James(lye: String, byMistake: Boolean)
 
 case class Kate(axe: java.lang.Character, struckWith: Char)
 
+case class Leo(swallowed: Option[BigInt], tacks: BigInt)
+
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
 case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])

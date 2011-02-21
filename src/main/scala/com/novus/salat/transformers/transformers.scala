@@ -38,4 +38,11 @@ package object transformers {
     case path if path == "java.lang.Character" => true
     case _ => false
   }
+
+  def isBigInt(path: String) = path match {
+    case path if path == "scala.package.BigInt" => true
+    case path if path == "scala.math.BigInteger" => true
+    case path if path == "java.math.BigInteger" => true
+    case _ => false
+  }
 }
