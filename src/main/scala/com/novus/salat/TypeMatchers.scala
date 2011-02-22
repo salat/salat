@@ -63,10 +63,17 @@ object IsScalaBigDecimal {
   def unapply(t: Type): Option[Type] = TypeMatchers.matchesOneType(t, classOf[ScalaBigDecimal].getName)
 }
 
-object IsTrait extends Logging {
-  private def noAnnotationOnTrait(t: Class[_]) =
-    throw new Exception("NB: trait %s must be annotated with @com.novus.salat.annotations.Salat " +
-                        "in order to be picked up by this library. See the docs for more details.".format(t.getName))
+abstract class NeedsSalatAnnotation(what: String, t: Class[_]) extends Error("""
+
+ NB: %s %s must be annotated with @com.novus.salat.annotations.Salat
+ in order to be picked up by this library. See the docs for more details.
+
+ """.format(what, t.getName))
+
+class NoAnnotationTrait(t: Class[_]) extends NeedsSalatAnnotation("trait", t)
+class NoAnnotationAbstractSuperclass(t: Class[_]) extends NeedsSalatAnnotation("abstract superclass", t)
+
+object IsTraitLike extends Logging {
 
   def unapply(t: TypeRefType)(implicit ctx: Context): Option[Type] = t match {
     case t @ TypeRefType(_, symbol, _) => {
@@ -75,9 +82,16 @@ object IsTrait extends Logging {
           case Some(clazz: Class[_]) => {
             val parsed = ScalaSigParser.parse(clazz).get.topLevelClasses.head
             if (parsed.isTrait) {
-              if (clazz.annotated_?[Salat]) Some(t)
-              else noAnnotationOnTrait(clazz)
-            } else None
+              if (clazz.annotated_?[Salat]) Some(t) else {
+                throw new NoAnnotationTrait(clazz)
+              }
+            }
+            else if (parsed.isAbstract) {
+              if (clazz.annotated_?[Salat]) Some(t) else {
+                throw new NoAnnotationAbstractSuperclass(clazz)
+              }
+            }
+            else None
           }
           case _ => None
         }

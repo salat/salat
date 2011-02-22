@@ -52,7 +52,7 @@ package object out {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject {
             val grater = ctx.lookup(symbol.path)
           }
@@ -79,7 +79,7 @@ package object out {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor {
             val grater = ctx.lookup(t.symbol.path)
           }
@@ -106,7 +106,7 @@ package object out {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor {
             val grater = ctx.lookup(symbol.path)
           }
@@ -133,7 +133,7 @@ package object out {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject {
             val grater = ctx.lookup(symbol.path)
           }

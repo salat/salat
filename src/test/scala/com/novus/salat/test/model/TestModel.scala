@@ -128,3 +128,9 @@ case class SomeSubclassExtendingSaidTrait(b: Int) extends SomeCommonTrait
 case class AnotherSubclassExtendingSaidTrait(d: Double) extends SomeCommonTrait
 
 case class SomeContainerClass(e: String, theListWhichNeedsToBeTested: List[SomeCommonTrait])
+
+@Salat
+sealed  abstract class Vertebrate
+case class Bird(name : String, canFly : Boolean = true) extends Vertebrate
+case class Squirrel(name : String, canFly : Boolean = false) extends Vertebrate
+case class VertebrateList(vList : List[Vertebrate]);

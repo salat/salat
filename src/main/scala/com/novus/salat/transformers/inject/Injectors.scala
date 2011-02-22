@@ -58,7 +58,7 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext {
             val grater = ctx.lookup(symbol.path)
           }
@@ -86,7 +86,7 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SeqInjector {
             val parentType = pt
             val grater = ctx.lookup(symbol.path)
@@ -127,7 +127,7 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector {
             val parentType = pt
             val grater = ctx.lookup(symbol.path)
@@ -158,7 +158,7 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTrait.unapply(t).isDefined =>
+        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext {
             val grater = ctx.lookup(symbol.path)
           }

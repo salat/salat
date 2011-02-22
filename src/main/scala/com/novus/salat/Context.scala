@@ -27,6 +27,7 @@ import com.mongodb.casbah.Imports._
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
+import java.lang.reflect.Modifier
 
 trait Context extends Logging {
   private[salat] val graters: MMap[String, Grater[_ <: CaseClass]] = HashMap.empty
@@ -73,6 +74,10 @@ trait Context extends Logging {
       cc match {
         case  Some(clazz) if (clazz.isInterface) => {
 //          log.warning("generate_?: clazz=%s is interface, no grater found", clazz)
+          None
+        }
+        case Some(clazz) if Modifier.isAbstract(clazz.getModifiers()) => {
+//          log.warning("generate_?: clazz=%s is abstract, no grater found", clazz)
           None
         }
         case Some(clazz) => {
