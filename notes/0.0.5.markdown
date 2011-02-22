@@ -1,0 +1,8 @@
+Features new in Salat 0.0.5 include:
+
+- Resolve classes across multiple class loaders
+- More helpful error messages, more useful debug output
+- Serialize  and deserialize objects templated to an abstract superclass using @Salat annotation (traits were introduced in 0.0.4)
+- Persist enums by string or by id (globally or a per-case basis)
+- Improved support for BigDecimal, BigInt and Char
+- Improved Grater lookup via Context: class name, class instance, MongoDBObject with type hint
