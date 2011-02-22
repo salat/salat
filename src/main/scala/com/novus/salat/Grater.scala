@@ -192,6 +192,10 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   }
 
   override def toString = "Grater(%s @ %s)".format(clazz, ctx)
+
+  override def equals(that: Any) = that.isInstanceOf[Grater[_]] && that.hashCode == this.hashCode
+
+  override def hashCode = sym.path.hashCode
 }
 
 class MissingConstructor(sym: SymbolInfoSymbol) extends Error("Coudln't find a constructor for %s".format(sym.path))
