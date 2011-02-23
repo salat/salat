@@ -24,10 +24,7 @@ package com.novus.salat.test.model
 // against me, neh?
 
 import com.novus.salat._
-import com.novus.salat.global._
 import com.novus.salat.annotations._
-import com.novus.salat.test._
-
 import scala.collection.immutable.{Map => IMap}
 import scala.collection.mutable.{Map => MMap}
 import scala.math.{BigDecimal => ScalaBigDecimal}
@@ -82,6 +79,10 @@ case class James(lye: String, byMistake: Boolean)
 case class Kate(axe: java.lang.Character, struckWith: Char)
 
 case class Leo(swallowed: Option[BigInt], tacks: BigInt)
+
+case class Maud(swept: String, out: String) {
+  @Persist val toSea = "%s %s".format(out.reverse, swept.reverse)
+}
 
 case class Neville(ennui: Boolean = true, asOf: DateTime = new DateTime)
 

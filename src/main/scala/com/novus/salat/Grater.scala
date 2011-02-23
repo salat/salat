@@ -102,6 +102,8 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   }
   lazy val fields = collection.SortedMap.empty[String, Field] ++ indexedFields.map { f => f.name -> f }
 
+  lazy val extraFieldsToPersist = clazz.getDeclaredMethods.toList.filter(_.isAnnotationPresent(classOf[Persist]))
+
   lazy val companionClass = clazz.companionClass
   lazy val companionObject = clazz.companionObject
 
@@ -155,6 +157,11 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
           case _ => {}
         }
       }
+    }
+
+    // now handle serializing values marked with @Persist
+    for (m: Method <- extraFieldsToPersist) {
+      builder += m.getName -> m.invoke(o)
     }
 
     builder.result

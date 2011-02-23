@@ -33,6 +33,8 @@ package object annotations {
 
   type EnumAs = com.novus.salat.annotations.raw.EnumAs @getter
 
+  type Persist = com.novus.salat.annotations.raw.Persist @getter
+
   object util {
     implicit def whatever2annotated(x: Any) = new {
       def annotation[A <: Annotation : Manifest]: Option[A] =
