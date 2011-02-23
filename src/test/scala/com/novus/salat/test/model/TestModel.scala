@@ -84,6 +84,10 @@ case class Maud(swept: String, out: String) {
   @Persist val toSea = "%s %s".format(out.reverse, swept.reverse)
 }
 
+case class Maud2(swept: String, out: String) {
+  @Persist val ida = Ida(lake = Some(BigDecimal(swept.size + out.size)))
+}
+
 case class Neville(ennui: Boolean = true, asOf: DateTime = new DateTime)
 
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])

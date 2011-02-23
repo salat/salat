@@ -102,7 +102,9 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   }
   lazy val fields = collection.SortedMap.empty[String, Field] ++ indexedFields.map { f => f.name -> f }
 
-  lazy val extraFieldsToPersist = clazz.getDeclaredMethods.toList.filter(_.isAnnotationPresent(classOf[Persist]))
+  lazy val extraFieldsToPersist = clazz.getDeclaredMethods.toList
+    .filter(_.isAnnotationPresent(classOf[Persist]))
+    .filterNot(m => m.annotated_?[Ignore])
 
   lazy val companionClass = clazz.companionClass
   lazy val companionObject = clazz.companionObject
@@ -161,7 +163,34 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
     // now handle serializing values marked with @Persist
     for (m: Method <- extraFieldsToPersist) {
-      builder += m.getName -> m.invoke(o)
+      val element = m.invoke(o)
+      val field: com.novus.salat.Field = {
+        val whoKnowsWhat = sym.children.filter(f => f.name == m.getName && f.isAccessor).map(_.asInstanceOf[MethodSymbol])
+//        whoKnowsWhat.foreach {
+//          w => log.info(w.toString)
+//        }
+        val ho = whoKnowsWhat.headOption
+        val idx = -1 // not actually used for anything.  or maybe not!  isn't this exciting?  keep reading!
+        ho match {
+          case Some(ho) => com.novus.salat.Field(idx, ho.name, typeRefType(ho), m)
+          case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+        }
+      }
+
+      (element, field) match {
+        case (null, _) => // do nothing, field value is null
+        case (element, field) => {
+          field.out_!(element) match {
+            case Some(None) => {}
+            case Some(serialized) =>
+              builder += field.name -> (serialized match {
+                case Some(unwrapped) => unwrapped
+                case _ => serialized
+              })
+            case _ => {}
+          }
+        }
+      }
     }
 
     builder.result

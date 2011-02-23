@@ -21,6 +21,7 @@
 package com.novus.salat.test
 
 import com.novus.salat._
+import com.novus.salat.util._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
@@ -30,18 +31,31 @@ class PersistAnnotationSpec extends SalatSpec {
 
     "allow a field inside a case class to be persisted" in {
 
-      val m = Maud(swept = "swept", out = "out")
+      "a simple string" in {
+        val m = Maud(swept = "swept", out = "out")
 
-      val dbo: MongoDBObject = grater[Maud].asDBObject(m)
-//      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("swept", "swept")
-      dbo must havePair("out", "out")
-      dbo must havePair("toSea", "tuo tpews")
+        val dbo: MongoDBObject = grater[Maud].asDBObject(m)
+  //      log.info(MapPrettyPrinter(dbo))
+        dbo must havePair("swept", "swept")
+        dbo must havePair("out", "out")
+        dbo must havePair("toSea", "tuo tpews")
 
-      val m_* = grater[Maud].asObject(dbo)
-      m_* mustEqual m
-      m_*.toSea mustEqual m.toSea
+        val m_* = grater[Maud].asObject(dbo)
+        m_* mustEqual m
+        m_*.toSea mustEqual m.toSea
+      }
+
+      "a value that requires a transformer" in {
+        val m = Maud2(swept = "swept", out = "out")
+        val dbo: MongoDBObject = grater[Maud2].asDBObject(m)
+        val m_* = grater[Maud2].asObject(dbo)
+        m_* mustEqual m
+        m_*.ida mustEqual m.ida
+      }
+
     }
+
+
 
 
   }
