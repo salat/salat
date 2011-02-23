@@ -23,10 +23,10 @@ package com.novus.salat.test
 import com.mongodb.casbah.commons.Logging
 import org.specs.Specification
 import org.specs.specification.PendingUntilFixed
-
+import com.mongodb.casbah.Imports._
 
 trait SalatSpec extends Specification with PendingUntilFixed with Logging {
-
+  val SalatSpecDb = "test_salat"
   detailedDiffs()
 
   doBeforeSpec {
@@ -34,5 +34,7 @@ trait SalatSpec extends Specification with PendingUntilFixed with Logging {
     com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
   }
 
-  val SalatSpecDb = "test_salat"
+  doAfterSpec {
+    MongoConnection().dropDatabase(SalatSpecDb)
+  }
 }
