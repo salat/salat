@@ -1,23 +1,23 @@
 /**
-* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-* For questions and comments about this product, please see the project page at:
-*
-* http://github.com/novus/salat
-*
-*/
+ * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For questions and comments about this product, please see the project page at:
+ *
+ * http://github.com/novus/salat
+ *
+ */
 package com.novus.salat.transformers
 
 import java.lang.reflect.Method
@@ -36,10 +36,12 @@ import com.mongodb.casbah.commons.Logging
 import com.novus.salat.transformers._
 import com.novus.salat.transformers.in._
 
+import org.scala_tools.time.Imports._
+
 package object in {
   def select(pt: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     pt match {
-      case IsOption(t @ TypeRefType(_, _, _)) => t match {
+      case IsOption(t@TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToSBigDecimal
 
@@ -49,7 +51,10 @@ package object in {
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToChar
 
-        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+        case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with DateToJodaDateTime
+
+        case t@TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with OptionInjector with EnumInflater
         }
 
@@ -58,7 +63,7 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
+        case t@TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext {
             val grater = ctx.lookup(symbol.path)
           }
@@ -66,18 +71,31 @@ package object in {
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionInjector
       }
 
-      case IsSeq(t @ TypeRefType(_, _, _)) => t match {
+      case IsSeq(t@TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with SeqInjector { val parentType = pt }
+          new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with SeqInjector {
+            val parentType = pt
+          }
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with StringToBigInt with SeqInjector { val parentType = pt }
+          new Transformer(symbol.path, t)(ctx) with StringToBigInt with SeqInjector {
+            val parentType = pt
+          }
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with StringToChar with SeqInjector { val parentType = pt }
+          new Transformer(symbol.path, t)(ctx) with StringToChar with SeqInjector {
+            val parentType = pt
+          }
 
-        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
-          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater with SeqInjector { val parentType = pt }
+        case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DateToJodaDateTime with SeqInjector {
+            val parentType = pt
+          }
+
+        case t@TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater with SeqInjector {
+            val parentType = pt
+          }
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
@@ -86,7 +104,7 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
+        case t@TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SeqInjector {
             val parentType = pt
             val grater = ctx.lookup(symbol.path)
@@ -98,7 +116,7 @@ package object in {
         }
       }
 
-      case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
+      case IsMap(_, t@TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with MapInjector {
             val parentType = pt
@@ -117,8 +135,16 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
-          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater with MapInjector { val parentType = pt }
+        case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DateToJodaDateTime with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
+
+        case t@TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater with MapInjector {
+            val parentType = pt
+          }
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
@@ -127,7 +153,7 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
+        case t@TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector {
             val parentType = pt
             val grater = ctx.lookup(symbol.path)
@@ -149,7 +175,10 @@ package object in {
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with StringToChar
 
-        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+        case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
+          new Transformer(symbol.path, pt)(ctx) with DateToJodaDateTime
+
+        case t@TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater
         }
 
@@ -158,7 +187,7 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
+        case t@TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext {
             val grater = ctx.lookup(symbol.path)
           }
@@ -178,10 +207,10 @@ import com.novus.salat.annotations.EnumAs
 trait DoubleToSBigDecimal extends Transformer {
   self: Transformer =>
 
-  override def transform(value: Any)(implicit ctx: Context):Any = value match {
-    case x: ScalaBigDecimal => x    // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
+  override def transform(value: Any)(implicit ctx: Context): Any = value match {
+    case x: ScalaBigDecimal => x // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
     case d: Double => ScalaBigDecimal(d.toString, mathCtx)
-    case l: Long => ScalaBigDecimal(l.toString, mathCtx)  // sometimes BSON handles a whole number big decimal as a Long...
+    case l: Long => ScalaBigDecimal(l.toString, mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
     case i: Int => ScalaBigDecimal(i.toString, mathCtx)
     case f: Float => ScalaBigDecimal(f.toString, mathCtx)
     case s: Short => ScalaBigDecimal(s.toString, mathCtx)
@@ -191,15 +220,24 @@ trait DoubleToSBigDecimal extends Transformer {
 trait StringToChar extends Transformer {
   self: Transformer =>
 
-  override def transform(value: Any)(implicit ctx: Context):Any = value match {
+  override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case s: String if s != null && s.length == 1 => s.charAt(0)
+  }
+}
+
+trait DateToJodaDateTime extends Transformer {
+  self: Transformer =>
+
+  override def transform(value: Any)(implicit ctx: Context): Any = value match {
+    case d: java.util.Date if d != null => new DateTime(d)
+    case dt: DateTime => dt
   }
 }
 
 trait StringToBigInt extends Transformer {
   self: Transformer =>
 
-  override def transform(value: Any)(implicit ctx: Context):Any = value match {
+  override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case s: String => BigInt(x = s, radix = 10)
     case ba: Array[Byte] => BigInt(ba)
     case bi: BigInt => bi
@@ -211,7 +249,7 @@ trait StringToBigInt extends Transformer {
 
 trait DBObjectToInContext extends Transformer with InContextTransformer with Logging {
   self: Transformer =>
-  override def before(value: Any)(implicit ctx: Context):Option[Any] = value match {
+  override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
     case dbo: DBObject => {
       val mdbo: MongoDBObject = dbo
       Some(mdbo)
@@ -225,7 +263,7 @@ trait DBObjectToInContext extends Transformer with InContextTransformer with Log
       grater => grater.asObject(dbo).asInstanceOf[CaseClass]
     }.getOrElse(throw new Exception("no grater found for '%s' OR '%s'".format(path, dbo(ctx.typeHint.getOrElse(TypeHint)))))
 
-  override def transform(value: Any)(implicit ctx: Context):Any = value match {
+  override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case dbo: DBObject => transform0(dbo)
     case mdbo: MongoDBObject => transform0(mdbo)
   }
@@ -233,7 +271,7 @@ trait DBObjectToInContext extends Transformer with InContextTransformer with Log
 
 trait OptionInjector extends Transformer {
   self: Transformer =>
-  override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
+  override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
     case value if value != null => Some(Some(value))
     case _ => Some(None)
   }
@@ -241,9 +279,9 @@ trait OptionInjector extends Transformer {
 
 trait SeqInjector extends Transformer {
   self: Transformer =>
-  override def transform(value: Any)(implicit ctx: Context):Any = value
+  override def transform(value: Any)(implicit ctx: Context): Any = value
 
-  override def before(value: Any)(implicit ctx: Context):Option[Any] = value match {
+  override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
     case dbl: BasicDBList => {
       val list: MongoDBList = dbl
       Some(list.toList)
@@ -251,7 +289,7 @@ trait SeqInjector extends Transformer {
     case _ => None
   }
 
-  override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
+  override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
     case list: Seq[Any] => Some(seqImpl(parentType, list.map {
       el => super.transform(el)
     }))
@@ -263,9 +301,9 @@ trait SeqInjector extends Transformer {
 
 trait MapInjector extends Transformer {
   self: Transformer =>
-  override def transform(value: Any)(implicit ctx: Context):Any = value
+  override def transform(value: Any)(implicit ctx: Context): Any = value
 
-  override def before(value: Any)(implicit ctx: Context):Option[Any] = value match {
+  override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
     case dbo: DBObject => {
       val mdbo: MongoDBObject = dbo
       Some(mdbo)
@@ -273,7 +311,7 @@ trait MapInjector extends Transformer {
     case _ => None
   }
 
-  override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
+  override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
     case mdbo: MongoDBObject => {
       val builder = MongoDBObject.newBuilder
       mdbo.foreach {
@@ -335,4 +373,5 @@ trait EnumInflater extends Transformer with Logging {
   }
 
 }
+
 }

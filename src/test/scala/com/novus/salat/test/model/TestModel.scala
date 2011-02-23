@@ -32,6 +32,8 @@ import scala.collection.immutable.{Map => IMap}
 import scala.collection.mutable.{Map => MMap}
 import scala.math.{BigDecimal => ScalaBigDecimal}
 
+import org.scala_tools.time.Imports._
+
 case class Alice(x: String, y: Option[String] = Some("default y"), z: Basil)
 case class Basil(p: Option[Int], q: Int = 1067, r: Clara)
 case class Clara(l: Seq[String] = Nil, m: List[Int], n: List[Desmond])
@@ -80,6 +82,8 @@ case class James(lye: String, byMistake: Boolean)
 case class Kate(axe: java.lang.Character, struckWith: Char)
 
 case class Leo(swallowed: Option[BigInt], tacks: BigInt)
+
+case class Neville(ennui: Boolean = true, asOf: DateTime = new DateTime)
 
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
