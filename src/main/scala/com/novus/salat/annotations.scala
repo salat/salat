@@ -35,6 +35,8 @@ package object annotations {
 
   type Persist = com.novus.salat.annotations.raw.Persist @getter
 
+  type Ignore = com.novus.salat.annotations.raw.Ignore @getter
+
   object util {
     implicit def whatever2annotated(x: Any) = new {
       def annotation[A <: Annotation : Manifest]: Option[A] =

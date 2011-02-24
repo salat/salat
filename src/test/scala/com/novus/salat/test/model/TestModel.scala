@@ -88,6 +88,50 @@ case class Maud2(swept: String, out: String) {
   @Persist val ida = Ida(lake = Some(BigDecimal(swept.size + out.size)))
 }
 
+case class Maud3(swept: String, out: String) {
+  @Persist var ida = Ida(lake = Some(BigDecimal(swept.size + out.size)))
+}
+
+case class Maud4(swept: String, out: String) {
+  @Persist @Ignore val ida = Ida(lake = Some(BigDecimal(swept.size + out.size)))
+  @Persist val toSea = "%s %s".format(out.reverse, swept.reverse)
+}
+
+@Salat
+trait MaudLike {
+  val swept: String
+  val out: String
+}
+case class Maud5(swept: String, out: String) extends MaudLike {
+  @Persist val toSea = "%s %s".format(out.reverse, swept.reverse)
+}
+case class Maud6(swept: String, out: String) extends MaudLike {
+  @Persist val ida = Ida(lake = Some(BigDecimal(swept.size + out.size)))
+}
+case class Maud7(swept: String, out: String) extends MaudLike {
+  val notWaving: Boolean = true
+  @Persist val butDrowning: Boolean = true
+}
+case class ManyMauds(mauds: List[MaudLike])
+
+@Salat
+trait EvenMoreMaudLike {
+  val swept: String
+  val out: String
+  @Persist val howFar = swept.size + out.size
+}
+case class Maud8(swept: String, out: String) extends EvenMoreMaudLike {
+  @Persist val toSea = "%s %s".format(out.reverse, swept.reverse)
+}
+case class Maud9(swept: String, out: String) extends EvenMoreMaudLike {
+  @Persist val ida = Ida(lake = Some(BigDecimal(swept.size + out.size)))
+}
+case class Maud10(swept: String, out: String) extends EvenMoreMaudLike {
+  val notWaving: Boolean = true
+  @Persist val butDrowning: Boolean = true
+}
+case class Maudelic(mauds: List[EvenMoreMaudLike])
+
 case class Neville(ennui: Boolean = true, asOf: DateTime = new DateTime)
 
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
