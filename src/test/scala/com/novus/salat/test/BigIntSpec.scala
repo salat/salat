@@ -34,8 +34,8 @@ class BigIntSpec extends SalatSpec {
 //      println(MapPrettyPrinter(dbo))
       // swallowed -> 1234567890, tacks -> -2147483648)
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Leo")
-      dbo must havePair("swallowed" -> "1234567890")
-      dbo must havePair("tacks" -> "-2147483648")
+      dbo must havePair("swallowed" -> 1234567890)
+      dbo must havePair("tacks" -> -2147483648)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_big_int_test_1")
       val wr = coll.insert(dbo)

@@ -38,7 +38,7 @@ package object out {
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with SBigDecimalToDouble
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionExtractor with BigIntToString
+          new Transformer(symbol.path, t)(ctx) with OptionExtractor with BigIntToLong
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with CharToString
@@ -65,7 +65,7 @@ package object out {
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with SeqExtractor
 
        case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with BigIntToString with SeqExtractor
+          new Transformer(symbol.path, t)(ctx) with BigIntToLong with SeqExtractor
 
        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString with SeqExtractor
@@ -93,7 +93,7 @@ package object out {
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with MapExtractor
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with BigIntToString with MapExtractor
+          new Transformer(symbol.path, t)(ctx) with BigIntToLong with MapExtractor
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString with MapExtractor
@@ -119,7 +119,7 @@ package object out {
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with BigIntToString
+          new Transformer(symbol.path, t)(ctx) with BigIntToLong
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString
@@ -155,11 +155,11 @@ trait SBigDecimalToDouble extends Transformer {
   }
 }
 
-trait BigIntToString extends Transformer {
+trait BigIntToLong extends Transformer {
   self: Transformer =>
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
-    case bi: BigInt => bi.toString
-    case bi: java.math.BigInteger => bi.toString
+    case bi: BigInt => bi.toLong
+    case bi: java.math.BigInteger => bi.longValue
   }
 }
 
