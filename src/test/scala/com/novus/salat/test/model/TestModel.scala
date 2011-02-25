@@ -75,6 +75,7 @@ object James {
   def apply(h: Hector): James = James(lye = h.thug.toString, byMistake = h.thug.id % 2 == 0)
 }
 case class James(lye: String, byMistake: Boolean)
+case class James2(@Key("cyanide") lye: String, byMistake: Boolean)
 
 case class Kate(axe: java.lang.Character, struckWith: Char)
 
