@@ -135,9 +135,6 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     case PolyType(tr @ TypeRefType(_, _, _), _) => tr
   }
 
-  protected def generateDefault(idx: Int): Option[_] =
-    defaults(idx).map(m => Some(m.invoke(companionObject))).getOrElse(None)
-
   def asDBObject(o: X): DBObject = {
     val builder = MongoDBObject.newBuilder
     ctx.typeHint match {
@@ -197,7 +194,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   }
 
   protected def safeDefault(field: Field) =
-    generateDefault(field.idx) match {
+    defaults(field.idx).map(m => Some(m.invoke(companionObject))).getOrElse(None) match {
       case yes @ Some(default) => yes
       case _ => field.typeRefType match {
         case IsOption(_) => Some(None)
