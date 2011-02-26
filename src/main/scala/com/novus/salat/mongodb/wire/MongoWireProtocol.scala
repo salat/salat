@@ -22,8 +22,6 @@ object `package` {
   type cstring = String
   type document = BSONObject
 
-  val NotResponse = -1
-
   // XXX: will suffice for now, but should be a little less naive
   def requestID: int32 = (System.currentTimeMillis / 1000 - scala.util.Random.nextInt.abs).abs.intValue
 
@@ -55,10 +53,13 @@ trait Writable {
   def write(enc: BSONEncoder)
 }
 
-case class MsgHeader(requestID: int32, responseTo: int32, op: OpCode) extends Writable {
+case class MsgHeader(requestID: int32, responseTo: Option[int32], op: OpCode) extends Writable {
   def write(enc: BSONEncoder) = {
     enc.writeInt(requestID)
-    enc.writeInt(responseTo)
+
+    // XXX: what should this be if message is a request?
+    enc.writeInt(responseTo.getOrElse(-1))
+
     enc.writeInt(op.code)
   }
 }
