@@ -38,8 +38,20 @@ object `package` {
         case mkey: MongoConnectionKey => mkey.connect
       }
       override def destroyObject(key: AnyRef, obj: AnyRef) = obj match {
-	case conn: MongoConnection => conn.close
-	case _ =>
+        case conn: MongoConnection => conn.close
+        case _ =>
+      }
+      override def validateObject(key: AnyRef, obj: AnyRef) = (key, obj) match {
+        case (MongoConnectionKey(addr1, opts1), conn @ MongoConnection(addr2, opts2)) => {
+          (addr1.hashCode == addr2.hashCode) && (opts1.toString == opts2.toString) && {
+            try {
+              conn.in.available
+              true
+            }
+            catch { case _ => false }
+          }
+        }
+        case _ => false
       }
     }
   }
