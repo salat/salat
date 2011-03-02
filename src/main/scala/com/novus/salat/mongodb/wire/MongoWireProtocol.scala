@@ -2,13 +2,14 @@ package com.novus.salat.mongodb.wire
 
 import com.novus.salat._
 import com.novus.salat.global._
+import com.novus.salat.annotations._
 
 import org.bson._
 import org.bson.io._
 
 import com.mongodb.casbah.commons.Logging
 
-abstract class OpCode(val code: int32)
+abstract class OpCode(val code: Int)
 
 case object OP_REPLY        extends OpCode(1)
 case object OP_MSG          extends OpCode(1000)
@@ -21,13 +22,8 @@ case object OP_DELETE       extends OpCode(2006)
 case object OP_KILL_CURSORS extends OpCode(2007)
 
 object `package` {
-  type int32 = Int
-  type int64 = Long
-  type cstring = String
-  type document = BSONObject
-
   // XXX: will suffice for now, but should be a little less naive
-  def requestID: int32 = (System.currentTimeMillis / 1000 - scala.util.Random.nextInt.abs).abs.intValue
+  def requestID: Int = (System.currentTimeMillis / 1000 - scala.util.Random.nextInt.abs).abs.intValue
 
   def encoder = new RichBSONEncoder
 
@@ -41,7 +37,7 @@ object `package` {
 }
 
 trait GenericFlag {
-  val bits: List[int32]
+  val bits: List[Int]
   def set(flags: BigInt): BigInt =
     bits.distinct.foldLeft(flags) {
       case (flags, bit) => flags.setBit(bit)
@@ -70,7 +66,7 @@ trait Writable {
   def write(enc: BSONEncoder)
 }
 
-case class MsgHeader(requestID: int32, responseTo: Option[int32], op: OpCode) extends Writable {
+case class MsgHeader(requestID: Int, responseTo: Option[Int], op: OpCode) extends Writable {
   def write(enc: BSONEncoder) = {
     enc.writeInt(requestID)
 
@@ -81,7 +77,8 @@ case class MsgHeader(requestID: int32, responseTo: Option[int32], op: OpCode) ex
   }
 }
 
-trait Op extends Writable {
+@Salat
+trait Op extends Writable with Logging {
   self =>
     val code: OpCode
 
@@ -104,6 +101,7 @@ trait Op extends Writable {
     val enc = encoder
     enc.writeInt(32/8 + bytes.size)
     enc.out.write(bytes)
+    log.trace("WRITE: %s", implicitly[Context].lookup_!(self.getClass.getName).asInstanceOf[Grater[CaseClass]].asDBObject(self.asInstanceOf[CaseClass]))
     enc.out.toByteArray
   }
 }
@@ -116,7 +114,7 @@ trait ZeroAfterHeader {
   self: HasHeader =>
 }
 
-case class OpUpdate(header: MsgHeader, fullCollectionName: cstring, flags: List[OpUpdate.Flag], selector: document, update: document) extends Op with HasHeader with ZeroAfterHeader {
+case class OpUpdate(header: MsgHeader, fullCollectionName: String, flags: List[OpUpdate.Flag], selector: BSONObject, update: BSONObject) extends Op with HasHeader with ZeroAfterHeader {
   val code = OP_UPDATE
   def write(enc: BSONEncoder) = {
     enc.writeCString(fullCollectionName)
@@ -127,12 +125,12 @@ case class OpUpdate(header: MsgHeader, fullCollectionName: cstring, flags: List[
 }
 
 object OpUpdate {
-  abstract class Flag(val bits: List[int32], name: cstring) extends GenericFlag
+  abstract class Flag(val bits: List[Int], name: String) extends GenericFlag
   case object Update      extends Flag(List(0), "Update")
   case object MultiUpdate extends Flag(List(1), "MultiUpdate")
 }
 
-case class OpInsert(header: MsgHeader, fullCollectionName: cstring, documents: List[document]) extends Op with HasHeader with ZeroAfterHeader {
+case class OpInsert(header: MsgHeader, fullCollectionName: String, documents: List[BSONObject]) extends Op with HasHeader with ZeroAfterHeader {
   val code = OP_INSERT
   def write(enc: BSONEncoder) = {
     enc.writeCString(fullCollectionName)
@@ -140,7 +138,7 @@ case class OpInsert(header: MsgHeader, fullCollectionName: cstring, documents: L
   }
 }
 
-case class OpQuery(header: MsgHeader, flags: List[OpQuery.Flag], fullCollectionName: cstring, numberToSkip: int32, numberToReturn: int32, query: document, returnFieldSelector: Option[document]) extends Op with HasHeader {
+case class OpQuery(header: MsgHeader, flags: List[OpQuery.Flag], fullCollectionName: String, numberToSkip: Int, numberToReturn: Int, query: BSONObject, returnFieldSelector: Option[BSONObject]) extends Op with HasHeader {
   val code = OP_QUERY
   def write(enc: BSONEncoder) = {
     enc.writeInt(flags.materialize)
@@ -153,7 +151,7 @@ case class OpQuery(header: MsgHeader, flags: List[OpQuery.Flag], fullCollectionN
 }
 
 object OpQuery {
-  abstract class Flag(val bits: List[int32], name: cstring) extends GenericFlag
+  abstract class Flag(val bits: List[Int], name: String) extends GenericFlag
   case object Reserved        extends Flag(List(0), "Reserved")
   case object TailableCursor  extends Flag(List(1), "TailableCursor")
   case object SlaveOk         extends Flag(List(2), "SlaveOk")
@@ -163,7 +161,7 @@ object OpQuery {
   case object Exhaust         extends Flag(List(6), "Exhaust")
   case object Partial         extends Flag(List(7), "Partial")
 
-  abstract class QueryElement(name: cstring)
+  abstract class QueryElement(name: String)
   case object $query    extends QueryElement("$query")
   case object $orderby  extends QueryElement("$orderby")
   case object $hint     extends QueryElement("$hint")
@@ -171,7 +169,7 @@ object OpQuery {
   case object $snapshot extends QueryElement("$snapshot")
 }
 
-case class OpGetMore(header: MsgHeader, fullCollectionName: cstring, numberToReturn: int32, cursorID: int64) extends Op with HasHeader with ZeroAfterHeader {
+case class OpGetMore(header: MsgHeader, fullCollectionName: String, numberToReturn: Int, cursorID: Long) extends Op with HasHeader with ZeroAfterHeader {
   val code = OP_GET_MORE
   def write(enc: BSONEncoder) = {
     enc.writeCString(fullCollectionName)
@@ -180,7 +178,7 @@ case class OpGetMore(header: MsgHeader, fullCollectionName: cstring, numberToRet
   }
 }
 
-case class OpDelete(header: MsgHeader, fullCollectionName: cstring, flags: List[OpDelete.Flag], selector: document) extends Op with HasHeader with ZeroAfterHeader {
+case class OpDelete(header: MsgHeader, fullCollectionName: String, flags: List[OpDelete.Flag], selector: BSONObject) extends Op with HasHeader with ZeroAfterHeader {
   val code = OP_DELETE
   def write(enc: BSONEncoder) = {
     enc.writeCString(fullCollectionName)
@@ -190,11 +188,11 @@ case class OpDelete(header: MsgHeader, fullCollectionName: cstring, flags: List[
 }
 
 object OpDelete {
-  abstract class Flag(val bits: List[int32], name: cstring) extends GenericFlag
+  abstract class Flag(val bits: List[Int], name: String) extends GenericFlag
   case object SingleRemove extends Flag(List(0), "SingleRemove")
 }
 
-case class OpKillCursors(header: MsgHeader, numberOfCursorIDs: int32, cursorIDs: List[int64]) extends Op with HasHeader with ZeroAfterHeader {
+case class OpKillCursors(header: MsgHeader, numberOfCursorIDs: Int, cursorIDs: List[Long]) extends Op with HasHeader with ZeroAfterHeader {
   val code = OP_KILL_CURSORS
   def write(enc: BSONEncoder) = {
     enc.writeInt(numberOfCursorIDs)
@@ -202,7 +200,7 @@ case class OpKillCursors(header: MsgHeader, numberOfCursorIDs: int32, cursorIDs:
   }
 }
 
-case class OpReply(header: MsgHeader, flags: List[OpReply.Flag], cursorID: int64, startingFrom: int32, numberReturned: int32, documents: List[document]) extends Op with HasHeader {
+case class OpReply(header: MsgHeader, flags: List[OpReply.Flag], cursorID: Long, startingFrom: Int, numberReturned: Int, documents: List[BSONObject]) extends Op with HasHeader {
   val code = OP_REPLY
   def write(enc: BSONEncoder) = {
     enc.writeInt(flags.materialize)
@@ -214,14 +212,14 @@ case class OpReply(header: MsgHeader, flags: List[OpReply.Flag], cursorID: int64
 }
 
 object OpReply {
-  abstract class Flag(val bits: List[int32], name: cstring) extends GenericFlag
+  abstract class Flag(val bits: List[Int], name: String) extends GenericFlag
   case object CursorNotFound   extends Flag(List(0), "CursorNotFound")
   case object QueryFailure     extends Flag(List(1), "QueryFailure")
   case object ShardConfigStale extends Flag(List(2), "ShardConfigStale")
   case object AwaitCapable     extends Flag(List(3), "AwaitCapable")
 }
 
-case class OpMsg(header: MsgHeader, message: cstring) extends Op with HasHeader {
+case class OpMsg(header: MsgHeader, message: String) extends Op with HasHeader {
   val code = OP_MSG
   def write(enc: BSONEncoder) = enc.writeCString(message)
 }
