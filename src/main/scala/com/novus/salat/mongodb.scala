@@ -32,12 +32,20 @@ case class MongoConnection(addr: ServerAddress, opts: MongoOptions) extends Logg
   lazy val in = new BufferedInputStream(sock.getInputStream)
   lazy val out = sock.getOutputStream
   def close = try { sock.close } catch { case _ => }
-  def alive = {
+  def alive: Boolean = {
     try {
       in.available
+      val ping = OpMsg(MsgHeader(requestID, None, OP_MSG), "ping!")
       out.write(ping.toByteArray)
       out.flush
-      true
+      MsgHeader.read(in) match {
+	case Some((left, pong)) if pong.responseTo.map(_ == ping.header.requestID).getOrElse(false) => {
+	  log.trace("ALIVE: %d bytes left; HEADER: %s", left, pong)
+	  in.skip(left)
+	  true
+	}
+	case _ => false
+      }
     }
     catch {
       case t => {
@@ -49,7 +57,6 @@ case class MongoConnection(addr: ServerAddress, opts: MongoOptions) extends Logg
 }
 
 object `package` {
-  def ping = OpMsg(MsgHeader(requestID, None, OP_MSG), "ping!")
   lazy val connectionFactory: KeyedPoolableObjectFactory = {
     new BaseKeyedPoolableObjectFactory with Logging {
       def makeObject(key: AnyRef) = key match {

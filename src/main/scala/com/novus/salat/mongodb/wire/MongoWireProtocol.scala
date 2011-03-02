@@ -78,7 +78,7 @@ trait Writable {
 }
 
 trait Readable[T] {
-  def read(in: BufferedInputStream): Option[T]
+  def read(in: BufferedInputStream): Option[(Int, T)]
 }
 
 case class MsgHeader(requestID: Int, responseTo: Option[Int], op: OpCode) extends Writable {
@@ -92,10 +92,9 @@ case class MsgHeader(requestID: Int, responseTo: Option[Int], op: OpCode) extend
   }
 }
 
-object MsgHeader extends Readable[(Int, MsgHeader)] with Logging {
+object MsgHeader extends Readable[MsgHeader] with Logging {
   def read(in: BufferedInputStream): Option[(Int, MsgHeader)] = {
     val len = Bits.readInt(in) - (32/8) * 4
-    log.info("READ: %d bytes", len)
     Some(len -> MsgHeader(requestID = Bits.readInt(in),
                           responseTo = Some(Bits.readInt(in)),
                           op = OpCode(Bits.readInt(in))))
@@ -126,7 +125,7 @@ trait Op extends Writable with Logging {
     val enc = encoder
     enc.writeInt(32/8 + bytes.size)
     enc.out.write(bytes)
-    log.info("WRITE: %s", implicitly[Context].lookup_!(self.getClass.getName).asInstanceOf[Grater[CaseClass]].asDBObject(self.asInstanceOf[CaseClass]))
+    log.trace("WRITE: %s", implicitly[Context].lookup_!(self.getClass.getName).asInstanceOf[Grater[CaseClass]].asDBObject(self.asInstanceOf[CaseClass]))
     enc.out.toByteArray
   }
 }
