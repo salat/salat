@@ -1,23 +1,23 @@
 /**
-* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-* For questions and comments about this product, please see the project page at:
-*
-* http://github.com/novus/salat
-*
-*/
+ * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For questions and comments about this product, please see the project page at:
+ *
+ * http://github.com/novus/salat
+ *
+ */
 package com.novus.salat
 
 import java.lang.reflect.Method
@@ -31,11 +31,11 @@ import com.mongodb.casbah.commons.Logging
 
 class MissingPickledSig(clazz: Class[_]) extends Error("Failed to parse pickled Scala signature from: %s".format(clazz))
 class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
-  .format(clazz))
+                                                         .format(clazz))
 class MissingTopLevelClass(clazz: Class[_]) extends Error("Parsed pickled scala signature but found no top level class for: %s"
-  .format(clazz))
+                                                          .format(clazz))
 class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String) extends Error("Didn't find owner=%s, outer=%s, inner=%s in pickled scala sig for %s"
-  .format(owner, outer, inner, clazz))
+                                                                                                .format(owner, outer, inner, clazz))
 
 abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends Logging {
   ctx.accept(this)
@@ -43,17 +43,17 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   protected def parseScalaSig: Option[ScalaSig] = {
     // TODO: provide a cogent explanation for the process that is going on here, document the fork logic on the wiki
     val firstPass = ScalaSigParser.parse(clazz)
-//    log.info("parseScalaSig: FIRST PASS on %s\n%s", clazz, firstPass)
+    log.trace("parseScalaSig: FIRST PASS on %s\n%s", clazz, firstPass)
     firstPass match {
       case Some(x) => {
-//        log.info("1")
+        log.trace("1")
         Some(x)
       }
       case None if clazz.getName.endsWith("$") => {
-//        log.info("2")
+        log.trace("2")
         val clayy = Class.forName(clazz.getName.replaceFirst("\\$$", ""))
         val secondPass = ScalaSigParser.parse(clayy)
-//        log.info("parseScalaSig: SECOND PASS on %s\n%s", clayy, secondPass)
+        log.trace("parseScalaSig: SECOND PASS on %s\n%s", clayy, secondPass)
         secondPass
       }
       case x => x
@@ -62,22 +62,22 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
   protected lazy val sym = {
     val pss = parseScalaSig
-//    log.info("parseScalaSig: clazz=%\n%s", clazz, pss)
+    log.trace("parseScalaSig: clazz=%\n%s", clazz, pss)
     pss match {
       case Some(x) => {
         val topLevelClasses = x.topLevelClasses
-//        log.info("parseScalaSig: found top-level classes %s", topLevelClasses)
+        log.trace("parseScalaSig: found top-level classes %s", topLevelClasses)
         topLevelClasses.headOption match {
           case Some(tlc) => {
-//            log.info("parseScalaSig: returning top-level class %s", tlc)
+            log.trace("parseScalaSig: returning top-level class %s", tlc)
             tlc
           }
           case None => {
             val topLevelObjects = x.topLevelObjects
-//            log.info("parseScalaSig: found top-level objects %s", topLevelObjects)
+            log.trace("parseScalaSig: found top-level objects %s", topLevelObjects)
             topLevelObjects.headOption match {
               case Some(tlo) => {
-//                log.info("parseScalaSig: returning top-level object %s", tlo)
+                log.trace("parseScalaSig: returning top-level object %s", tlo)
                 tlo
               }
               case _ => throw new MissingExpectedType(clazz)
@@ -103,21 +103,21 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   lazy val fields = collection.SortedMap.empty[String, Field] ++ indexedFields.map { f => f.name -> f }
 
   lazy val extraFieldsToPersist = clazz.getDeclaredMethods.toList
-    .filter(_.isAnnotationPresent(classOf[Persist]))
-    .filterNot(m => m.annotated_?[Ignore])
+  .filter(_.isAnnotationPresent(classOf[Persist]))
+  .filterNot(m => m.annotated_?[Ignore])
 
   lazy val companionClass = clazz.companionClass
   lazy val companionObject = clazz.companionObject
 
 
   protected lazy val constructor: Option[Method] = {
-//    log.info("constructor: sym=%s (isModule=%s)", sym, sym.isModule)
+    log.trace("constructor: sym=%s (isModule=%s)", sym, sym.isModule)
     if (sym.isModule) {
       None
     }
     else {
-//      log.info("companionClass: %s", companionClass)
-//      log.info("methods: %s", companionClass.getMethods.map(_.getName).mkString(", "))
+      log.trace("companionClass: %s", companionClass)
+      log.trace("methods: %s", companionClass.getMethods.map(_.getName).mkString(", "))
       companionClass.getMethods.filter(_.getName == "apply").headOption
     }
   }
@@ -139,21 +139,19 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     val fromConstructor = o.productIterator.zip(indexedFields.iterator)
     val withPersist = extraFieldsToPersist.iterator.map {
       case m: Method => {
-	val element = m.invoke(o)
-	val field: com.novus.salat.Field = {
-          val whoKnowsWhat = sym.children.filter(f => f.name == m.getName && f.isAccessor).map(_.asInstanceOf[MethodSymbol])
-	  //        whoKnowsWhat.foreach {
-	  //          w => log.info(w.toString)
-	  //        }
-          val ho = whoKnowsWhat.headOption
-          val idx = -1 // not actually used for anything.  or maybe not!  isn't this exciting?  keep reading!
-          ho match {
-            case Some(ho) => com.novus.salat.Field(idx, ho.name, typeRefType(ho), m)
+        val element = m.invoke(o)
+        val field: com.novus.salat.Field = {
+          sym
+          .children
+          .filter(f => f.name == m.getName && f.isAccessor)
+          .map(_.asInstanceOf[MethodSymbol])
+          .headOption match {
+            case Some(ho) => com.novus.salat.Field(-1, ho.name, typeRefType(ho), m)
             case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
           }
-	}
+        }
 
-	(element, field)
+        (element, field)
       }
     }
     (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
@@ -199,28 +197,28 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       }
     }
 
-  def asObject(dbo: MongoDBObject): X = if (sym.isModule) {
-    companionObject.asInstanceOf[X]
-  }
-  else {
-    val args = indexedFields.map {
-      case field if field.ignore => safeDefault(field)
-      case field => dbo.get(ctx.keyOverrides.get(field.name).getOrElse(field.name)) match {
-        case Some(value) => field.in_!(value)
-        case _ => safeDefault(field)
-      }
-    }.map(_.get.asInstanceOf[AnyRef])
-    constructor match {
-      case Some(constructor) => try {
-//        log.info(ArgsPrettyPrinter(args))
-        constructor.invoke(companionObject, args: _*).asInstanceOf[X]
-      }
-      catch {
-        case cause: Throwable => throw new ToObjectGlitch(this, sym, constructor, args, cause)
-      }
-      case None => throw new MissingConstructor(sym)
+  def asObject(dbo: MongoDBObject): X =
+    if (sym.isModule) {
+      companionObject.asInstanceOf[X]
     }
-  }
+    else {
+      val args = indexedFields.map {
+        case field if field.ignore => safeDefault(field)
+        case field => dbo.get(ctx.keyOverrides.get(field.name).getOrElse(field.name)) match {
+          case Some(value) => field.in_!(value)
+          case _ => safeDefault(field)
+        }
+      }.map(_.get.asInstanceOf[AnyRef])
+      constructor match {
+        case Some(constructor) => try {
+          constructor.invoke(companionObject, args: _*).asInstanceOf[X]
+        }
+        catch {
+          case cause: Throwable => throw new ToObjectGlitch(this, sym, constructor, args, cause)
+        }
+        case None => throw new MissingConstructor(sym)
+      }
+    }
 
   override def toString = "Grater(%s @ %s)".format(clazz, ctx)
 
@@ -230,12 +228,13 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 }
 
 class MissingConstructor(sym: SymbolInfoSymbol) extends Error("Coudln't find a constructor for %s".format(sym.path))
-class ToObjectGlitch[X<:CaseClass](grater: Grater[X], sym: SymbolInfoSymbol, constructor: Method, args: Seq[AnyRef], cause: Throwable) extends Error("""
+class ToObjectGlitch[X<:CaseClass](grater: Grater[X], sym: SymbolInfoSymbol, constructor: Method, args: Seq[AnyRef], cause: Throwable) extends Error(
+  """
 
-%s toObject failed on:
-SYM: %s
-CONSTRUCTOR: %s
-ARGS:
-%s
+  %s toObject failed on:
+  SYM: %s
+  CONSTRUCTOR: %s
+  ARGS:
+  %s
 
-""".format(grater.toString, sym.path, constructor, ArgsPrettyPrinter(args)), cause)
+  """.format(grater.toString, sym.path, constructor, ArgsPrettyPrinter(args)), cause)
