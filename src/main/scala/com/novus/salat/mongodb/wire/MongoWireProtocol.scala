@@ -1,8 +1,12 @@
 package com.novus.salat.mongodb.wire
 
 import com.novus.salat._
+import com.novus.salat.global._
+
 import org.bson._
 import org.bson.io._
+
+import com.mongodb.casbah.commons.Logging
 
 abstract class OpCode(val code: int32)
 
@@ -44,9 +48,22 @@ trait GenericFlag {
     }
 }
 
-sealed class RichBSONEncoder(val out: OutputBuffer) extends BSONEncoder {
+sealed class RichBSONEncoder(val out: OutputBuffer) extends BSONEncoder with Logging {
   def this() = this(new BasicOutputBuffer)
   set(out)
+
+  def grateObject(o: CaseClass): Unit = {
+    val g = implicitly[Context].lookup_!(o.getClass.getName).asInstanceOf[Grater[CaseClass]]
+    // What follows is what can pass for a straight-up port of
+    // BSONEncoder#putObject(String, BSONObject). Except there's no
+    // intermediary BSONObject.
+
+    g.iterateOut(o) {
+      case (key, value) => {
+        log.info("grateObject(%s) => %s", o.getClass.getName, key)
+      }
+    }
+  }
 }
 
 trait Writable {
@@ -69,17 +86,24 @@ trait Op extends Writable {
     val code: OpCode
 
   def toByteArray: Array[Byte] = {
-    val enc = encoder
-    self match {
-      case hh: HasHeader => {
-        hh.header.write(enc)
-        hh match {
-          case zah: ZeroAfterHeader => enc.writeInt(0)
+    val bytes = {
+      val tmp = encoder
+      self match {
+        case hh: HasHeader => {
+          hh.header.write(tmp)
+          hh match {
+            case zah: ZeroAfterHeader => tmp.writeInt(0)
+            case _ =>
+          }
         }
+        case _ =>
       }
-      case _ =>
+      self.write(tmp)
+      tmp.out.toByteArray
     }
-    self.write(enc)
+    val enc = encoder
+    enc.writeInt(32/8 + bytes.size)
+    enc.out.write(bytes)
     enc.out.toByteArray
   }
 }
@@ -195,4 +219,9 @@ object OpReply {
   case object QueryFailure     extends Flag(List(1), "QueryFailure")
   case object ShardConfigStale extends Flag(List(2), "ShardConfigStale")
   case object AwaitCapable     extends Flag(List(3), "AwaitCapable")
+}
+
+case class OpMsg(header: MsgHeader, message: cstring) extends Op with HasHeader {
+  val code = OP_MSG
+  def write(enc: BSONEncoder) = enc.writeCString(message)
 }

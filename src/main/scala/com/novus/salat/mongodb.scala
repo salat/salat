@@ -9,8 +9,11 @@ import java.io.BufferedInputStream
 import org.apache.commons.pool._
 import org.apache.commons.pool.impl._
 
+import com.novus.salat.mongodb.wire._
+
 case class MongoConnectionKey(addr: ServerAddress, opts: MongoOptions) {
   def connect = MongoConnection(addr, opts)
+  def correlate(conn: MongoConnection) = (addr.hashCode == conn.addr.hashCode) && (opts.toString == conn.opts.toString)
 }
 
 object MongoConnectionKey {
@@ -18,7 +21,7 @@ object MongoConnectionKey {
   def apply(host: String, port: Int, opts: MongoOptions): MongoConnectionKey = MongoConnectionKey(new ServerAddress(host, port), opts)
 }
 
-case class MongoConnection(addr: ServerAddress, opts: MongoOptions) {
+case class MongoConnection(addr: ServerAddress, opts: MongoOptions) extends Logging {
   lazy val sock = {
     val s = new Socket
     s.connect(addr.getSocketAddress, opts.connectTimeout)
@@ -29,9 +32,24 @@ case class MongoConnection(addr: ServerAddress, opts: MongoOptions) {
   lazy val in = new BufferedInputStream(sock.getInputStream)
   lazy val out = sock.getOutputStream
   def close = try { sock.close } catch { case _ => }
+  def alive = {
+    try {
+      in.available
+      out.write(ping.toByteArray)
+      out.flush
+      true
+    }
+    catch {
+      case t => {
+	log.warning(t, "failed to ping")
+	false
+      }
+    }
+  }
 }
 
 object `package` {
+  def ping = OpMsg(MsgHeader(requestID, None, OP_MSG), "ping!")
   lazy val connectionFactory: KeyedPoolableObjectFactory = {
     new BaseKeyedPoolableObjectFactory with Logging {
       def makeObject(key: AnyRef) = key match {
@@ -42,15 +60,8 @@ object `package` {
         case _ =>
       }
       override def validateObject(key: AnyRef, obj: AnyRef) = (key, obj) match {
-        case (MongoConnectionKey(addr1, opts1), conn @ MongoConnection(addr2, opts2)) => {
-          (addr1.hashCode == addr2.hashCode) && (opts1.toString == opts2.toString) && {
-            try {
-              conn.in.available
-              true
-            }
-            catch { case _ => false }
-          }
-        }
+        case (mkey @ MongoConnectionKey(_, _), conn @ MongoConnection(_, _)) =>
+          mkey.correlate(conn) && conn.alive
         case _ => false
       }
     }
