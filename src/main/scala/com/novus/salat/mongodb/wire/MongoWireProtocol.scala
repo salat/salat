@@ -1,5 +1,7 @@
 package com.novus.salat.mongodb.wire
 
+import java.io.BufferedInputStream
+
 import com.novus.salat._
 import com.novus.salat.global._
 import com.novus.salat.annotations._
@@ -20,6 +22,15 @@ case object OP_QUERY        extends OpCode(2004)
 case object OP_GET_MORE     extends OpCode(2005)
 case object OP_DELETE       extends OpCode(2006)
 case object OP_KILL_CURSORS extends OpCode(2007)
+
+object OpCode {
+  val * = {
+    OP_REPLY :: OP_MSG :: OP_UPDATE :: OP_INSERT :: RESERVED ::
+    OP_QUERY :: OP_GET_MORE :: OP_DELETE :: OP_KILL_CURSORS :: Nil
+  }
+
+  def apply(code: Int): OpCode = * find { _.code == code } getOrElse { throw new RuntimeException("bad op code: %d".format(code)) }
+}
 
 object `package` {
   // XXX: will suffice for now, but should be a little less naive
@@ -66,6 +77,10 @@ trait Writable {
   def write(enc: BSONEncoder)
 }
 
+trait Readable[T] {
+  def read(in: BufferedInputStream): Option[T]
+}
+
 case class MsgHeader(requestID: Int, responseTo: Option[Int], op: OpCode) extends Writable {
   def write(enc: BSONEncoder) = {
     enc.writeInt(requestID)
@@ -74,6 +89,16 @@ case class MsgHeader(requestID: Int, responseTo: Option[Int], op: OpCode) extend
     enc.writeInt(responseTo.getOrElse(-1))
 
     enc.writeInt(op.code)
+  }
+}
+
+object MsgHeader extends Readable[(Int, MsgHeader)] with Logging {
+  def read(in: BufferedInputStream): Option[(Int, MsgHeader)] = {
+    val len = Bits.readInt(in) - (32/8) * 4
+    log.info("READ: %d bytes", len)
+    Some(len -> MsgHeader(requestID = Bits.readInt(in),
+                          responseTo = Some(Bits.readInt(in)),
+                          op = OpCode(Bits.readInt(in))))
   }
 }
 
@@ -101,7 +126,7 @@ trait Op extends Writable with Logging {
     val enc = encoder
     enc.writeInt(32/8 + bytes.size)
     enc.out.write(bytes)
-    log.trace("WRITE: %s", implicitly[Context].lookup_!(self.getClass.getName).asInstanceOf[Grater[CaseClass]].asDBObject(self.asInstanceOf[CaseClass]))
+    log.info("WRITE: %s", implicitly[Context].lookup_!(self.getClass.getName).asInstanceOf[Grater[CaseClass]].asDBObject(self.asInstanceOf[CaseClass]))
     enc.out.toByteArray
   }
 }
