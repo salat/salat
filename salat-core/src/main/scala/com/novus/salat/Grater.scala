@@ -135,6 +135,47 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     case PolyType(tr @ TypeRefType(_, _, _), _) => tr
   }
 
+  def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
+    val fromConstructor = o.productIterator.zip(indexedFields.iterator)
+    val withPersist = extraFieldsToPersist.iterator.map {
+      case m: Method => {
+	val element = m.invoke(o)
+	val field: com.novus.salat.Field = {
+          val whoKnowsWhat = sym.children.filter(f => f.name == m.getName && f.isAccessor).map(_.asInstanceOf[MethodSymbol])
+	  //        whoKnowsWhat.foreach {
+	  //          w => log.info(w.toString)
+	  //        }
+          val ho = whoKnowsWhat.headOption
+          val idx = -1 // not actually used for anything.  or maybe not!  isn't this exciting?  keep reading!
+          ho match {
+            case Some(ho) => com.novus.salat.Field(idx, ho.name, typeRefType(ho), m)
+            case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+          }
+	}
+
+	(element, field)
+      }
+    }
+    (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
+  }
+
+  type OutHandler = PartialFunction[(Any, Field), Option[(String, Any)]]
+  protected def outField: OutHandler = {
+    case (_, field) if field.ignore => None
+    case (null, _) => None
+    case (element, field) => {
+      field.out_!(element) match {
+        case Some(None) => None
+        case Some(serialized) =>
+          Some(ctx.keyOverrides.get(field.name).getOrElse(field.name) -> (serialized match {
+            case Some(unwrapped) => unwrapped
+            case _ => serialized
+          }))
+        case _ => None
+      }
+    }
+  }
+
   def asDBObject(o: X): DBObject = {
     val builder = MongoDBObject.newBuilder
     ctx.typeHint match {
@@ -142,53 +183,9 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       case _ =>
     }
 
-    o.productIterator.zip(indexedFields.iterator).foreach {
-      case (_, field) if field.ignore => {}
-      case (null, _) => {}
-      case (element, field) => {
-        field.out_!(element) match {
-          case Some(None) => {}
-          case Some(serialized) =>
-            builder += ctx.keyOverrides.get(field.name).getOrElse(field.name) -> (serialized match {
-              case Some(unwrapped) => unwrapped
-              case _ => serialized
-            })
-          case _ => {}
-        }
-      }
-    }
-
-    // now handle serializing values marked with @Persist
-    for (m: Method <- extraFieldsToPersist) {
-      val element = m.invoke(o)
-      val field: com.novus.salat.Field = {
-        val whoKnowsWhat = sym.children.filter(f => f.name == m.getName && f.isAccessor).map(_.asInstanceOf[MethodSymbol])
-//        whoKnowsWhat.foreach {
-//          w => log.info(w.toString)
-//        }
-        val ho = whoKnowsWhat.headOption
-        val idx = -1 // not actually used for anything.  or maybe not!  isn't this exciting?  keep reading!
-        ho match {
-          case Some(ho) => com.novus.salat.Field(idx, ho.name, typeRefType(ho), m)
-          case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
-        }
-      }
-
-      (element, field) match {
-        case (null, _) => // do nothing, field value is null
-        case (element, field) => {
-          field.out_!(element) match {
-            case Some(None) => {}
-            case Some(serialized) =>
-              builder += ctx.keyOverrides.get(field.name).getOrElse(field.name) -> (serialized match {
-                case Some(unwrapped) => unwrapped
-                case _ => serialized
-              })
-            case _ => {}
-          }
-        }
-      }
-    }
+    iterateOut(o) {
+      case (key, value) => builder += key -> value
+    }.toList
 
     builder.result
   }
