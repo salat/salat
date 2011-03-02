@@ -102,9 +102,24 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   }
   lazy val fields = collection.SortedMap.empty[String, Field] ++ indexedFields.map { f => f.name -> f }
 
-  lazy val extraFieldsToPersist = clazz.getDeclaredMethods.toList
-  .filter(_.isAnnotationPresent(classOf[Persist]))
-  .filterNot(m => m.annotated_?[Ignore])
+  lazy val extraFieldsToPersist = {
+    clazz
+    .getDeclaredMethods.toList
+    .filter(_.isAnnotationPresent(classOf[Persist]))
+    .filterNot(m => m.annotated_?[Ignore])
+    .map {
+      case m: Method => m -> {
+        sym
+        .children
+        .filter(f => f.name == m.getName && f.isAccessor)
+        .map(_.asInstanceOf[MethodSymbol])
+        .headOption match {
+          case Some(ho) => com.novus.salat.Field(-1, ho.name, typeRefType(ho), m)
+          case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+        }
+      }
+    }
+  }
 
   lazy val companionClass = clazz.companionClass
   lazy val companionObject = clazz.companionObject
@@ -138,21 +153,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
     val fromConstructor = o.productIterator.zip(indexedFields.iterator)
     val withPersist = extraFieldsToPersist.iterator.map {
-      case m: Method => {
-        val element = m.invoke(o)
-        val field: com.novus.salat.Field = {
-          sym
-          .children
-          .filter(f => f.name == m.getName && f.isAccessor)
-          .map(_.asInstanceOf[MethodSymbol])
-          .headOption match {
-            case Some(ho) => com.novus.salat.Field(-1, ho.name, typeRefType(ho), m)
-            case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
-          }
-        }
-
-        (element, field)
-      }
+      case (m, field) => m.invoke(o) -> field
     }
     (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
   }
