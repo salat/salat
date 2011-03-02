@@ -64,6 +64,9 @@ object `package` {
           mkey.correlate(conn) && conn.alive
         case _ => false
       }
+      override def passivateObject(key: AnyRef, obj: AnyRef) = obj match {
+	case conn: MongoConnection => while (conn.in.available > 0) conn.in.skip(conn.in.available)
+      }
     }
   }
   lazy val pool: KeyedObjectPool = new StackKeyedObjectPool(connectionFactory)
