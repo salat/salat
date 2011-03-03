@@ -21,11 +21,12 @@
 package com.novus.salat.test
 
 import org.specs.specification.PendingUntilFixed
-import com.novus.salat.test.model.{Alice, Walrus}
 import com.novus.salat._
 import scala.tools.nsc.util.ScalaClassLoader
 import com.mongodb.casbah.Imports._
 import scala.reflect.Manifest
+import com.novus.salat.util.MapPrettyPrinter
+import com.novus.salat.test.model.{Ida, James, Alice, Walrus}
 
 class CustomContextSpec extends SalatSpec with PendingUntilFixed {
 
@@ -161,6 +162,30 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
       }
     }
 
+    "allow registering global key overrides" in {
+      val lake = "lake"
+      val swamp = "swamp"
+      // create custom context
+      implicit val ctx = new Context {
+        val name = Some("CustomContextSpec-5")
+      }
+      ctx.name must beSome("CustomContextSpec-5")
+      ctx.keyOverrides must beEmpty
+
+      ctx.registerGlobalKeyOverride(remapThis = lake, toThisInstead = swamp)
+      ctx.keyOverrides must haveSize(1)
+      ctx.keyOverrides must havePair(lake, swamp)
+
+      val i = Ida(lake = Some(BigDecimal("3.14")))
+      val dbo: MongoDBObject = grater[Ida].asDBObject(i)
+      log.info(MapPrettyPrinter(dbo))
+      // our global key remap transformed "lake" to "swamp"
+      dbo must havePair(swamp, 3.14)
+      dbo must notHaveKey(lake)
+
+      val i_* = grater[Ida].asObject(dbo)
+      i_* mustEqual i
+    }
 
   }
 }

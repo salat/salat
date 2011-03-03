@@ -38,11 +38,24 @@ trait Context extends Logging {
 
   // sets up a default enum strategy of using toString to serialize/deserialize enums
   val defaultEnumStrategy = EnumStrategy.BY_VALUE
+  // global @Key overrides - careful with that axe, Eugene
+  private[salat] val keyOverrides: MMap[String, String] = HashMap.empty
 
   def registerClassLoader(cl: ClassLoader): Unit = {
     // any explicitly-registered classloader is assumed to take priority over the boot time classloader
     classLoaders = (Seq.newBuilder[ClassLoader] += cl ++= classLoaders).result
     log.info("Context: registering classloader %d", classLoaders.size)
+  }
+
+  def registerGlobalKeyOverride(remapThis: String, toThisInstead: String) = {
+    // for obvious reasons, we are not allowing a key override to be registered more than once
+    assume(!keyOverrides.contains(remapThis), "registerGlobalKeyOverride: context=%s already has a global key override for key='%s' with value='%s'"
+      .format(name, remapThis, keyOverrides.get(remapThis)))
+    // think twice, register once
+    assume(remapThis != null && remapThis.nonEmpty, "registerGlobalKeyOverride: key remapThis must be supplied!")
+    assume(toThisInstead != null && toThisInstead.nonEmpty, "registerGlobalKeyOverride: value toThisInstead must be supplied!")
+    keyOverrides += remapThis -> toThisInstead
+    log.info("registerGlobalKeyOverride: context=%s will globally remap key='%s' to '%s'", name, remapThis, toThisInstead)
   }
 
   def accept(grater: Grater[_ <: CaseClass]): Unit =

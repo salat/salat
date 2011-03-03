@@ -152,7 +152,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
         field.out_!(element) match {
           case Some(None) => {}
           case Some(serialized) =>
-            builder += field.name -> (serialized match {
+            builder += ctx.keyOverrides.get(field.name).getOrElse(field.name) -> (serialized match {
               case Some(unwrapped) => unwrapped
               case _ => serialized
             })
@@ -183,7 +183,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
           field.out_!(element) match {
             case Some(None) => {}
             case Some(serialized) =>
-              builder += field.name -> (serialized match {
+              builder += ctx.keyOverrides.get(field.name).getOrElse(field.name) -> (serialized match {
                 case Some(unwrapped) => unwrapped
                 case _ => serialized
               })
@@ -211,13 +211,14 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   else {
     val args = indexedFields.map {
       case field if field.ignore => safeDefault(field)
-      case field => dbo.get(field.name) match {
+      case field => dbo.get(ctx.keyOverrides.get(field.name).getOrElse(field.name)) match {
         case Some(value) => field.in_!(value)
         case _ => safeDefault(field)
       }
     }.map(_.get.asInstanceOf[AnyRef])
     constructor match {
       case Some(constructor) => try {
+//        log.info(ArgsPrettyPrinter(args))
         constructor.invoke(companionObject, args: _*).asInstanceOf[X]
       }
       catch {
