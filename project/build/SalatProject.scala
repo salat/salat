@@ -9,11 +9,7 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
   abstract class BaseSalatProject(info: ProjectInfo) extends DefaultProject(info) {
     override def compileOptions = super.compileOptions ++ Seq(Unchecked, Deprecation)
 
-    val specsVersion = crossScalaVersionString match {
-      case "2.8.0" => "1.6.5"
-      case "2.8.1" => "1.6.7"
-    }
-    val specs = "org.scala-tools.testing" %% "specs" % specsVersion % "test->default" withSources()
+    val specs = "org.scala-tools.testing" % "specs" % "1.6.7" % "test->default" withSources()
 
     val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default" withSources()
     val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default" withSources()
@@ -24,12 +20,8 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
 
   class SalatCoreProject(info: ProjectInfo) extends BaseSalatProject(info) {
     val mongodb = "org.mongodb" % "mongo-java-driver" % "2.4" withSources()
-    val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.0.3" withSources()
-    val commons_pool = "commons-pool" % "commons-pool" % "1.5.5"
-
-    // Should be crossScalaVersionString, but 2.8.0's scalap appears to
-    // be totally frakked, whereas 2.8.1's works fine with 2.8.0. Go
-    // figure.
+    val casbah_core = "com.mongodb.casbah" % "casbah-core" % "2.0.3" withSources()
+    val commons_pool = "commons-pool" % "commons-pool" % "1.5.5" withSources()
     val scalap = "org.scala-lang" % "scalap" % "2.8.1" withSources()
   }
 
