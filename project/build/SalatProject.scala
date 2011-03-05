@@ -5,12 +5,12 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
   override def managedStyle = ManagedStyle.Maven
 
   lazy val core = project("salat-core", "salat-core", new SalatCoreProject(_))
+  lazy val proto = project("salat-proto", "salat-proto", new SalatProtoProject(_), core)
 
   abstract class BaseSalatProject(info: ProjectInfo) extends DefaultProject(info) {
     override def compileOptions = super.compileOptions ++ Seq(Unchecked, Deprecation)
 
-    val specs = "org.scala-tools.testing" % "specs" % "1.6.7" % "test->default" withSources()
-
+    val specs = "org.scala-tools.testing" %% "specs" % "1.6.7" % "test->default" withSources()
     val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default" withSources()
     val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default" withSources()
 
@@ -20,9 +20,13 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
 
   class SalatCoreProject(info: ProjectInfo) extends BaseSalatProject(info) {
     val mongodb = "org.mongodb" % "mongo-java-driver" % "2.4" withSources()
-    val casbah_core = "com.mongodb.casbah" % "casbah-core" % "2.0.3" withSources()
+    val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.0.3" withSources()
     val commons_pool = "commons-pool" % "commons-pool" % "1.5.5" withSources()
     val scalap = "org.scala-lang" % "scalap" % "2.8.1" withSources()
+  }
+
+  class SalatProtoProject(info: ProjectInfo) extends SalatCoreProject(info) {
+    val protobuf = "com.google.protobuf" % "protobuf-java" % "2.3.0" withSources()
   }
 
   val publishTo = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
