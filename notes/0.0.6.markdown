@@ -1,0 +1,6 @@
+There is not an 0.0.6 release of Salat as such.  However, here's a few small bits added
+before 0.0.6-SNAPSHOT became 0.0.7-SNAPSHOT by fiat.
+
+- improved BigInt serialization
+- spec for @Key annotation behaviour
+- global key overrides on a context basis
