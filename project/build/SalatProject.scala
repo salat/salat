@@ -1,4 +1,5 @@
 import sbt._
+import Process._
 
 class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous.Publish {
   //override def defaultModuleSettings = inlineSettings
@@ -25,8 +26,48 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
     val scalap = "org.scala-lang" % "scalap" % "2.8.1" withSources()
   }
 
-  class SalatProtoProject(info: ProjectInfo) extends SalatCoreProject(info) {
+  class SalatProtoProject(info: ProjectInfo) extends SalatCoreProject(info) with protobuf.ProtobufCompiler {
     val protobuf = "com.google.protobuf" % "protobuf-java" % "2.3.0" withSources()
+
+    override def protobufDirectory = "src" / "test" / "protobuf"
+    override def protobufOutputPath = "src" / "test" / "java"
+
+//    override def generateProtobufAction = task {
+//      val mostRecentSchemaTimestamp = protobufSchemas.get.map {
+//        _.asFile.lastModified
+//      }.toList.sort {
+//        _ > _
+//      }.head
+//      log.info("mostRecentSchemaTimestamp: %s".format(mostRecentSchemaTimestamp))
+//      log.info("protobufOutputPath.asFile.lastModified=%s".format(protobufOutputPath.asFile.lastModified))
+//
+//      if (mostRecentSchemaTimestamp >= protobufOutputPath.asFile.lastModified) {
+//        for (schema <- protobufSchemas.get) {
+//          log.info("Compiling schema %s".format(schema))
+//        }
+//        protobufOutputPath.asFile.mkdirs()
+//        log.info("protobufOutputPath: %s".format(protobufOutputPath))
+//        val incPath = protobufIncludePath.map(_.absolutePath).mkString("-I ", " -I ", "")
+//        log.info("incPath: %s".format(incPath))
+//        log.info("""ABOUT TO RUN:
+//        protoc %s --java_out=%s%s
+//        """.format(incPath, protobufOutputPath.absolutePath, protobufSchemas.getPaths.mkString(" ")))
+//        <x>protoc {incPath} --java_out={protobufOutputPath.absolutePath} {protobufSchemas.getPaths.mkString(" ")}</x> ! log
+//        protobufOutputPath.asFile.setLastModified(mostRecentSchemaTimestamp)
+//      }
+//
+//      None
+//    } describedAs ("Generates Java classes from the specified Protobuf schema files.")
+
+    override protected def testCompileAction = {
+//      log.info("testCompileAction: preparing to generate...")
+      super.testCompileAction dependsOn(generateProtobuf)
+    }
+
+    // I only generate protobuf messages for testing, so we don't need to hook this in to compile
+    override def compileAction = super.compileAction
+
+//    override def cleanAction = super.cleanAction dependsOn(cleanProtobuf)
   }
 
   val publishTo = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
