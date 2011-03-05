@@ -1,0 +1,5 @@
+Features new in Salat 0.0.5 include:
+
+- reorganization of project into modules
+- something to do with BSON
+- Protobuf without protoc
