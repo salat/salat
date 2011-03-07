@@ -20,7 +20,6 @@
  */
 package com.novus.salat
 
-import java.lang.reflect.Method
 import scala.tools.scalap.scalax.rules.scalasig._
 import com.mongodb.casbah.Imports._
 
@@ -28,6 +27,7 @@ import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import com.novus.salat.util._
 import com.mongodb.casbah.commons.Logging
+import java.lang.reflect.{Constructor, Method}
 
 class MissingPickledSig(clazz: Class[_]) extends Error("Failed to parse pickled Scala signature from: %s".format(clazz))
 class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
@@ -114,7 +114,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
         .filter(f => f.name == m.getName && f.isAccessor)
         .map(_.asInstanceOf[MethodSymbol])
         .headOption match {
-          case Some(ho) => com.novus.salat.Field(-1, ho.name, typeRefType(ho), m)
+          case Some(ho) => com.novus.salat.Field(-1, ho.name, typeRefType(ho), m)  // -1 magic number for idx which is required but not used
           case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
         }
       }
@@ -125,16 +125,14 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   lazy val companionObject = clazz.companionObject
 
 
-  protected lazy val constructor: Option[Method] = {
-    log.trace("constructor: sym=%s (isModule=%s)", sym, sym.isModule)
-    if (sym.isModule) {
-      None
+  protected lazy val constructor: Constructor[X] = {
+    val cl = clazz.getConstructors.asInstanceOf[Array[Constructor[X]]]
+    if (cl.size > 1) {  // shouldn't ever happen as case class by definition has only a single constructor
+      throw new RuntimeException("constructor: clazz=%s, expected 1 constructor but found %d\n%s".format(clazz, cl.size, cl.mkString("\n")))
     }
-    else {
-      log.trace("companionClass: %s", companionClass)
-      log.trace("methods: %s", companionClass.getMethods.map(_.getName).mkString(", "))
-      companionClass.getMethods.filter(_.getName == "apply").headOption
-    }
+    val c = cl.headOption.getOrElse(throw new MissingConstructor(sym))
+//    log.trace("constructor: clazz=%s ---> constructor=%s", clazz, c)
+    c
   }
 
 
@@ -210,14 +208,12 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
           case _ => safeDefault(field)
         }
       }.map(_.get.asInstanceOf[AnyRef])
-      constructor match {
-        case Some(constructor) => try {
-          constructor.invoke(companionObject, args: _*).asInstanceOf[X]
-        }
-        catch {
-          case cause: Throwable => throw new ToObjectGlitch(this, sym, constructor, args, cause)
-        }
-        case None => throw new MissingConstructor(sym)
+
+      try {
+        constructor.newInstance(args: _*)
+      }
+      catch {
+        case cause: Throwable => throw new ToObjectGlitch(this, sym, constructor, args, cause)
       }
     }
 
@@ -228,9 +224,11 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   override def hashCode = sym.path.hashCode
 }
 
-class MissingConstructor(sym: SymbolInfoSymbol) extends Error("Coudln't find a constructor for %s".format(sym.path))
-class ToObjectGlitch[X<:CaseClass](grater: Grater[X], sym: SymbolInfoSymbol, constructor: Method, args: Seq[AnyRef], cause: Throwable) extends Error(
+class MissingConstructor(sym: SymbolInfoSymbol) extends Error("Couldn't find a constructor for %s".format(sym.path))
+class ToObjectGlitch[X<:CaseClass](grater: Grater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
   """
+
+  %s
 
   %s toObject failed on:
   SYM: %s
@@ -238,4 +236,4 @@ class ToObjectGlitch[X<:CaseClass](grater: Grater[X], sym: SymbolInfoSymbol, con
   ARGS:
   %s
 
-  """.format(grater.toString, sym.path, constructor, ArgsPrettyPrinter(args)), cause)
+  """.format(cause.getMessage, grater.toString, sym.path, constructor, ArgsPrettyPrinter(args)), cause)

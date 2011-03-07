@@ -94,13 +94,4 @@ class BasicCaseObjectSpec extends SalatSpec {
       inflated.departments("FOSS_Sabotage") must_== deflate_me.departments("FOSS_Sabotage")
     }
   }
-
-  "provide helpful errors" in {
-    "when toObject fails" in {
-      val j = James("Draino", false)
-      val dbo = grater[James].asDBObject(j)
-      grater[James].asObject(dbo) must throwA[ToObjectGlitch[_]]
-    }
-  }
-
 }
