@@ -133,6 +133,15 @@ case class Maud10(swept: String, out: String) extends EvenMoreMaudLike {
 }
 case class Maudelic(mauds: List[EvenMoreMaudLike])
 
+abstract class MaudAgain() {
+  val swept: String
+  val out: String
+  @Persist val howFar = swept.size + out.size
+}
+case class Maud11(swept: String, out: String) extends MaudAgain {
+  @Persist val toSea = "%s %s".format(out.reverse, swept.reverse)
+}
+
 case class Neville(ennui: Boolean = true, asOf: DateTime = new DateTime)
 
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])

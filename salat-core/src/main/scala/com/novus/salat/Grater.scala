@@ -40,7 +40,7 @@ class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String
 abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends Logging {
   ctx.accept(this)
 
-  protected def parseScalaSig: Option[ScalaSig] = {
+  protected def parseScalaSig[A](clazz: Class[A]): Option[ScalaSig] = {
     // TODO: provide a cogent explanation for the process that is going on here, document the fork logic on the wiki
     val firstPass = ScalaSigParser.parse(clazz)
     log.trace("parseScalaSig: FIRST PASS on %s\n%s", clazz, firstPass)
@@ -60,8 +60,8 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     }
   }
 
-  protected lazy val sym = {
-    val pss = parseScalaSig
+  protected def findSym[A](clazz: Class[A]) = {
+    val pss = parseScalaSig(clazz)
     log.trace("parseScalaSig: clazz=%\n%s", clazz, pss)
     pss match {
       case Some(x) => {
@@ -89,7 +89,26 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     }
   }
 
+  protected lazy val sym = findSym(clazz)
+
+  // annotations on a getter don't actually inherit from a trait or an abstract superclass,
+  // but dragging them down manually allows for much nicer behaviour - this way you can specify @Persist or @Key
+  // on a trait and have it work all the way down
+  protected val IgnoreTheseInterfaces: List[Class[_]] = List(classOf[ScalaObject], classOf[Product], classOf[java.io.Serializable])
+  protected val IgnoreThisSuperclass: List[Class[_]] = List(classOf[Object])
+  protected lazy val interestingInterfaces: List[(Class[_], SymbolInfoSymbol)] = (clazz.getInterfaces.toList diff IgnoreTheseInterfaces).map {
+    i => (i, findSym(i))
+  }
+  protected lazy val interestingSuperclass: List[(Class[_], SymbolInfoSymbol)] = (List[Class[_]](clazz.getSuperclass) diff IgnoreThisSuperclass).map {
+    i => (i, findSym(i))
+  }
+
+  // for use when you just want to find something and whether it was declared in clazz, some trait clazz extends, or clazz' own superclass
+  // is not a concern
+  protected lazy val allTheChildren: Seq[Symbol] = sym.children ++ interestingInterfaces.map(_._2.children).flatten ++ interestingSuperclass.map(_._2.children).flatten
+
   protected lazy val indexedFields = {
+    // don't use allTheChildren here!  this is the indexed fields for clazz and clazz alone
     sym.children
     .filter(_.isCaseAccessor)
     .filter(!_.isPrivate)
@@ -101,23 +120,33 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     }
   }
 
-  lazy val extraFieldsToPersist = {
+  def findAnnotatedFields[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
     clazz
-    .getDeclaredMethods.toList
-    .filter(_.isAnnotationPresent(classOf[Persist]))
-    .filterNot(m => m.annotated_?[Ignore])
-    .map {
+      .getDeclaredMethods.toList
+      .filter(_.isAnnotationPresent(annotation))
+      .filterNot(m => m.annotated_?[Ignore])
+      .map {
       case m: Method => m -> {
-        sym
-        .children
-        .filter(f => f.name == m.getName && f.isAccessor)
-        .map(_.asInstanceOf[MethodSymbol])
-        .headOption match {
-          case Some(ho) => com.novus.salat.Field(-1, ho.name, typeRefType(ho), m)  // -1 magic number for idx which is required but not used
+        log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
+        // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
+        allTheChildren
+          .filter(f => f.name == m.getName && f.isAccessor)
+          .map(_.asInstanceOf[MethodSymbol])
+          .headOption match {
+          case Some(ho) => com.novus.salat.Field(-1, ho.name, typeRefType(ho), m) // TODO: -1 magic number for idx which is required but not used
           case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
         }
       }
     }
+  }
+
+  lazy val extraFieldsToPersist = {
+    val persist = classOf[Persist]
+    val fromClazz = findAnnotatedFields(clazz, persist)
+    // not necessary to look directly on trait, is necessary to look directly on superclass
+    val fromSuperclass = interestingSuperclass.map(i => findAnnotatedFields(i._1, persist)).flatten
+
+    fromClazz ++ fromSuperclass
   }
 
   lazy val companionClass = clazz.companionClass

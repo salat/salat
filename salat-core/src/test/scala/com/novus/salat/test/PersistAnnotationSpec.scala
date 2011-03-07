@@ -103,6 +103,30 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
         m_*.toSea mustEqual m.toSea
     }
 
+    "respect @Persist declared in a trait" in {
+      val m = Maud8(swept = "swept", out = "out")
+      val dbo: MongoDBObject = grater[Maud8].asDBObject(m)
+      dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud8")
+      dbo must havePair("swept", "swept")
+      dbo must havePair("out", "out")
+      dbo must havePair("toSea", "tuo tpews") // persisted from Maud8 itself
+      dbo must havePair("howFar", 8) // persisted from EvenMoreMaudLike trait
+      val m_* = grater[Maud8].asObject(dbo)
+      m_* mustEqual m
+    }
+
+    "respect @Persist declared in immediate superclass" in {
+        val m = Maud11(swept = "swept", out = "out")
+        val dbo: MongoDBObject = grater[Maud11].asDBObject(m)
+        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud11")
+        dbo must havePair("swept", "swept")
+        dbo must havePair("out", "out")
+        dbo must havePair("toSea", "tuo tpews") // persisted from Maud11 itself
+        dbo must havePair("howFar", 8) // persisted from abstract superclass MaudAgain
+        val m_* = grater[Maud11].asObject(dbo)
+        m_* mustEqual m
+      }
+
     "work with @Salat on a trait" in {
 
       "where @Persist is declared in the subclasses implementing the trait" in {
@@ -153,20 +177,20 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
         m_* mustEqual m
       }
 
-      "where @Persist is declared in the trait" in {
-        val m = Maudelic(mauds = List[EvenMoreMaudLike](
+      "where a collection is typed to a trait declaring @Persist" in {
+         val m = Maudelic(mauds = List[EvenMoreMaudLike](
           Maud8(swept = "swept", out = "out"),
           Maud9(swept = "swept", out = "out"),
           Maud10(swept = "swept", out = "out")
         ))
          val dbo: MongoDBObject = grater[Maudelic].asDBObject(m)
-//      log.info(MapPrettyPrinter(dbo))
-        dbo must havePair("_typeHint", "com.novus.salat.test.model.ManyMauds")
+//        log.info(MapPrettyPrinter(dbo))
+        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maudelic")
         dbo must havePair("mauds", {
           val listBuilder = MongoDBList.newBuilder
           listBuilder += {
             val builder = MongoDBObject.newBuilder
-            builder += "_typeHint" -> "com.novus.salat.test.model.Maud5"
+            builder += "_typeHint" -> "com.novus.salat.test.model.Maud8"
             builder += "swept" -> "swept"
             builder += "out" -> "out"
             builder += "toSea" -> "tuo tpews"
@@ -175,21 +199,21 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
           }
           listBuilder += {
             val builder = MongoDBObject.newBuilder
-            builder += "_typeHint" -> "com.novus.salat.test.model.Maud6"
+            builder += "_typeHint" -> "com.novus.salat.test.model.Maud9"
             builder += "swept" -> "swept"
             builder += "out" -> "out"
             builder += "ida" -> {
               val builder = MongoDBObject.newBuilder
               builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
-              builder += "howFar" -> 8    // persisted from EvenMoreMaudLike trait
+              builder += "lake" -> 8.0
               builder.result
             }
-            builder += "howFar" -> 8
+            builder += "howFar" -> 8 // persisted from EvenMoreMaudLike trait
             builder.result
           }
           listBuilder += {
             val builder = MongoDBObject.newBuilder
-            builder += "_typeHint" -> "com.novus.salat.test.model.Maud7"
+            builder += "_typeHint" -> "com.novus.salat.test.model.Maud10"
             builder += "swept" -> "swept"
             builder += "out" -> "out"
             // notWaving does not have @Persist so does not appear here
@@ -202,7 +226,7 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
 
         val m_* = grater[Maudelic].asObject(dbo)
         m_* mustEqual m
-      } pendingUntilFixed
+      }
     }
   }
 
