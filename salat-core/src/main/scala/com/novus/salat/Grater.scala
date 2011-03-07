@@ -100,7 +100,6 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
         Field(idx, ms.name, typeRefType(ms), clazz.getMethod(ms.name))
     }
   }
-  lazy val fields = collection.SortedMap.empty[String, Field] ++ indexedFields.map { f => f.name -> f }
 
   lazy val extraFieldsToPersist = {
     clazz
