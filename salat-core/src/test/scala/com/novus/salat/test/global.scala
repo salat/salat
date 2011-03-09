@@ -20,31 +20,15 @@
 */
 package com.novus.salat.test
 
+import java.math.{RoundingMode, MathContext}
 import com.novus.salat._
-import com.novus.salat.util._
-import com.novus.salat.global._
-import com.novus.salat.test.model._
-import com.mongodb.casbah.Imports._
 
-class CharacterSpec extends SalatSpec {
+package object global {
 
-  "A grater" should {
-    "support characters" in {
-      val k = Kate(axe = 'A', struckWith = 'S')
-      val dbo: MongoDBObject = grater[Kate].asDBObject(k)
-//      println(MapPrettyPrinter(dbo))
-//      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Kate")
-      dbo must havePair("axe" -> "A")
-      dbo must havePair("struckWith" -> "S")
-
-      val coll = MongoConnection()(SalatSpecDb)("scala_character_test_1")
-      val wr = coll.insert(dbo)
-//      println("WR: %s".format(wr))
-
-      val k_* = grater[Kate].asObject(coll.findOne().get)
-      k_* mustEqual k
-    }
+  implicit val ctx = new Context {
+    val name = Some("TestContext-AlwaysTypeHints")
+    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
   }
 
-
+  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
 }

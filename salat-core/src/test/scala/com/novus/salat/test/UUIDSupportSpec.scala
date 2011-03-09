@@ -35,7 +35,6 @@ class UUIDSupportSpec extends SalatSpec {
       val o = Olive(uuid)
       val dbo: MongoDBObject = grater[Olive].asDBObject(o)
 //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Olive")
       dbo must havePair("awl" -> uuid)
 
       val coll = MongoConnection()(SalatSpecDb)("uuid_test_1")
@@ -49,7 +48,6 @@ class UUIDSupportSpec extends SalatSpec {
       val o = Olive(uuid)
       val dbo: MongoDBObject = grater[Olive].asDBObject(o)
 //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Olive")
       dbo must havePair("awl" -> uuid)
 
       val coll = MongoConnection()(SalatSpecDb)("uuid_test_2")
@@ -63,7 +61,6 @@ class UUIDSupportSpec extends SalatSpec {
       val o = Olive(uuid)
       val dbo: MongoDBObject = grater[Olive].asDBObject(o)
 //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Olive")
       dbo must havePair("awl" -> uuid)
 
       val coll = MongoConnection()(SalatSpecDb)("uuid_test_3")

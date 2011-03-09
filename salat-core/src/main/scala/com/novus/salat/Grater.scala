@@ -102,6 +102,9 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   protected lazy val interestingSuperclass: List[(Class[_], SymbolInfoSymbol)] = (List[Class[_]](clazz.getSuperclass) diff IgnoreThisSuperclass).map {
     i => (i, findSym(i))
   }
+  lazy val requiresTypeHint = {
+    clazz.annotated_?[Salat] || interestingInterfaces.map(_._1.annotated_?[Salat]).contains(true) || interestingSuperclass.map(_._1.annotated_?[Salat]).contains(true)
+  }
 
   // for use when you just want to find something and whether it was declared in clazz, some trait clazz extends, or clazz' own superclass
   // is not a concern
@@ -203,8 +206,9 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
   def asDBObject(o: X): DBObject = {
     val builder = MongoDBObject.newBuilder
-    ctx.typeHint match {
-      case Some(hint) => builder += hint -> clazz.getName
+    ctx.typeHintStrategy match {
+      case TypeHintStrategy(TypeHintFrequency.Always, hint) => builder += hint -> clazz.getName
+      case TypeHintStrategy(TypeHintFrequency.WhenNecessary, hint) if requiresTypeHint => builder += hint -> clazz.getName
       case _ =>
     }
 

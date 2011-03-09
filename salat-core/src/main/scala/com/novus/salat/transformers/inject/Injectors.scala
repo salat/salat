@@ -261,7 +261,7 @@ trait DBObjectToInContext extends Transformer with InContextTransformer with Log
   private def transform0(dbo: MongoDBObject)(implicit ctx: Context) =
     (grater orElse ctx.lookup(path, dbo)).map {
       grater => grater.asObject(dbo).asInstanceOf[CaseClass]
-    }.getOrElse(throw new Exception("no grater found for '%s' OR '%s'".format(path, dbo(ctx.typeHint.getOrElse(TypeHint)))))
+    }.getOrElse(throw new Exception("no grater found for path='%s' OR '%s'".format(path, dbo(ctx.typeHintStrategy.typeHint))))
 
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case dbo: DBObject => transform0(dbo)

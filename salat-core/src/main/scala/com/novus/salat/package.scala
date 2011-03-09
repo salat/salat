@@ -29,7 +29,12 @@ import com.mongodb.casbah.commons.Logging
 package object salat extends Logging {
 
   type CaseClass = AnyRef with Product
+
   val TypeHint = "_typeHint"
+
+  object TypeHintFrequency extends Enumeration {
+    val Never, WhenNecessary, Always = Value
+  }
 
   def timeAndLog[T](f: => T)(l: Long => Unit): T = {
     val t = System.currentTimeMillis

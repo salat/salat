@@ -29,12 +29,19 @@ import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
 
+case class TypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint) {
+  assume(when != null, "Context requires non-null value for type hint strategy instead of %s!".format(when))
+  assume(when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
+    "Type hint stratregy %s requires a type hint but you have supplied none!".format(when))
+}
+
 trait Context extends Logging {
   private[salat] val graters: MMap[String, Grater[_ <: CaseClass]] = HashMap.empty
 
   val name: Option[String]
   implicit var classLoaders: Seq[ClassLoader] = Seq(getClass.getClassLoader)
-  val typeHint: Option[String] = Some(TypeHint)
+
+  val typeHintStrategy: TypeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
 
   // sets up a default enum strategy of using toString to serialize/deserialize enums
   val defaultEnumStrategy = EnumStrategy.BY_VALUE
@@ -121,7 +128,7 @@ trait Context extends Logging {
     lookup_!(manifest[X].erasure.getName).asInstanceOf[Grater[X]]
 
   def extractTypeHint(dbo: MongoDBObject): Option[String] =
-    if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHint.getOrElse(TypeHint)) match {
+    if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHintStrategy.typeHint) match {
       case Some(hint: String) => Some(hint)
       case _ => None
     } else None

@@ -21,12 +21,13 @@
 package com.novus.salat.test
 
 import com.novus.salat._
-import com.novus.salat.global._
+import com.novus.salat.test.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 
 class CaseObjectSupport extends SalatSpec {
   "a grater" should {
+
     "support case objects" in {
       "be able to serialize case objects" in {
         val mine = Wardrobe(suits = List(Zoot))
