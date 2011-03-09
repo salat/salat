@@ -144,6 +144,8 @@ case class Maud11(swept: String, out: String) extends MaudAgain {
 
 case class Neville(ennui: Boolean = true, asOf: DateTime = new DateTime)
 
+case class Olive(awl: java.util.UUID)
+
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
 case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])
