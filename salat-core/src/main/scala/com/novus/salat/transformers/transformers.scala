@@ -49,12 +49,9 @@ package object transformers extends Logging {
     case _ => false
   }
 
-  val DateTimeClassName = classOf[DateTime].getName
-  val TypeAliasedDateTimeClassName = "org.scala_tools.time.TypeImports.DateTime"
-
   def isJodaDateTime(path: String) = path match {
-    case DateTimeClassName => true
-    case TypeAliasedDateTimeClassName => true
+    case "org.joda.time.DateTime" => true
+    case "org.scala_tools.time.TypeImports.DateTime" => true
     case _ => false
   }
 }
