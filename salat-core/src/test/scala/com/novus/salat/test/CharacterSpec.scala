@@ -33,7 +33,7 @@ class CharacterSpec extends SalatSpec {
       val k = Kate(axe = 'A', struckWith = 'S')
       val dbo: MongoDBObject = grater[Kate].asDBObject(k)
 //      println(MapPrettyPrinter(dbo))
-//      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Kate")
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Kate")
       dbo must havePair("axe" -> "A")
       dbo must havePair("struckWith" -> "S")
 

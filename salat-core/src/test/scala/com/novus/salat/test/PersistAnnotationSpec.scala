@@ -51,12 +51,12 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
         val m = Maud2(swept = "swept", out = "out")
         val dbo: MongoDBObject = grater[Maud2].asDBObject(m)
 //        log.info(MapPrettyPrinter(dbo))
-//        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud2")
+        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud2")
         dbo must havePair("swept", "swept")
         dbo must havePair("out", "out")
         dbo must havePair("ida", {
           val builder = MongoDBObject.newBuilder
-//          builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
+          builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
           builder += "lake" -> 8.0
           builder.result
         })
@@ -70,13 +70,13 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
         val m = Maud3(swept = "swept", out = "out")
         val dbo: MongoDBObject = grater[Maud3].asDBObject(m)
 //        log.info(MapPrettyPrinter(dbo))
-//        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud3")
+        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud3")
         dbo must havePair("swept", "swept")
         dbo must havePair("out", "out")
         // ida is a var but gets persisted anyway
         dbo must havePair("ida", {
           val builder = MongoDBObject.newBuilder
-//          builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
+          builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
           builder += "lake" -> 8.0
           builder.result
         })
@@ -106,7 +106,7 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
     "respect @Persist declared in a trait" in {
       val m = Maud8(swept = "swept", out = "out")
       val dbo: MongoDBObject = grater[Maud8].asDBObject(m)
-//      dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud8")
+      dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud8")
       dbo must havePair("swept", "swept")
       dbo must havePair("out", "out")
       dbo must havePair("toSea", "tuo tpews") // persisted from Maud8 itself
@@ -118,7 +118,7 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
     "respect @Persist declared in immediate superclass" in {
         val m = Maud11(swept = "swept", out = "out")
         val dbo: MongoDBObject = grater[Maud11].asDBObject(m)
-//        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud11")
+        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud11")
         dbo must havePair("swept", "swept")
         dbo must havePair("out", "out")
         dbo must havePair("toSea", "tuo tpews") // persisted from Maud11 itself
@@ -137,7 +137,7 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
         ))
         val dbo: MongoDBObject = grater[ManyMauds].asDBObject(m)
 //      log.info(MapPrettyPrinter(dbo))
-//        dbo must havePair("_typeHint", "com.novus.salat.test.model.ManyMauds")
+        dbo must havePair("_typeHint", "com.novus.salat.test.model.ManyMauds")
         dbo must havePair("mauds", {
           val listBuilder = MongoDBList.newBuilder
           listBuilder += {
@@ -155,7 +155,7 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
             builder += "out" -> "out"
             builder += "ida" -> {
               val builder = MongoDBObject.newBuilder
-//              builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
+              builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
               builder += "lake" -> 8.0
               builder.result
             }
@@ -185,7 +185,7 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
         ))
          val dbo: MongoDBObject = grater[Maudelic].asDBObject(m)
 //        log.info(MapPrettyPrinter(dbo))
-//        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maudelic")
+        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maudelic")
         dbo must havePair("mauds", {
           val listBuilder = MongoDBList.newBuilder
           listBuilder += {
@@ -204,7 +204,7 @@ class PersistAnnotationSpec extends SalatSpec with PendingUntilFixed {
             builder += "out" -> "out"
             builder += "ida" -> {
               val builder = MongoDBObject.newBuilder
-//              builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
+              builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
               builder += "lake" -> 8.0
               builder.result
             }

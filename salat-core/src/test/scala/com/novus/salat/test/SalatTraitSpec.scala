@@ -51,7 +51,7 @@ class SalatTraitSpec extends SalatSpec {
 //      println(MapPrettyPrinter(container))
       val dbo: MongoDBObject = grater[VertebrateList].asDBObject(container)
 //      println(MapPrettyPrinter(dbo))
-//      dbo must havePair("_typeHint", "com.novus.salat.test.model.VertebrateList")
+      dbo must havePair("_typeHint", "com.novus.salat.test.model.VertebrateList")
       dbo must havePair("vList", {
         val listBuilder = MongoDBList.newBuilder
         listBuilder += {
@@ -107,7 +107,7 @@ class SalatTraitSpec extends SalatSpec {
       }
 
       val containerClassBuilder = MongoDBObject.newBuilder
-//      containerClassBuilder += "_typeHint" -> "com.novus.salat.test.model.SomeContainerClass"
+      containerClassBuilder += "_typeHint" -> "com.novus.salat.test.model.SomeContainerClass"
       containerClassBuilder += "e" -> "some value for e"
       containerClassBuilder += "theListWhichNeedsToBeTested" -> listBuilder.result
 

@@ -18,23 +18,47 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat
+package com.novus.salat.test
 
-import java.math.{RoundingMode, MathContext}
+import java.math.{MathContext, RoundingMode}
+import com.novus.salat._
 
-package object global {
-  implicit val ctx = new Context { val name = Some("global") }
+package object always {
 
-  // example of a context that never uses type hints
-  val WhenNecessary = new Context {
-    val name = Some("global-when-necessary")
+  implicit val ctx = new Context {
+    val name = Some("TestContext-Always")
+    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
+  }
+
+  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
+}
+
+package object when_necessary {
+
+  implicit val ctx = new Context {
+    val name = Some("TestContext-WhenNecessary")
     override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
   }
 
-  // example of a context that never uses type hints
-  val NoTypeHints = new Context {
-    val name = Some("global-no-type-hints")
+  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
+}
+
+package object never {
+  implicit val ctx = new Context {
+    val name = Some("TestContext-AlwaysTypeHints")
     override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Never)
+  }
+
+  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
+}
+
+package object custom_type_hint {
+
+  val CustomTypeHint = "_t"
+
+  implicit val ctx = new Context {
+    val name = Some("TestContext-Always")
+    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = CustomTypeHint)
   }
 
   implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)

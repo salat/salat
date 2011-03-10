@@ -41,7 +41,7 @@ trait Context extends Logging {
   val name: Option[String]
   implicit var classLoaders: Seq[ClassLoader] = Seq(getClass.getClassLoader)
 
-  val typeHintStrategy: TypeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
+  val typeHintStrategy: TypeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
 
   // sets up a default enum strategy of using toString to serialize/deserialize enums
   val defaultEnumStrategy = EnumStrategy.BY_VALUE

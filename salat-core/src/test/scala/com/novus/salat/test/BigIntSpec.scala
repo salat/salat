@@ -32,8 +32,7 @@ class BigIntSpec extends SalatSpec {
       val l = Leo(swallowed = Some(BigInt("1234567890")), tacks = BigInt(Integer.MAX_VALUE + 1))
       val dbo: MongoDBObject = grater[Leo].asDBObject(l)
 //      println(MapPrettyPrinter(dbo))
-      // swallowed -> 1234567890, tacks -> -2147483648)
-//      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Leo")
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Leo")
       dbo must havePair("swallowed" -> 1234567890)
       dbo must havePair("tacks" -> -2147483648)
 

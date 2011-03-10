@@ -60,7 +60,6 @@ class ListOfCommonTraitSpec extends SalatSpec {
 
     "handle a case class typed to a common trait" in {
 
-      // TODO: specs 1.6.7 shows this test once as passed, once as pending...  find a ticket or submit one.
       pendingUntilFixed {
         val sct1: SomeCommonTrait = SomeSubclassExtendingSaidTrait(b = 1)
 //      val sct1Dbo: MongoDBObject = grater[SomeCommonTrait].asDBObject(sct1)

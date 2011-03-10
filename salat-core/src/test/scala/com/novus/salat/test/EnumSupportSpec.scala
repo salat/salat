@@ -28,7 +28,7 @@ import com.mongodb.casbah.Imports._
 class EnumSupportSpec extends SalatSpec {
 
   "a grater" should {
-    import com.novus.salat.test.global._
+    import com.novus.salat.test.always._
     "work with Scala enums" in {
       "be able to serialize Scala enums" in {
         val me = Me("max")
