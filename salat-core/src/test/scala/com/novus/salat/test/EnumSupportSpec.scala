@@ -55,14 +55,14 @@ class EnumSupportSpec extends SalatSpec {
     "provide a default enum handling strategy of toString" in {
       import com.novus.salat.global._
 
-      ctx.defaultEnumStrategy mustEqual EnumStrategy.BY_VALUE
+      ctx.defaultEnumStrategy must_== EnumStrategy.BY_VALUE
 
       val dbo: MongoDBObject = grater[Hector].asDBObject(h)
       dbo must havePair("thug" -> "Just a good boy who loves his mum")
       dbo must havePair("doneIn" -> "OhDear")
 
       val h_* = grater[Hector].asObject(dbo)
-      h_* mustEqual h
+      h_* must_== h
     }
 
     "allow for context-level custom enum handling strategy" in {
@@ -71,14 +71,14 @@ class EnumSupportSpec extends SalatSpec {
         override val defaultEnumStrategy = EnumStrategy.BY_ID
       }
 
-      ctx.defaultEnumStrategy mustEqual EnumStrategy.BY_ID
+      ctx.defaultEnumStrategy must_== EnumStrategy.BY_ID
 
       val dbo: MongoDBObject = grater[Hector].asDBObject(h)
       dbo must havePair("thug" -> 2)
       dbo must havePair("doneIn" -> 3)
 
       val h_* = grater[Hector].asObject(dbo)
-      h_* mustEqual h
+      h_* must_== h
 
     }
 
@@ -86,8 +86,8 @@ class EnumSupportSpec extends SalatSpec {
 
       import com.novus.salat.global._
 
-      ctx.defaultEnumStrategy mustEqual EnumStrategy.BY_VALUE
-      DoneInById.getClass.getAnnotation(classOf[EnumAs]).asInstanceOf[EnumAs].strategy mustEqual EnumStrategy.BY_ID
+      ctx.defaultEnumStrategy must_== EnumStrategy.BY_VALUE
+      DoneInById.getClass.getAnnotation(classOf[EnumAs]).asInstanceOf[EnumAs].strategy must_== EnumStrategy.BY_ID
 
       val h1 = HectorOverrideId(thug = ThugLevel.Two, doneInById = DoneInById.PiningForTheFjords)
 
@@ -96,7 +96,7 @@ class EnumSupportSpec extends SalatSpec {
       dbo must havePair("doneInById" -> 1)
 
       val h1_* = grater[HectorOverrideId].asObject(dbo)
-      h1_* mustEqual h1
+      h1_* must_== h1
 
     }
 
@@ -107,8 +107,8 @@ class EnumSupportSpec extends SalatSpec {
         override val defaultEnumStrategy = EnumStrategy.BY_ID
       }
 
-      ctx.defaultEnumStrategy mustEqual EnumStrategy.BY_ID
-      DoneInByValue.getClass.getAnnotation(classOf[EnumAs]).asInstanceOf[EnumAs].strategy mustEqual EnumStrategy.BY_VALUE
+      ctx.defaultEnumStrategy must_== EnumStrategy.BY_ID
+      DoneInByValue.getClass.getAnnotation(classOf[EnumAs]).asInstanceOf[EnumAs].strategy must_== EnumStrategy.BY_VALUE
 
       val h1 = HectorOverrideValue(thug = ThugLevel.Two, doneInByValue = DoneInByValue.PiningForTheFjords)
 
@@ -117,7 +117,7 @@ class EnumSupportSpec extends SalatSpec {
       dbo must havePair("doneInByValue" -> "PiningForTheFjords")
 
       val h1_* = grater[HectorOverrideValue].asObject(dbo)
-      h1_* mustEqual h1
+      h1_* must_== h1
 
     }
 

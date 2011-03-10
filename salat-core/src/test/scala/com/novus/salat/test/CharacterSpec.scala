@@ -21,7 +21,6 @@
 package com.novus.salat.test
 
 import com.novus.salat._
-import com.novus.salat.util._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
@@ -42,7 +41,7 @@ class CharacterSpec extends SalatSpec {
 //      println("WR: %s".format(wr))
 
       val k_* = grater[Kate].asObject(coll.findOne().get)
-      k_* mustEqual k
+      k_* must_== k
     }
   }
 

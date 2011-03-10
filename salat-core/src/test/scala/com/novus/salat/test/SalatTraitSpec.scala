@@ -2,7 +2,6 @@ package com.novus.salat.test
 
 
 import com.novus.salat._
-import com.novus.salat.util._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
@@ -17,7 +16,7 @@ class SalatTraitSpec extends SalatSpec {
       val container = SomeContainerClass("tally ho", theListWhichNeedsToBeTested = List[SomeCommonTrait](s1, s2))
       val dbo: MongoDBObject = grater[SomeContainerClass].asDBObject(container)
       //      println(MapPrettyPrinter(dbo))
-//      dbo must havePair("_typeHint", "com.novus.salat.test.model.SomeContainerClass")
+      dbo must havePair("_typeHint", "com.novus.salat.test.model.SomeContainerClass")
       dbo must havePair("e", "tally ho")
       dbo must havePair("theListWhichNeedsToBeTested", {
         val listBuilder = MongoDBList.newBuilder
@@ -37,7 +36,7 @@ class SalatTraitSpec extends SalatSpec {
       })
 
       val container_* = grater[SomeContainerClass].asObject(dbo)
-      container_* mustEqual container
+      container_* must_== container
     }
 
     "handle a collection of concrete instances of an abstract class annotated with @Salat" in {
@@ -86,7 +85,7 @@ class SalatTraitSpec extends SalatSpec {
       })
 
       val container_* = grater[VertebrateList].asObject(dbo)
-      container_* mustEqual container
+      container_* must_== container
     }
 
     "properly deserialize a raw DBObject containing concrete instances of a trait annotated with @Salat" in {
@@ -119,7 +118,7 @@ class SalatTraitSpec extends SalatSpec {
         List(SomeSubclassExtendingSaidTrait(2),
           AnotherSubclassExtendingSaidTrait(3.0)))
 
-      obj_* mustEqual obj
+      obj_* must_== obj
     }
   }
 

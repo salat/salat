@@ -21,11 +21,13 @@
 package com.novus.salat.test
 
 import com.novus.salat._
-import com.novus.salat.global._
-import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 
 class ObjectIdSpec extends SalatSpec {
+
+  // use case?  unclear at this time!  but if you need to express object ids as numbers in base 36 instead of hex, this
+  // here's your ticket.
+
   "an ObjectId shortener" should {
     "shorten ObjectId-s" in {
       val oid = new ObjectId("4d2ba030eb79807454ca5cbf")

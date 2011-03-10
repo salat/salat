@@ -20,15 +20,13 @@
 */
 package com.novus.salat.test
 
-import org.specs.specification.PendingUntilFixed
 import com.novus.salat._
 import scala.tools.nsc.util.ScalaClassLoader
 import com.mongodb.casbah.Imports._
-import scala.reflect.Manifest
 import com.novus.salat.util.MapPrettyPrinter
-import com.novus.salat.test.model.{Ida, James, Alice, Walrus}
+import com.novus.salat.test.model.{Ida, Alice, Walrus}
 
-class CustomContextSpec extends SalatSpec with PendingUntilFixed {
+class CustomContextSpec extends SalatSpec {
 
   "Salat context" should {
 
@@ -40,16 +38,17 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
       ctx.name must beSome("CustomContextSpec-1")
       // this custom context is using the default classloader
       ctx.classLoaders must haveSize(1)
-      ctx.classLoaders(0) mustEqual ctx.getClass.getClassLoader
+      ctx.classLoaders(0) must_== ctx.getClass.getClassLoader
 
       // members of com.novus.salat.test.model can be resolved as expected
-      ctx.classLoaders(0) mustEqual Alice.getClass.getClassLoader
+      ctx.classLoaders(0) must_== Alice.getClass.getClassLoader
       getClassNamed(Alice.getClass.getName)(ctx) must beSome(Alice.getClass)
     }
 
     "provide flexible classloader handling" in {
 
-      val TestClassName = "com.novus.salat.test.CustomContextSpec$$anonfun$1$$anonfun$apply$10$$anon$2$Ida"
+      // TODO: somewhat contrived but...
+      val TestClassName = "com.novus.salat.test.CustomContextSpec$$anonfun$1$$anonfun$apply$15$$anon$2$Ida"
 
       val customCl = new ScalaClassLoader() {
         case class Ida(lake: Int = 10, drowned: Boolean = true)
@@ -76,8 +75,8 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
         val custom = ctx.classLoaders(0)
         val default = ctx.classLoaders(1)
 
-        custom mustEqual customCl
-        default mustEqual ctx.getClass.getClassLoader
+        custom must_== customCl
+        default must_== ctx.getClass.getClassLoader
 
         // we can resolve a class from the default classloader
         getClassNamed(Alice.getClass.getName)(ctx) must beSome(Alice.getClass)
@@ -116,8 +115,8 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
 
         ctx.name must beSome(CustomContextName)
         ctx.classLoaders must haveSize(1)
-        ctx.classLoaders(0) mustEqual customCl
-        ctx.classLoaders must notContain(ctx.getClass.getClassLoader)
+        ctx.classLoaders(0) must_== customCl
+        ctx.classLoaders must not contain(ctx.getClass.getClassLoader)
 
         // try to register another classloader and confirm it didn't work, because we overrode the default impl
         val customCl2: ClassLoader = new ScalaClassLoader() {
@@ -125,14 +124,14 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
         }
         ctx.registerClassLoader(customCl2)
         ctx.classLoaders must haveSize(1)
-        ctx.classLoaders(0) mustEqual customCl
-        ctx.classLoaders must notContain(customCl2)
-        ctx.classLoaders must notContain(ctx.getClass.getClassLoader)
+        ctx.classLoaders(0) must_== customCl
+        ctx.classLoaders must not contain(customCl2)
+        ctx.classLoaders must not contain(ctx.getClass.getClassLoader)
 
         // resolving a class from the default classloader doesn't work
         getClassNamed(Alice.getClass.getName)(ctx) must beNone
         // resolving a class from our custom classloader does
-        getClassNamed(TestClassName)(ctx) must notBeEmpty
+        getClassNamed(TestClassName)(ctx) must not beEmpty
       }
 
       "percolate a custom context down the entire chain" in {
@@ -153,7 +152,7 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
         val dbo: MongoDBObject = grater[Walrus[String]].asDBObject(w)
         dbo.get("manyThings") must beSome[AnyRef]
         val w_* = grater[Walrus[String]].asObject(dbo)
-        w_* mustEqual w
+        w_* must_== w
 
         // we can resolve a class from the custom classloader
         getClassNamed(TestClassName) must beSome(testClassForName)
@@ -181,10 +180,10 @@ class CustomContextSpec extends SalatSpec with PendingUntilFixed {
       log.info(MapPrettyPrinter(dbo))
       // our global key remap transformed "lake" to "swamp"
       dbo must havePair(swamp, 3.14)
-      dbo must notHaveKey(lake)
+      dbo must not have key(lake)
 
       val i_* = grater[Ida].asObject(dbo)
-      i_* mustEqual i
+      i_* must_== i
     }
 
   }

@@ -26,12 +26,9 @@ import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.Implicits._
 import java.math.{RoundingMode, MathContext}
-import org.specs.specification.PendingUntilFixed
 import scala.math.{BigDecimal => ScalaBigDecimal}
 
-class BigDecimalPrecisionTest extends SalatSpec with PendingUntilFixed {
-
-
+class BigDecimalPrecisionTest extends SalatSpec {
 
   "Salat grater" should {
     "preserve ScalaBigDecimal precision to 16 places" in {
@@ -46,19 +43,19 @@ class BigDecimalPrecisionTest extends SalatSpec with PendingUntilFixed {
       val dbo: MongoDBObject = grater[George].asDBObject(g)
       dbo must havePair("number" -> PrecisePi)
       dbo must havePair("someNumber" -> PrecisePi)
-      dbo must notHaveKey("noNumber")
+      dbo must not have key("noNumber")
 
       val coll =  MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test")
       val wr = coll.insert(dbo)
 //      println("WR: %s".format(wr))
 
       val g_* = grater[George].asObject(coll.findOne().get)
-      g_* mustEqual g
-      g_*.number.precision mustEqual 16
-      g_*.someNumber.get.precision mustEqual 16
+      g_* must_== g
+      g_*.number.precision must_== 16
+      g_*.someNumber.get.precision must_== 16
 
-      g_*.number mustNotEq MorePrecisePi
-      g_*.number mustEqual MorePrecisePi(mc)
+      g_*.number must not be equalTo(MorePrecisePi)
+      g_*.number must_== MorePrecisePi(mc)
 
     }
 
@@ -74,19 +71,19 @@ class BigDecimalPrecisionTest extends SalatSpec with PendingUntilFixed {
       val dbo: MongoDBObject = grater[George2].asDBObject(h)
       dbo must havePair("number" -> PrecisePi)
       dbo must havePair("someNumber" -> PrecisePi)
-      dbo must notHaveKey("noNumber")
+      dbo must not have key("noNumber")
 
       val coll =  MongoConnection()(SalatSpecDb)("scala_big_decimal_precision_test")
       val wr = coll.insert(dbo)
 //      println("WR: %s".format(wr))
 
       val h_* = grater[George2].asObject(coll.findOne().get)
-      h_* mustEqual h
-      h_*.number.precision mustEqual 16
-      h_*.someNumber.get.precision mustEqual 16
+      h_* must_== h
+      h_*.number.precision must_== 16
+      h_*.someNumber.get.precision must_== 16
 
-      h_*.number mustNotEq MorePrecisePi
-      h_*.number mustEqual MorePrecisePi(mc)
+      h_*.number must not be equalTo(MorePrecisePi)
+      h_*.number must_== MorePrecisePi(mc)
 
     }
   }
@@ -106,7 +103,7 @@ class BigDecimalPrecisionTest extends SalatSpec with PendingUntilFixed {
 //       println("WR: %s".format(wr))
 
        val i_* = grater[Ida].asObject(coll.findOne().get)
-      i_* mustEqual i
+      i_* must_== i
 
     }
 
@@ -122,7 +119,7 @@ class BigDecimalPrecisionTest extends SalatSpec with PendingUntilFixed {
 //       println("WR: %s".format(wr))
 
        val i_* = grater[Ida].asObject(coll.findOne().get)
-      i_* mustEqual i
+      i_* must_== i
     }
   }
 

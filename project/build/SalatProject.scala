@@ -11,12 +11,19 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
   abstract class BaseSalatProject(info: ProjectInfo) extends DefaultProject(info) {
     override def compileOptions = super.compileOptions ++ Seq(Unchecked, Deprecation)
 
-    val specs = "org.scala-tools.testing" %% "specs" % "1.6.7" % "test->default" withSources()
+    //    val specs = "org.scala-tools.testing" %% "specs" % "1.6.7" % "test->default" withSources()
+    val specs2 = "org.specs2" %% "specs2" % "1.0.1" % "test->default"
     val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default" withSources()
     val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default" withSources()
 
-    override def packageSrcJar= defaultJarPath("-sources.jar")
+    override def packageSrcJar = defaultJarPath("-sources.jar")
+
     override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
+
+    def specs2Framework = new TestFramework("org.specs2.runner.SpecsFramework")
+
+    override def testFrameworks = super.testFrameworks ++ Seq(specs2Framework)
+
   }
 
   class SalatCoreProject(info: ProjectInfo) extends BaseSalatProject(info) {

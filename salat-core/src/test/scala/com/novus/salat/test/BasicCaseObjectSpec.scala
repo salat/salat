@@ -36,15 +36,15 @@ class BasicCaseObjectSpec extends SalatSpec {
         log.info("after : %s", dbo.asDBObject)
 
         dbo must havePair("a" -> e.a)
-        dbo must notHaveKey("aa")
+        dbo must not have key("aa")
         dbo must havePair("aaa" -> e.aaa.get)
 
         dbo must havePair("b" -> e.b)
-        dbo must notHaveKey("bb")
+        dbo must not have key("bb")
         dbo must havePair("bbb" -> e.bbb.get)
 
         dbo must havePair("c" -> e.c)
-        dbo must notHaveKey("cc")
+        dbo must not have key("cc")
         dbo must havePair("ccc" -> e.ccc.get)
       }
 

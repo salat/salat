@@ -21,20 +21,18 @@
 package com.novus.salat.test
 
 import com.mongodb.casbah.commons.Logging
-import org.specs.Specification
-import org.specs.specification.PendingUntilFixed
+import org.specs2.execute.PendingUntilFixed
 import com.mongodb.casbah.Imports._
+import org.specs2.mutable._
 
 trait SalatSpec extends Specification with PendingUntilFixed with Logging {
+
   val SalatSpecDb = "test_salat"
-  detailedDiffs()
 
-  doBeforeSpec {
-    com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
-    com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
-  }
+  com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
+  com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
 
-  doAfterSpec {
-    MongoConnection().dropDatabase(SalatSpecDb)
-  }
+  // TODO: would be after, but after as we know it has gone away...  damn it, I miss you after
+  MongoConnection().dropDatabase(SalatSpecDb)
+
 }

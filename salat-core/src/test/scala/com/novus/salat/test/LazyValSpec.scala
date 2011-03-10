@@ -32,8 +32,8 @@ class LazyValSpec extends SalatSpec {
       val l = LazyThing(excuses = Seq(1, 2, 3))
       l.firstExcuse must beSome(1)
       l.lastExcuse must beSome(3)
-      l.factorial mustEqual 6
-      l.nthDegree mustEqual Seq(1, 7, 13, 19, 25, 31) // a lazy value that depends on factorial lazy value
+      l.factorial must_== 6
+      l.nthDegree must_== List(1, 7, 13, 19, 25, 31) // a lazy value that depends on factorial lazy value
 
       val dbo: MongoDBObject = grater[LazyThing].asDBObject(l)
       dbo.get("excuses") must beSome[AnyRef]
@@ -43,11 +43,11 @@ class LazyValSpec extends SalatSpec {
       dbo.get("nthDegree") must beNone
 
       val l_* = grater[LazyThing].asObject(dbo)
-      l_*.excuses mustEqual Seq(1, 2, 3)
+      l_*.excuses must_== Seq(1, 2, 3)
       l_*.firstExcuse must beSome(1)
       l_*.lastExcuse must beSome(3)
-      l_*.factorial mustEqual 6
-      l_*.nthDegree mustEqual Seq(1, 7, 13, 19, 25, 31)
+      l_*.factorial must_== 6
+      l_*.nthDegree must_== List(1, 7, 13, 19, 25, 31)
     }
   }
 }

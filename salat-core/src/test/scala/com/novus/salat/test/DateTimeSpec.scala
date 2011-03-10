@@ -21,7 +21,6 @@
 package com.novus.salat.test
 
 import com.novus.salat._
-import com.novus.salat.util._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
 
@@ -43,7 +42,7 @@ class DateTimeSpec extends SalatSpec {
       val coll = MongoConnection()(SalatSpecDb)("scala_date_test_1")
       val wr = coll.insert(dbo)
       val n_* = grater[Neville].asObject(coll.findOne().get)
-      n_* mustEqual n
+      n_* must_== n
     }
 
     "support org.joda.time.DateTime" in {
@@ -58,7 +57,7 @@ class DateTimeSpec extends SalatSpec {
       val coll = MongoConnection()(SalatSpecDb)("scala_date_test_2")
       val wr = coll.insert(dbo)
       val n_* = grater[Neville].asObject(coll.findOne().get)
-      n_* mustEqual n
+      n_* must_== n
     }
 
     "support dates parsed from JSON" in {
@@ -66,7 +65,7 @@ class DateTimeSpec extends SalatSpec {
       val json = grater[Neville].asDBObject(n).toString
       log.info(json)
       val n_* = grater[Neville].asObject(parse(json).asInstanceOf[DBObject])
-      n_* mustEqual n
+      n_* must_== n
     }
 
   }

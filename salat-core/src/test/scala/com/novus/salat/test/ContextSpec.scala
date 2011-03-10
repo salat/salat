@@ -43,7 +43,7 @@ class ContextSpec extends SalatSpec {
       }
 
       "by type" in {
-        ctx.lookup_![James] mustEqual grater[James]
+        ctx.lookup_![James] must_== grater[James]
       }
     }
   }
@@ -63,7 +63,7 @@ class ContextSpec extends SalatSpec {
       }
 
       "by type" in {
-        ctx.lookup_![James] mustEqual grater[James]
+        ctx.lookup_![James] must_== grater[James]
       }
     }
   }
@@ -90,7 +90,7 @@ class ContextSpec extends SalatSpec {
       }
 
       "by type" in {
-        ctx.lookup_![James] mustEqual grater[James]
+        ctx.lookup_![James] must_== grater[James]
       }
     }
 

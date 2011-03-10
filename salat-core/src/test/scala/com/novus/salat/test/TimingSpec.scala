@@ -1,49 +1,48 @@
 /**
-* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-* For questions and comments about this product, please see the project page at:
-*
-* http://github.com/novus/salat
-*
-*/
+ * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For questions and comments about this product, please see the project page at:
+ *
+ * http://github.com/novus/salat
+ *
+ */
 package com.novus.salat.test
 
 import com.novus.salat._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
-import com.mongodb.casbah.Imports._
-
-import scala.collection.mutable.{Buffer, ArrayBuffer}
-import scala.tools.scalap.scalax.rules.scalasig._
+import scala.collection.mutable.ArrayBuffer
 import scala.math.{BigDecimal => ScalaBigDecimal}
 
-import org.specs._
-import org.specs.specification.PendingUntilFixed
-
+import org.specs2.mutable._
 import org.apache.commons.lang.RandomStringUtils.{randomAscii => rs}
 import org.apache.commons.lang.math.RandomUtils.{nextInt => rn}
 import com.mongodb.casbah.commons.Logging
+import org.specs2.execute.{Success, PendingUntilFixed}
+import com.mongodb.casbah.Imports._
 
 class TimingSpec extends Specification with PendingUntilFixed with Logging {
+
   object NodeCounter {
     var n: Int = _
   }
 
-  detailedDiffs()
+  // TODO: operator, can you connect with with detailed diffs?  - i'm sorry, that party is no longer available.
+  //  detailedDiffs()
 
-  doBeforeSpec {
+  trait context extends Success {
     NodeCounter.n = 0
     com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
   }
@@ -69,23 +68,27 @@ class TimingSpec extends Specification with PendingUntilFixed with Logging {
     //   log.info("min / avg / max deflation times: %d msec / %f msec / %d msec", times.min, avg, times.max)
     // }
 
-    "try to beat casbah-mapper, too" in {
+    "try to beat casbah-mapper, too" in new context {
       val outTimes = ArrayBuffer.empty[Long]
       val inTimes = ArrayBuffer.empty[Long]
 
       val tree = timeAndLog {
-	ListNode(name = "top level", children = List(node(10).get))
-      } { m => log.info("generated %d nodes in %d msec", NodeCounter.n, m) }
+        ListNode(name = "top level", children = List(node(10).get))
+      } {
+        m => log.info("generated %d nodes in %d msec", NodeCounter.n, m)
+      }
 
       log.info("%s bytes deflated", grater[ListNode].asDBObject(tree).toString.length)
 
       (0 until 50).foreach {
         _ => {
-	  timeAndLog { grater[ListNode].asDBObject(tree) } {
-	    m =>
-	      log.info("%s deflation time: %d msec", tree.getClass.getName, m)
-	    outTimes += m
-	  }
+          timeAndLog {
+            grater[ListNode].asDBObject(tree)
+          } {
+            m =>
+              log.info("%s deflation time: %d msec", tree.getClass.getName, m)
+              outTimes += m
+          }
         }
       }
 
@@ -93,11 +96,13 @@ class TimingSpec extends Specification with PendingUntilFixed with Logging {
 
       (0 until 50).foreach {
         _ => {
-	  timeAndLog { grater[ListNode].asObject(deflated) } {
-	    m =>
-	      log.info("%s inflation time: %d msec", tree.getClass.getName, m)
-	    outTimes += m
-	  }
+          timeAndLog {
+            grater[ListNode].asObject(deflated)
+          } {
+            m =>
+              log.info("%s inflation time: %d msec", tree.getClass.getName, m)
+              outTimes += m
+          }
         }
       }
 

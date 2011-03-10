@@ -21,11 +21,9 @@
 package com.novus.salat.test
 
 import com.novus.salat._
-import com.novus.salat.util._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
-import org.specs.specification.PendingUntilFixed
 
 class KeyAnnotationSpec extends SalatSpec {
 
@@ -39,7 +37,7 @@ class KeyAnnotationSpec extends SalatSpec {
       dbo must havePair("byMistake", true)
 
       val j_* = grater[James2].asObject(dbo)
-      j_* mustEqual j
+      j_* must_== j
     }
   }
 

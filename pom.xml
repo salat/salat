@@ -33,7 +33,7 @@
         <commons.lang.version>2.5</commons.lang.version>
         <slf4j.simple.version>1.6.0</slf4j.simple.version>
         <!-- Test dependencies -->
-        <specs.version>1.6.7</specs.version>
+        <specs2.version>1.0.1</specs2.version>
         <!-- Build properties -->
         <maven-jar-plugin.version>2.2</maven-jar-plugin.version>
         <jar.dependency.dist.dir>lib</jar.dependency.dist.dir>
@@ -101,9 +101,9 @@
         </dependency>
         <!-- Test dependencies -->
         <dependency>
-            <groupId>org.scala-tools.testing</groupId>
-            <artifactId>specs_2.8.1</artifactId>
-            <version>${specs.version}</version>
+            <groupId>org.specs2</groupId>
+            <artifactId>specs2_2.8.1</artifactId>
+            <version>${specs2.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

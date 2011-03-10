@@ -21,7 +21,6 @@
 package com.novus.salat.test
 
 import com.novus.salat._
-import com.novus.salat.util._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
@@ -42,7 +41,7 @@ class BigIntSpec extends SalatSpec {
 
       val l_* = grater[Leo].asObject(coll.findOne().get)
 //      println(MapPrettyPrinter(l_*))
-      l_* mustEqual l
+      l_* must_== l
     }
   }
 }
