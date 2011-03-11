@@ -33,7 +33,7 @@
         <commons.lang.version>2.5</commons.lang.version>
         <slf4j.simple.version>1.6.0</slf4j.simple.version>
         <!-- Test dependencies -->
-        <specs2.version>1.0.1</specs2.version>
+        <specs2.version>1.1-SNAPSHOT</specs2.version>
         <!-- Build properties -->
         <maven-jar-plugin.version>2.2</maven-jar-plugin.version>
         <jar.dependency.dist.dir>lib</jar.dependency.dist.dir>

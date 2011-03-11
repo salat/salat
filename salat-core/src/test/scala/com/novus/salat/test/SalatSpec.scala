@@ -24,15 +24,22 @@ import com.mongodb.casbah.commons.Logging
 import org.specs2.execute.PendingUntilFixed
 import com.mongodb.casbah.Imports._
 import org.specs2.mutable._
+import org.specs2.specification.Step
 
-trait SalatSpec extends Specification with PendingUntilFixed with Logging {
-
+trait SalatSpec extends Specification with Logging {
   val SalatSpecDb = "test_salat"
 
-  com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
-  com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
+  override def is =
+    Step {
+      log.info("beforeSpec: registering BSON conversion helpers")
+      com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
+      com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
 
-  // TODO: would be after, but after as we know it has gone away...  damn it, I miss you after
-  MongoConnection().dropDatabase(SalatSpecDb)
+    } ^
+      super.is ^
+      Step {
+        log.info("afterSpec: dropping test MongoDB '%s'".format(SalatSpecDb))
+        MongoConnection().dropDatabase(SalatSpecDb)
+      }
 
 }
