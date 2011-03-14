@@ -31,14 +31,14 @@ trait SalatSpec extends Specification with Logging {
 
   override def is =
     Step {
-      log.info("beforeSpec: registering BSON conversion helpers")
+//      log.info("beforeSpec: registering BSON conversion helpers")
       com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
       com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
 
     } ^
       super.is ^
       Step {
-        log.info("afterSpec: dropping test MongoDB '%s'".format(SalatSpecDb))
+//        log.info("afterSpec: dropping test MongoDB '%s'".format(SalatSpecDb))
         MongoConnection().dropDatabase(SalatSpecDb)
       }
 
