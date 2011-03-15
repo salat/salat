@@ -23,6 +23,7 @@ package com.novus.salat.test
 import com.novus.salat.test.model._
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
+import com.novus.salat.util.MapPrettyPrinter
 
 class ContextSpec extends SalatSpec {
 
@@ -69,10 +70,11 @@ class ContextSpec extends SalatSpec {
   }
 
   "A context that always uses type hints" should {
-    import com.novus.salat.test.always._
-    val dbo = grater[James].asDBObject(j)
 
     "lookup_! graters" in {
+
+      import com.novus.salat.test.always._
+      val dbo = grater[James].asDBObject(j)
 
       "by MongoDBObject" in {
         val dbo = grater[James].asDBObject(j)
@@ -95,11 +97,23 @@ class ContextSpec extends SalatSpec {
     }
 
     "extract type hints" in {
+      import com.novus.salat.test.always._
       "from dbo" in {
         val dbo = grater[James].asDBObject(j)
         ctx.extractTypeHint(dbo) must beSome("com.novus.salat.test.model.James")
       }
     }
-  }
 
+    "allow the use of implicits to do clever things" in {
+      import com.novus.salat.test.always_with_implicits._
+
+      "implicitly convert case class <-> dbo" in {
+        val coll =  MongoConnection()(SalatSpecDb)("context_test_1")
+        val wr = coll += j     // implicit conversion from case class James to DBObject
+//        log.info("WR: %s", wr)
+        val j_* : James = coll.findOne().get // implicit conversion from DBObject to case class James
+        j_* must_== j
+      }
+    }
+  }
 }

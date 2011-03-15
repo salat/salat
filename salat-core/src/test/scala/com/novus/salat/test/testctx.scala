@@ -22,6 +22,7 @@ package com.novus.salat.test
 
 import java.math.{MathContext, RoundingMode}
 import com.novus.salat._
+import com.mongodb.casbah.Imports._
 
 package object always {
 
@@ -62,4 +63,27 @@ package object custom_type_hint {
   }
 
   implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
+}
+
+package object always_with_implicits {
+
+  implicit val ctx = new Context {
+    val name = Some("TestContext-Always-Implicits")
+    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
+  }
+
+  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
+
+  implicit def dbo2Obj[X <: CaseClass](obj: X): DBObject = ctx.lookup_!(obj.getClass.getName)
+    .asInstanceOf[Grater[X]]
+    .asDBObject(obj)
+
+  // this requires ALWAYS using _typeHint, all the time!
+  implicit def obj2MDbo[X <: CaseClass](dbo: MongoDBObject): X = ctx.lookup_!(dbo)
+    .asInstanceOf[Grater[X]]
+    .asObject(dbo)
+  implicit def obj2Dbo[X <: CaseClass](dbo: DBObject): X = obj2MDbo(wrapDBObj(dbo))
+
+
+
 }
