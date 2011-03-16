@@ -163,6 +163,9 @@ case class LazyThing(excuses: Seq[Int]) {
   lazy val nthDegree = List.range(1, factorial * factorial, factorial)
 }
 
+case class AttributeObject(_id: Long, key: String, bestDef: String, urls: IMap[String, UrlID])
+case class UrlID(dh: Long, ph: Long)
+
 @Salat
 trait Node {
   val name: String
