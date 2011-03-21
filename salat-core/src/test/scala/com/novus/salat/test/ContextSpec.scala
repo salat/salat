@@ -116,4 +116,40 @@ class ContextSpec extends SalatSpec {
       }
     }
   }
+
+  "A context that uses a custom key for type hints" should {
+    "lookup_! graters" in {
+
+      import com.novus.salat.test.custom_type_hint._
+      val dbo = grater[James].asDBObject(j)
+
+      "by MongoDBObject" in {
+        val dbo = grater[James].asDBObject(j)
+        ctx.lookup(dbo) must beSome(grater[James])
+        ctx.lookup(James.getClass.getName, dbo) must beSome(grater[James])
+      }
+
+      "by name of case class" in {
+        ctx.lookup(James.getClass.getName) must beSome(grater[James])
+      }
+
+      "by instance of case class" in {
+        ctx.lookup(j) must beSome(grater[James])
+        ctx.lookup(James.getClass.getName, j) must beSome(grater[James])
+      }
+
+      "by type" in {
+        ctx.lookup_![James] must_== grater[James]
+      }
+    }
+
+    "extract type hints" in {
+      import com.novus.salat.test.custom_type_hint._
+      "from dbo" in {
+        val dbo: MongoDBObject = grater[James].asDBObject(j)
+        dbo must havePair("_t", "com.novus.salat.test.model.James") // custom context uses "_t" as typeHint
+        ctx.extractTypeHint(dbo) must beSome("com.novus.salat.test.model.James")
+      }
+    }
+  }
 }
