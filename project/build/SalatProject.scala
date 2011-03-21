@@ -3,26 +3,38 @@ import Process._
 
 class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous.Publish {
   //override def defaultModuleSettings = inlineSettings
-  override def managedStyle = ManagedStyle.Maven
+//  override def managedStyle = ManagedStyle.Maven
 
   lazy val core = project("salat-core", "salat-core", new SalatCoreProject(_))
   lazy val proto = project("salat-proto", "salat-proto", new SalatProtoProject(_), core)
 
   abstract class BaseSalatProject(info: ProjectInfo) extends DefaultProject(info) {
+
+    val scalaToolsSnapRepo = "Scala Tools Snapshot Repository" at "http://scala-tools.org/repo-snapshots"
+    val scalaToolsRepo = "Scala Tools Release Repository" at "http://scala-tools.org/repo-releases"
+    val novusRepo = "Novus Release Repository" at "http://repo.novus.com/releases/"
+    val novusSnapsRepo = "Novus Snapshots Repository" at "http://repo.novus.com/snapshots/"
+    val mothership = "Maven Repo1" at "http://repo1.maven.org/maven2/"
+
     override def compileOptions = super.compileOptions ++ Seq(Unchecked, Deprecation)
 
-    val specs2 = "org.specs2" %% "specs2" % "1.1-SNAPSHOT" withSources()
+    // TODO: % "test->default" doesn't work
+    val specs2 = "org.specs2" %% "specs2" % "1.0.1"
     val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default" withSources()
     val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default" withSources()
-
-    override def packageSrcJar = defaultJarPath("-sources.jar")
-
-    override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
 
     def specs2Framework = new TestFramework("org.specs2.runner.SpecsFramework")
 
     override def testFrameworks = super.testFrameworks ++ Seq(specs2Framework)
 
+    override def packageSrcJar = defaultJarPath("-sources.jar")
+
+    override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
+
+    val publishTo = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
+      if (projectVersion.value.toString.endsWith("-SNAPSHOT")) "snapshots"
+      else "releases"
+    )) as (System.getProperty("user.name"))
   }
 
   class SalatCoreProject(info: ProjectInfo) extends BaseSalatProject(info) {
@@ -75,15 +87,4 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
 
 //    override def cleanAction = super.cleanAction dependsOn(cleanProtobuf)
   }
-
-  val publishTo = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
-    if (projectVersion.value.toString.endsWith("-SNAPSHOT")) "snapshots"
-    else "releases"
-  )) as (System.getProperty("user.name"))
-
-  val scalaToolsRepo = "Scala Tools Release Repository" at "http://scala-tools.org/repo-releases"
-  val scalaToolsSnapRepo = "Scala Tools Snapshot Repository" at "http://scala-tools.org/repo-snapshots"
-  val novusRepo = "Novus Release Repository" at "http://repo.novus.com/releases/"
-  val novusSnapsRepo = "Novus Snapshots Repository" at "http://repo.novus.com/snapshots/"
-  val mothership = "Maven Repo1" at "http://repo1.maven.org/maven2/"
 }
