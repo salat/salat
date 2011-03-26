@@ -212,3 +212,14 @@ sealed  abstract class Vertebrate
 case class Bird(name : String, canFly : Boolean = true) extends Vertebrate
 case class Squirrel(name : String, canFly : Boolean = false) extends Vertebrate
 case class VertebrateList(vList : List[Vertebrate]);
+
+case class Ad(slogan: String)
+case class Page(
+  @Key("_id") uri: java.net.URI,
+ crawled: List[DateTime] = Nil,
+ ads: Option[Set[Ad]] = None,
+ title: Option[String] = None,
+ description: Option[String] = None,
+ keywords: Option[String] = None
+)
+

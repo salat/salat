@@ -27,7 +27,7 @@ import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import com.novus.salat.util._
 import com.mongodb.casbah.commons.Logging
-import java.lang.reflect.{Constructor, Method}
+import java.lang.reflect.{InvocationTargetException, Constructor, Method}
 
 class MissingPickledSig(clazz: Class[_]) extends Error("Failed to parse pickled Scala signature from: %s".format(clazz))
 class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
@@ -268,9 +268,13 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     else {
       val args = indexedFields.map {
         case field if field.ignore => safeDefault(field)
-        case field => dbo.get(ctx.keyOverrides.get(field.name).getOrElse(field.name)) match {
-          case Some(value) => field.in_!(value)
+        case field => {
+          dbo.get(ctx.keyOverrides.get(field.name).getOrElse(field.name)) match {
+          case Some(value) => {
+            field.in_!(value)
+          }
           case _ => safeDefault(field)
+          }
         }
       }.map(_.get.asInstanceOf[AnyRef])
 
@@ -278,9 +282,16 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
         constructor.newInstance(args: _*)
       }
       catch {
-        case cause: Throwable => throw new ToObjectGlitch(this, sym, constructor, args, cause)
+        // when something bad happens feeding args into constructor, catch these exceptions and
+        // wrap them in a custom exception that will provide detailed information about what's happening.
+        case e: InstantiationException => throw new ToObjectGlitch(this, sym, constructor, args, e)
+        case e: IllegalAccessException => throw new ToObjectGlitch(this, sym, constructor, args, e)
+        case e: IllegalArgumentException => throw new ToObjectGlitch(this, sym, constructor, args, e)
+        case e: InvocationTargetException => throw new ToObjectGlitch(this, sym, constructor, args, e)
+        case e => throw e
       }
     }
+
 
   override def toString = "Grater(%s @ %s)".format(clazz, ctx)
 

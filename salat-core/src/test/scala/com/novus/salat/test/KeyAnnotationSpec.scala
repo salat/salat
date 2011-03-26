@@ -24,6 +24,8 @@ import com.novus.salat._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
+import org.scala_tools.time.Imports._
+import com.novus.salat.util.MapPrettyPrinter
 
 class KeyAnnotationSpec extends SalatSpec {
 
@@ -60,6 +62,39 @@ class KeyAnnotationSpec extends SalatSpec {
 
       val j_* = grater[James4].asObject(dbo)
       j_* must_== j
+    }
+
+    "work with a field whose type is handled by a custom BSON encoding hook" in {
+      com.novus.salat.test.util.RegisterURIConversionHelpers()
+      val date = new DateTime(2011, 3, 26, 11, 45, 22, 5)
+      val uri = new java.net.URI("http://slashdot.org")
+      val p = Page(
+        uri = uri,
+        crawled = List(date),
+        ads = None,
+        title = Some("title"),
+        description = Some("description"),
+        keywords = Some("very clever minus two")
+      )
+      val dbo: MongoDBObject = grater[Page].asDBObject(p)
+      dbo must havePair("_typeHint", "com.novus.salat.test.model.Page")
+      // @Key overrides field name "uri" with "_id"
+      // the value will be serialized as a String using our custom java.net.URI -> String BSON encoding hook
+      dbo must havePair("_id", uri)
+      dbo must havePair("crawled", MongoDBList(date))
+      dbo must havePair("title", "title")
+      dbo must havePair("description", "description")
+      dbo must havePair("keywords", "very clever minus two")
+
+      val coll = MongoConnection()(SalatSpecDb)("key-annotation-spec-1")
+      val wr = coll.insert(dbo)
+//      log.info("WR: %s", wr)
+
+      val dbo_* : MongoDBObject = coll.findOne().get
+//      log.info(MapPrettyPrinter(dbo_*))
+      val p_* = grater[Page].asObject(dbo_*)
+      com.novus.salat.test.util.DeregisterURIConversionHelpers()
+      p_* must_== p    // our custom BSON encoding for URI is crunk e pur si muove
     }
   }
 
