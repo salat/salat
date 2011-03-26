@@ -77,6 +77,16 @@ object James {
 case class James(lye: String, byMistake: Boolean)
 case class James2(@Key("cyanide") lye: String, byMistake: Boolean)
 
+trait JamesLike {
+  @Key("arsenic") val lye: String
+}
+case class James3(lye: String, byMistake: Boolean) extends JamesLike
+
+abstract class JamesIsh {
+  @Key("mercury") val lye: String
+}
+case class James4(lye: String, byMistake: Boolean) extends JamesIsh
+
 case class Kate(axe: java.lang.Character, struckWith: Char)
 
 case class Leo(swallowed: Option[BigInt], tacks: BigInt)

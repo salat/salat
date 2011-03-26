@@ -113,13 +113,32 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   protected lazy val indexedFields = {
     // don't use allTheChildren here!  this is the indexed fields for clazz and clazz alone
     sym.children
-    .filter(_.isCaseAccessor)
-    .filter(!_.isPrivate)
+    .filter(c => c.isCaseAccessor && !c.isPrivate)
     .map(_.asInstanceOf[MethodSymbol])
     .zipWithIndex
     .map {
       case (ms, idx) =>
-        Field(idx, ms.name, typeRefType(ms), clazz.getMethod(ms.name))
+        Field(idx, keyOverridesFromAbove.get(ms).getOrElse(ms.name), typeRefType(ms), clazz.getMethod(ms.name))
+    }
+  }
+
+  def findAnnotatedMethodSymbol[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
+    clazz
+      .getDeclaredMethods.toList
+      .filter(_.isAnnotationPresent(annotation))
+      .filterNot(m => m.annotated_?[Ignore])
+      .map {
+      case m: Method => m -> {
+        log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
+        // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
+        allTheChildren
+          .filter(f => f.name == m.getName && f.isAccessor)
+          .map(_.asInstanceOf[MethodSymbol])
+          .headOption match {
+          case Some(ms) => ms
+          case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+        }
+      }
     }
   }
 
@@ -136,7 +155,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
           .filter(f => f.name == m.getName && f.isAccessor)
           .map(_.asInstanceOf[MethodSymbol])
           .headOption match {
-          case Some(ho) => com.novus.salat.Field(-1, ho.name, typeRefType(ho), m) // TODO: -1 magic number for idx which is required but not used
+          case Some(ms) => com.novus.salat.Field(-1, ms.name, typeRefType(ms), m) // TODO: -1 magic number for idx which is required but not used
           case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
         }
       }
@@ -150,6 +169,20 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     val fromSuperclass = interestingSuperclass.map(i => findAnnotatedFields(i._1, persist)).flatten
 
     fromClazz ++ fromSuperclass
+  }
+
+  lazy val keyOverridesFromAbove = {
+    val key = classOf[Key]
+    val builder = Map.newBuilder[MethodSymbol, String]
+    val annotated = interestingInterfaces.map(i => findAnnotatedMethodSymbol(i._1, key)).flatten ++
+      interestingSuperclass.map(i => findAnnotatedMethodSymbol(i._1, key)).flatten
+    for ((method, ms) <- annotated) {
+      method.annotation[Key].map(_.value) match {
+        case Some(key) => builder += ms -> key
+        case None =>
+      }
+    }
+    builder.result
   }
 
   lazy val companionClass = clazz.companionClass

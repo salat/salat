@@ -39,6 +39,28 @@ class KeyAnnotationSpec extends SalatSpec {
       val j_* = grater[James2].asObject(dbo)
       j_* must_== j
     }
+
+    "override a field name when used in a trait" in {
+      val j = James3("old lace", false)
+      val dbo: MongoDBObject = grater[James3].asDBObject(j)
+      // the field name is "lye" but the @Key annotation specifies "arsenic"
+      dbo must havePair("arsenic", "old lace")
+      dbo must havePair("byMistake", false)
+
+      val j_* = grater[James3].asObject(dbo)
+      j_* must_== j
+    }
+
+    "override a field name when used in an abstract superclass" in {
+      val j = James4("mad as a hatter", true)
+      val dbo: MongoDBObject = grater[James4].asDBObject(j)
+      // the field name is "lye" but the @Key annotation specifies "mercury"
+      dbo must havePair("mercury", "mad as a hatter")
+      dbo must havePair("byMistake", true)
+
+      val j_* = grater[James4].asObject(dbo)
+      j_* must_== j
+    }
   }
 
 }

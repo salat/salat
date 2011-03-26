@@ -46,4 +46,6 @@ sealed abstract class Field(val idx: Int, val name: String, val typeRefType: Typ
                             val in: Transformer, val out: Transformer, val ignore: Boolean)(implicit val ctx: Context) extends Logging {
   def in_!(value: Any) = in.transform_!(value)
   def out_!(value: Any) = out.transform_!(value)
+
+  override def toString = "Field[%d/%s]".format(idx, name)
 }
