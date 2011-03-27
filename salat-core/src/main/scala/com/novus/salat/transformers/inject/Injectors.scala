@@ -45,6 +45,9 @@ package object in {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToSBigDecimal
 
+        case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with LongToInt
+
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with LongToBigInt
 
@@ -74,6 +77,11 @@ package object in {
       case IsSeq(t@TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with SeqInjector {
+            val parentType = pt
+          }
+
+        case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with LongToInt with SeqInjector {
             val parentType = pt
           }
 
@@ -119,6 +127,12 @@ package object in {
       case IsMap(_, t@TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
+
+        case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with LongToInt with MapInjector {
             val parentType = pt
             val grater = ctx.lookup(symbol.path)
           }
@@ -169,6 +183,9 @@ package object in {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with DoubleToSBigDecimal
 
+          case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
+          new Transformer(symbol.path, pt)(ctx) with LongToInt
+
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with LongToBigInt
 
@@ -203,6 +220,15 @@ package in {
 
 import java.lang.Integer
 import com.novus.salat.annotations.EnumAs
+
+trait LongToInt extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any)(implicit ctx: Context) = value match {
+    case l: Long => l.intValue
+    case i: Int => i
+    case s: Short => s.intValue
+  }
+}
 
 trait DoubleToSBigDecimal extends Transformer {
   self: Transformer =>

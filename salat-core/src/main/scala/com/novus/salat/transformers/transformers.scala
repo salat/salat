@@ -54,4 +54,10 @@ package object transformers extends Logging {
     case "org.scala_tools.time.TypeImports.DateTime" => true
     case _ => false
   }
+
+  def isInt(path: String) = path match {
+      case "java.lang.Integer" => true
+      case "scala.Int" => true
+      case _ => false
+    }
 }
