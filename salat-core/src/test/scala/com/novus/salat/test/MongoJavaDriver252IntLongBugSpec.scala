@@ -23,17 +23,16 @@ package com.novus.salat.test
 import com.novus.salat._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
+
 import com.mongodb.casbah.Imports._
+import com.mongodb.util.JSON.parse
 
 class MongoJavaDriver252IntLongBugSpec extends SalatSpec {
   "mongo-java-driver 2.5.2" should {
-    "not be confused about the difference between Int and Long" in {
+    "not be confused about the difference between Int and Long when parsing from stringified JSON" in {
       val c = HasCompany(Company(name = "Novus", year_of_inception = 2007, departments = Map.empty))
-      val dbo: MongoDBObject = grater[HasCompany].asDBObject(c)
-
-      val coll = MongoConnection()(SalatSpecDb)("scala_mjd_252")
-      coll.insert(dbo)
-      val c_* = grater[HasCompany].asObject(coll.findOne().get)
+      val dbo: DBObject = grater[HasCompany].asDBObject(c)
+      val c_* = grater[HasCompany].asObject(parse(dbo.toString).asInstanceOf[DBObject])
       c_* must_== c
     }
   }
