@@ -28,6 +28,8 @@ import scala.math.{BigDecimal => ScalaBigDecimal}
 
 package object test {
 
+  val SalatSpecDb = "test_salat"
+
   def graph = Alice("x", Some("y"),
     Basil(Some(80), 81,
       Clara(Seq("l1", "l2"), List(1, 2), List(

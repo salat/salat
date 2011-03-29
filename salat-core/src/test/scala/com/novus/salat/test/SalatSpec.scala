@@ -27,7 +27,6 @@ import org.specs2.mutable._
 import org.specs2.specification.Step
 
 trait SalatSpec extends Specification with Logging {
-  val SalatSpecDb = "test_salat"
 
   override def is =
     Step {
