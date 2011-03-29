@@ -30,7 +30,7 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
 
   class SalatCoreProject(info: ProjectInfo) extends BaseSalatProject(info) {
     val mongodb = "org.mongodb" % "mongo-java-driver" % "2.5.2" withSources()
-    val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.0.3" withSources()
+    val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.0" withSources()
     val commons_pool = "commons-pool" % "commons-pool" % "1.5.5"
 
     // Should be crossScalaVersionString, but 2.8.0's scalap appears to
