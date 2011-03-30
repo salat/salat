@@ -29,6 +29,7 @@ import scala.math.{BigDecimal => ScalaBigDecimal}
 package object test {
 
   val SalatSpecDb = "test_salat"
+  val DaoSpecColl = "alpha_dao_spec"
 
   def graph = Alice("x", Some("y"),
     Basil(Some(80), 81,
