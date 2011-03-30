@@ -24,8 +24,6 @@ import com.novus.salat.test._
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
-import org.specs2.matcher.MustExpectable._
-
 class SalatDAOSpec extends SalatSpec {
 
   val alpha1 = Alpha(id = 1, beta = List[Beta](Gamma("gamma3"), Delta("delta3", "sampi3")))
@@ -176,27 +174,33 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.collection.count must_== 6L
 
       val salatCursor = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$lt" -> 3)),
-        keys = MongoDBObject("_id" -> 1))
+        keys = MongoDBObject("beta" -> 0))  // forces beta key to be excluded
       salatCursor.next must_== alpha1.copy(beta = Nil)
       salatCursor.next must_== alpha2.copy(beta = Nil)
       salatCursor.hasNext must beFalse
     }
   }
 
-  // TODO: neither of these seem to run in expected sequence
-  //  object context extends Before with Logging {
-  //    def before = {
-  //      log.info("before: dropping %s", AlphaDAO.collection.getName())
-  //      AlphaDAO.collection.drop()
-  //      AlphaDAO.collection.count must_== 0L
-  //    }
-  //  }
-  //
-  //  trait context extends Success {
-  //      log.info("before: dropping %s", AlphaDAO.collection.getFullName())
-  //      AlphaDAO.collection.drop()
-  //      AlphaDAO.collection.count must_== 0L
-  //  }
+  // TODO: none of these three approaches run in expected sequence (i.e. BEFORE each test case)
+//    object context extends Before with Logging {
+//      def before = {
+//        log.info("before: dropping %s", AlphaDAO.collection.getName())
+//        AlphaDAO.collection.drop()
+//        AlphaDAO.collection.count must_== 0L
+//      }
+//    }
+//
+//    trait context extends Success {
+//        log.info("before: dropping %s", AlphaDAO.collection.getFullName())
+//        AlphaDAO.collection.drop()
+//        AlphaDAO.collection.count must_== 0L
+//    }
+//    trait context extends Scope {
+//      log.info("before: dropping %s", AlphaDAO.collection.getFullName())
+//      AlphaDAO.collection.drop()
+//      AlphaDAO.collection.count must_== 0L
+//    }
+
 
   // TODO: replace this with a context that handles this before each step - need to get on the specs2 mailing group
   def cleanUpAlphaCollection() {
