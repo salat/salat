@@ -24,7 +24,7 @@ import com.novus.salat.test._
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
-
+import org.specs2.matcher.MustExpectable._
 
 class SalatDAOSpec extends SalatSpec {
 
@@ -145,6 +145,27 @@ class SalatDAOSpec extends SalatSpec {
       val salatCursor2 = AlphaDAO.find(ref = grater[Alpha].asDBObject(alpha6))
       salatCursor2.next must_== alpha6
       salatCursor2.hasNext must beFalse
+
+      // works with limits!
+      val salatCursor3 = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$gte" -> 2))).limit(2)
+      salatCursor3.next must_== alpha2
+      salatCursor3.next must_== alpha3
+      salatCursor3.hasNext must beFalse
+
+      // works with limits and skip
+      val salatCursor4 = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$gte" -> 2)))
+        .skip(2)
+        .limit(1)
+      salatCursor4.next must_== alpha4
+      salatCursor4.hasNext must beFalse
+
+      // works with limits and skip
+      val salatCursor5 = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$gte" -> 2)))
+        .sort(orderBy = MongoDBObject("_id" -> -1)) // sort by _id desc
+        .skip(1)
+        .limit(1)
+      salatCursor5.next must_== alpha5
+      salatCursor5.hasNext must beFalse
     }
 
     cleanUpAlphaCollection()
