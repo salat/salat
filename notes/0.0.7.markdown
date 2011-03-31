@@ -12,5 +12,5 @@ Features new in Salat 0.0.7 include:
   - chose a type hinting strategy: always (default), only when necessary, or never (not recommended)
   - customize the type hint at the context level - replace "_typeHint" with whatever you like
 - Use @Persist to persist case class fields that are not declared in the constructor
-  - works with var, val and lazy val defined in case class or
-  - also works with traits or abstract superclasses annotated with @Salat
+  - works with var, val and lazy val defined inside case class
+  - also works with fields defined in traits or abstract superclasses
