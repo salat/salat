@@ -24,7 +24,13 @@ import com.novus.salat.test._
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
+import org.specs2.specification.Scope
+
 class SalatDAOSpec extends SalatSpec {
+
+  // which most specs can execute concurrently, this particular spec needs to execute sequentially to avoid mutating shared state,
+  // namely, the MongoDB collection referenced by the AlphaDAO
+  override def is = args(sequential = true) ^ super.is
 
   val alpha1 = Alpha(id = 1, beta = List[Beta](Gamma("gamma3"), Delta("delta3", "sampi3")))
   val alpha2 = Alpha(id = 2, beta = List[Beta](Gamma("gamma2"), Delta("delta2", "sampi2"), Delta("digamma2", "san2")))
@@ -35,9 +41,7 @@ class SalatDAOSpec extends SalatSpec {
 
   "Salat simple DAO" should {
 
-    cleanUpAlphaCollection()
-
-    "insert a case class" in {
+    "insert a case class" in new context {
       val wr = AlphaDAO.insert(alpha3)
       wr.getLastError.getErrorMessage must beNull
       AlphaDAO.collection.count must_== 1L
@@ -46,9 +50,7 @@ class SalatDAOSpec extends SalatSpec {
       grater[Alpha].asObject(dbo) must_== alpha3
     }
 
-    cleanUpAlphaCollection()
-
-    "insert a collection of case classes" in {
+    "insert a collection of case classes" in new context {
       val wr = AlphaDAO.insert(alpha4, alpha5, alpha6)
       wr.getLastError.getErrorMessage must beNull
       AlphaDAO.collection.count must_== 3L
@@ -66,9 +68,7 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.next must_== alpha6
     }
 
-    cleanUpAlphaCollection()
-
-    "support findOne returning Option[T]" in {
+    "support findOne returning Option[T]" in new context {
       val wr = AlphaDAO.insert(alpha4, alpha5, alpha6)
       wr.getLastError.getErrorMessage must beNull
       AlphaDAO.collection.count must_== 3L
@@ -77,9 +77,7 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.findOne(grater[Alpha].asDBObject(alpha6)) must beSome(alpha6)
     }
 
-    cleanUpAlphaCollection()
-
-    "support findOneById returning Option[T]" in {
+    "support findOneById returning Option[T]" in new context {
       val wr = AlphaDAO.insert(alpha4, alpha5, alpha6)
       wr.getLastError.getErrorMessage must beNull
 
@@ -88,9 +86,7 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.findOneByID(id = 5.asInstanceOf[AnyRef]) must beSome(alpha5)
     }
 
-    cleanUpAlphaCollection()
-
-    "support saving a case class" in {
+    "support saving a case class" in new context {
 
       val wr = AlphaDAO.insert(alpha3)
       wr.getLastError.getErrorMessage must beNull
@@ -106,9 +102,7 @@ class SalatDAOSpec extends SalatSpec {
       grater[Alpha].asObject(dbo) must_== alpha3_*
     }
 
-    cleanUpAlphaCollection()
-
-    "support removing a case class" in {
+    "support removing a case class" in new context {
       val wr = AlphaDAO.insert(alpha4, alpha5, alpha6)
       wr.getLastError.getErrorMessage must beNull
       AlphaDAO.collection.count must_== 3L
@@ -125,9 +119,7 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.next must_== alpha6
     }
 
-    cleanUpAlphaCollection()
-
-    "support find returning a Mongo cursor typed to a case class" in {
+    "support find returning a Mongo cursor typed to a case class" in new context {
       val wr = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
       wr.getLastError.getErrorMessage must beNull
       AlphaDAO.collection.count must_== 6L
@@ -166,9 +158,7 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor5.hasNext must beFalse
     }
 
-    cleanUpAlphaCollection()
-
-    "support find with a set of keys" in {
+    "support find with a set of keys" in new context {
       val wr = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
       wr.getLastError.getErrorMessage must beNull
       AlphaDAO.collection.count must_== 6L
@@ -181,35 +171,9 @@ class SalatDAOSpec extends SalatSpec {
     }
   }
 
-  // TODO: none of these three approaches run in expected sequence (i.e. BEFORE each test case)
-//    object context extends Before with Logging {
-//      def before = {
-//        log.info("before: dropping %s", AlphaDAO.collection.getName())
-//        AlphaDAO.collection.drop()
-//        AlphaDAO.collection.count must_== 0L
-//      }
-//    }
-//
-//    trait context extends Success {
-//        log.info("before: dropping %s", AlphaDAO.collection.getFullName())
-//        AlphaDAO.collection.drop()
-//        AlphaDAO.collection.count must_== 0L
-//    }
-//    trait context extends Scope {
-//      log.info("before: dropping %s", AlphaDAO.collection.getFullName())
-//      AlphaDAO.collection.drop()
-//      AlphaDAO.collection.count must_== 0L
-//    }
-
-
-  // TODO: replace this with a context that handles this before each step - need to get on the specs2 mailing group
-  def cleanUpAlphaCollection() {
-    // i have, perhaps never, felt more mutable than i do right now
-    step {
-      log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
+    trait context extends Scope {
+      log.info("before: dropping %s", AlphaDAO.collection.getFullName())
       AlphaDAO.collection.drop()
       AlphaDAO.collection.count must_== 0L
     }
-  }
-
 }
