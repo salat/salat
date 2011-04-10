@@ -21,11 +21,111 @@
 package com.novus.salat
 
 import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.commons.Logging
+import java.lang.reflect.Modifier
+
 package object util {
 
   val NonePlaceholder = "[None]"
   val NullPlaceholder = "[Null]"
   val EmptyPlaceholder = "[Empty]"
+
+  object MissingGraterExplanation extends Logging {
+
+    def clazzFromTypeHint(typeHint: Option[String])(implicit ctx: Context): Option[Class[_]] = typeHint match {
+      case Some(typeHint) => try {
+        Some(Class.forName(typeHint))
+      }
+      catch {
+        case c: ClassNotFoundException => None
+        case e => {
+          log.error("Type hint from dbo with key='%s', value='%s' is some bad candy!".format(ctx.typeHintStrategy.typeHint, typeHint),
+            e)
+          None
+        }
+      }
+    }
+
+    def clazzFromPath(path: String): Option[Class[_]] = if (path != null) {
+      try {
+        Some(Class.forName(path))
+      }
+      catch {
+        case c: ClassNotFoundException => None
+        case e => {
+          log.error("Error resolving class from path='%s'".format(path),
+            e)
+          None
+        }
+      }
+    }
+    else None
+
+    def getReasonForPathClazz(pathClazz: Option[Class[_]], path: String): String = {
+      pathClazz match {
+        case Some(clazz) if clazz.isInstanceOf[CaseClass] => "Well, this is a case class, so... not sure what went wrong."
+        case Some(clazz) if clazz.isInterface => "Class %s is an interface".format(clazz.getName)
+        case Some(clazz) if Modifier.isAbstract(clazz.getModifiers) => "Class %s is abstract".format(clazz.getName)
+        case Some(clazz) if !clazz.isInstanceOf[CaseClass] => "Class %s is not an instance of CaseClass".format(clazz.getName)
+        case None if path != null && pathClazz.isEmpty => "Very strange!  Path='%s' from pickled ScalaSig causes ClassNotFoundException".
+          format(path)
+        case _ => "Unable to determine why grater was not found"
+      }
+    }
+
+    def apply(path: String)(implicit ctx: Context) = {
+      val pathClazz = clazzFromPath(path)
+      val reason = getReasonForPathClazz(pathClazz, path)
+
+      val explanation = """
+
+      GRATER GLITCH - unable to find or instantiate a grater using supplied path name
+
+      REASON: %s
+
+      Context: '%s'
+      Path from pickled Scala sig: '%s'
+
+
+       """.format(reason, ctx.name.getOrElse("No name supplied"), path)
+
+      explanation
+    }
+
+    def apply(path: String, dbo: MongoDBObject)(implicit ctx: Context) = {
+
+      val typeHint = ctx.extractTypeHint(dbo)
+      val hintClazz = clazzFromTypeHint(typeHint)(ctx)
+      val pathClazz = clazzFromPath(path)
+      val reason = hintClazz match {
+        case Some(clazz) if clazz.isInstanceOf[CaseClass] => "Well, this is a case class, so... not sure what went wrong."
+        case Some(clazz) if clazz.isInterface => "Class %s is an interface".format(clazz.getName)
+        case Some(clazz) if Modifier.isAbstract(clazz.getModifiers) => "Class %s is abstract".format(clazz.getName)
+        case Some(clazz) if !clazz.isInstanceOf[CaseClass] => "Class %s is not an instance of CaseClass".format(clazz.getName)
+        case None if typeHint.isDefined && hintClazz.isEmpty => "Type hint %s='%s' causes ClassNotFoundException".
+          format(ctx.typeHintStrategy.typeHint, typeHint)
+        case None if path == null && typeHint.isEmpty => "Unknown class: type hint is empty and path from pickled ScalaSig is null"
+        case _ => getReasonForPathClazz(pathClazz, path)
+      }
+
+      val explanation = """
+
+      GRATER GLITCH - unable to find or instantiate a grater using supplied DBO type hint and/or path name
+
+      REASON: %s
+
+      Context: '%s'
+      Path from pickled Scala sig: '%s'
+      DBO type hint: '%s'
+
+      FELL DOWN DESERIALZIING:
+      %s
+
+       """.format(reason, ctx.name.getOrElse("No name supplied"), path, typeHint.getOrElse(""), dbo)
+
+      explanation
+    }
+  }
 
   object ArgsPrettyPrinter {
     def apply(args: Seq[AnyRef]) = if (args == null) {

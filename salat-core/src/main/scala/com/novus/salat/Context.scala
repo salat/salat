@@ -28,6 +28,7 @@ import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
+import com.novus.salat.util.MissingGraterExplanation
 
 case class TypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint) {
   assume(when != null, "Context requires non-null value for type hint strategy instead of %s!".format(when))
@@ -113,9 +114,18 @@ trait Context extends Logging {
     else None
   }
 
-  protected def generate(clazz: String): Grater[_ <: CaseClass] = {
-    new Grater[CaseClass](getCaseClass(clazz).map(_.asInstanceOf[Class[CaseClass]]).get)(this) {}
-  }.asInstanceOf[Grater[CaseClass]]
+  protected def generate(clazz: String): Grater[_ <: CaseClass] = try {
+    // if this blows up, we'll catch and rethrow with additional information
+    val caseClass = getCaseClass(clazz)(this).map(_.asInstanceOf[Class[CaseClass]]).get
+    val grater = new Grater[CaseClass](caseClass)(this) {}
+    grater.asInstanceOf[Grater[CaseClass]]
+  }
+  catch {
+    case e => {
+      log.error(e, "generate: failed on clazz='%s'".format(clazz))
+      throw new GraterGlitch(clazz)(this)
+    }
+  }
 
   def lookup(clazz: String): Option[Grater[_ <: CaseClass]] = graters.get(clazz) match {
     case yes @ Some(_) => yes
@@ -163,3 +173,6 @@ trait Context extends Logging {
     lookup(dbo).getOrElse(generate(extractTypeHint(dbo).getOrElse(throw new Exception("Couldn't find a type hint!"))))
   }
 }
+
+class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
+class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))

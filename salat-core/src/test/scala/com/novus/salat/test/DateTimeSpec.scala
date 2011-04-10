@@ -63,7 +63,7 @@ class DateTimeSpec extends SalatSpec {
     "support dates parsed from JSON" in {
       val n = Neville(asOf = new org.joda.time.DateMidnight().toDateTime)
       val json = grater[Neville].asDBObject(n).toString
-      log.info(json)
+//      log.info(json)
       val n_* = grater[Neville].asObject(parse(json).asInstanceOf[DBObject])
       n_* must_== n
     }

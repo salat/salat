@@ -224,3 +224,5 @@ case class Page(
  keywords: Option[String] = None
 )
 
+class NotACaseClass(x: String)
+
