@@ -21,21 +21,15 @@
 package com.novus.salat.transformers
 
 import java.lang.reflect.Method
-import java.math.MathContext
-
 import scala.collection.immutable.{List => IList, Map => IMap}
-import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap}
+import scala.collection.mutable.{Map => MMap}
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{BigDecimal => ScalaBigDecimal}
 
 import com.novus.salat._
 import com.novus.salat.impls._
-import com.novus.salat.global.mathCtx
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
-import com.novus.salat.transformers._
-import com.novus.salat.transformers.in._
-
 import org.scala_tools.time.Imports._
 
 package object in {
@@ -235,11 +229,11 @@ trait DoubleToSBigDecimal extends Transformer {
 
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case x: ScalaBigDecimal => x // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
-    case d: Double => ScalaBigDecimal(d.toString, mathCtx)
-    case l: Long => ScalaBigDecimal(l.toString, mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
-    case i: Int => ScalaBigDecimal(i.toString, mathCtx)
-    case f: Float => ScalaBigDecimal(f.toString, mathCtx)
-    case s: Short => ScalaBigDecimal(s.toString, mathCtx)
+    case d: Double => ScalaBigDecimal(d.toString, ctx.mathCtx)
+    case l: Long => ScalaBigDecimal(l.toString, ctx.mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
+    case i: Int => ScalaBigDecimal(i.toString, ctx.mathCtx)
+    case f: Float => ScalaBigDecimal(f.toString, ctx.mathCtx)
+    case s: Short => ScalaBigDecimal(s.toString, ctx.mathCtx)
   }
 }
 

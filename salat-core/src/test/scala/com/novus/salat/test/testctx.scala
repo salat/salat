@@ -30,8 +30,6 @@ package object always {
     val name = Some("TestContext-Always")
     override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
   }
-
-  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
 }
 
 package object when_necessary {
@@ -40,8 +38,6 @@ package object when_necessary {
     val name = Some("TestContext-WhenNecessary")
     override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
   }
-
-  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
 }
 
 package object never {
@@ -49,8 +45,6 @@ package object never {
     val name = Some("TestContext-AlwaysTypeHints")
     override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Never)
   }
-
-  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
 }
 
 package object custom_type_hint {
@@ -61,8 +55,6 @@ package object custom_type_hint {
     val name = Some("TestContext-Always")
     override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = CustomTypeHint)
   }
-
-  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
 }
 
 package object always_with_implicits {
@@ -71,8 +63,6 @@ package object always_with_implicits {
     val name = Some("TestContext-Always-Implicits")
     override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
   }
-
-  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
 
   implicit def dbo2Obj[X <: CaseClass](obj: X): DBObject = ctx.lookup_!(obj.getClass.getName)
     .asInstanceOf[Grater[X]]

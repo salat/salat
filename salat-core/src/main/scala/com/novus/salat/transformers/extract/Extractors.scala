@@ -25,7 +25,6 @@ import scala.math.{BigDecimal => ScalaBigDecimal}
 
 import com.novus.salat._
 import com.novus.salat.impls._
-import com.novus.salat.global.mathCtx
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
 import com.novus.salat.transformers.out._
@@ -151,7 +150,7 @@ import com.novus.salat.annotations.EnumAs
 trait SBigDecimalToDouble extends Transformer {
   self: Transformer =>
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
-    case sbd: ScalaBigDecimal => sbd(mathCtx).toDouble
+    case sbd: ScalaBigDecimal => sbd(ctx.mathCtx).toDouble
   }
 }
 

@@ -49,6 +49,8 @@ trait Context extends Logging {
   // global @Key overrides - careful with that axe, Eugene
   private[salat] val keyOverrides: MMap[String, String] = HashMap.empty
 
+  val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
+
   def registerClassLoader(cl: ClassLoader): Unit = {
     // any explicitly-registered classloader is assumed to take priority over the boot time classloader
     classLoaders = (Seq.newBuilder[ClassLoader] += cl ++= classLoaders).result

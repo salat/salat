@@ -20,8 +20,6 @@
 */
 package com.novus.salat
 
-import java.math.{RoundingMode, MathContext}
-
 package object global {
   implicit val ctx = new Context { val name = Some("global") }
 
@@ -36,6 +34,4 @@ package object global {
     val name = Some("global-no-type-hints")
     override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Never)
   }
-
-  implicit val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
 }

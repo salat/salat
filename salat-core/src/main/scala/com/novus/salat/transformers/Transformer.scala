@@ -20,19 +20,12 @@
 */
 package com.novus.salat.transformers
 
-import java.lang.reflect.Method
-import java.math.MathContext
-
 import scala.collection.immutable.{List => IList, Map => IMap}
-import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap}
+import scala.collection.mutable.{Map => MMap}
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{BigDecimal => ScalaBigDecimal}
 
 import com.novus.salat._
-import com.novus.salat.impls._
-import com.novus.salat.global.mathCtx
-import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.Logging
 
 abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) {
   def transform(value: Any)(implicit ctx: Context): Any = value
