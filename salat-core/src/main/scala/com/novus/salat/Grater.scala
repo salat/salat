@@ -96,11 +96,19 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   // on a trait and have it work all the way down
   protected val IgnoreTheseInterfaces: List[Class[_]] = List(classOf[ScalaObject], classOf[Product], classOf[java.io.Serializable])
   protected val IgnoreThisSuperclass: List[Class[_]] = List(classOf[Object])
-  protected lazy val interestingInterfaces: List[(Class[_], SymbolInfoSymbol)] = (clazz.getInterfaces.toList diff IgnoreTheseInterfaces).map {
-    i => (i, findSym(i))
+  protected lazy val interestingInterfaces: List[(Class[_], SymbolInfoSymbol)] = {
+    val interfaces = clazz.getInterfaces  // this should return an empty array, but...  sometimes returns null!
+    if (interfaces != null) {
+      (interfaces.toList diff IgnoreTheseInterfaces).map(i => (i, findSym(i)))
+    }
+    else Nil
   }
-  protected lazy val interestingSuperclass: List[(Class[_], SymbolInfoSymbol)] = (List[Class[_]](clazz.getSuperclass) diff IgnoreThisSuperclass).map {
-    i => (i, findSym(i))
+  protected lazy val interestingSuperclass: List[(Class[_], SymbolInfoSymbol)] = {
+    val superclass = clazz.getSuperclass
+    if (superclass != null) {  // this should never be null, but...  just in case!
+      (List[Class[_]](superclass) diff IgnoreThisSuperclass).map(i => (i, findSym(i)))
+    }
+    else Nil
   }
   lazy val requiresTypeHint = {
     clazz.annotated_?[Salat] || interestingInterfaces.map(_._1.annotated_?[Salat]).contains(true) || interestingSuperclass.map(_._1.annotated_?[Salat]).contains(true)
