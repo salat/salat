@@ -42,10 +42,18 @@ case class Alpha(@Key("_id") id: Int, beta: List[Beta] = Nil)
 // 2.  define a grater for the class
 // 3.  specify a collection
 //
-object AlphaDAO extends com.novus.salat.dao.SalatDAO[Alpha] {
+object AlphaDAO extends com.novus.salat.dao.SalatDAO[Alpha, Int] {
 
   val _grater = grater[Alpha]
 
   val collection = MongoConnection()(SalatSpecDb)(DaoSpecColl)
 
+}
+
+case class Epsilon(@Key("_id") var id: ObjectId = new ObjectId, notes: String)
+
+object EpsilonDAO extends com.novus.salat.dao.SalatDAO[Epsilon, ObjectId] {
+  val _grater = grater[Epsilon]
+
+  val collection = MongoConnection()(SalatSpecDb)(DaoSpecColl2)
 }

@@ -25,6 +25,8 @@ import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
 import org.specs2.specification.Scope
+import com.novus.salat.util.MapPrettyPrinter
+import org.specs2.matcher.MustExpectable._
 
 class SalatDAOSpec extends SalatSpec {
 
@@ -41,18 +43,20 @@ class SalatDAOSpec extends SalatSpec {
 
   "Salat simple DAO" should {
 
-    "insert a case class" in new context {
-      val wr = AlphaDAO.insert(alpha3)
-      wr.getLastError.getErrorMessage must beNull
+    "insert a case class" in new alphaContext {
+      val _id = AlphaDAO.insert(alpha3)
+      _id must beSome(alpha3.id)
       AlphaDAO.collection.count must_== 1L
 
       val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(DaoSpecColl).findOne().get
       grater[Alpha].asObject(dbo) must_== alpha3
     }
 
-    "insert a collection of case classes" in new context {
-      val wr = AlphaDAO.insert(alpha4, alpha5, alpha6)
-      wr.getLastError.getErrorMessage must beNull
+    "insert a collection of case classes" in new alphaContext {
+      val _ids = AlphaDAO.insert(alpha4, alpha5, alpha6)
+      _ids must contain(Some(alpha4.id))
+      _ids must contain(Some(alpha5.id))
+      _ids must contain(Some(alpha6.id))
       AlphaDAO.collection.count must_== 3L
 
       // the standard collection cursor returns DBOs
@@ -68,47 +72,51 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.next must_== alpha6
     }
 
-    "support findOne returning Option[T]" in new context {
-      val wr = AlphaDAO.insert(alpha4, alpha5, alpha6)
-      wr.getLastError.getErrorMessage must beNull
+    "support findOne returning Option[T]" in new alphaContext {
+      val _ids = AlphaDAO.insert(alpha4, alpha5, alpha6)
+      _ids must contain(Some(alpha4.id))
+      _ids must contain(Some(alpha5.id))
+      _ids must contain(Some(alpha6.id))
       AlphaDAO.collection.count must_== 3L
 
       // note: you can query using an object transformed into a dbo
       AlphaDAO.findOne(grater[Alpha].asDBObject(alpha6)) must beSome(alpha6)
     }
 
-    "support findOneById returning Option[T]" in new context {
-      val wr = AlphaDAO.insert(alpha4, alpha5, alpha6)
-      wr.getLastError.getErrorMessage must beNull
-
+    "support findOneById returning Option[T]" in new alphaContext {
+      val _ids = AlphaDAO.insert(alpha4, alpha5, alpha6)
+      _ids must contain(Some(alpha4.id))
+      _ids must contain(Some(alpha5.id))
+      _ids must contain(Some(alpha6.id))
       AlphaDAO.collection.count must_== 3L
 
-      AlphaDAO.findOneByID(id = 5.asInstanceOf[AnyRef]) must beSome(alpha5)
+      AlphaDAO.findOneByID(id = 5) must beSome(alpha5)
     }
 
-    "support saving a case class" in new context {
-
-      val wr = AlphaDAO.insert(alpha3)
-      wr.getLastError.getErrorMessage must beNull
+    "support saving a case class" in new alphaContext {
+      val _id = AlphaDAO.insert(alpha3)
+      _id must beSome(alpha3.id)
       AlphaDAO.collection.count must_== 1L
 
       val alpha3_* = alpha3.copy(beta = List[Beta](Gamma("gamma3")))
       alpha3_* must_!= alpha3
-      val wr_* = AlphaDAO.save(alpha3_*)
-      wr.getLastError.getErrorMessage must beNull
+      val cr = AlphaDAO.save(alpha3_*)
+      cr.ok() must beTrue
       AlphaDAO.collection.count must_== 1L
 
       val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(DaoSpecColl).findOne().get
       grater[Alpha].asObject(dbo) must_== alpha3_*
     }
 
-    "support removing a case class" in new context {
-      val wr = AlphaDAO.insert(alpha4, alpha5, alpha6)
-      wr.getLastError.getErrorMessage must beNull
+    "support removing a case class" in new alphaContext {
+      val _ids = AlphaDAO.insert(alpha4, alpha5, alpha6)
+      _ids must contain(Some(alpha4.id))
+      _ids must contain(Some(alpha5.id))
+      _ids must contain(Some(alpha6.id))
       AlphaDAO.collection.count must_== 3L
 
-      val wr_* = AlphaDAO.remove(alpha5)
-      wr_*.getLastError.getErrorMessage must beNull
+      val cr = AlphaDAO.remove(alpha5)
+      cr.ok() must beTrue
       AlphaDAO.collection.count must_== 2L
 
       AlphaDAO.findOne(grater[Alpha].asDBObject(alpha5)) must beNone
@@ -119,9 +127,14 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.next must_== alpha6
     }
 
-    "support find returning a Mongo cursor typed to a case class" in new context {
-      val wr = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
-      wr.getLastError.getErrorMessage must beNull
+    "support find returning a Mongo cursor typed to a case class" in new alphaContext {
+      val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
+      _ids must contain(Some(alpha1.id))
+      _ids must contain(Some(alpha2.id))
+      _ids must contain(Some(alpha3.id))
+      _ids must contain(Some(alpha4.id))
+      _ids must contain(Some(alpha5.id))
+      _ids must contain(Some(alpha6.id))
       AlphaDAO.collection.count must_== 6L
 
       val salatCursor = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$gte" -> 2)))
@@ -158,9 +171,14 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor5.hasNext must beFalse
     }
 
-    "support find with a set of keys" in new context {
-      val wr = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
-      wr.getLastError.getErrorMessage must beNull
+    "support find with a set of keys" in new alphaContext {
+      val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
+      _ids must contain(Some(alpha1.id))
+      _ids must contain(Some(alpha2.id))
+      _ids must contain(Some(alpha3.id))
+      _ids must contain(Some(alpha4.id))
+      _ids must contain(Some(alpha5.id))
+      _ids must contain(Some(alpha6.id))
       AlphaDAO.collection.count must_== 6L
 
       val salatCursor = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$lt" -> 3)),
@@ -169,11 +187,27 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.next must_== alpha2.copy(beta = Nil)
       salatCursor.hasNext must beFalse
     }
+
+    "allow finding the ObjectId" in new epsilonContext {
+      val e = Epsilon(notes = "Just a test")
+      val _id = EpsilonDAO.insert(e)
+      _id must beSome(e.id)
+      EpsilonDAO.collection.count must_== 1L
+
+      val e_* = EpsilonDAO.findOne(grater[Epsilon].asDBObject(e))
+      e_* must not beNone
+    }
   }
 
-    trait context extends Scope {
-      log.info("before: dropping %s", AlphaDAO.collection.getFullName())
+    trait alphaContext extends Scope {
+      log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
       AlphaDAO.collection.drop()
       AlphaDAO.collection.count must_== 0L
+    }
+
+    trait epsilonContext extends Scope {
+      log.debug("before: dropping %s", EpsilonDAO.collection.getFullName())
+      EpsilonDAO.collection.drop()
+      EpsilonDAO.collection.count must_== 0L
     }
 }
