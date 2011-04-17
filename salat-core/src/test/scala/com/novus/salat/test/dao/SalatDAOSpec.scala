@@ -27,6 +27,7 @@ import com.mongodb.casbah.Imports._
 import org.specs2.specification.Scope
 import com.novus.salat.util.MapPrettyPrinter
 import org.specs2.matcher.MustExpectable._
+import com.mongodb.casbah.commons.MongoDBObject
 
 class SalatDAOSpec extends SalatSpec {
 
@@ -91,6 +92,19 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.collection.count must_== 3L
 
       AlphaDAO.findOneByID(id = 5) must beSome(alpha5)
+    }
+
+    "support updating a case class" in new alphaContext {
+      val _id = AlphaDAO.insert(alpha3)
+      _id must beSome(alpha3.id)
+      AlphaDAO.collection.count must_== 1L
+
+      val cr = AlphaDAO.update(MongoDBObject("_id" -> 3), alpha3.copy(beta = List[Beta](Gamma("gamma3"))))
+      cr.ok() must beTrue
+      AlphaDAO.collection.count must_== 1L
+
+      val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(DaoSpecColl).findOne().get
+      grater[Alpha].asObject(dbo) must_== alpha3.copy(beta = List[Beta](Gamma("gamma3")))
     }
 
     "support saving a case class" in new alphaContext {

@@ -159,6 +159,19 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
     cr
   }
 
+  def update[A <% DBObject](q: A, t: T) = {
+    val cr = try {
+      collection.db.requestStart()
+      val wc = new WriteConcern()
+      val wr = collection.update(q, _grater.asDBObject(t))
+      wr.getLastError(wc)
+    }
+    finally {
+      collection.db.requestDone()
+    }
+    cr
+  }
+
   def update[A <% DBObject](q: A, o: A) = {
     val cr = try {
       collection.db.requestStart()
