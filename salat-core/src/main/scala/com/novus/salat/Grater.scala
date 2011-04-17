@@ -21,13 +21,17 @@
 package com.novus.salat
 
 import scala.tools.scalap.scalax.rules.scalasig._
-import com.mongodb.casbah.Imports._
+import scala.reflect.generic.ByteCodecs
+import scala.reflect.ScalaSignature
+
+import java.lang.reflect.{InvocationTargetException, Constructor, Method}
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import com.novus.salat.util._
+
+import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
-import java.lang.reflect.{InvocationTargetException, Constructor, Method}
 
 class MissingPickledSig(clazz: Class[_]) extends Error("Failed to parse pickled Scala signature from: %s".format(clazz))
 class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
@@ -37,12 +41,25 @@ class MissingTopLevelClass(clazz: Class[_]) extends Error("Parsed pickled scala 
 class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String) extends Error("Didn't find owner=%s, outer=%s, inner=%s in pickled scala sig for %s"
                                                                                                 .format(owner, outer, inner, clazz))
 
+object Grater {
+  private[salat] def parseScalaSig0(clazz: Class[_]) = {
+    clazz.annotation[ScalaSignature].map {
+      case sig => {
+	val bytes = sig.bytes.getBytes("UTF-8")
+	val len = ByteCodecs.decode(bytes)
+	ScalaSigAttributeParsers.parse(ByteCode(bytes.take(len)))
+      }
+    }
+  }
+}
+
 abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends Logging {
+  import Grater._
   ctx.accept(this)
 
   protected def parseScalaSig[A](clazz: Class[A]): Option[ScalaSig] = {
     // TODO: provide a cogent explanation for the process that is going on here, document the fork logic on the wiki
-    val firstPass = ScalaSigParser.parse(clazz)
+    val firstPass = parseScalaSig0(clazz)
     log.trace("parseScalaSig: FIRST PASS on %s\n%s", clazz, firstPass)
     firstPass match {
       case Some(x) => {
@@ -52,7 +69,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       case None if clazz.getName.endsWith("$") => {
         log.trace("2")
         val clayy = Class.forName(clazz.getName.replaceFirst("\\$$", ""))
-        val secondPass = ScalaSigParser.parse(clayy)
+        val secondPass = parseScalaSig0(clayy)
         log.trace("parseScalaSig: SECOND PASS on %s\n%s", clayy, secondPass)
         secondPass
       }
