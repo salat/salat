@@ -273,7 +273,14 @@ package object util {
 			stackSize)
 
     th.start
-    th.join
+    var done = false
+    while (!done) {
+      try {
+	th.join
+	done = true
+      }
+      catch { case ie: InterruptedException => {} }
+    }
     result.right.getOrElse(throw result.left.get)
   }
 }
