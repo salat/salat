@@ -43,11 +43,11 @@ class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String
 
 object Grater {
   private[salat] def parseScalaSig0(clazz: Class[_]) = {
-    clazz.annotation[ScalaSignature].map {
+    ScalaSigParser.parse(clazz) orElse clazz.annotation[ScalaSignature].map {
       case sig => {
-	val bytes = sig.bytes.getBytes("UTF-8")
-	val len = ByteCodecs.decode(bytes)
-	ScalaSigAttributeParsers.parse(ByteCode(bytes.take(len)))
+        val bytes = sig.bytes.getBytes("UTF-8")
+        val len = ByteCodecs.decode(bytes)
+        ScalaSigAttributeParsers.parse(ByteCode(bytes.take(len)))
       }
     }
   }
@@ -142,8 +142,11 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     .map(_.asInstanceOf[MethodSymbol])
     .zipWithIndex
     .map {
-      case (ms, idx) =>
+      case (ms, idx) => {
+//        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
         Field(idx, keyOverridesFromAbove.get(ms).getOrElse(ms.name), typeRefType(ms), clazz.getMethod(ms.name))
+      }
+
     }
   }
 

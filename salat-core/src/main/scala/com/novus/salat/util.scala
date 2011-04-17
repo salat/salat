@@ -253,14 +253,22 @@ package object util {
   }
 
   val SalatThreads = new ThreadGroup("Salat")
-  val DefaultSalatStackSize = 1024L * 1024 // one megabyte
+  val DefaultSalatStackSize = 1024L * 1024
+
+  // one megabyte
   class AsyncSalatRunnable(f: => Any)(r: Either[Throwable, Any] => Unit) extends Runnable {
     def run {
-      try { r(Right(f)) }
-      catch { case t => r(Left(t)) }
+      try {
+        r(Right(f))
+      }
+      catch {
+        case t => r(Left(t))
+      }
     }
   }
+
   def asyncSalat[T](f: => T): T = asyncSalat[T](DefaultSalatStackSize)(f)
+
   def asyncSalat[T](stackSize: Long)(f: => T): T = {
     var result: Either[Throwable, T] = Left(new Error("no reply back, boo"))
     def satisfy(r: Either[Throwable, Any]) {
@@ -268,18 +276,20 @@ package object util {
     }
 
     val th = new Thread(SalatThreads,
-			new AsyncSalatRunnable(f)(satisfy _),
-			"Salat-%d".format(System.nanoTime),
-			stackSize)
+      new AsyncSalatRunnable(f)(satisfy _),
+      "Salat-%d".format(System.nanoTime),
+      stackSize)
 
     th.start
     var done = false
     while (!done) {
       try {
-	th.join
-	done = true
+        th.join
+        done = true
       }
-      catch { case ie: InterruptedException => {} }
+      catch {
+        case ie: InterruptedException => {}
+      }
     }
     result.right.getOrElse(throw result.left.get)
   }
