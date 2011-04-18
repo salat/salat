@@ -44,6 +44,7 @@ trait DAO[T <: CaseClass, S <: Any] {
   def save(t: T): CommandResult
 
   def update[A <% DBObject](q: A, o: A): CommandResult
+  def update[A <% DBObject](q: A, o: T): CommandResult
 
   def remove(t: T): CommandResult
 }
