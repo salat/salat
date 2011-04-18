@@ -116,7 +116,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   protected lazy val interestingInterfaces: List[(Class[_], SymbolInfoSymbol)] = {
     val interfaces = clazz.getInterfaces  // this should return an empty array, but...  sometimes returns null!
     if (interfaces != null) {
-      (interfaces.toList diff IgnoreTheseInterfaces).map(i => (i, findSym(i)))
+      (interfaces.toList diff IgnoreTheseInterfaces).filter(_.getEnclosingClass == null).map(i => (i, findSym(i)))
     }
     else Nil
   }
