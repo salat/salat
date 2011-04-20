@@ -147,15 +147,7 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.next must_== alpha6
     }
 
-    "support find returning a Mongo cursor typed to a case class" in new alphaContext {
-      val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
-      _ids must contain(Some(alpha1.id))
-      _ids must contain(Some(alpha2.id))
-      _ids must contain(Some(alpha3.id))
-      _ids must contain(Some(alpha4.id))
-      _ids must contain(Some(alpha5.id))
-      _ids must contain(Some(alpha6.id))
-      AlphaDAO.collection.count must_== 6L
+    "support find returning a Mongo cursor typed to a case class" in new alphaContextWithData {
 
       val salatCursor = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$gte" -> 2)))
       salatCursor.next must_== alpha2
@@ -191,16 +183,7 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor5.hasNext must beFalse
     }
 
-    "support find with a set of keys" in new alphaContext {
-      val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
-      _ids must contain(Some(alpha1.id))
-      _ids must contain(Some(alpha2.id))
-      _ids must contain(Some(alpha3.id))
-      _ids must contain(Some(alpha4.id))
-      _ids must contain(Some(alpha5.id))
-      _ids must contain(Some(alpha6.id))
-      AlphaDAO.collection.count must_== 6L
-
+    "support find with a set of keys" in new alphaContextWithData {
       val salatCursor = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$lt" -> 3)),
         keys = MongoDBObject("beta" -> 0))  // forces beta key to be excluded
       salatCursor.next must_== alpha1.copy(beta = Nil)
@@ -218,7 +201,35 @@ class SalatDAOSpec extends SalatSpec {
       e_* must not beNone
     }
 
-    "support using a query to bring back a typed list of ids" in new alphaContext {
+    "support using a query to bring back a typed list of ids" in new alphaContextWithData {
+      val idList = AlphaDAO.ids(MongoDBObject("_id" -> MongoDBObject("$gt" -> 2)))
+      idList must haveSize(4)
+      idList must contain(3, 4, 5, 6)
+    }
+
+    "support using an iterator" in new alphaContextWithData {
+      val results = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$gte" -> 2)))
+        .sort(orderBy = MongoDBObject("_id" -> -1)) // sort by _id desc
+        .skip(1)
+        .limit(1)
+        .toList   // yay!
+      results must haveSize(1)
+      results must contain(alpha5)
+
+    }
+  }
+
+    trait alphaContext extends Scope {
+      log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
+      AlphaDAO.collection.drop()
+      AlphaDAO.collection.count must_== 0L
+    }
+
+    trait alphaContextWithData extends Scope {
+      log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
+      AlphaDAO.collection.drop()
+      AlphaDAO.collection.count must_== 0L
+
       val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
       _ids must contain(Some(alpha1.id))
       _ids must contain(Some(alpha2.id))
@@ -227,17 +238,6 @@ class SalatDAOSpec extends SalatSpec {
       _ids must contain(Some(alpha5.id))
       _ids must contain(Some(alpha6.id))
       AlphaDAO.collection.count must_== 6L
-
-      val idList = AlphaDAO.ids(MongoDBObject("_id" -> MongoDBObject("$gt" -> 2)))
-      idList must haveSize(4)
-      idList must contain(3, 4, 5, 6)
-    }
-  }
-
-    trait alphaContext extends Scope {
-      log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
-      AlphaDAO.collection.drop()
-      AlphaDAO.collection.count must_== 0L
     }
 
     trait epsilonContext extends Scope {
