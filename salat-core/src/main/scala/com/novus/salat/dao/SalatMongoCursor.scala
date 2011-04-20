@@ -144,7 +144,7 @@ trait SalatMongoCursorBase[T <: CaseClass] extends Logging {
   def copy(): SalatMongoCursorBase[T] = _newInstance(underlying.copy()) // parens for side-effects
 }
 
-case class SalatMongoCursor[T <: CaseClass : Manifest](_grater: Grater[T], underlying: DBCursor) extends SalatMongoCursorBase[T] {
+case class SalatMongoCursor[T <: CaseClass : Manifest](_grater: Grater[T], underlying: DBCursor) extends SalatMongoCursorBase[T] with Iterator[T] {
 
   def _newInstance(cursor: DBCursor) = SalatMongoCursor(_grater, cursor)
 }
