@@ -26,14 +26,23 @@ import com.mongodb.casbah.commons.Logging
 import com.mongodb.casbah.MongoCursorBase
 import com.mongodb.CommandResult
 
+/**
+ * Base DAO class.
+ * @type T case class type
+ * @type S _id type
+ */
 trait DAO[T <: CaseClass, S <: Any] {
 
   val collection: MongoCollection
 
   val _grater: Grater[T]
 
+  lazy val description: String = "DAO"
+
   def insert(t: T): Option[S]
   def insert(docs: T*): List[Option[S]]
+
+  def ids[A <% DBObject](query: A): List[S]
 
   def find[A <% DBObject](ref: A): SalatMongoCursor[T]
   def find[A <% DBObject](ref: A, keys: A): SalatMongoCursor[T]
@@ -51,6 +60,13 @@ trait DAO[T <: CaseClass, S <: Any] {
 
 
 abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends com.novus.salat.dao.DAO[T, S] with Logging {
+
+  private lazy val _idMs = manifest[S]
+
+  /**
+   * Default description is the case class simple name and the collection.
+   */
+  override lazy val description = "SalatDAO[%s,%s](%s)".format(manifest[T].erasure.getSimpleName, _idMs.erasure.getSimpleName, collection.name)
 
   def insert(t: T) = {
     val _id = try {
@@ -128,6 +144,10 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
     }
 
     _ids
+  }
+
+  def ids[A <% DBObject](query: A): List[S] = {
+    collection.find(query, MongoDBObject("_id" -> 1)).map(_.expand[S]("_id")(_idMs).get).toList
   }
 
   def findOne[A <% DBObject](t: A) = collection.findOne(t).map(_grater.asObject(_))

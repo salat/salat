@@ -44,6 +44,11 @@ class SalatDAOSpec extends SalatSpec {
 
   "Salat simple DAO" should {
 
+    "supply a useful description for debugging" in {
+      // default is SalatDAO[CaseClass,Id](collection name)
+      AlphaDAO.description must_== "SalatDAO[Alpha,int](alpha_dao_spec)"
+    }
+
     "insert a case class" in new alphaContext {
       val _id = AlphaDAO.insert(alpha3)
       _id must beSome(alpha3.id)
@@ -54,6 +59,7 @@ class SalatDAOSpec extends SalatSpec {
     }
 
     "insert a collection of case classes" in new alphaContext {
+      // insert returns the typed contents of _id
       val _ids = AlphaDAO.insert(alpha4, alpha5, alpha6)
       _ids must contain(Some(alpha4.id))
       _ids must contain(Some(alpha5.id))
@@ -202,7 +208,7 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.hasNext must beFalse
     }
 
-    "allow finding the ObjectId" in new epsilonContext {
+    "support findOne with an object typed to the id" in new epsilonContext {
       val e = Epsilon(notes = "Just a test")
       val _id = EpsilonDAO.insert(e)
       _id must beSome(e.id)
@@ -210,6 +216,21 @@ class SalatDAOSpec extends SalatSpec {
 
       val e_* = EpsilonDAO.findOne(grater[Epsilon].asDBObject(e))
       e_* must not beNone
+    }
+
+    "support using a query to bring back a typed list of ids" in new alphaContext {
+      val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
+      _ids must contain(Some(alpha1.id))
+      _ids must contain(Some(alpha2.id))
+      _ids must contain(Some(alpha3.id))
+      _ids must contain(Some(alpha4.id))
+      _ids must contain(Some(alpha5.id))
+      _ids must contain(Some(alpha6.id))
+      AlphaDAO.collection.count must_== 6L
+
+      val idList = AlphaDAO.ids(MongoDBObject("_id" -> MongoDBObject("$gt" -> 2)))
+      idList must haveSize(4)
+      idList must contain(3, 4, 5, 6)
     }
   }
 
