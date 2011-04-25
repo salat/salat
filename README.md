@@ -68,7 +68,7 @@ Details about pickled Scala sigs are thin on the ground.  Here's where we got st
 Requiring `Product` and a single constructor rules out using anything but a case class.  Technically, in the distant future,
 we may be able to flex on the case class requirement enough to only require something very, very case class like.
 
-However, Salat will never support classes defined in pure Java because they do not supply
+However, Salat will never support classes defined in pure Java because they do not supply the requisite pickled Scala sig.
 
 #### You can't freestyle in the REPL either
 
