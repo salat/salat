@@ -1,6 +1,6 @@
 # Salat
 
-[Salat in four minutes... or less][[lightning-talk]
+[Salat in four minutes... or less][lightning-talk]
 
 Salat is a bi-directional Scala case class serialization library that leverages
 MongoDB's `DBObject` (which uses BSON underneath) as its target format.
@@ -13,7 +13,7 @@ type known to Java or Scala.
 
 - Documentation available on our [wiki][wiki].
 - Salat-related discussion and questions belong on the [mailing list][mailing-list].
-- Follow Rose on Twitter [@prasinous][rkt-twitter]
+- Follow [Rose][rktoomey] on Twitter [@prasinous][rkt-twitter]
 
 ## Goals
 
@@ -70,6 +70,7 @@ There isn't a lot of information out there right now,
 Salat is and will always be primarily focused on serializing and deserializing what's in the case class constructor.
 
 There are some annotations that can be used to customize serialization at the case class level:
+
 - Support for typing concrete case class instances to a trait or abstract superclass using `@Salat`
 - Use `@Key` to change a key name
 - Use `@Persist` to persist a value not in case class constructor
@@ -77,6 +78,7 @@ There are some annotations that can be used to customize serialization at the ca
 - Use `@EnumAs` to choose whether to handle enums by id or by value
 
 In addition, you can customize your persistence context with regards to:
+
  - type hinting strategy
  - type hinting key name
  - global key overrides
@@ -98,4 +100,4 @@ Salat is light and doesn't slow you down through use of runtime reflection.
 [mailing-list]: http://groups.google.com/group/scala-salat
 [lightning-talk]: http://repo.novus.com/salat-presentation
 [rkt-twitter]: http://twitter.com/prasinous
-[efpl]: http://www.epfl.ch/
+[rktoomey]: https://github.com/rktoomey
