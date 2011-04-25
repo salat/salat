@@ -13,7 +13,7 @@ type known to Java or Scala.
 
 - Documentation available on our [wiki][wiki].
 - Salat-related discussion and questions belong on the [mailing list][mailing-list].
-- Follow [Rose][rktoomey] on Twitter [@prasinous][rkt-twitter]
+- Follow [Rose][rktoomey] on Twitter - [@prasinous][rkt-twitter]
 
 ## Goals
 
@@ -45,15 +45,30 @@ Scala case classes have key features that Salat uses to improve and speed up obj
   `DBObject` instance during re-inflation can be subbed in using
   default args defined at compile time.
 
-### Requires ScalaSig (Java support has been ruled out)
+### Requires ScalaSig
 
 So the first big improvement Salat offers for serialization is in being able to use case classes as products to get a
 list of indexed fields and their default arguments.
 
-The other side of the coin is using [EFPL][efpl]'s wonderfully undocumented `ScalaSig` to provide hi-fi type information
-about each field in the case class.
+Well begun, but only half done.  The other half is getting as much type information about the case class as possible, and
+then keeping that information on tap instead of having to derive it over and over again.
 
-There isn't a lot of information out there right now,
+With these two pieces in hand, fast, reliable serialization without having to resort to runtime reflection is easy.
+
+So thank you to [EFPL][efpl] for their wonderfully undocumented `ScalaSig`, which Salat uses to memoize **hi-fi type
+information** about each field in the case class.
+
+Details about pickled Scala sigs are thin on the ground.  Here's where we got started:
+
+- the source code for `scala.tools.scalap.scalax.rules.scalasig.ScalaSigParser`
+- [SID # 10 (draft) - Storage of pickled Scala signatures in class files][http://www.scala-lang.org/sid/10]
+
+#### Java support has been ruled out
+
+Requiring `Product` and a single constructor rules out using anything but a case class.  Technically, in the distant future,
+we may be able to flex on the case class requirement enough to only require something very, very case class like.
+
+However, Salat will never support classes defined in pure Java because they do not supply
 
 #### You can't freestyle in the REPL either
 
@@ -101,3 +116,4 @@ Salat is light and doesn't slow you down through use of runtime reflection.
 [lightning-talk]: http://repo.novus.com/salat-presentation
 [rkt-twitter]: http://twitter.com/prasinous
 [rktoomey]: https://github.com/rktoomey
+[efpl]: http://www.epfl.ch/
