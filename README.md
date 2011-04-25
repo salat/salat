@@ -1,12 +1,19 @@
 # Salat
 
-This project is an attempt to implement a *fast* MongoDB <-> Scala
-**case class mapping mechanism**. It is in fact my third stab at this
-problem; this time, I'm focusing on speed more than flexibility,
-compatibility, and functionality.
+[Salat in four minutes... or less][[lightning-talk]
 
-More information is availabe on the [wiki][wiki]. Salat-related
-discussion and questions belong on the [mailing list][mailing-list].
+Salat is a bi-directional Scala case class serialization library that leverages
+MongoDB's `DBObject` (which uses BSON underneath) as its target format.
+
+The Salat project focuses on **speed** and **simplicity** of serializing case classes to and from target formats.
+
+Salat is not a fully-fledged ORM and does not attempt to match the flexibility, compability or functionality of an ORM
+that would let you define relationships between classes, provide a query language, or serialize/deserialize every collection
+type known to Java or Scala.
+
+- Documentation available on our [wiki][wiki].
+- Salat-related discussion and questions belong on the [mailing list][mailing-list].
+- Follow Rose on Twitter [@prasinous][rkt-twitter]
 
 ## Goals
 
@@ -16,62 +23,79 @@ suitable for insertion into a MongoDB database.
 2. Given a `DBObject` (which may have come from MongoDB, or
 elsewhere), instantiate an instance of the corresponding case class.
 
-3. Achieve goals **1** and **2** without sacrificing performance. This
-more or less rules out use of reflection.
+3. Achieve goals **1** and **2** without sacrificing performance. This rules out use of reflection.
 
-4. Achieve goals **1**, **2**, and **3** while adhering as much as
-feasible to core tenets of functional programming.
+4. Achieve goals **1**, **2**, and **3** as functionally as possible.
 
-## Goats sacrificed to the gods of performance
+## What are you giving up?
 
-Considering above goals (especially **3**), I have decided to make
-particular sacrifices and not look back.
+In developing Salat, we have made a key decision to make these particular sacrifices and not look back.
 
 ### No support for anything but case classes
 
-Scala case classes are essentially products, and as such provide
-certain features which can be used to improve object
-serialization. These features include:
+Scala case classes have key features that Salat uses to improve and speed up object serialization, including:
 
-- A simple and accessible constructor. Can be retrieved either by
-  reflecting on the class itself, or through generated companion
+- A single accessible constructor. Can be retrieved either by reflecting on the class itself, or through generated companion
   object.
 
-- Provided `productIterator`: a non-reflective way to retrieve
+- The `productIterator` method provided by the `Product` interface: a non-reflective way to retrieve
   programmatically values of the case class' data members.
 
 - Data members can have default values; information missing in
   `DBObject` instance during re-inflation can be subbed in using
   default args defined at compile time.
 
-### Requires ScalaSig
+### Requires ScalaSig (Java support has been ruled out)
 
-I hereby thank EPFL for the wonderfully undocumented
-ScalaSig. Fortunately, its source code reads like a work of art and
-isn't hard to comprehend. Obviously, if the previous section hasn't
-ruled out Java support, this certainly does.
+So the first big improvement Salat offers for serialization is in being able to use case classes as products to get a
+list of indexed fields and their default arguments.
 
-ScalaSig does not appear to digest very well classes written in pure
-Java. Not a big deal, because we only support case classes anyway.
+The other side of the coin is using [EFPL][efpl]'s wonderfully undocumented `ScalaSig` to provide hi-fi type information
+about each field in the case class.
 
-*NB*: it turns out that ScalaSig is incapable of "parsing" classes
- defined in the REPL, since there really is no `.class` file to
- parse. **None of this code will work with classes that have no
- corresponding `.class` file.**
+There isn't a lot of information out there right now,
+
+#### You can't freestyle in the REPL either
+
+*NB*: it turns out that ScalaSig is incapable of "parsing" classes defined in the REPL.
+
+ **None of this code will work with classes that have no corresponding `.class` file.**
+
+ We're hoping that this will be remedied with Scala 2.9, but until then, if you want to experiment with serialization in the REPL:
+ - define your model classes
+ - run `sbt console`
 
 ### Flexibility can wait
 
-There's currently no way to alter default behavior of Salat's critical
-internal components. For example, it's impossible to tell it to
-exclude particular data members from (de)serialization. Similarly, the
-code is also not set up to even know anything about fields that aren't
-part of the case class constructor.
+Salat is and will always be primarily focused on serializing and deserializing what's in the case class constructor.
+
+There are some annotations that can be used to customize serialization at the case class level:
+- Support for typing concrete case class instances to a trait or abstract superclass using `@Salat`
+- Use `@Key` to change a key name
+- Use `@Persist` to persist a value not in case class constructor
+- Use `@Ignore` to ignore a field in the case class constructor (requires default value)
+- Use `@EnumAs` to choose whether to handle enums by id or by value
+
+In addition, you can customize your persistence context with regards to:
+ - type hinting strategy
+ - type hinting key name
+ - global key overrides
+ - global enum handling strategy
+ - default math context for BigDecimals
+
+However, a lot of Salat's internal workings are not easily exposed or overriden right now.  We are working to make Salat
+a more general-use serialization tool with future releases.
+
 
 ## What's up with the name?
 
 "*Salat*" is a transliteration of the Russian word "салат", for
-"salad". I picked this name because salad is great for your health and
-will not slow you down through use of runtime reflection.
+"salad".
+
+Salat is light and doesn't slow you down through use of runtime reflection.
 
 [wiki]: https://github.com/novus/salat/wiki
 [mailing-list]: http://groups.google.com/group/scala-salat
+[lightning-talk]: http://repo.novus.com/salat-presentation
+[rkt-twitter]: http://twitter.com/prasinous
+[efpl]: http://www.epfl.ch/
