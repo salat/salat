@@ -156,6 +156,9 @@ case class Neville(ennui: Boolean = true, asOf: DateTime = new DateTime)
 
 case class Olive(awl: java.util.UUID)
 
+case class Rhoda(consumed: Option[String] = None)
+case class Rhoda2(howHot: Option[BigDecimal] = None)
+
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
 case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])

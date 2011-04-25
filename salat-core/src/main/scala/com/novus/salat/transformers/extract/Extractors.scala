@@ -180,8 +180,10 @@ trait InContextToDBObject extends Transformer with InContextTransformer {
 
 trait OptionExtractor extends Transformer {
   self: Transformer =>
+
+  // ok, Some(null) should never happen.  except sometimes it does.
   override def before(value: Any)(implicit ctx: Context):Option[Any] = value match {
-    case Some(value) => Some(super.transform(value))
+    case Some(value) if value != null => Some(super.transform(value))
     case _ => None
   }
 }
