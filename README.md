@@ -61,7 +61,7 @@ information** about each field in the case class.
 Details about pickled Scala sigs are thin on the ground.  Here's where we got started:
 
 - the source code for `scala.tools.scalap.scalax.rules.scalasig.ScalaSigParser`
-- [SID # 10 (draft) - Storage of pickled Scala signatures in class files][http://www.scala-lang.org/sid/10]
+- SID # 10 (draft) - [Storage of pickled Scala signatures in class files][sid10]
 
 #### Java support has been ruled out
 
@@ -117,3 +117,4 @@ Salat is light and doesn't slow you down through use of runtime reflection.
 [rkt-twitter]: http://twitter.com/prasinous
 [rktoomey]: https://github.com/rktoomey
 [efpl]: http://www.epfl.ch/
+[sid10]: http://www.scala-lang.org/sid/10
