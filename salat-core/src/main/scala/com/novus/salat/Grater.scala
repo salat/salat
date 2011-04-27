@@ -53,7 +53,7 @@ object Grater extends Logging {
           Option(parsedSig)
         }
         case _ => {
-          log.error("parseScalaSig: could not parse clazz='%s' from class or scala.reflect.ScalaSignature", clazz)
+          log.error("parseScalaSig: could not parse clazz='%s' from class or scala.reflect.ScalaSignature", clazz.getName)
           None
         }
       }
