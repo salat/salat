@@ -41,15 +41,27 @@ class MissingTopLevelClass(clazz: Class[_]) extends Error("Parsed pickled scala 
 class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String) extends Error("Didn't find owner=%s, outer=%s, inner=%s in pickled scala sig for %s"
                                                                                                 .format(owner, outer, inner, clazz))
 
-object Grater {
-  private[salat] def parseScalaSig0(clazz: Class[_]) = {
-    ScalaSigParser.parse(clazz) orElse clazz.annotation[ScalaSignature].map {
-      case sig => {
-        val bytes = sig.bytes.getBytes("UTF-8")
-        val len = ByteCodecs.decode(bytes)
-        ScalaSigAttributeParsers.parse(ByteCode(bytes.take(len)))
+object Grater extends Logging {
+  private[salat] def parseScalaSig0(clazz: Class[_]): Option[ScalaSig] = if (clazz != null) {
+    ScalaSigParser.parse(clazz) match {
+      case Some(sig) if sig != null => Some(sig)
+      case _ => clazz.annotation[ScalaSignature] match {
+        case Some(sig) if sig != null => {
+          val bytes = sig.bytes.getBytes("UTF-8")
+          val len = ByteCodecs.decode(bytes)
+          val parsedSig = ScalaSigAttributeParsers.parse(ByteCode(bytes.take(len)))
+          Option(parsedSig)
+        }
+        case _ => {
+          log.error("parseScalaSig: could not parse clazz='%s' from class or scala.reflect.ScalaSignature", clazz)
+          None
+        }
       }
     }
+  }
+  else {
+    log.error("parseScalaSig: clazz was null!")
+    None
   }
 }
 
