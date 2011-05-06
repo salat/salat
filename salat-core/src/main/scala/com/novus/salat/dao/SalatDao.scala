@@ -59,35 +59,17 @@ trait DAO[T <: CaseClass, S <: Any] {
 
   def projection[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context): Option[P]
 
+  def primitiveProjection[A, P <: Any](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context): Option[P]
+
   def projections[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context): List[P]
 
+  def primitiveProjections[A, P <: Any](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context): List[P]
 }
 
 
 abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends com.novus.salat.dao.DAO[T, S] with Logging {
 
   private lazy val _idMs = manifest[S]
-
-  def projection[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context) = {
-    collection.findOne(query.asInstanceOf[DBObject], MongoDBObject(field -> 1)).map {
-      dbo =>
-        dbo.expand[DBObject](field).map(grater[P].asObject(_))
-    }.getOrElse(None)
-  }
-
-  def projections[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context)  = {
-
-    // Casbah bug - needs to be cast to MongoCursor
-    val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList
-
-    val builder = List.newBuilder[P]
-    results.foreach {
-      r =>
-        r.expand[DBObject](field).map(grater[P].asObject(_)).foreach(builder += _)
-    }
-
-    builder.result()
-  }
 
   /**
    * Default description is the case class simple name and the collection.
@@ -237,4 +219,45 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
 
   def find[A <% DBObject](ref: A) = find(ref.asInstanceOf[DBObject], MongoDBObject())
 
+  def projection[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context) = {
+    collection.findOne(query.asInstanceOf[DBObject], MongoDBObject(field -> 1)).map {
+      dbo =>
+        dbo.expand[DBObject](field).map(grater[P].asObject(_))
+    }.getOrElse(None)
+  }
+
+  def primitiveProjection[A, P <: Any](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context) = {
+    collection.findOne(query.asInstanceOf[DBObject], MongoDBObject(field -> 1)).map {
+      dbo =>
+        dbo.expand[P](field)
+    }.getOrElse(None)
+  }
+
+  def projections[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context)  = {
+
+    // Casbah hiccup - needs to be cast to MongoCursor
+    val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList
+
+    val builder = List.newBuilder[P]
+    results.foreach {
+      r =>
+        r.expand[DBObject](field).map(grater[P].asObject(_)).foreach(builder += _)
+    }
+
+    builder.result()
+  }
+
+  def primitiveProjections[A, P <: Any](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context)  = {
+
+    // Casbah hiccup - needs to be cast to MongoCursor
+    val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList
+
+    val builder = List.newBuilder[P]
+    results.foreach {
+      r =>
+        r.expand[P](field).foreach(builder += _)
+    }
+
+    builder.result()
+  }
 }
