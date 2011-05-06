@@ -46,37 +46,37 @@ object AlphaDAO extends com.novus.salat.dao.SalatDAO[Alpha, Int] {
 
   val _grater = grater[Alpha]
 
-  val collection = MongoConnection()(SalatSpecDb)(DaoSpecColl)
+  val collection = MongoConnection()(SalatSpecDb)(AlphaColl)
 
 }
 
-case class Epsilon(@Key("_id") var id: ObjectId = new ObjectId, notes: String)
+case class Epsilon(@Key("_id") id: ObjectId = new ObjectId, notes: String)
 
 object EpsilonDAO extends com.novus.salat.dao.SalatDAO[Epsilon, ObjectId] {
   val _grater = grater[Epsilon]
 
-  val collection = MongoConnection()(SalatSpecDb)(DaoSpecColl2)
+  val collection = MongoConnection()(SalatSpecDb)(EpsilonColl)
 }
 
-case class Theta(@Key("_id") var id: ObjectId = new ObjectId, x: String, y: String)
-case class Xi(@Key("_id") var id: ObjectId = new ObjectId, x: String, y: Option[String])
+case class Theta(@Key("_id") id: ObjectId = new ObjectId, x: String, y: String)
+case class Xi(@Key("_id") id: ObjectId = new ObjectId, x: String, y: Option[String])
 case class Nu(x: String, y: String)
-case class Kappa(@Key("_id") var id: ObjectId = new ObjectId, k: String, nu: Nu)
+case class Kappa(@Key("_id") id: ObjectId = new ObjectId, k: String, nu: Nu)
 
 object ThetaDAO extends com.novus.salat.dao.SalatDAO[Theta, ObjectId] {
   val _grater = grater[Theta]
 
-  val collection = MongoConnection()(SalatSpecDb)(DaoSpecColl3)
+  val collection = MongoConnection()(SalatSpecDb)(ThetaColl)
 }
 
 object XiDAO extends com.novus.salat.dao.SalatDAO[Xi, ObjectId] {
   val _grater = grater[Xi]
 
-  val collection = MongoConnection()(SalatSpecDb)(DaoSpecColl3)
+  val collection = MongoConnection()(SalatSpecDb)(ThetaColl)
 } 
 
 object KappaDAO extends com.novus.salat.dao.SalatDAO[Kappa, ObjectId] {
   val _grater = grater[Kappa]
 
-  val collection = MongoConnection()(SalatSpecDb)(DaoSpecColl3)
+  val collection = MongoConnection()(SalatSpecDb)(ThetaColl)
 } 

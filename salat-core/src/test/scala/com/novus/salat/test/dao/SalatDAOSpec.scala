@@ -55,7 +55,7 @@ class SalatDAOSpec extends SalatSpec {
       _id must beSome(alpha3.id)
       AlphaDAO.collection.count must_== 1L
 
-      val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(DaoSpecColl).findOne().get
+      val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(AlphaColl).findOne().get
       grater[Alpha].asObject(dbo) must_== alpha3
     }
 
@@ -110,7 +110,7 @@ class SalatDAOSpec extends SalatSpec {
       cr.ok() must beTrue
       AlphaDAO.collection.count must_== 1L
 
-      val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(DaoSpecColl).findOne().get
+      val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(AlphaColl).findOne().get
       grater[Alpha].asObject(dbo) must_== alpha3.copy(beta = List[Beta](Gamma("gamma3")))
     }
 
@@ -125,7 +125,7 @@ class SalatDAOSpec extends SalatSpec {
       cr.ok() must beTrue
       AlphaDAO.collection.count must_== 1L
 
-      val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(DaoSpecColl).findOne().get
+      val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(AlphaColl).findOne().get
       grater[Alpha].asObject(dbo) must_== alpha3_*
     }
 
