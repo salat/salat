@@ -4,11 +4,13 @@ Features new in Salat 0.0.7 include:
   - base dependency is now salat-core 0.0.7
 - SalatDAO provides simple, extensible turnkey DAO pattern
   - insert, save and remove methods accept case classes
-  - find returns a Mongo cursor typed to your case class - skip, limit, sort and get your object no fuss no muss
+  - find returns an Iterable Mongo cursor typed to your case class - skip, limit, sort and get your objects no fuss no muss
+  - typed ids and projections
+  - basic support for child collections - operate on children using a typed parent id
 - More flexible @Key behavior to override field name when serializing objects
   - register global overrides at the context level
   - use @Key in a trait or an abstract superclass
-- More flexible type hinting
+- Create a custom context to get more flexible type hinting
   - chose a type hinting strategy: always (default), only when necessary, or never (not recommended)
   - customize the type hint at the context level - replace "_typeHint" with whatever you like
 - Use @Persist to persist case class fields that are not declared in the constructor
