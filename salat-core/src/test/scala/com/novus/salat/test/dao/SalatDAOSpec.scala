@@ -106,7 +106,8 @@ class SalatDAOSpec extends SalatSpec {
       _id must beSome(alpha3.id)
       AlphaDAO.collection.count must_== 1L
 
-      val cr = AlphaDAO.update(MongoDBObject("_id" -> 3), alpha3.copy(beta = List[Beta](Gamma("gamma3"))))
+      // need to explicitly specify upsert and multi when updating using an object instead of dbo
+      val cr = AlphaDAO.update(MongoDBObject("_id" -> 3), alpha3.copy(beta = List[Beta](Gamma("gamma3"))), false, false)
       cr.ok() must beTrue
       AlphaDAO.collection.count must_== 1L
 

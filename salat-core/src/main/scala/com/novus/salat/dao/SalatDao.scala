@@ -28,34 +28,38 @@ import com.mongodb.{DBObject, CommandResult}
 
 /**
  * Base DAO class.
- * @type T case class type
- * @type S _id type
+ * @type ObjectType case class type
+ * @type ID _id type
  */
-trait DAO[T <: CaseClass, S <: Any] {
+trait DAO[ObjectType <: CaseClass, ID <: Any] {
 
   val collection: MongoCollection
 
-  val _grater: Grater[T]
+  val _grater: Grater[ObjectType]
 
   lazy val description: String = "DAO"
 
-  def insert(t: T): Option[S]
-  def insert(docs: T*): List[Option[S]]
+  def insert(t: ObjectType): Option[ID]
+  def insert(docs: ObjectType*): List[Option[ID]]
 
-  def ids[A <% DBObject](query: A): List[S]
+  def ids[A <% DBObject](query: A): List[ID]
 
-  def find[A <% DBObject](ref: A): SalatMongoCursor[T]
-  def find[A <% DBObject](ref: A, keys: A): SalatMongoCursor[T]
+  def find[A <% DBObject](ref: A): SalatMongoCursor[ObjectType]
+  def find[A <% DBObject, B <% DBObject](ref: A, keys: B): SalatMongoCursor[ObjectType]
 
-  def findOne[A <% DBObject](t: A): Option[T]
-  def findOneByID(id: S): Option[T]
+  def findOne[A <% DBObject](t: A): Option[ObjectType]
+  def findOneByID(id: ID): Option[ObjectType]
 
-  def save(t: T): CommandResult
+  def save(t: ObjectType): CommandResult
 
-  def update[A <% DBObject](q: A, o: A): CommandResult
-  def update[A <% DBObject](q: A, o: T): CommandResult
+  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean, multi: Boolean): CommandResult
 
-  def remove(t: T): CommandResult
+  // type erasure sucks.  why doesn't anyone else believe priority one is to go back and eradicate type erasure in the JVM? (closures, forsooth!)
+  def update[A <% DBObject](q: A, o: ObjectType, upsert: Boolean, multi: Boolean): CommandResult
+
+  def remove(t: ObjectType): CommandResult
+
+  def remove[A <% DBObject](q: A): CommandResult
 
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P]
 
@@ -67,16 +71,81 @@ trait DAO[T <: CaseClass, S <: Any] {
 }
 
 
-abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends com.novus.salat.dao.DAO[T, S] with Logging {
+abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest] extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
 
-  private lazy val _idMs = manifest[S]
+  dao =>
+
+  private lazy val _idMs = manifest[ID]
+
+  /**
+    *  Inner trait to facilitate working with child collections - no cascading support will be offered, but you
+    *  can override saves and deletes to manually cascade children from parents as you like.
+    *
+    *  Given parent class Foo and child class Bar:
+    *  case class Foo(_id: ObjectId, //  etc )
+    *  case class Bar(_id: ObjectId,
+    *                 parentId: ObjectId, // this refers back to a parent in Foo collection
+    *                 //  etc )
+    *
+    *
+    *  object FooDAO extends SalatDAO[Foo, ObjectId] {
+    *
+    *   val _grater = grater[Foo]
+    *   val collection = MongoConnection()("db")("fooCollection")
+    *
+    *  // and here is a child DAO you can use within FooDAO to work with children of type Bar whose parentId field matches
+    *  // the supplied parent id of an instance of Foo
+    *   val bar = new ChildCollection[Bar, ObjectId]("parentId") {
+    *     val _grater = grater[Bar]
+    *     val collection = MongoConnection()("db")("barCollection")
+    *   }
+    *
+    * }
+   */
+  abstract class ChildCollection[ChildType <: CaseClass : Manifest, ChildId <: Any : Manifest](val parentIdField: String) extends SalatDAO[ChildType, ChildId] {
+
+    childDao =>
+
+    override lazy val description = "SalatDAO[%s,%s](%s) -> ChildCollection[%s,%s](%s)".
+      format(manifest[ObjectType].erasure.getSimpleName, dao._idMs.erasure.getSimpleName, dao.collection.name,
+      manifest[ChildType].erasure.getSimpleName, childDao._idMs.erasure.getSimpleName, childDao.collection.name)
+
+    def idsForParentId[A <% DBObject](parentId: ID): List[ChildId] = {
+      collection.find(MongoDBObject(parentIdField -> parentId), MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(_idMs).get).toList
+    }
+
+    def findByParentId(parentId: ID): SalatMongoCursor[ChildType] = {
+      find(MongoDBObject(parentIdField -> parentId))
+    }
+
+    def findByParentId[A <% DBObject](parentId: ID, keys: A): SalatMongoCursor[ChildType] = {
+      find(MongoDBObject(parentIdField -> parentId), keys)
+    }
+
+    def updateByParentId[A <% DBObject](parentId: ID, o: A, upsert: Boolean, multi: Boolean): CommandResult = {
+      val cr = try {
+        collection.db.requestStart()
+        val wc = new WriteConcern()
+        val wr = collection.update(MongoDBObject(parentIdField -> parentId), o, upsert, multi, wc)
+        wr.getLastError(wc)
+      }
+      finally {
+        collection.db.requestDone()
+      }
+      cr
+    }
+
+    def removeByParentId(parentId: ID): CommandResult = {
+      remove(MongoDBObject(parentIdField -> parentId))
+    }
+  }
 
   /**
    * Default description is the case class simple name and the collection.
    */
-  override lazy val description = "SalatDAO[%s,%s](%s)".format(manifest[T].erasure.getSimpleName, _idMs.erasure.getSimpleName, collection.name)
+  override lazy val description = "SalatDAO[%s,%s](%s)".format(manifest[ObjectType].erasure.getSimpleName, _idMs.erasure.getSimpleName, collection.name)
 
-  def insert(t: T) = {
+  def insert(t: ObjectType) = {
     val _id = try {
       val dbo = _grater.asDBObject(t)
       collection.db.requestStart()
@@ -84,7 +153,7 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
       val wr = collection.insert(dbo, wc)
       if (wr.getLastError(wc).ok()) {
         val _id = collection.findOne(dbo) match {
-          case Some(dbo: DBObject) => dbo.getAs[S]("_id")
+          case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
           case _ => None
         }
         _id
@@ -102,7 +171,7 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
         FAILED TO INSERT DBO
         %s
 
-        """.format(manifest[T].getClass.getName, collection.getName(), wc, wr, dbo))
+        """.format(manifest[ObjectType].getClass.getName, collection.getName(), wc, wr, dbo))
       }
     }
     finally {
@@ -112,18 +181,18 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
     _id
   }
 
-  def insert(docs: T*) = {
+  def insert(docs: ObjectType*) = {
     val _ids = try {
       val dbos = docs.map(t => _grater.asDBObject(t))
       collection.db.requestStart()
       val wc = new WriteConcern()
       val wr = collection.insert(dbos, wc)
       if (wr.getLastError(wc).ok()) {
-        val builder = List.newBuilder[Option[S]]
+        val builder = List.newBuilder[Option[ID]]
         for (dbo <- dbos) {
           builder += {
             collection.findOne(dbo) match {
-              case Some(dbo: DBObject) => dbo.getAs[S]("_id")
+              case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
               case _ => None
             }
           }
@@ -143,7 +212,7 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
         FAILED TO INSERT DBOS
         %s
 
-        """.format(manifest[T].getClass.getName, collection.getName(), wc, wr, dbos.mkString("\n")))
+        """.format(manifest[ObjectType].getClass.getName, collection.getName(), wc, wr, dbos.mkString("\n")))
       }
     }
     finally {
@@ -154,15 +223,15 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
     _ids
   }
 
-  def ids[A <% DBObject](query: A): List[S] = {
-    collection.find(query, MongoDBObject("_id" -> 1)).map(_.expand[S]("_id")(_idMs).get).toList
+  def ids[A <% DBObject](query: A): List[ID] = {
+    collection.find(query, MongoDBObject("_id" -> 1)).map(_.expand[ID]("_id")(_idMs).get).toList
   }
 
   def findOne[A <% DBObject](t: A) = collection.findOne(t).map(_grater.asObject(_))
 
-  def findOneByID(id: S) = collection.findOneByID(id.asInstanceOf[AnyRef]).map(_grater.asObject(_))
+  def findOneByID(id: ID) = collection.findOneByID(id.asInstanceOf[AnyRef]).map(_grater.asObject(_))
 
-  def remove(t: T) = {
+  def remove(t: ObjectType) = {
     val cr = try {
       collection.db.requestStart()
       val wc = new WriteConcern()
@@ -175,7 +244,21 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
     cr
   }
 
-  def save(t: T) = {
+
+  def remove[A <% DBObject](q: A) = {
+    val cr = try {
+      collection.db.requestStart()
+      val wc = new WriteConcern()
+      val wr = collection.remove(q, wc)
+      wr.getLastError(wc)
+    }
+    finally {
+      collection.db.requestDone()
+    }
+    cr
+  }
+
+  def save(t: ObjectType) = {
     val cr = try {
       collection.db.requestStart()
       val wc = new WriteConcern()
@@ -188,11 +271,11 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
     cr
   }
 
-  def update[A <% DBObject](q: A, t: T) = {
+  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean = false, multi: Boolean = false) = {
     val cr = try {
       collection.db.requestStart()
       val wc = new WriteConcern()
-      val wr = collection.update(q, _grater.asDBObject(t))
+      val wr = collection.update(q, o, upsert, multi, wc)
       wr.getLastError(wc)
     }
     finally {
@@ -201,11 +284,11 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
     cr
   }
 
-  def update[A <% DBObject](q: A, o: A) = {
+  def update[A <% DBObject](q: A, t: ObjectType, upsert: Boolean, multi: Boolean) = {
     val cr = try {
       collection.db.requestStart()
       val wc = new WriteConcern()
-      val wr = collection.update(q, o)
+      val wr = collection.update(q, _grater.asDBObject(t), upsert, multi, wc)
       wr.getLastError(wc)
     }
     finally {
@@ -214,7 +297,7 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
     cr
   }
 
-  def find[A <% DBObject](ref: A, keys: A) = SalatMongoCursor[T](_grater,
+  def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = SalatMongoCursor[ObjectType](_grater,
     collection.find(ref, keys).asInstanceOf[MongoCursorBase].underlying)
 
   def find[A <% DBObject](ref: A) = find(ref.asInstanceOf[DBObject], MongoDBObject())
