@@ -57,13 +57,13 @@ trait DAO[T <: CaseClass, S <: Any] {
 
   def remove(t: T): CommandResult
 
-  def projection[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context): Option[P]
+  def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P]
 
-  def primitiveProjection[A, P <: Any](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context): Option[P]
+  def primitiveProjection[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P]
 
-  def projections[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context): List[P]
+  def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P]
 
-  def primitiveProjections[A, P <: Any](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context): List[P]
+  def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P]
 }
 
 
@@ -219,21 +219,21 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
 
   def find[A <% DBObject](ref: A) = find(ref.asInstanceOf[DBObject], MongoDBObject())
 
-  def projection[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context) = {
-    collection.findOne(query.asInstanceOf[DBObject], MongoDBObject(field -> 1)).map {
+  def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context) = {
+    collection.findOne(query, MongoDBObject(field -> 1)).map {
       dbo =>
         dbo.expand[DBObject](field).map(grater[P].asObject(_))
     }.getOrElse(None)
   }
 
-  def primitiveProjection[A, P <: Any](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context) = {
-    collection.findOne(query.asInstanceOf[DBObject], MongoDBObject(field -> 1)).map {
+  def primitiveProjection[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context) = {
+    collection.findOne(query, MongoDBObject(field -> 1)).map {
       dbo =>
         dbo.expand[P](field)
     }.getOrElse(None)
   }
 
-  def projections[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context)  = {
+  def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context)  = {
 
     // Casbah hiccup - needs to be cast to MongoCursor
     val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList
@@ -247,7 +247,7 @@ abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends 
     builder.result()
   }
 
-  def primitiveProjections[A, P <: Any](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context)  = {
+  def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context)  = {
 
     // Casbah hiccup - needs to be cast to MongoCursor
     val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList

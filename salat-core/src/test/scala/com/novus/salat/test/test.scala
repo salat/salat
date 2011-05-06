@@ -31,6 +31,9 @@ package object test {
   val SalatSpecDb = "test_salat"
   val DaoSpecColl = "alpha_dao_spec"
   val DaoSpecColl2 = "epsilon_dao_spec"
+  val DaoSpecColl3 = "theta_dao_spec"
+  val DaoSpecColl4 = "xi_dao_spec"
+  val DaoSpecColl5 = "kappa_dao_spec"
 
   def graph = Alice("x", Some("y"),
     Basil(Some(80), 81,

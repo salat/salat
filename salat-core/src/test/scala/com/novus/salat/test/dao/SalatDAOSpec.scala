@@ -28,6 +28,7 @@ import org.specs2.specification.Scope
 import com.novus.salat.util.MapPrettyPrinter
 import org.specs2.matcher.MustExpectable._
 import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.DBObject
 
 class SalatDAOSpec extends SalatSpec {
 
@@ -217,32 +218,107 @@ class SalatDAOSpec extends SalatSpec {
       results must contain(alpha5)
 
     }
+
+    "support primitive projections" in new thetaContext {
+      // a projection on a findOne that matches theta1
+      ThetaDAO.primitiveProjection[String](MongoDBObject("x" -> "x1"), "y") must beSome("y1")
+      // a projection on a findOne that brings nothing back
+      ThetaDAO.primitiveProjection[String](MongoDBObject("x" -> "x99"), "y") must beNone
+
+      val projList = ThetaDAO.primitiveProjections[String](MongoDBObject(), "y")
+      projList must haveSize(4)
+      projList must contain("y1", "y2", "y3", "y4")    // theta5 has a null value for y, not in the list
+    }
+
+    "support using a projection on an Option field to filter out Nones" in new xiContext {
+      // a projection on a findOne that matches xi1
+      XiDAO.primitiveProjection[String](MongoDBObject("x" -> "x1"), "y") must beSome("y1")
+      // a projection on a findOne that brings nothing back
+      XiDAO.primitiveProjection[String](MongoDBObject("x" -> "x99"), "y") must beNone
+
+      val projList = XiDAO.primitiveProjections[String](MongoDBObject(), "y")
+      projList must haveSize(4)
+      projList must contain("y1", "y2", "y3", "y4")    // xi5 has a null value for y, not in the list
+    }
+
+    "support case class projections" in new kappaContext {
+      // a projection on a findOne that matches kappa1
+      KappaDAO.projection[Nu](MongoDBObject("k" -> "k1"), "nu") must beSome(nu1)
+      // a projection on a findOne that brings nothing back
+      KappaDAO.projection[Nu](MongoDBObject("k" -> "k99"), "nu") must beNone
+
+      val projList = KappaDAO.projections[Nu](MongoDBObject("k" -> MongoDBObject("$in" -> List("k2", "k3"))), "nu")
+      projList must haveSize(2)
+      projList must contain(nu2, nu3)
+    }
   }
 
-    trait alphaContext extends Scope {
-      log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
-      AlphaDAO.collection.drop()
-      AlphaDAO.collection.count must_== 0L
-    }
+  trait alphaContext extends Scope {
+    log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
+    AlphaDAO.collection.drop()
+    AlphaDAO.collection.count must_== 0L
+  }
 
-    trait alphaContextWithData extends Scope {
-      log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
-      AlphaDAO.collection.drop()
-      AlphaDAO.collection.count must_== 0L
+  trait alphaContextWithData extends Scope {
+    log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
+    AlphaDAO.collection.drop()
+    AlphaDAO.collection.count must_== 0L
 
-      val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
-      _ids must contain(Some(alpha1.id))
-      _ids must contain(Some(alpha2.id))
-      _ids must contain(Some(alpha3.id))
-      _ids must contain(Some(alpha4.id))
-      _ids must contain(Some(alpha5.id))
-      _ids must contain(Some(alpha6.id))
-      AlphaDAO.collection.count must_== 6L
-    }
+    val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
+    _ids must contain(Option(alpha1.id), Option(alpha2.id), Option(alpha3.id), Option(alpha4.id), Option(alpha5.id), Option(alpha6.id))
+    AlphaDAO.collection.count must_== 6L
+  }
 
-    trait epsilonContext extends Scope {
-      log.debug("before: dropping %s", EpsilonDAO.collection.getFullName())
-      EpsilonDAO.collection.drop()
-      EpsilonDAO.collection.count must_== 0L
-    }
+  trait epsilonContext extends Scope {
+    log.debug("before: dropping %s", EpsilonDAO.collection.getFullName())
+    EpsilonDAO.collection.drop()
+    EpsilonDAO.collection.count must_== 0L
+  }
+
+  trait thetaContext extends Scope {
+    log.debug("before: dropping %s", ThetaDAO.collection.getFullName())
+    ThetaDAO.collection.drop()
+    ThetaDAO.collection.count must_== 0L
+
+    val theta1 = Theta(x = "x1", y = "y1")
+    val theta2 = Theta(x = "x2", y = "y2")
+    val theta3 = Theta(x = "x3", y = "y3")
+    val theta4 = Theta(x = "x4", y = "y4")
+    val theta5 = Theta(x = "x5", y = null)
+    val _ids = ThetaDAO.insert(theta1, theta2, theta3, theta4, theta5)
+    _ids must contain(Option(theta1.id), Option(theta2.id), Option(theta3.id), Option(theta4.id), Option(theta5.id))
+    ThetaDAO.collection.count must_== 5L
+  }
+  
+  trait xiContext extends Scope {
+    log.debug("before: dropping %s", XiDAO.collection.getFullName())
+    XiDAO.collection.drop()
+    XiDAO.collection.count must_== 0L
+    
+    val xi1 = Xi(x = "x1", y = Some("y1"))
+    val xi2 = Xi(x = "x2", y = Some("y2"))
+    val xi3 = Xi(x = "x3", y = Some("y3"))
+    val xi4 = Xi(x = "x4", y = Some("y4"))
+    val xi5 = Xi(x = "x5", y = None)
+    val _ids = XiDAO.insert(xi1, xi2, xi3, xi4, xi5)
+    _ids must contain(Option(xi1.id), Option(xi2.id), Option(xi3.id), Option(xi4.id), Option(xi5.id))
+    XiDAO.collection.count must_== 5L
+  }
+  
+  trait kappaContext extends Scope {
+    log.debug("before: dropping %s", KappaDAO.collection.getFullName())
+    KappaDAO.collection.drop()
+    KappaDAO.collection.count must_== 0L
+
+    val nu1 = Nu(x = "x1", y = "y1")
+    val nu2 = Nu(x = "x2", y = "y2")
+    val nu3 = Nu(x = "x3", y = "y3")
+
+    val kappa1 = Kappa(k = "k1", nu = nu1)
+    val kappa2 = Kappa(k = "k2", nu = nu2)
+    val kappa3 = Kappa(k = "k3", nu = nu3)
+    val _ids = KappaDAO.insert(kappa1, kappa2, kappa3)
+    _ids must contain(Option(kappa1.id), Option(kappa2.id), Option(kappa3.id))
+    KappaDAO.collection.count must_== 3L
+  }
 }
