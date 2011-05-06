@@ -72,11 +72,11 @@ object ThetaDAO extends com.novus.salat.dao.SalatDAO[Theta, ObjectId] {
 object XiDAO extends com.novus.salat.dao.SalatDAO[Xi, ObjectId] {
   val _grater = grater[Xi]
 
-  val collection = MongoConnection()(SalatSpecDb)(ThetaColl)
+  val collection = MongoConnection()(SalatSpecDb)(XiColl)
 } 
 
 object KappaDAO extends com.novus.salat.dao.SalatDAO[Kappa, ObjectId] {
   val _grater = grater[Kappa]
 
-  val collection = MongoConnection()(SalatSpecDb)(ThetaColl)
-} 
+  val collection = MongoConnection()(SalatSpecDb)(KappaColl)
+}
