@@ -41,15 +41,27 @@ class MissingTopLevelClass(clazz: Class[_]) extends Error("Parsed pickled scala 
 class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String) extends Error("Didn't find owner=%s, outer=%s, inner=%s in pickled scala sig for %s"
                                                                                                 .format(owner, outer, inner, clazz))
 
-object Grater {
-  private[salat] def parseScalaSig0(clazz: Class[_]) = {
-    ScalaSigParser.parse(clazz) orElse clazz.annotation[ScalaSignature].map {
-      case sig => {
-        val bytes = sig.bytes.getBytes("UTF-8")
-        val len = ByteCodecs.decode(bytes)
-        ScalaSigAttributeParsers.parse(ByteCode(bytes.take(len)))
+object Grater extends Logging {
+  private[salat] def parseScalaSig0(clazz: Class[_]): Option[ScalaSig] = if (clazz != null) {
+    ScalaSigParser.parse(clazz) match {
+      case Some(sig) if sig != null => Some(sig)
+      case _ => clazz.annotation[ScalaSignature] match {
+        case Some(sig) if sig != null => {
+          val bytes = sig.bytes.getBytes("UTF-8")
+          val len = ByteCodecs.decode(bytes)
+          val parsedSig = ScalaSigAttributeParsers.parse(ByteCode(bytes.take(len)))
+          Option(parsedSig)
+        }
+        case _ => {
+          log.error("parseScalaSig: could not parse clazz='%s' from class or scala.reflect.ScalaSignature", clazz.getName)
+          None
+        }
       }
     }
+  }
+  else {
+    log.error("parseScalaSig: clazz was null!")
+    None
   }
 }
 
@@ -111,22 +123,34 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   // annotations on a getter don't actually inherit from a trait or an abstract superclass,
   // but dragging them down manually allows for much nicer behaviour - this way you can specify @Persist or @Key
   // on a trait and have it work all the way down
-  protected val IgnoreTheseInterfaces: List[Class[_]] = List(classOf[ScalaObject], classOf[Product], classOf[java.io.Serializable])
-  protected val IgnoreThisSuperclass: List[Class[_]] = List(classOf[Object])
+  protected def interestingClass(clazz: Class[_]) = clazz match {
+    case clazz if clazz == null => false         // inconceivably, this happens!
+    case clazz if clazz.getName.startsWith("java.") => false
+    case clazz if clazz.getName.startsWith("javax.") => false
+    case clazz if clazz.getName.startsWith("scala.") => false
+    case clazz if clazz.getEnclosingClass != null => false // filter out nested traits and superclasses
+    case _ => true
+  }
+
+
   protected lazy val interestingInterfaces: List[(Class[_], SymbolInfoSymbol)] = {
     val interfaces = clazz.getInterfaces  // this should return an empty array, but...  sometimes returns null!
-    if (interfaces != null) {
-      (interfaces.toList diff IgnoreTheseInterfaces).filter(_.getEnclosingClass == null).map(i => (i, findSym(i)))
+    if (interfaces != null && interfaces.nonEmpty) {
+      val builder = List.newBuilder[(Class[_], SymbolInfoSymbol)]
+      for (interface <- interfaces) {
+        if (interestingClass(interface)) {
+          builder += ((interface, findSym(interface)))
+        }
+      }
+      builder.result()
     }
     else Nil
   }
-  protected lazy val interestingSuperclass: List[(Class[_], SymbolInfoSymbol)] = {
-    val superclass = clazz.getSuperclass
-    if (superclass != null) {  // this should never be null, but...  just in case!
-      (List[Class[_]](superclass) diff IgnoreThisSuperclass).map(i => (i, findSym(i)))
-    }
-    else Nil
+  protected lazy val interestingSuperclass: List[(Class[_], SymbolInfoSymbol)] = clazz.getSuperclass match {
+    case superClazz if interestingClass(superClazz)  => List((superClazz, findSym(superClazz)))
+    case _ => Nil
   }
+
   lazy val requiresTypeHint = {
     clazz.annotated_?[Salat] || interestingInterfaces.map(_._1.annotated_?[Salat]).contains(true) || interestingSuperclass.map(_._1.annotated_?[Salat]).contains(true)
   }
