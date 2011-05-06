@@ -24,7 +24,7 @@ import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
 import com.mongodb.casbah.MongoCursorBase
-import com.mongodb.CommandResult
+import com.mongodb.{DBObject, CommandResult}
 
 /**
  * Base DAO class.
@@ -56,12 +56,38 @@ trait DAO[T <: CaseClass, S <: Any] {
   def update[A <% DBObject](q: A, o: T): CommandResult
 
   def remove(t: T): CommandResult
+
+  def projection[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context): Option[P]
+
+  def projections[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context): List[P]
+
 }
 
 
 abstract class SalatDAO[T <: CaseClass : Manifest, S <: Any : Manifest] extends com.novus.salat.dao.DAO[T, S] with Logging {
 
   private lazy val _idMs = manifest[S]
+
+  def projection[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context) = {
+    collection.findOne(query.asInstanceOf[DBObject], MongoDBObject(field -> 1)).map {
+      dbo =>
+        dbo.expand[DBObject](field).map(grater[P].asObject(_))
+    }.getOrElse(None)
+  }
+
+  def projections[A, P <: CaseClass](query: A, field: String)(implicit ev: A => DBObject, m: Manifest[P], ctx: Context)  = {
+
+    // Casbah bug - needs to be cast to MongoCursor
+    val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList
+
+    val builder = List.newBuilder[P]
+    results.foreach {
+      r =>
+        r.expand[DBObject](field).map(grater[P].asObject(_)).foreach(builder += _)
+    }
+
+    builder.result()
+  }
 
   /**
    * Default description is the case class simple name and the collection.
