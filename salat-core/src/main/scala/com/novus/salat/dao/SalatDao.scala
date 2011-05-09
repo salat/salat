@@ -124,36 +124,24 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       MongoDBObject(parentIdField -> MongoDBObject("$in" -> parentIds))
     }
 
-    def countByParentId(parentId: ID): Long = {
-      childDao.count(parentIdQuery(parentId))
+    def countByParentId(parentId: ID, query: DBObject = MongoDBObject(), fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
+      childDao.count(parentIdQuery(parentId) ++ query, fieldsThatMustExist, fieldsThatMustNotExist)
     }
 
-    def countByParentId(parentId: ID, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
-      childDao.count(parentIdQuery(parentId), fieldsThatMustExist, fieldsThatMustNotExist)
+    def idsForParentId(parentId: ID, query: DBObject = MongoDBObject()): List[ChildId] = {
+      childDao.collection.find(parentIdQuery(parentId) ++ query, MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(mcid).get).toList
     }
 
-    def idsForParentId(parentId: ID): List[ChildId] = {
-      childDao.collection.find(parentIdQuery(parentId), MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(mcid).get).toList
+    def idsForParentIds(parentIds: List[ID], query: DBObject = MongoDBObject()): List[ChildId] = {
+      childDao.collection.find(parentIdsQuery(parentIds) ++ query, MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(mcid).get).toList
     }
 
-    def idsForParentIds(parentIds: List[ID]): List[ChildId] = {
-      childDao.collection.find(parentIdsQuery(parentIds), MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(mcid).get).toList
+    def findByParentId(parentId: ID, query: DBObject = MongoDBObject()): SalatMongoCursor[ChildType] = {
+      childDao.find(parentIdQuery(parentId) ++ query)
     }
 
-    def findByParentId(parentId: ID): SalatMongoCursor[ChildType] = {
-      childDao.find(parentIdQuery(parentId))
-    }
-
-    def findByParentIds(parentIds: List[ID]): SalatMongoCursor[ChildType] = {
-      childDao.find(parentIdsQuery(parentIds))
-    }
-
-    def findByParentId[A <% DBObject](parentId: ID, keys: A): SalatMongoCursor[ChildType] = {
-      childDao.find(parentIdQuery(parentId), keys)
-    }
-
-    def findByParentId[A <% DBObject](parentIds: List[ID], keys: A): SalatMongoCursor[ChildType] = {
-      childDao.find(parentIdsQuery(parentIds), keys)
+    def findByParentIds(parentIds: List[ID], query: DBObject = MongoDBObject()): SalatMongoCursor[ChildType] = {
+      childDao.find(parentIdsQuery(parentIds) ++ query)
     }
 
     def updateByParentId[A <% DBObject](parentId: ID, o: A, upsert: Boolean, multi: Boolean): CommandResult = {
@@ -172,20 +160,20 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       childDao.remove(parentIdsQuery(parentIds))
     }
 
-    def projectionsByParentId[R <: CaseClass](parentId: ID, field: String)(implicit mr: Manifest[R], ctx: Context): List[R] = {
-      childDao.projections(parentIdQuery(parentId), field)(mr, ctx)
+    def projectionsByParentId[R <: CaseClass](parentId: ID, field: String, query: DBObject = MongoDBObject())(implicit mr: Manifest[R], ctx: Context): List[R] = {
+      childDao.projections(parentIdQuery(parentId) ++ query, field)(mr, ctx)
     }
 
-    def projectionsByParentId[R <: CaseClass](parentIds: List[ID], field: String)(implicit mr: Manifest[R], ctx: Context): List[R] = {
-      childDao.projections(parentIdsQuery(parentIds), field)(mr, ctx)
+    def projectionsByParentIds[R <: CaseClass](parentIds: List[ID], field: String, query: DBObject = MongoDBObject())(implicit mr: Manifest[R], ctx: Context): List[R] = {
+      childDao.projections(parentIdsQuery(parentIds) ++ query, field)(mr, ctx)
     }
 
-    def primitiveProjectionsByParentId[R <: Any](parentId: ID, field: String)(implicit mr: Manifest[R], ctx: Context): List[R] = {
-      childDao.primitiveProjections(parentIdQuery(parentId), field)(mr, ctx)
+    def primitiveProjectionsByParentId[R <: Any](parentId: ID, field: String, query: DBObject = MongoDBObject())(implicit mr: Manifest[R], ctx: Context): List[R] = {
+      childDao.primitiveProjections(parentIdQuery(parentId) ++ query, field)(mr, ctx)
     }
 
-    def primitiveProjectionsByParentIds[R <: Any](parentIds: List[ID], field: String)(implicit mr: Manifest[R], ctx: Context): List[R] = {
-      childDao.primitiveProjections(parentIdsQuery(parentIds), field)(mr, ctx)
+    def primitiveProjectionsByParentIds[R <: Any](parentIds: List[ID], field: String, query: DBObject = MongoDBObject())(implicit mr: Manifest[R], ctx: Context): List[R] = {
+      childDao.primitiveProjections(parentIdsQuery(parentIds) ++ query, field)(mr, ctx)
     }
   }
 
