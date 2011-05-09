@@ -71,10 +71,10 @@ class ChildCollectionSpec extends SalatSpec {
       val cr = ParentDAO.children.removeByParentId(parent1.id)
       cr.ok must beTrue
 
-      // three children of parent1 have been removed from the child collection
+      // three children of parent1 have been removed from the child collection, overall count is reduced
       ParentDAO.children.findByParentId(parent1.id).toList must beEmpty
-      // child collection is otherwise unchanged
       ParentDAO.children.collection.count must_== 2L
+      // child collection is otherwise unchanged
       ParentDAO.children.findByParentId(parent2.id).toList must contain(child1Parent2, child2Parent2).only
       ParentDAO.children.findByParentId(parent3.id).toList must beEmpty
     }
