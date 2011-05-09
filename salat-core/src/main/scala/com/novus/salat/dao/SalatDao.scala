@@ -25,7 +25,6 @@ import com.mongodb.casbah.commons.Logging
 import com.mongodb.casbah.MongoCursorBase
 import com.mongodb.{DBObject, CommandResult}
 import com.novus.salat._
-import java.lang.management.ManagementFactory
 
 /**
  * Base DAO class.
@@ -119,41 +118,64 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       MongoDBObject(parentIdField -> parentId)
     }
 
+    def parentIdsQuery(parentIds: List[ID]) = {
+      MongoDBObject(parentIdField -> MongoDBObject("$in" -> parentIds))
+    }
+
     def idsForParentId(parentId: ID): List[ChildId] = {
       childDao.collection.find(parentIdQuery(parentId), MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(mcid).get).toList
+    }
+
+    def idsForParentIds(parentIds: List[ID]): List[ChildId] = {
+      childDao.collection.find(parentIdsQuery(parentIds), MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(mcid).get).toList
     }
 
     def findByParentId(parentId: ID): SalatMongoCursor[ChildType] = {
       childDao.find(parentIdQuery(parentId))
     }
 
+    def findByParentIds(parentIds: List[ID]): SalatMongoCursor[ChildType] = {
+      childDao.find(parentIdsQuery(parentIds))
+    }
+
     def findByParentId[A <% DBObject](parentId: ID, keys: A): SalatMongoCursor[ChildType] = {
       childDao.find(parentIdQuery(parentId), keys)
     }
 
+    def findByParentId[A <% DBObject](parentIds: List[ID], keys: A): SalatMongoCursor[ChildType] = {
+      childDao.find(parentIdsQuery(parentIds), keys)
+    }
+
     def updateByParentId[A <% DBObject](parentId: ID, o: A, upsert: Boolean, multi: Boolean): CommandResult = {
-      val cr = try {
-        childDao.collection.db.requestStart()
-        val wc = new WriteConcern()
-        val wr = childDao.collection.update(parentIdQuery(parentId), o, upsert, multi, wc)
-        wr.getLastError(wc)
-      }
-      finally {
-        childDao.collection.db.requestDone()
-      }
-      cr
+      childDao.update(parentIdQuery(parentId), o, upsert, multi)
+    }
+
+    def updateByParentIds[A <% DBObject](parentIds: List[ID], o: A, upsert: Boolean, multi: Boolean): CommandResult = {
+      childDao.update(parentIdsQuery(parentIds), o, upsert, multi)
     }
 
     def removeByParentId(parentId: ID): CommandResult = {
       childDao.remove(parentIdQuery(parentId))
     }
 
+    def removeByParentIds(parentIds: List[ID]): CommandResult = {
+      childDao.remove(parentIdsQuery(parentIds))
+    }
+
     def projectionsByParentId[R <: CaseClass](parentId: ID, field: String)(implicit mr: Manifest[R], ctx: Context): List[R] = {
       childDao.projections(parentIdQuery(parentId), field)(mr, ctx)
     }
 
+    def projectionsByParentId[R <: CaseClass](parentIds: List[ID], field: String)(implicit mr: Manifest[R], ctx: Context): List[R] = {
+      childDao.projections(parentIdsQuery(parentIds), field)(mr, ctx)
+    }
+
     def primitiveProjectionsByParentId[R <: Any](parentId: ID, field: String)(implicit mr: Manifest[R], ctx: Context): List[R] = {
       childDao.primitiveProjections(parentIdQuery(parentId), field)(mr, ctx)
+    }
+
+    def primitiveProjectionsByParentIds[R <: Any](parentIds: List[ID], field: String)(implicit mr: Manifest[R], ctx: Context): List[R] = {
+      childDao.primitiveProjections(parentIdsQuery(parentIds), field)(mr, ctx)
     }
   }
 
