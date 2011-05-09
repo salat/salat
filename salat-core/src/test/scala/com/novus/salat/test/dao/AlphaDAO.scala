@@ -25,7 +25,8 @@ import com.novus.salat.test._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations._
-
+import org.scala_tools.time.Imports._
+import com.novus.salat.dao.SalatDAO
 
 @Salat
 trait Beta {
@@ -42,41 +43,30 @@ case class Alpha(@Key("_id") id: Int, beta: List[Beta] = Nil)
 // 2.  define a grater for the class
 // 3.  specify a collection
 //
-object AlphaDAO extends com.novus.salat.dao.SalatDAO[Alpha, Int] {
-
-  val _grater = grater[Alpha]
-
-  val collection = MongoConnection()(SalatSpecDb)(AlphaColl)
-
-}
+object AlphaDAO extends SalatDAO[Alpha, Int](collection = MongoConnection()(SalatSpecDb)(AlphaColl))
 
 case class Epsilon(@Key("_id") id: ObjectId = new ObjectId, notes: String)
 
-object EpsilonDAO extends com.novus.salat.dao.SalatDAO[Epsilon, ObjectId] {
-  val _grater = grater[Epsilon]
-
-  val collection = MongoConnection()(SalatSpecDb)(EpsilonColl)
-}
+object EpsilonDAO extends SalatDAO[Epsilon, ObjectId](collection = MongoConnection()(SalatSpecDb)(EpsilonColl))
 
 case class Theta(@Key("_id") id: ObjectId = new ObjectId, x: String, y: String)
 case class Xi(@Key("_id") id: ObjectId = new ObjectId, x: String, y: Option[String])
 case class Nu(x: String, y: String)
 case class Kappa(@Key("_id") id: ObjectId = new ObjectId, k: String, nu: Nu)
 
-object ThetaDAO extends com.novus.salat.dao.SalatDAO[Theta, ObjectId] {
-  val _grater = grater[Theta]
+object ThetaDAO extends SalatDAO[Theta, ObjectId](collection = MongoConnection()(SalatSpecDb)(ThetaColl))
 
-  val collection = MongoConnection()(SalatSpecDb)(ThetaColl)
-}
+object XiDAO extends SalatDAO[Xi, ObjectId](collection = MongoConnection()(SalatSpecDb)(XiColl))
 
-object XiDAO extends com.novus.salat.dao.SalatDAO[Xi, ObjectId] {
-  val _grater = grater[Xi]
+object KappaDAO extends SalatDAO[Kappa, ObjectId](collection = MongoConnection()(SalatSpecDb)(KappaColl))
 
-  val collection = MongoConnection()(SalatSpecDb)(XiColl)
-} 
+case class ChildInfo(lastUpdated: DateTime = DateTime.now)
+case class Child(@Key("_id") id: Int, parentId: ObjectId, x: String, childInfo: ChildInfo = ChildInfo())
+case class Parent(@Key("_id") id: ObjectId = new ObjectId, name: String)
 
-object KappaDAO extends com.novus.salat.dao.SalatDAO[Kappa, ObjectId] {
-  val _grater = grater[Kappa]
+object ParentDAO extends SalatDAO[Parent, ObjectId](collection = MongoConnection()(SalatSpecDb)(ParentColl)) {
 
-  val collection = MongoConnection()(SalatSpecDb)(KappaColl)
+  val children = new ChildCollection[Child, Int](collection = MongoConnection()(SalatSpecDb)(ChildColl),
+    parentIdField = "parentId") {}
+
 }

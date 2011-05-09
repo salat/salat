@@ -34,6 +34,8 @@ package object test {
   val ThetaColl = "theta_dao_spec"
   val XiColl = "xi_dao_spec"
   val KappaColl = "kappa_dao_spec"
+  val ParentColl = "parent_dao_spec"
+  val ChildColl = "child_dao_spec"
 
   def graph = Alice("x", Some("y"),
     Basil(Some(80), 81,

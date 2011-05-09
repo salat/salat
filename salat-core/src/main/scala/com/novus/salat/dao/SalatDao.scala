@@ -20,11 +20,12 @@
 */
 package com.novus.salat.dao
 
-import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
 import com.mongodb.casbah.MongoCursorBase
 import com.mongodb.{DBObject, CommandResult}
+import com.novus.salat._
+import java.lang.management.ManagementFactory
 
 /**
  * Base DAO class.
@@ -71,15 +72,20 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
 }
 
 
-abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest] extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
+//abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest](val collection: MongoCollection)
+abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
+  mid: Manifest[ID], ctx: Context)
+  extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
 
   dao =>
 
-  private lazy val _idMs = manifest[ID]
+  // get the grater from the implicit context and object type erasure
+  val _grater = grater[ObjectType](ctx, mot)
 
   /**
-    *  Inner trait to facilitate working with child collections - no cascading support will be offered, but you
-    *  can override saves and deletes to manually cascade children from parents as you like.
+    *  Inner abstract class to facilitate working with child collections using a typed parent id -
+    *  no cascading support will be offered, but you can override saves and deletes in the parent DAO
+    *  to manually cascade children as you like.
     *
     *  Given parent class Foo and child class Bar:
     *  case class Foo(_id: ObjectId, //  etc )
@@ -88,62 +94,73 @@ abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest
     *                 //  etc )
     *
     *
-    *  object FooDAO extends SalatDAO[Foo, ObjectId] {
-    *
-    *   val _grater = grater[Foo]
-    *   val collection = MongoConnection()("db")("fooCollection")
+    *  object FooDAO extends SalatDAO[Foo, ObjectId](collection = MongoConnection()("db")("fooCollection")) {
     *
     *  // and here is a child DAO you can use within FooDAO to work with children of type Bar whose parentId field matches
     *  // the supplied parent id of an instance of Foo
-    *   val bar = new ChildCollection[Bar, ObjectId]("parentId") {
-    *     val _grater = grater[Bar]
-    *     val collection = MongoConnection()("db")("barCollection")
-    *   }
+    *   val bar = new ChildCollection[Bar, ObjectId](collection = MongoConnection()("db")("barCollection"),
+    *   parentIdField = "parentId") { }
     *
     * }
    */
-  abstract class ChildCollection[ChildType <: CaseClass : Manifest, ChildId <: Any : Manifest](val parentIdField: String) extends SalatDAO[ChildType, ChildId] {
+  abstract class ChildCollection[ChildType <: CaseClass, ChildId <: Any](override val collection: MongoCollection,
+                                                                         val parentIdField: String)(implicit mct: Manifest[ChildType],
+  mcid: Manifest[ChildId], ctx: Context)
+    extends SalatDAO[ChildType, ChildId](collection) {
 
     childDao =>
 
-    override lazy val description = "SalatDAO[%s,%s](%s) -> ChildCollection[%s,%s](%s)".
-      format(manifest[ObjectType].erasure.getSimpleName, dao._idMs.erasure.getSimpleName, dao.collection.name,
-      manifest[ChildType].erasure.getSimpleName, childDao._idMs.erasure.getSimpleName, childDao.collection.name)
+    override lazy val description = "SalatDAO[%s,%s](%s) -> ChildCollection[%s,%s](%s)".format(
+      mot.erasure.getSimpleName, mid.erasure.getSimpleName, dao.collection.name,
+      mct.erasure.getSimpleName, mcid.erasure.getSimpleName, childDao.collection.name
+    )
 
-    def idsForParentId[A <% DBObject](parentId: ID): List[ChildId] = {
-      collection.find(MongoDBObject(parentIdField -> parentId), MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(_idMs).get).toList
+    def parentIdQuery(parentId: ID) = {
+      MongoDBObject(parentIdField -> parentId)
+    }
+
+    def idsForParentId(parentId: ID): List[ChildId] = {
+      childDao.collection.find(parentIdQuery(parentId), MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(mcid).get).toList
     }
 
     def findByParentId(parentId: ID): SalatMongoCursor[ChildType] = {
-      find(MongoDBObject(parentIdField -> parentId))
+      childDao.find(parentIdQuery(parentId))
     }
 
     def findByParentId[A <% DBObject](parentId: ID, keys: A): SalatMongoCursor[ChildType] = {
-      find(MongoDBObject(parentIdField -> parentId), keys)
+      childDao.find(parentIdQuery(parentId), keys)
     }
 
     def updateByParentId[A <% DBObject](parentId: ID, o: A, upsert: Boolean, multi: Boolean): CommandResult = {
       val cr = try {
-        collection.db.requestStart()
+        childDao.collection.db.requestStart()
         val wc = new WriteConcern()
-        val wr = collection.update(MongoDBObject(parentIdField -> parentId), o, upsert, multi, wc)
+        val wr = childDao.collection.update(parentIdQuery(parentId), o, upsert, multi, wc)
         wr.getLastError(wc)
       }
       finally {
-        collection.db.requestDone()
+        childDao.collection.db.requestDone()
       }
       cr
     }
 
     def removeByParentId(parentId: ID): CommandResult = {
-      remove(MongoDBObject(parentIdField -> parentId))
+      childDao.remove(parentIdQuery(parentId))
+    }
+
+    def projectionsByParentId[R <: CaseClass](parentId: ID, field: String)(implicit mr: Manifest[R], ctx: Context): List[R] = {
+      childDao.projections(parentIdQuery(parentId), field)(mr, ctx)
+    }
+
+    def primitiveProjectionsByParentId[R <: Any](parentId: ID, field: String)(implicit mr: Manifest[R], ctx: Context): List[R] = {
+      childDao.primitiveProjections(parentIdQuery(parentId), field)(mr, ctx)
     }
   }
 
   /**
    * Default description is the case class simple name and the collection.
    */
-  override lazy val description = "SalatDAO[%s,%s](%s)".format(manifest[ObjectType].erasure.getSimpleName, _idMs.erasure.getSimpleName, collection.name)
+  override lazy val description = "SalatDAO[%s,%s](%s)".format(mot.erasure.getSimpleName, mid.erasure.getSimpleName, collection.name)
 
   def insert(t: ObjectType) = {
     val _id = try {
@@ -171,7 +188,7 @@ abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest
         FAILED TO INSERT DBO
         %s
 
-        """.format(manifest[ObjectType].getClass.getName, collection.getName(), wc, wr, dbo))
+        """.format(mot.getClass.getName, collection.getName(), wc, wr, dbo))
       }
     }
     finally {
@@ -212,7 +229,7 @@ abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest
         FAILED TO INSERT DBOS
         %s
 
-        """.format(manifest[ObjectType].getClass.getName, collection.getName(), wc, wr, dbos.mkString("\n")))
+        """.format(mot.getClass.getName, collection.getName(), wc, wr, dbos.mkString("\n")))
       }
     }
     finally {
@@ -224,7 +241,7 @@ abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest
   }
 
   def ids[A <% DBObject](query: A): List[ID] = {
-    collection.find(query, MongoDBObject("_id" -> 1)).map(_.expand[ID]("_id")(_idMs).get).toList
+    collection.find(query, MongoDBObject("_id" -> 1)).map(_.expand[ID]("_id")(mid).get).toList
   }
 
   def findOne[A <% DBObject](t: A) = collection.findOne(t).map(_grater.asObject(_))
@@ -302,21 +319,21 @@ abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest
 
   def find[A <% DBObject](ref: A) = find(ref.asInstanceOf[DBObject], MongoDBObject())
 
-  def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context) = {
+  def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
     collection.findOne(query, MongoDBObject(field -> 1)).map {
       dbo =>
         dbo.expand[DBObject](field).map(grater[P].asObject(_))
     }.getOrElse(None)
   }
 
-  def primitiveProjection[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context) = {
+  def primitiveProjection[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
     collection.findOne(query, MongoDBObject(field -> 1)).map {
       dbo =>
         dbo.expand[P](field)
     }.getOrElse(None)
   }
 
-  def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context)  = {
+  def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P]  = {
 
     // Casbah hiccup - needs to be cast to MongoCursor
     val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList
@@ -330,7 +347,7 @@ abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest
     builder.result()
   }
 
-  def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context)  = {
+  def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P]  = {
 
     // Casbah hiccup - needs to be cast to MongoCursor
     val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList
@@ -338,7 +355,7 @@ abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest
     val builder = List.newBuilder[P]
     results.foreach {
       r =>
-        r.expand[P](field).foreach(builder += _)
+        r.expand[P](field)(m).foreach(builder += _)
     }
 
     builder.result()
