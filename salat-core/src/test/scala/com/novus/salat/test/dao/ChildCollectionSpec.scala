@@ -29,6 +29,7 @@ import com.novus.salat.test.dao._
 import org.scala_tools.time.Imports._
 import org.joda.time.DateTimeConstants._
 import org.joda.time.DateMidnight
+import com.mongodb.casbah.commons.{MongoDBList, MongoDBObject}
 
 class ChildCollectionSpec extends SalatSpec {
 
@@ -95,6 +96,22 @@ class ChildCollectionSpec extends SalatSpec {
       ParentDAO.children.projectionsByParentId[ChildInfo](parent3.id, "childInfo") must beEmpty
     }
 
+    "support counting by parent id" in new parentChildContext {
+      ParentDAO.children.countByParentId(parent1.id) must_== 3L
+      ParentDAO.children.countByParentId(parent2.id) must_== 2L
+      ParentDAO.children.countByParentId(parent3.id) must_== 0L
+    }
+
+    "support counting by parent id with fields" in new parentChildContext {
+      ParentDAO.children.countByParentId(parentId = parent1.id,
+        fieldsThatMustExist = List("x")) must_== 3L
+      ParentDAO.children.countByParentId(parentId = parent1.id,
+        fieldsThatMustExist = List("x"),
+        fieldsThatMustNotExist = List("y")) must_== 2L
+      ParentDAO.children.countByParentId(parentId = parent1.id,
+        fieldsThatMustExist = List("x", "y")) must_== 1L
+    }
+
   }
 
   trait parentChildContext extends Scope {
@@ -115,12 +132,12 @@ class ChildCollectionSpec extends SalatSpec {
     _ids must contain(Option(parent1.id), Option(parent2.id), Option(parent3.id)).only
     ParentDAO.collection.count must_== 3L
 
-    val child1Parent1 = Child(id = 1, parentId = parent1.id, x = "child1Parent1")
+    val child1Parent1 = Child(id = 1, parentId = parent1.id, x = "child1Parent1", y = Some("child1Parent1"))
     val child2Parent1 = Child(id = 2, parentId = parent1.id, x = "child2Parent1")
     val child3Parent1 = Child(id = 3, parentId = parent1.id, x = "child3Parent1")
 
-    val child1Parent2 = Child(id = 4, parentId = parent2.id, x = "child1Parent2")
-    val child2Parent2 = Child(id = 5, parentId = parent2.id, x = "child2Parent2")
+    val child1Parent2 = Child(id = 4, parentId = parent2.id, x = "child1Parent2", y = Some("child1Parent2"))
+    val child2Parent2 = Child(id = 5, parentId = parent2.id, x = "child2Parent2", y = Some("child2Parent2"))
 
     val childIds = ParentDAO.children.insert(child1Parent1, child2Parent1, child3Parent1, child1Parent2, child2Parent2)
     childIds must contain(Option(child1Parent1.id), Option(child2Parent1.id), Option(child3Parent1.id),

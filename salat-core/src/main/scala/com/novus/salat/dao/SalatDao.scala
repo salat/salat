@@ -21,10 +21,10 @@
 package com.novus.salat.dao
 
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.Logging
 import com.mongodb.casbah.MongoCursorBase
-import com.mongodb.{DBObject, CommandResult}
 import com.novus.salat._
+import com.mongodb.{DBObject, CommandResult}
+import com.mongodb.casbah.commons.{MongoDBObject, Logging}
 
 /**
  * Base DAO class.
@@ -60,6 +60,8 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
   def remove(t: ObjectType): CommandResult
 
   def remove[A <% DBObject](q: A): CommandResult
+
+  def count(q: DBObject = MongoDBObject(), fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long
 
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P]
 
@@ -114,12 +116,20 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       mct.erasure.getSimpleName, mcid.erasure.getSimpleName, childDao.collection.name
     )
 
-    def parentIdQuery(parentId: ID) = {
+    def parentIdQuery(parentId: ID): DBObject = {
       MongoDBObject(parentIdField -> parentId)
     }
 
-    def parentIdsQuery(parentIds: List[ID]) = {
+    def parentIdsQuery(parentIds: List[ID]): DBObject = {
       MongoDBObject(parentIdField -> MongoDBObject("$in" -> parentIds))
+    }
+
+    def countByParentId(parentId: ID): Long = {
+      childDao.count(parentIdQuery(parentId))
+    }
+
+    def countByParentId(parentId: ID, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
+      childDao.count(parentIdQuery(parentId), fieldsThatMustExist, fieldsThatMustNotExist)
     }
 
     def idsForParentId(parentId: ID): List[ChildId] = {
@@ -381,5 +391,27 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     }
 
     builder.result()
+  }
+
+  /**
+    * Convenience method on collection.count
+    * @q optional query with default argument of empty query
+    * @fieldsThatMustExist list of field names to append to the query with "fieldName" -> { "$exists" -> true }
+    * @fieldsThatMustNotExist list of field names to append to the query with "fieldName" -> { "$exists" -> false }
+    */
+  def count(q: DBObject = MongoDBObject(), fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
+    // convenience method - don't personally enjoy writing these queries
+    val query = {
+      val builder = MongoDBObject.newBuilder
+      builder ++= q
+      for (field <- fieldsThatMustExist) {
+        builder += field -> MongoDBObject("$exists" -> true)
+      }
+      for (field <- fieldsThatMustNotExist) {
+        builder += field -> MongoDBObject("$exists" -> false)
+      }
+      builder.result()
+    }
+    collection.count(query)
   }
 }

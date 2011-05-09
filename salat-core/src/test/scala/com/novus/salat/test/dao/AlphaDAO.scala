@@ -61,7 +61,11 @@ object XiDAO extends SalatDAO[Xi, ObjectId](collection = MongoConnection()(Salat
 object KappaDAO extends SalatDAO[Kappa, ObjectId](collection = MongoConnection()(SalatSpecDb)(KappaColl))
 
 case class ChildInfo(lastUpdated: DateTime = DateTime.now)
-case class Child(@Key("_id") id: Int, parentId: ObjectId, x: String, childInfo: ChildInfo = ChildInfo())
+case class Child(@Key("_id") id: Int,
+                 parentId: ObjectId,
+                 x: String,
+                 childInfo: ChildInfo = ChildInfo(),
+                 y: Option[String] = None)
 case class Parent(@Key("_id") id: ObjectId = new ObjectId, name: String)
 
 object ParentDAO extends SalatDAO[Parent, ObjectId](collection = MongoConnection()(SalatSpecDb)(ParentColl)) {
