@@ -77,6 +77,7 @@ However, Salat will never support classes defined in pure Java because they do n
  **None of this code will work with classes that have no corresponding `.class` file.**
 
  We're hoping that this will be remedied with Scala 2.9, but until then, if you want to experiment with serialization in the REPL:
+
  - define your model classes
  - run `sbt console`
 
