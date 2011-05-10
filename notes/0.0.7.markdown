@@ -8,7 +8,7 @@ Features new in Salat 0.0.7 include:
   - query and get back a list of typed ids
   - projections return an Iterable Mongo cursor typed to a case class or a primitive
   - child collection support - find, update, remove, find ids and get back typed projections on children using a typed parent id or typed list of parent ids
-- new, more detailed documentation on our [wiki|https://github.com/novus/salat/wiki]
+- new, more detailed documentation on our [wiki][wiki]
 - better error handling, including detailed explanations when graters and constructors misfire
 - More flexible @Key behavior to override field name when serializing objects
   - register global overrides at the context level
@@ -19,3 +19,5 @@ Features new in Salat 0.0.7 include:
 - Use @Persist to persist case class fields that are not declared in the constructor
   - works with var, val and lazy val defined inside case class
   - also works with fields defined in traits or abstract superclasses
+
+[wiki]: https://github.com/novus/salat/wiki
