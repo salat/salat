@@ -11,7 +11,7 @@
 
     <groupId>com.novus</groupId>
     <artifactId>salat-proto</artifactId>
-    <version>0.0.7-SNAPSHOT</version>
+    <version>0.0.8-SNAPSHOT</version>
     <name>Salat Protobuf Support</name>
     <packaging>jar</packaging>
 
