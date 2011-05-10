@@ -16,7 +16,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <salat.version>0.0.7-SNAPSHOT</salat.version>
+        <salat.version>0.0.8-SNAPSHOT</salat.version>
         <protobuf.version>2.3.0</protobuf.version>
     </properties>
 
