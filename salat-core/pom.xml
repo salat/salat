@@ -5,13 +5,13 @@
     <parent>
         <groupId>com.novus</groupId>
         <artifactId>salat</artifactId>
-        <version>0.0.7-SNAPSHOT</version>
+        <version>0.0.7</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>com.novus</groupId>
     <artifactId>salat-core</artifactId>
-    <version>0.0.7-SNAPSHOT</version>
+    <version>0.0.7</version>
     <name>Salat Core</name>
     <packaging>jar</packaging>
 

@@ -4,7 +4,7 @@
 
     <groupId>com.novus</groupId>
     <artifactId>salat</artifactId>
-    <version>0.0.7-SNAPSHOT</version>
+    <version>0.0.7</version>
     <packaging>pom</packaging>
 
     <modules>

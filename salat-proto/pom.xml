@@ -5,18 +5,18 @@
     <parent>
         <groupId>com.novus</groupId>
         <artifactId>salat</artifactId>
-        <version>0.0.7-SNAPSHOT</version>
+        <version>0.0.7</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>com.novus</groupId>
     <artifactId>salat-proto</artifactId>
-    <version>0.0.7-SNAPSHOT</version>
+    <version>0.0.7</version>
     <name>Salat Protobuf Support</name>
     <packaging>jar</packaging>
 
     <properties>
-        <salat.version>0.0.7-SNAPSHOT</salat.version>
+        <salat.version>0.0.7</salat.version>
         <protobuf.version>2.3.0</protobuf.version>
     </properties>
 
