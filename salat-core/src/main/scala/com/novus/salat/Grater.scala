@@ -33,7 +33,7 @@ import com.novus.salat.util._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
 
-class MissingPickledSig(clazz: Class[_]) extends Error("Failed to parse pickled Scala signature from: %s".format(clazz))
+class MissingPickledSig(clazz: Class[_]) extends Error("FAIL: class '%s' is missing both @ScalaSig and .class file!".format(clazz))
 class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
                                                          .format(clazz))
 class MissingTopLevelClass(clazz: Class[_]) extends Error("Parsed pickled scala signature but found no top level class for: %s"
@@ -44,17 +44,16 @@ class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String
 object Grater extends Logging {
 
 
-  def parseClassFileFromByteCode(clazz: Class[_]): Option[ClassFile] = try {
+  private[salat] def parseClassFileFromByteCode(clazz: Class[_]): Option[ClassFile] = try {
     // taken from ScalaSigParser parse method with the explicit purpose of walking away from NPE
-    // and trying something else
     val byteCode  = ByteCode.forClass(clazz)
     Option(ClassFileParser.parse(byteCode))
   }
   catch {
-    case e: NullPointerException => None  // walking away, try a different tactic
+    case e: NullPointerException => None  // yes, this is the exception, but it is totally unhelpful to the end user
   }
 
-  def parseByteCodeFromAnnotation(clazz: Class[_]): Option[ByteCode] = {
+  private[salat] def parseByteCodeFromAnnotation(clazz: Class[_]): Option[ByteCode] = {
     clazz.annotation[ScalaSignature] match {
       case Some(sig) if sig != null => {
         val bytes = sig.bytes.getBytes("UTF-8")
@@ -65,9 +64,11 @@ object Grater extends Logging {
     }
   }
 
-  private[salat] def parseScalaSig0(clazz: Class[_]): Option[ScalaSig] = {
+  private[salat] def parseScalaSig0(_clazz: Class[_]): Option[ScalaSig] = {
 
-    assume(clazz != null, "parseScalaSig0: cannot parse ScalaSig from null class")
+    // support case objects by selectively re-jiggering the class that has been passed in
+    val clazz = if (_clazz.getName.endsWith("$")) Class.forName(_clazz.getName.replaceFirst("\\$$", "")) else _clazz
+    assume(clazz != null, "parseScalaSig0: cannot parse ScalaSig from null class=%s".format(_clazz))
 
 //    val sigFromAnnotation = parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_))
 //    val sigFromBytes: Option[ScalaSig] = parseClassFileFromByteCode(clazz).map(ScalaSigParser.parse(_)).getOrElse(None)
@@ -91,52 +92,15 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   ctx.accept(this)
 
   protected def parseScalaSig[A](clazz: Class[A]): Option[ScalaSig] = {
-    // TODO: provide a cogent explanation for the process that is going on here, document the fork logic on the wiki
-    val firstPass = parseScalaSig0(clazz)
-    log.trace("parseScalaSig: FIRST PASS on %s\n%s", clazz, firstPass)
-    firstPass match {
-      case Some(x) => {
-        log.trace("1")
-        Some(x)
-      }
-      case None if clazz.getName.endsWith("$") => {
-        log.trace("2")
-        val clayy = Class.forName(clazz.getName.replaceFirst("\\$$", ""))
-        val secondPass = parseScalaSig0(clayy)
-        log.trace("parseScalaSig: SECOND PASS on %s\n%s", clayy, secondPass)
-        secondPass
-      }
-      case x => x
-    }
+    parseScalaSig0(clazz)
   }
 
   protected def findSym[A](clazz: Class[A]) = {
-    val pss = parseScalaSig(clazz)
-    log.trace("parseScalaSig: clazz=%\n%s", clazz, pss)
-    pss match {
-      case Some(x) => {
-        val topLevelClasses = x.topLevelClasses
-        log.trace("parseScalaSig: found top-level classes %s", topLevelClasses)
-        topLevelClasses.headOption match {
-          case Some(tlc) => {
-            log.trace("parseScalaSig: returning top-level class %s", tlc)
-            tlc
-          }
-          case None => {
-            val topLevelObjects = x.topLevelObjects
-            log.trace("parseScalaSig: found top-level objects %s", topLevelObjects)
-            topLevelObjects.headOption match {
-              case Some(tlo) => {
-                log.trace("parseScalaSig: returning top-level object %s", tlo)
-                tlo
-              }
-              case _ => throw new MissingExpectedType(clazz)
-            }
-          }
-        }
-      }
-      case None => throw new MissingPickledSig(clazz)
-    }
+    parseScalaSig(clazz).
+      map(x => x.topLevelClasses.headOption.
+        getOrElse(x.topLevelObjects.headOption.
+          getOrElse(throw new MissingExpectedType(clazz)))
+    ).getOrElse(throw new MissingPickledSig(clazz))
   }
 
   protected lazy val sym = findSym(clazz)
