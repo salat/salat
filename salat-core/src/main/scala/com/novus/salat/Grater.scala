@@ -42,26 +42,47 @@ class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String
                                                                                                 .format(owner, outer, inner, clazz))
 
 object Grater extends Logging {
-  private[salat] def parseScalaSig0(clazz: Class[_]): Option[ScalaSig] = if (clazz != null) {
-    ScalaSigParser.parse(clazz) match {
-      case Some(sig) if sig != null => Some(sig)
-      case _ => clazz.annotation[ScalaSignature] match {
-        case Some(sig) if sig != null => {
-          val bytes = sig.bytes.getBytes("UTF-8")
-          val len = ByteCodecs.decode(bytes)
-          val parsedSig = ScalaSigAttributeParsers.parse(ByteCode(bytes.take(len)))
-          Option(parsedSig)
-        }
-        case _ => {
-          log.error("parseScalaSig: could not parse clazz='%s' from class or scala.reflect.ScalaSignature", clazz.getName)
-          None
-        }
+
+
+  def parseClassFileFromByteCode(clazz: Class[_]): Option[ClassFile] = try {
+    // taken from ScalaSigParser parse method with the explicit purpose of walking away from NPE
+    // and trying something else
+    val byteCode  = ByteCode.forClass(clazz)
+    Option(ClassFileParser.parse(byteCode))
+  }
+  catch {
+    case e: NullPointerException => None  // walking away, try a different tactic
+  }
+
+  def parseByteCodeFromAnnotation(clazz: Class[_]): Option[ByteCode] = {
+    clazz.annotation[ScalaSignature] match {
+      case Some(sig) if sig != null => {
+        val bytes = sig.bytes.getBytes("UTF-8")
+        val len = ByteCodecs.decode(bytes)
+        Option(ByteCode(bytes.take(len)))
       }
+      case _ => None
     }
   }
-  else {
-    log.error("parseScalaSig: clazz was null!")
-    None
+
+  private[salat] def parseScalaSig0(clazz: Class[_]): Option[ScalaSig] = {
+
+    assume(clazz != null, "parseScalaSig0: cannot parse ScalaSig from null class")
+
+//    val sigFromAnnotation = parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_))
+//    val sigFromBytes: Option[ScalaSig] = parseClassFileFromByteCode(clazz).map(ScalaSigParser.parse(_)).getOrElse(None)
+
+//    log.info("""
+//
+//     parseScalaSig0: clazz=%s --->
+//     FROM ANNOTATION? %s
+//     FROM BYTES? %s
+//
+//     """, clazz, sigFromAnnotation.isDefined, sigFromBytes.isDefined)
+
+    parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_)) orElse
+      parseClassFileFromByteCode(clazz).map(ScalaSigParser.parse(_)).getOrElse(None) orElse
+      None
   }
 }
 
