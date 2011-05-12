@@ -59,32 +59,32 @@ package object out {
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionExtractor
       }
 
-      case IsSeq(t @ TypeRefType(_, _, _)) => t match {
+      case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with SeqExtractor
+          new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with TraversableExtractor
 
        case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with BigIntToLong with SeqExtractor
+          new Transformer(symbol.path, t)(ctx) with BigIntToLong with TraversableExtractor
 
        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with CharToString with SeqExtractor
+          new Transformer(symbol.path, t)(ctx) with CharToString with TraversableExtractor
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
-          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with SeqExtractor
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with TraversableExtractor
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor {
+          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with TraversableExtractor {
             val grater = ctx.lookup(symbol.path)
           }
 
         case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
-          new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with SeqExtractor {
+          new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with TraversableExtractor {
             val grater = ctx.lookup(t.symbol.path)
           }
 
         case TypeRefType(_, symbol, _) =>
-          new Transformer(symbol.path, t)(ctx) with SeqExtractor
+          new Transformer(symbol.path, t)(ctx) with TraversableExtractor
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
@@ -188,15 +188,15 @@ trait OptionExtractor extends Transformer {
   }
 }
 
-trait SeqExtractor extends Transformer {
+trait TraversableExtractor extends Transformer {
   self: Transformer =>
   override def transform(value: Any)(implicit ctx: Context): Any = value
 
   override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
-    case seq: Seq[_] =>
-      Some(MongoDBList(seq.map {
+    case traversable: Traversable[_] =>
+      Some(MongoDBList(traversable.map {
         case el => super.transform(el)
-      }: _*))
+      }.toList: _*))
     case _ => None
   }
 }

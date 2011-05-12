@@ -48,12 +48,13 @@ object IsMap {
     }
 }
 
-object IsSeq {
+object IsTraversable {
   def unapply(t: Type): Option[Type] =
     t match {
       case TypeRefType(_, symbol, List(e)) =>
         if (symbol.path.endsWith(".Seq")) Some(e)
         else if (symbol.path.endsWith(".List")) Some(e)
+        else if (symbol.path.endsWith(".Set")) Some(e)
         else None
       case _ => None
     }
