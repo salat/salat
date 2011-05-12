@@ -165,6 +165,7 @@ case class Company(name: String, year_of_inception: Int, departments: Map[String
 case class HasCompany(c: Company)
 
 case class Walrus[W](manyThings: Seq[W])
+case class ElephantSeal[ES](distinctThings: Set[ES])
 
 case class LazyThing(excuses: Seq[Int]) {
   lazy val firstExcuse = excuses.headOption
