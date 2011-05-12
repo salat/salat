@@ -112,6 +112,34 @@ package object out {
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapExtractor
       }
+      
+      case IsSet(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with SetExtractor
+
+       case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with BigIntToLong with SetExtractor
+
+       case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with CharToString with SetExtractor
+
+        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with SetExtractor
+        }
+
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with SetExtractor {
+            val grater = ctx.lookup(symbol.path)
+          }
+
+        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
+          new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with SetExtractor {
+            val grater = ctx.lookup(t.symbol.path)
+          }
+
+        case TypeRefType(_, symbol, _) =>
+          new Transformer(symbol.path, t)(ctx) with SetExtractor
+      }
 
       case TypeRefType(_, symbol, _) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
@@ -197,6 +225,19 @@ trait SeqExtractor extends Transformer {
       Some(MongoDBList(seq.map {
         case el => super.transform(el)
       }: _*))
+    case _ => None
+  }
+}
+
+trait SetExtractor extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any)(implicit ctx: Context): Any = value
+
+  override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
+    case set: Set[_] =>
+      Some(MongoDBList((set.map {
+        case el => super.transform(el)
+      }).toList: _*))
     case _ => None
   }
 }

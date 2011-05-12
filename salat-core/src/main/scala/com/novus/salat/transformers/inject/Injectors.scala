@@ -172,6 +172,56 @@ package object in {
           val grater = ctx.lookup(symbol.path)
         }
       }
+      
+      case IsSet(t@TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with SetInjector {
+            val parentType = pt
+          }
+
+        case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with LongToInt with SetInjector {
+            val parentType = pt
+          }
+
+        case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with LongToBigInt with SetInjector {
+            val parentType = pt
+          }
+
+        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with StringToChar with SetInjector {
+            val parentType = pt
+          }
+
+        case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DateToJodaDateTime with SetInjector {
+            val parentType = pt
+          }
+
+        case t@TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater with SetInjector {
+            val parentType = pt
+          }
+        }
+
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SetInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
+
+        case t@TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with SetInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
+
+        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with SetInjector {
+          val parentType = pt
+          val grater = ctx.lookup(symbol.path)
+        }
+      }
 
       case TypeRefType(_, symbol, _) => pt match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
@@ -311,6 +361,28 @@ trait SeqInjector extends Transformer {
 
   override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
     case list: Seq[Any] => Some(seqImpl(parentType, list.map {
+      el => super.transform(el)
+    }))
+    case _ => None
+  }
+
+  val parentType: TypeRefType
+}
+
+trait SetInjector extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any)(implicit ctx: Context): Any = value
+
+  override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
+    case dbl: BasicDBList => {
+      val list: MongoDBList = dbl
+      Some(list.toSet)
+    }
+    case _ => None
+  }
+
+  override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+    case set: Set[Any] => Some(setImpl(parentType, set.map {
       el => super.transform(el)
     }))
     case _ => None

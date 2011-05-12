@@ -59,6 +59,16 @@ object IsSeq {
     }
 }
 
+object IsSet {
+  def unapply(t: Type): Option[Type] =
+    t match {
+      case TypeRefType(_, symbol, List(e)) =>
+        if (symbol.path.endsWith(".Set")) Some(e)
+        else None
+      case _ => None
+    }
+}
+
 object IsScalaBigDecimal {
   def unapply(t: Type): Option[Type] = TypeMatchers.matchesOneType(t, classOf[ScalaBigDecimal].getName)
 }

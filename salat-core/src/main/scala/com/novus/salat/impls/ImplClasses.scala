@@ -56,6 +56,19 @@ package object impls {
         case x => mapImpl(x, real)
       }
     }
+  
+  def setImpl(name: String, real: collection.Set[_]): scala.collection.Set[_] = name match {
+    case ImplClasses.SetClass => Set.empty ++ real
+    case x => throw new IllegalArgumentException("failed to find proper Set[_] impl for %s".format(x))
+  }
+
+  def setImpl(t: Type, real: collection.Set[_]): scala.collection.Set[_] =
+    t match {
+      case TypeRefType(_, symbol, _) => symbol.path match {
+        case "scala.Predef.Set" => setImpl(ImplClasses.SetClass, real)
+        case x => setImpl(x, real)
+      }
+    }
 }
 
 package impls {
@@ -64,9 +77,11 @@ package impls {
     val IListClass = classOf[IList[_]].getName
     val BufferClass = classOf[Buffer[_]].getName
     val SeqClass = classOf[scala.collection.Seq[_]].getName
-
+    
     val IMapClass = classOf[IMap[_, _]].getName
     val MMapClass = classOf[MMap[_, _]].getName
+    
+    val SetClass = classOf[scala.collection.Set[_]].getName
   }
 
 }
