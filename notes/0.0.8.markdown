@@ -1,0 +1,3 @@
+Features new in Salat 0.0.8 include:
+
+- collection support has been expanded to everything traversable courtest of Oliver Dodd
