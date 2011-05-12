@@ -1,3 +1,4 @@
+import java.lang.Error
 import sbt._
 
 class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous.Publish {
@@ -22,21 +23,29 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
     override def testFrameworks = super.testFrameworks ++ Seq(specs2Framework)
 
     lazy val sourceArtifact = Artifact.sources(artifactID)
-    lazy val docsArtifact = Artifact.javadoc(artifactID)
+//    lazy val docsArtifact = Artifact.javadoc(artifactID)
     override def packageSrcJar = defaultJarPath("-sources.jar")
-    override def packageDocsJar = defaultJarPath("-javadoc.jar")
-    override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageDocs, packageSrc)
+//    override def packageDocsJar = defaultJarPath("-javadoc.jar")
+    override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
   }
 
   class SalatCoreProject(info: ProjectInfo) extends BaseSalatProject(info) {
+
+    // TODO: get rid of this once casbah is published for 2.9.0.final
+    lazy val casbahCrossVersion = crossScalaVersionString match {
+        case "2.8.1" => "2.8.1"
+        case "2.9.0" => "2.9.0.RC1"
+        case x => throw new Error("Unsupported Scala version '%s'".format(x))
+      }
+
     val mongodb = "org.mongodb" % "mongo-java-driver" % "2.5.3" withSources()
-    val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.2" withSources()
+    val casbah_core = "com.mongodb.casbah" % ("casbah-core_" + casbahCrossVersion) % "2.1.2" withSources()
     val commons_pool = "commons-pool" % "commons-pool" % "1.5.5"
 
     // Should be crossScalaVersionString, but 2.8.0's scalap appears to
     // be totally frakked, whereas 2.8.1's works fine with 2.8.0. Go
     // figure.
-    val scalap = "org.scala-lang" % "scalap" % "2.8.1" withSources()
+    val scalap = "org.scala-lang" % "scalap" % crossScalaVersionString withSources()
   }
 
   class SalatProtoProject(info: ProjectInfo) extends SalatCoreProject(info) with protobuf.ProtobufCompiler {
