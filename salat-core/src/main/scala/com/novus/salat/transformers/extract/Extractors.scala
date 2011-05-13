@@ -22,6 +22,8 @@ package com.novus.salat.transformers
 
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{BigDecimal => ScalaBigDecimal}
+import scala.collection.immutable.{List => IList, Map => IMap}
+import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap}
 
 import com.novus.salat._
 import com.novus.salat.impls._
@@ -205,13 +207,14 @@ trait MapExtractor extends Transformer {
   self: Transformer =>
   override def transform(value: Any)(implicit ctx: Context): Any = value
 
-  override def after(value: Any)(implicit ctx: Context):Option[Any] = value match {
-    case map: Map[String, _] => {
+  override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+    case map: scala.collection.Map[String, _] => {
       val builder = MongoDBObject.newBuilder
       map.foreach {
         case (k, el) =>
           builder += (k match {
-            case s: String => s case x => x.toString
+            case s: String => s
+            case x => x.toString
           }) -> super.transform(el)
       }
       Some(builder.result)

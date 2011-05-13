@@ -338,7 +338,7 @@ trait MapInjector extends Transformer {
       mdbo.foreach {
         case (k, v) => builder += k -> super.transform(v)
       }
-      Some(mapImpl(parentType, builder.result).asInstanceOf[Map[String, _]])
+      Some(mapImpl(parentType, builder.result))
     }
     case _ => None
   }

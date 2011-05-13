@@ -21,17 +21,29 @@
 package com.novus.salat
 
 
-import scala.collection.immutable.{List => IList, Map => IMap}
-import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap}
+import scala.collection.immutable.{List => IList, Map => IMap, Set => ISet, Seq => ISeq}
+import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap, Set => MSet, Seq => MSeq}
 import scala.tools.scalap.scalax.rules.scalasig._
 import com.novus.salat.impls.ImplClasses
 
 package object impls {
   def traversableImpl(name: String, real: collection.Traversable[_]): scala.collection.Traversable[_] = name match {
-    case ImplClasses.IListClass => IList.empty ++ real
+
     case ImplClasses.BufferClass => Buffer.empty ++ real
-    case ImplClasses.SeqClass => IList.empty ++ real
+
+    case ImplClasses.SeqClass => Seq.empty ++ real
+    case ImplClasses.ISeqClass => ISeq.empty ++ real
+    case ImplClasses.MSeqClass => MSeq.empty ++ real
+
+    case ImplClasses.IListClass => IList.empty ++ real
+
     case ImplClasses.SetClass => Set.empty ++ real
+    case ImplClasses.ISetClass => ISet.empty ++ real
+    case ImplClasses.MSetClass => MSet.empty ++ real
+
+    case ImplClasses.ISetClass => ISet.empty ++ real
+    case ImplClasses.MSetClass => MSet.empty ++ real
+
     case x => throw new IllegalArgumentException("failed to find proper Traversable[_] impl for %s".format(x))
   }
 
@@ -45,13 +57,14 @@ package object impls {
       }
     }
 
-  def mapImpl(name: String, real: collection.Map[_, _]): scala.collection.Map[_, _] = name match {
+  def mapImpl(name: String, real: scala.collection.Map[_, _]): scala.collection.Map[_, _] = name match {
+    case ImplClasses.MapClass => Map.empty ++ real
     case ImplClasses.IMapClass => IMap.empty ++ real
     case ImplClasses.MMapClass => MMap.empty ++ real
     case x => throw new IllegalArgumentException("failed to find proper Map[_,_] impl for %s".format(x))
   }
 
-  def mapImpl(t: Type, real: collection.Map[_, _]): scala.collection.Map[_, _] =
+  def mapImpl(t: Type, real: collection.Map[String, _]): scala.collection.Map[_, _] =
     t match {
       case TypeRefType(_, symbol, _) => symbol.path match {
         case "scala.Predef.Map" => mapImpl(ImplClasses.IMapClass, real)
@@ -63,14 +76,22 @@ package object impls {
 package impls {
 
   object ImplClasses {
+
     val IListClass = classOf[IList[_]].getName
-    val BufferClass = classOf[Buffer[_]].getName
+
     val SeqClass = classOf[scala.collection.Seq[_]].getName
-    
+    val ISeqClass = classOf[ISeq[_]].getName
+    val MSeqClass = classOf[MSeq[_]].getName
+
+    val BufferClass = classOf[Buffer[_]].getName
+
+    val MapClass = classOf[scala.collection.Map[_, _]].getName
     val IMapClass = classOf[IMap[_, _]].getName
     val MMapClass = classOf[MMap[_, _]].getName
     
     val SetClass = classOf[scala.collection.Set[_]].getName
+    val ISetClass = classOf[ISet[_]].getName
+    val MSetClass = classOf[MSet[_]].getName
   }
 
 }
