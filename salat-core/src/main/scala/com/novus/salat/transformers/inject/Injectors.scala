@@ -311,7 +311,6 @@ trait TraversableInjector extends Transformer {
 
   override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
     case traversable: Traversable[Any] => Some(traversableImpl(parentType, traversable.map {
-      
       el => super.transform(el)
     }))
     case _ => None

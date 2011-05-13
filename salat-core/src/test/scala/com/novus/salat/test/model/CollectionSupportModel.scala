@@ -38,3 +38,6 @@ case class Fox(@Key("_id") id: ObjectId = new ObjectId, coll: List[Thingy])
 case class Gee(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.Seq[Thingy])
 case class How(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.immutable.Seq[Thingy])
 case class Item(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.Seq[Thingy])
+
+case class Jig(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.Buffer[Thingy])
+case class King(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.ArrayBuffer[Thingy])

@@ -116,7 +116,7 @@ class CollectionSupportSpec extends SalatSpec {
           builder.result()
         })
 
-        val dao = new SalatDAO[Dog, ObjectId](collection = MongoConnection()(SalatSpecDb)("charlie_coll_spec")) {}
+        val dao = new SalatDAO[Dog, ObjectId](collection = MongoConnection()(SalatSpecDb)("dog_coll_spec")) {}
         val _id = dao.insert(dog)
         _id must beSome(dog.id)
         dao.findOneByID(dog.id) must beSome(dog)
@@ -133,7 +133,7 @@ class CollectionSupportSpec extends SalatSpec {
           builder.result()
         })
 
-        val dao = new SalatDAO[Easy, ObjectId](collection = MongoConnection()(SalatSpecDb)("charlie_coll_spec")) {}
+        val dao = new SalatDAO[Easy, ObjectId](collection = MongoConnection()(SalatSpecDb)("easy_coll_spec")) {}
         val _id = dao.insert(easy)
         _id must beSome(easy.id)
         dao.findOneByID(easy.id) must beSome(easy)
@@ -151,7 +151,7 @@ class CollectionSupportSpec extends SalatSpec {
         builder.result()
       })
 
-      val dao = new SalatDAO[Fox, ObjectId](collection = MongoConnection()(SalatSpecDb)("charlie_coll_spec")) {}
+      val dao = new SalatDAO[Fox, ObjectId](collection = MongoConnection()(SalatSpecDb)("fox_coll_spec")) {}
       val _id = dao.insert(fox)
       _id must beSome(fox.id)
       dao.findOneByID(fox.id) must beSome(fox)
@@ -170,7 +170,7 @@ class CollectionSupportSpec extends SalatSpec {
           builder.result()
         })
 
-        val dao = new SalatDAO[Gee, ObjectId](collection = MongoConnection()(SalatSpecDb)("charlie_coll_spec")) {}
+        val dao = new SalatDAO[Gee, ObjectId](collection = MongoConnection()(SalatSpecDb)("gee_coll_spec")) {}
         val _id = dao.insert(gee)
         _id must beSome(gee.id)
         dao.findOneByID(gee.id) must beSome(gee)
@@ -187,7 +187,7 @@ class CollectionSupportSpec extends SalatSpec {
           builder.result()
         })
 
-        val dao = new SalatDAO[How, ObjectId](collection = MongoConnection()(SalatSpecDb)("charlie_coll_spec")) {}
+        val dao = new SalatDAO[How, ObjectId](collection = MongoConnection()(SalatSpecDb)("how_coll_spec")) {}
         val _id = dao.insert(how)
         _id must beSome(how.id)
         dao.findOneByID(how.id) must beSome(how)
@@ -204,12 +204,50 @@ class CollectionSupportSpec extends SalatSpec {
           builder.result()
         })
 
-        val dao = new SalatDAO[Item, ObjectId](collection = MongoConnection()(SalatSpecDb)("charlie_coll_spec")) {}
+        val dao = new SalatDAO[Item, ObjectId](collection = MongoConnection()(SalatSpecDb)("item_coll_spec")) {}
         val _id = dao.insert(item)
         _id must beSome(item.id)
         dao.findOneByID(item.id) must beSome(item)
       }
     }
 
+    "support Buffer[_]" in {
+
+      "support scala.collection.mutable.Buffer[_]" in {
+        val coll = scala.collection.mutable.Buffer(Thingy("A"), Thingy("B"))
+        val jig = Jig(coll = coll)
+        val dbo: MongoDBObject = grater[Jig].asDBObject(jig)
+        dbo must havePair("coll" -> {
+          val builder = MongoDBList.newBuilder
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
+          builder.result()
+        })
+
+        val dao = new SalatDAO[Jig, ObjectId](collection = MongoConnection()(SalatSpecDb)("jig_coll_spec")) {}
+        val _id = dao.insert(jig)
+        _id must beSome(jig.id)
+        dao.findOneByID(jig.id) must beSome(jig)
+      }
+
+      "support scala.collection.mutable.ArrayBuffer[_]" in {
+        val coll = scala.collection.mutable.ArrayBuffer(Thingy("A"), Thingy("B"))
+        val king = King(coll = coll)
+        val dbo: MongoDBObject = grater[King].asDBObject(king)
+        dbo must havePair("coll" -> {
+          val builder = MongoDBList.newBuilder
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
+          builder.result()
+        })
+
+        val dao = new SalatDAO[King, ObjectId](collection = MongoConnection()(SalatSpecDb)("king_coll_spec")) {}
+        val _id = dao.insert(king)
+        _id must beSome(king.id)
+        dao.findOneByID(king.id) must beSome(king)
+      }
+    }
+
+    // TODO: moar collection types
   }
 }

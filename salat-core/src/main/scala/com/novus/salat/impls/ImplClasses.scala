@@ -30,6 +30,7 @@ package object impls {
   def traversableImpl(name: String, real: collection.Traversable[_]): scala.collection.Traversable[_] = name match {
 
     case ImplClasses.BufferClass => Buffer.empty ++ real
+    case ImplClasses.ArrayBufferClass => ArrayBuffer.empty ++ real
 
     case ImplClasses.SeqClass => Seq.empty ++ real
     case ImplClasses.ISeqClass => ISeq.empty ++ real
@@ -47,7 +48,7 @@ package object impls {
     case x => throw new IllegalArgumentException("failed to find proper Traversable[_] impl for %s".format(x))
   }
 
-  def traversableImpl(t: Type, real: collection.Traversable[_]): scala.collection.Traversable[_] =
+  def traversableImpl(t: Type, real: scala.collection.Traversable[_]): scala.collection.Traversable[_] =
     t match {
       case TypeRefType(_, symbol, _) => symbol.path match {
         case "scala.package.Seq" => traversableImpl(ImplClasses.SeqClass, real)
@@ -84,6 +85,7 @@ package impls {
     val MSeqClass = classOf[MSeq[_]].getName
 
     val BufferClass = classOf[Buffer[_]].getName
+    val ArrayBufferClass = classOf[ArrayBuffer[_]].getName
 
     val MapClass = classOf[scala.collection.Map[_, _]].getName
     val IMapClass = classOf[IMap[_, _]].getName

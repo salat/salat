@@ -313,7 +313,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
           case _ => safeDefault(field)
           }
         }
-      }.map(_.get.asInstanceOf[AnyRef])
+      }.map(_.get.asInstanceOf[AnyRef])  // TODO: if raw get blows up, throw a more informative error
 
       try {
         constructor.newInstance(args: _*)
