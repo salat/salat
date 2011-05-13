@@ -15,7 +15,31 @@ type known to Java or Scala.
 - Salat-related discussion and questions belong on the [mailing list][mailing-list].
 - Follow [Rose][rktoomey] on Twitter - [@prasinous][rkt-twitter]
 
-## Goals
+# How to get Salat
+
+Add these repos to your SBT or Maven project:
+
+    val novusRels = "repo.novus rels" at "http://repo.novus.com/releases/"
+    val novusSnaps = "repo.novus snaps" at "http://repo.novus.com/snapshots/"
+
+The main dependency is `salat-core`.
+
+### Latest release
+
+Salat `0.0.7` release is available for Scala `2.8.1`.
+
+    val salat = "com.novus" % "salat-core" % "0.0.7"
+
+### Latest snapshot
+
+Salat `0.0.8-SNAPSHOT` is available for both Scala `2.8.1` and `2.9.0`.
+
+    val salat = "com.novus" %% "salat-core" % "0.0.8-SNAPSHOT"
+
+Please note that `2.9.0` still has some dependencies that were built against release candidates of `2.9.0`.  I will update
+this and republish as the final builds become available.
+
+# Goals
 
 1. Convert an instance of *any* Scala case class to a `DBObject`
 suitable for insertion into a MongoDB database.
