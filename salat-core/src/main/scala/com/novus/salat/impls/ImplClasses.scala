@@ -21,7 +21,8 @@
 package com.novus.salat
 
 
-import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap, Set => MSet, Seq => MSeq, IndexedSeq => MIndexedSeq}
+import scala.collection.mutable.{Map => MMap, Set => MSet, Seq => MSeq, IndexedSeq => MIndexedSeq}
+import scala.collection.mutable.{Buffer, ArrayBuffer, LinkedList, DoubleLinkedList}
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.collection.immutable.{List => IList, Map => IMap, Set => ISet, Seq => ISeq, IndexedSeq => IIndexedSeq}
 
@@ -49,6 +50,9 @@ package object impls {
     case ImplClasses.IndexedSeq => IndexedSeq.empty ++ real
     case ImplClasses.IIndexedSeq => IIndexedSeq.empty ++ real
     case ImplClasses.MIndexedSeq => MIndexedSeq.empty ++ real
+
+    case ImplClasses.LinkedList => LinkedList.empty ++ real
+    case ImplClasses.DoubleLinkedList => DoubleLinkedList.empty ++ real
 
     case x => throw new IllegalArgumentException("failed to find proper Traversable[_] impl for %s".format(x))
   }
@@ -107,6 +111,9 @@ package impls {
     val IndexedSeq = classOf[scala.collection.IndexedSeq[_]].getName
     val IIndexedSeq = classOf[IIndexedSeq[_]].getName
     val MIndexedSeq = classOf[MIndexedSeq[_]].getName
+
+    val LinkedList = classOf[LinkedList[_]].getName
+    val DoubleLinkedList = classOf[DoubleLinkedList[_]].getName
   }
 
 }

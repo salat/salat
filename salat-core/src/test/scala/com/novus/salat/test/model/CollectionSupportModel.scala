@@ -51,6 +51,9 @@ case class Nab(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.I
 case class Oboe(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.immutable.IndexedSeq[Thingy])
 case class Prep(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.IndexedSeq[Thingy])
 
+case class Queen(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.LinkedList[Thingy])
+case class Roger(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.DoubleLinkedList[Thingy])
+
 
 //Queen
 //Roger

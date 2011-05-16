@@ -318,7 +318,41 @@ class CollectionSupportSpec extends SalatSpec {
         dao.findOneByID(prep.id) must beSome(prep)
       }
     }
-    
+
+    "support linked lists" in {
+      "LinkedList[_]" in {
+        val coll = scala.collection.mutable.LinkedList(Thingy("A"), Thingy("B"))
+        val queen = Queen(coll = coll)
+        val dbo: MongoDBObject = grater[Queen].asDBObject(queen)
+        dbo must havePair("coll" -> {
+          val builder = MongoDBList.newBuilder
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
+          builder.result()
+        })
+
+        val dao = new SalatDAO[Queen, ObjectId](collection = MongoConnection()(SalatSpecDb)("queen_coll_spec")) {}
+        val _id = dao.insert(queen)
+        _id must beSome(queen.id)
+        dao.findOneByID(queen.id) must beSome(queen)
+      }
+      "DoubleLinkedList[_]" in {
+        val coll = scala.collection.mutable.DoubleLinkedList(Thingy("A"), Thingy("B"))
+        val roger = Roger(coll = coll)
+        val dbo: MongoDBObject = grater[Roger].asDBObject(roger)
+        dbo must havePair("coll" -> {
+          val builder = MongoDBList.newBuilder
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
+          builder.result()
+        })
+
+        val dao = new SalatDAO[Roger, ObjectId](collection = MongoConnection()(SalatSpecDb)("roger_coll_spec")) {}
+        val _id = dao.insert(roger)
+        _id must beSome(roger.id)
+        dao.findOneByID(roger.id) must beSome(roger)
+      }
+    }
     
     // TODO: moar collection types
   }

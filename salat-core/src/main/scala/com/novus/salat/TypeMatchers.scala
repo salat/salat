@@ -59,6 +59,8 @@ object IsTraversable {
         else if (symbol.path.endsWith(".ArrayBuffer")) Some(e)
         else if (symbol.path.endsWith(".Vector")) Some(e)
         else if (symbol.path.endsWith(".IndexedSeq")) Some(e)
+        else if (symbol.path.endsWith(".LinkedList")) Some(e)
+        else if (symbol.path.endsWith(".DoubleLinkedList")) Some(e)
         else None
       case _ => None
     }
