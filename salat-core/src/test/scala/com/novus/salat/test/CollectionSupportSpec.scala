@@ -193,7 +193,7 @@ class CollectionSupportSpec extends SalatSpec {
         dao.findOneByID(how.id) must beSome(how)
       }
       
-      "support scala.collection.immutable.Seq[_]" in {
+      "support scala.collection.mutable.Seq[_]" in {
         val coll = scala.collection.mutable.Seq(Thingy("A"), Thingy("B"))
         val item = Item(coll = coll)
         val dbo: MongoDBObject = grater[Item].asDBObject(item)
@@ -248,6 +248,78 @@ class CollectionSupportSpec extends SalatSpec {
       }
     }
 
+    "support Vector[_]" in {
+      val coll = scala.collection.immutable.Vector(Thingy("A"), Thingy("B"))
+      val mike = Mike(coll = coll)
+      val dbo: MongoDBObject = grater[Mike].asDBObject(mike)
+      dbo must havePair("coll" -> {
+        val builder = MongoDBList.newBuilder
+        builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
+        builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
+        builder.result()
+      })
+
+      val dao = new SalatDAO[Mike, ObjectId](collection = MongoConnection()(SalatSpecDb)("mike_coll_spec")) {}
+      val _id = dao.insert(mike)
+      _id must beSome(mike.id)
+      dao.findOneByID(mike.id) must beSome(mike)
+    }
+
+    "support IndexedSeq[_]" in {
+      
+      "support scala.collection.IndexedSeq[_]" in {
+        val coll = scala.collection.IndexedSeq(Thingy("A"), Thingy("B"))
+        val nab = Nab(coll = coll)
+        val dbo: MongoDBObject = grater[Nab].asDBObject(nab)
+        dbo must havePair("coll" -> {
+          val builder = MongoDBList.newBuilder
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
+          builder.result()
+        })
+
+        val dao = new SalatDAO[Nab, ObjectId](collection = MongoConnection()(SalatSpecDb)("nab_coll_spec")) {}
+        val _id = dao.insert(nab)
+        _id must beSome(nab.id)
+        dao.findOneByID(nab.id) must beSome(nab)
+      }
+      
+      "support scala.collection.immutable.IndexedSeq[_]" in {
+        val coll = scala.collection.immutable.IndexedSeq(Thingy("A"), Thingy("B"))
+        val oboe = Oboe(coll = coll)
+        val dbo: MongoDBObject = grater[Oboe].asDBObject(oboe)
+        dbo must havePair("coll" -> {
+          val builder = MongoDBList.newBuilder
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
+          builder.result()
+        })
+
+        val dao = new SalatDAO[Oboe, ObjectId](collection = MongoConnection()(SalatSpecDb)("oboe_coll_spec")) {}
+        val _id = dao.insert(oboe)
+        _id must beSome(oboe.id)
+        dao.findOneByID(oboe.id) must beSome(oboe)
+      }
+
+      "support scala.collection.mutable.IndexedSeq[_]" in {
+        val coll = scala.collection.mutable.IndexedSeq(Thingy("A"), Thingy("B"))
+        val prep = Prep(coll = coll)
+        val dbo: MongoDBObject = grater[Prep].asDBObject(prep)
+        dbo must havePair("coll" -> {
+          val builder = MongoDBList.newBuilder
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
+          builder.result()
+        })
+
+        val dao = new SalatDAO[Prep, ObjectId](collection = MongoConnection()(SalatSpecDb)("prep_coll_spec")) {}
+        val _id = dao.insert(prep)
+        _id must beSome(prep.id)
+        dao.findOneByID(prep.id) must beSome(prep)
+      }
+    }
+    
+    
     // TODO: moar collection types
   }
 }

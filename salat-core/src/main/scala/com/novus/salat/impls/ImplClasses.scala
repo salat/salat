@@ -21,10 +21,9 @@
 package com.novus.salat
 
 
-import scala.collection.immutable.{List => IList, Map => IMap, Set => ISet, Seq => ISeq}
-import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap, Set => MSet, Seq => MSeq}
+import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap, Set => MSet, Seq => MSeq, IndexedSeq => MIndexedSeq}
 import scala.tools.scalap.scalax.rules.scalasig._
-import com.novus.salat.impls.ImplClasses
+import scala.collection.immutable.{List => IList, Map => IMap, Set => ISet, Seq => ISeq, IndexedSeq => IIndexedSeq}
 
 package object impls {
   def traversableImpl(name: String, real: collection.Traversable[_]): scala.collection.Traversable[_] = name match {
@@ -45,6 +44,12 @@ package object impls {
     case ImplClasses.ISetClass => ISet.empty ++ real
     case ImplClasses.MSetClass => MSet.empty ++ real
 
+    case ImplClasses.VectorClass => Vector.empty ++ real
+
+    case ImplClasses.IndexedSeq => IndexedSeq.empty ++ real
+    case ImplClasses.IIndexedSeq => IIndexedSeq.empty ++ real
+    case ImplClasses.MIndexedSeq => MIndexedSeq.empty ++ real
+
     case x => throw new IllegalArgumentException("failed to find proper Traversable[_] impl for %s".format(x))
   }
 
@@ -53,6 +58,8 @@ package object impls {
       case TypeRefType(_, symbol, _) => symbol.path match {
         case "scala.package.Seq" => traversableImpl(ImplClasses.SeqClass, real)
         case "scala.package.List" => traversableImpl(ImplClasses.IListClass, real)
+        case "scala.package.Vector" => traversableImpl(ImplClasses.VectorClass, real)
+        case "scala.package.IndexedSeq" => traversableImpl(ImplClasses.IndexedSeq, real)
         case "scala.Predef.Set" => traversableImpl(ImplClasses.SetClass, real)
         case x => traversableImpl(x, real)
       }
@@ -94,6 +101,12 @@ package impls {
     val SetClass = classOf[scala.collection.Set[_]].getName
     val ISetClass = classOf[ISet[_]].getName
     val MSetClass = classOf[MSet[_]].getName
+
+    val VectorClass = classOf[scala.collection.immutable.Vector[_]].getName
+
+    val IndexedSeq = classOf[scala.collection.IndexedSeq[_]].getName
+    val IIndexedSeq = classOf[IIndexedSeq[_]].getName
+    val MIndexedSeq = classOf[MIndexedSeq[_]].getName
   }
 
 }

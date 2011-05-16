@@ -57,6 +57,8 @@ object IsTraversable {
         else if (symbol.path.endsWith(".Set")) Some(e)
         else if (symbol.path.endsWith(".Buffer")) Some(e)
         else if (symbol.path.endsWith(".ArrayBuffer")) Some(e)
+        else if (symbol.path.endsWith(".Vector")) Some(e)
+        else if (symbol.path.endsWith(".IndexedSeq")) Some(e)
         else None
       case _ => None
     }
