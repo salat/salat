@@ -230,3 +230,10 @@ case class Page(
 
 class NotACaseClass(x: String)
 
+@Salat
+trait TopLevelTrait
+case class TopLevelTraitImpl1(x: String) extends TopLevelTrait
+case class TopLevelTraitImpl2(y: Int) extends TopLevelTrait
+
+case class TopLevelDemo(tlt: TopLevelTrait)
+

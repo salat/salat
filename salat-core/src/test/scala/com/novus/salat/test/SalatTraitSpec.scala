@@ -3,8 +3,9 @@ package com.novus.salat.test
 
 import com.novus.salat._
 import com.novus.salat.global._
-import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
+import com.novus.salat.test.model._
+import com.novus.salat.util.MapPrettyPrinter
 
 class SalatTraitSpec extends SalatSpec {
 
@@ -120,6 +121,29 @@ class SalatTraitSpec extends SalatSpec {
 
       obj_* must_== obj
     }
+  }
+
+  "handle a value typed to a top-level trait" in {
+    // the "tlt" field is typed to TopLevelTrait, which is annotated with @Salat
+    val tld1 = TopLevelDemo(tlt = TopLevelTraitImpl1(x = "Hello"))
+    val dbo1: MongoDBObject = grater[TopLevelDemo].asDBObject(tld1)
+    dbo1 must havePair("_typeHint", "com.novus.salat.test.model.TopLevelDemo")
+    dbo1 must havePair("tlt", {
+      // _typeHint shows that @Salat annotation on TopLevelTrait is working
+      MongoDBObject("_typeHint" -> "com.novus.salat.test.model.TopLevelTraitImpl1",
+      "x" -> "Hello")
+    })
+    grater[TopLevelDemo].asObject(dbo1) must_== tld1
+
+    val tld2 = TopLevelDemo(tlt = TopLevelTraitImpl2(y = 33))
+    val dbo2: MongoDBObject = grater[TopLevelDemo].asDBObject(tld2)
+    dbo2 must havePair("_typeHint", "com.novus.salat.test.model.TopLevelDemo")
+    dbo2 must havePair("tlt", {
+      // _typeHint shows that @Salat annotation on TopLevelTrait is working
+      MongoDBObject("_typeHint" -> "com.novus.salat.test.model.TopLevelTraitImpl2",
+      "y" -> 33)
+    })
+    grater[TopLevelDemo].asObject(dbo2) must_== tld2
   }
 
 }
