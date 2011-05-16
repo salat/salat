@@ -55,8 +55,7 @@ case class Queen(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection
 case class Roger(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.DoubleLinkedList[Thingy])
 
 
-//Queen
-//Roger
+
 //Sugar
 //Tare
 //Uncle
