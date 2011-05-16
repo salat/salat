@@ -14,7 +14,13 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
   abstract class BaseSalatProject(info: ProjectInfo) extends DefaultProject(info) {
     override def compileOptions = super.compileOptions ++ Seq(Unchecked, Deprecation)
 
-    val specs2 = "org.specs2" %% "specs2" % "1.3-SNAPSHOT" % "test"
+    lazy val specs2CrossVersion = crossScalaVersionString match {
+      case "2.8.1" => "1.3"
+      case "2.9.0" => "1.4-SNAPSHOT"
+      case x => throw new Error("Unsupported Scala version '%s'".format(x))
+    }
+
+    val specs2 = "org.specs2" %% "specs2" % specs2CrossVersion % "test"
     val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default" withSources()
     val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default" withSources()
 
@@ -33,10 +39,10 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
 
     // TODO: get rid of this once casbah is published for 2.9.0.final
     lazy val casbahCrossVersion = crossScalaVersionString match {
-        case "2.8.1" => "2.8.1"
-        case "2.9.0" => "2.9.0.RC1"
-        case x => throw new Error("Unsupported Scala version '%s'".format(x))
-      }
+      case "2.8.1" => "2.8.1"
+      case "2.9.0" => "2.9.0.RC1"
+      case x => throw new Error("Unsupported Scala version '%s'".format(x))
+    }
 
     val mongodb = "org.mongodb" % "mongo-java-driver" % "2.5.3" withSources()
     val casbah_core = "com.mongodb.casbah" % ("casbah-core_" + casbahCrossVersion) % "2.1.2" withSources()
