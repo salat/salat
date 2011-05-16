@@ -81,9 +81,9 @@ object Grater extends Logging {
 //
 //     """, clazz, sigFromAnnotation.isDefined, sigFromBytes.isDefined)
 
+    parseClassFileFromByteCode(clazz).map(ScalaSigParser.parse(_)).getOrElse(None) orElse
     parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_)) orElse
-      parseClassFileFromByteCode(clazz).map(ScalaSigParser.parse(_)).getOrElse(None) orElse
-      None
+    None
   }
 }
 
