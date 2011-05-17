@@ -78,7 +78,6 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
 }
 
 
-//abstract class SalatDAO[ObjectType <: CaseClass : Manifest, ID <: Any : Manifest](val collection: MongoCollection)
 abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
   mid: Manifest[ID], ctx: Context)
   extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
