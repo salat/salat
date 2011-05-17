@@ -145,5 +145,24 @@ class SalatTraitSpec extends SalatSpec {
     grater[ContainsFieldTypedToTrait].asObject(dbo2) must_== container2
   }
 
+  "handle multiple levels of @Salat annotation" in {
+    val investments = Investments(contracts = List[Contract](
+      Stock(name = "Apple", ticker = "AAPL"),
+      Turbo(name = "Knock out", ticker = "ASX"),
+      Index(name = "FTSE 100")
+    ))
+    val dbo: MongoDBObject = grater[Investments].asDBObject(investments)
+    dbo must havePair("_typeHint", "com.novus.salat.test.model.Investments")
+    dbo must havePair("contracts", {
+      val builder = MongoDBList.newBuilder
+      builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Stock", "name" -> "Apple", "ticker" -> "AAPL")
+      builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Turbo", "name" -> "Knock out", "ticker" -> "ASX")
+      builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Index", "name" -> "FTSE 100")
+      builder.result()
+    })
+
+    grater[Investments].asObject(dbo) must_== investments
+  }
+
 }
 

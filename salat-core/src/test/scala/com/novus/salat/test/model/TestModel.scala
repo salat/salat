@@ -237,3 +237,17 @@ case class SomeTraitImpl2(y: Int) extends SomeTrait
 
 case class ContainsFieldTypedToTrait(someTrait: SomeTrait)
 
+
+@Salat
+trait Contract {
+  val name: String
+}
+@Salat
+trait Security extends Contract {
+  val ticker: String
+}
+case class Stock(name: String, ticker: String) extends Security
+case class Turbo(name: String, ticker: String) extends Security
+case class Index(name: String) extends Contract
+
+case class Investments(contracts: List[Contract])
