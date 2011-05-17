@@ -21,6 +21,7 @@
 package com.novus.salat
 
 import scala.tools.scalap.scalax.rules.scalasig._
+import com.novus.salat.{Field => SField}
 import scala.reflect.generic.ByteCodecs
 import scala.reflect.ScalaSignature
 
@@ -153,7 +154,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     .map {
       case (ms, idx) => {
 //        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
-        Field(idx, keyOverridesFromAbove.get(ms).getOrElse(ms.name), typeRefType(ms), clazz.getMethod(ms.name))
+        SField(idx, keyOverridesFromAbove.get(ms).getOrElse(ms.name), typeRefType(ms), clazz.getMethod(ms.name))
       }
 
     }
@@ -192,7 +193,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
           .filter(f => f.name == m.getName && f.isAccessor)
           .map(_.asInstanceOf[MethodSymbol])
           .headOption match {
-          case Some(ms) => com.novus.salat.Field(-1, ms.name, typeRefType(ms), m) // TODO: -1 magic number for idx which is required but not used
+          case Some(ms) => SField(-1, ms.name, typeRefType(ms), m) // TODO: -1 magic number for idx which is required but not used
           case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
         }
       }
@@ -257,18 +258,26 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
   }
 
-  type OutHandler = PartialFunction[(Any, Field), Option[(String, Any)]]
+  type OutHandler = PartialFunction[(Any, SField), Option[(String, Any)]]
   protected def outField: OutHandler = {
     case (_, field) if field.ignore => None
     case (null, _) => None
     case (element, field) => {
       field.out_!(element) match {
         case Some(None) => None
-        case Some(serialized) =>
-          Some(ctx.keyOverrides.get(field.name).getOrElse(field.name) -> (serialized match {
+        case Some(serialized) => {
+//          Some(ctx.keyOverrides.get(field.name).getOrElse(field.name) -> (serialized match {
+//            case Some(unwrapped) => unwrapped
+//            case _ => serialized
+//          }))
+          val key = ctx.determineFieldName(clazz, field)
+          val value = serialized match {
             case Some(unwrapped) => unwrapped
             case _ => serialized
-          }))
+          }
+          Some(key -> value)
+        }
+
         case _ => None
       }
     }
@@ -289,7 +298,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     builder.result
   }
 
-  protected def safeDefault(field: Field) =
+  protected def safeDefault(field: SField) =
     defaults(field.idx).map(m => Some(m.invoke(companionObject))).getOrElse(None) match {
       case yes @ Some(default) => yes
       case _ => field.typeRefType match {
@@ -306,7 +315,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       val args = indexedFields.map {
         case field if field.ignore => safeDefault(field)
         case field => {
-          dbo.get(ctx.keyOverrides.get(field.name).getOrElse(field.name)) match {
+          dbo.get(ctx.determineFieldName(clazz, field)) match {
           case Some(value) => {
             field.in_!(value)
           }

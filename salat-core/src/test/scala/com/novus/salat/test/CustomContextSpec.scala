@@ -24,7 +24,8 @@ import com.novus.salat._
 import scala.tools.nsc.util.ScalaClassLoader
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.MapPrettyPrinter
-import com.novus.salat.test.model.{Ida, Alice, Walrus}
+import com.novus.salat.test.model._
+import org.specs2.matcher.MustExpectable._
 
 class CustomContextSpec extends SalatSpec {
 
@@ -169,21 +170,41 @@ class CustomContextSpec extends SalatSpec {
         val name = Some("CustomContextSpec-5")
       }
       ctx.name must beSome("CustomContextSpec-5")
-      ctx.keyOverrides must beEmpty
+      ctx.globalKeyOverrides must beEmpty
 
       ctx.registerGlobalKeyOverride(remapThis = lake, toThisInstead = swamp)
-      ctx.keyOverrides must haveSize(1)
-      ctx.keyOverrides must havePair(lake, swamp)
+      ctx.globalKeyOverrides must haveSize(1)
+      ctx.globalKeyOverrides must havePair(lake, swamp)
 
       val i = Ida(lake = Some(BigDecimal("3.14")))
       val dbo: MongoDBObject = grater[Ida].asDBObject(i)
-      log.info(MapPrettyPrinter(dbo))
       // our global key remap transformed "lake" to "swamp"
       dbo must havePair(swamp, 3.14)
       dbo must not have key(lake)
 
       val i_* = grater[Ida].asObject(dbo)
       i_* must_== i
+    }
+
+    "allow registering a per-class key override" in {
+
+      // a context where com.novus.salat.test.model.Rhoda has a key remapping
+      import com.novus.salat.test.per_class_key_remapping._
+
+      ctx.perClassKeyOverrides must haveKey(("com.novus.salat.test.model.Rhoda", "consumed"))
+      ctx.perClassKeyOverrides.get(("com.novus.salat.test.model.Rhoda", "consumed")) must beSome("fire")
+
+      val rhoda = Rhoda(consumed = Some("indeed"))
+      val dbo: MongoDBObject = grater[Rhoda].asDBObject(rhoda)
+      dbo must havePair("_typeHint", "com.novus.salat.test.model.Rhoda")
+      dbo must havePair("fire", "indeed") // per class keymapping turns "consumed" into "fire" for Rhoda
+      grater[Rhoda].asObject(dbo) must_== rhoda
+      
+      val rhoda3 = Rhoda3(consumed = Some("indeed"))
+      val dbo2: MongoDBObject = grater[Rhoda3].asDBObject(rhoda3)
+      dbo2 must havePair("_typeHint", "com.novus.salat.test.model.Rhoda3")
+      dbo2 must havePair("consumed", "indeed") // per class keymapping DOES NOT turn "consumed" into "fire" for Rhoda3
+      grater[Rhoda3].asObject(dbo2) must_== rhoda3
     }
 
   }

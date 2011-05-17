@@ -23,6 +23,7 @@ package com.novus.salat.test
 import java.math.{MathContext, RoundingMode}
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
+import com.novus.salat.test.model.Rhoda
 
 package object always {
 
@@ -73,7 +74,11 @@ package object always_with_implicits {
     .asInstanceOf[Grater[X]]
     .asObject(dbo)
   implicit def obj2Dbo[X <: CaseClass](dbo: DBObject): X = obj2MDbo(wrapDBObj(dbo))
+}
 
-
-
+package object per_class_key_remapping {
+  implicit val ctx = new Context {
+    val name = Some("TestContext-PerClassKeyRemapping")
+  }
+  ctx.registerPerClassKeyOverride(classOf[Rhoda], remapThis = "consumed", toThisInstead = "fire")
 }

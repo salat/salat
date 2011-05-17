@@ -29,6 +29,7 @@ import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
 import com.novus.salat.util.MissingGraterExplanation
+import com.novus.salat.{Field => SField}
 
 case class TypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint) {
   assume(when != null, "Context requires non-null value for type hint strategy instead of %s!".format(when))
@@ -40,6 +41,7 @@ trait Context extends Logging {
   private[salat] val graters: MMap[String, Grater[_ <: CaseClass]] = HashMap.empty
 
   val name: Option[String]
+  // TODO: make this an MSeq and private to [salat] - what on earth could I have been thinking here?
   implicit var classLoaders: Seq[ClassLoader] = Seq(getClass.getClassLoader)
 
   val typeHintStrategy: TypeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
@@ -47,7 +49,9 @@ trait Context extends Logging {
   // sets up a default enum strategy of using toString to serialize/deserialize enums
   val defaultEnumStrategy = EnumStrategy.BY_VALUE
   // global @Key overrides - careful with that axe, Eugene
-  private[salat] val keyOverrides: MMap[String, String] = HashMap.empty
+  private[salat] val globalKeyOverrides: MMap[String, String] = HashMap.empty
+  // per-class key overrides - map key is (clazz.getName, field name)
+  private[salat] val perClassKeyOverrides: MMap[(String, String), String] = HashMap.empty
 
   val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
 
@@ -57,14 +61,34 @@ trait Context extends Logging {
     log.info("Context: registering classloader %d", classLoaders.size)
   }
 
-  def registerGlobalKeyOverride(remapThis: String, toThisInstead: String) = {
+  def determineFieldName(clazz: Class[_], field: SField): String = {
+    assume(field.name != null && field.name.nonEmpty, "determineFieldName: bad candy field=%s".format(field))
+
+    globalKeyOverrides.get(field.name).
+      getOrElse(perClassKeyOverrides.get((clazz.getName, field.name)).
+      getOrElse(field.name))
+  }
+
+  def registerPerClassKeyOverride(clazz: Class[_], remapThis: String, toThisInstead: String) {
     // for obvious reasons, we are not allowing a key override to be registered more than once
-    assume(!keyOverrides.contains(remapThis), "registerGlobalKeyOverride: context=%s already has a global key override for key='%s' with value='%s'"
-      .format(name, remapThis, keyOverrides.get(remapThis)))
+    assume(!perClassKeyOverrides.contains((clazz.getName, remapThis)), "registerPerClassKeyOverride: context=%s already has a global key override for clazz='%s'/key='%s' with value='%s'"
+      .format(name, clazz.getName, remapThis, perClassKeyOverrides.get((clazz.getName, remapThis))))
+    // think twice, register once
+    assume(remapThis != null && remapThis.nonEmpty, "registerPerClassKeyOverride: clazz='%s', key remapThis must be supplied!".format(clazz.getName))
+    assume(toThisInstead != null && toThisInstead.nonEmpty,
+      "registerPerClassKeyOverride: clazz='%s', key remapThis='%s' - value toThisInstead must be supplied!".format(clazz.getName, remapThis))
+    perClassKeyOverrides += (clazz.getName, remapThis) -> toThisInstead
+    log.info("perClassKeyOverrides: context=%s will remap key='%s' to '%s' for all instance of clazz='%s'", name, remapThis, toThisInstead, clazz.getName)
+  }
+
+  def registerGlobalKeyOverride(remapThis: String, toThisInstead: String) {
+    // for obvious reasons, we are not allowing a key override to be registered more than once
+    assume(!globalKeyOverrides.contains(remapThis), "registerGlobalKeyOverride: context=%s already has a global key override for key='%s' with value='%s'"
+      .format(name, remapThis, globalKeyOverrides.get(remapThis)))
     // think twice, register once
     assume(remapThis != null && remapThis.nonEmpty, "registerGlobalKeyOverride: key remapThis must be supplied!")
     assume(toThisInstead != null && toThisInstead.nonEmpty, "registerGlobalKeyOverride: value toThisInstead must be supplied!")
-    keyOverrides += remapThis -> toThisInstead
+    globalKeyOverrides += remapThis -> toThisInstead
     log.info("registerGlobalKeyOverride: context=%s will globally remap key='%s' to '%s'", name, remapThis, toThisInstead)
   }
 
