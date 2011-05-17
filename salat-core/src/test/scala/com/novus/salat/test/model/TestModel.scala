@@ -231,9 +231,9 @@ case class Page(
 class NotACaseClass(x: String)
 
 @Salat
-trait TopLevelTrait
-case class TopLevelTraitImpl1(x: String) extends TopLevelTrait
-case class TopLevelTraitImpl2(y: Int) extends TopLevelTrait
+trait SomeTrait
+case class SomeTraitImpl1(x: String) extends SomeTrait
+case class SomeTraitImpl2(y: Int) extends SomeTrait
 
-case class TopLevelDemo(tlt: TopLevelTrait)
+case class ContainsFieldTypedToTrait(someTrait: SomeTrait)
 
