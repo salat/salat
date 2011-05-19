@@ -1,23 +1,23 @@
 /**
-* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-* For questions and comments about this product, please see the project page at:
-*
-* http://github.com/novus/salat
-*
-*/
+  * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  *
+  * For questions and comments about this product, please see the project page at:
+  *
+  * http://github.com/novus/salat
+  *
+  */
 package com.novus.salat.dao
 
 import com.mongodb.casbah.Imports._
@@ -27,10 +27,10 @@ import com.mongodb.casbah.commons.{MongoDBObject, Logging}
 import com.mongodb.{WriteConcern, DBObject, CommandResult}
 
 /**
- * Base DAO class.
- * @type ObjectType case class type
- * @type ID _id type
- */
+  * Base DAO class.
+  * @type ObjectType case class type
+  * @type ID _id type
+  */
 trait DAO[ObjectType <: CaseClass, ID <: Any] {
 
   val collection: MongoCollection
@@ -50,21 +50,23 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
   def find[A <% DBObject, B <% DBObject](ref: A, keys: B): SalatMongoCursor[ObjectType]
 
   def findOne[A <% DBObject](t: A): Option[ObjectType]
+
   def findOneByID(id: ID): Option[ObjectType]
 
-  def save(t: ObjectType): CommandResult
-  def save(t: ObjectType, wc: WriteConcern): CommandResult
+  def save(t: ObjectType)
+  def save(t: ObjectType, wc: WriteConcern)
 
-  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean, multi: Boolean, wc: WriteConcern): CommandResult
+  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean, multi: Boolean, wc: WriteConcern)
 
   // type erasure sucks.  why doesn't anyone else believe priority one is to go back and eradicate type erasure in the JVM? (closures, forsooth!)
-  def update[A <% DBObject](q: A, o: ObjectType, upsert: Boolean, multi: Boolean, wc: WriteConcern): CommandResult
+  // also, not accepting default args on overloaded methods with different param types is a cop-out
+  def update[A <% DBObject](q: A, o: ObjectType, upsert: Boolean, multi: Boolean, wc: WriteConcern)
 
-  def remove(t: ObjectType): CommandResult
-  def remove(t: ObjectType, wc: WriteConcern): CommandResult
+  def remove(t: ObjectType)
+  def remove(t: ObjectType, wc: WriteConcern)
 
-  def remove[A <% DBObject](q: A): CommandResult
-  def remove[A <% DBObject](q: A, wc: WriteConcern = new WriteConcern): CommandResult
+  def remove[A <% DBObject](q: A)
+  def remove[A <% DBObject](q: A, wc: WriteConcern)
 
   def count(q: DBObject = MongoDBObject(), fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long
 
@@ -79,7 +81,7 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
 
 
 abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
-  mid: Manifest[ID], ctx: Context)
+                                                                                             mid: Manifest[ID], ctx: Context)
   extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
 
   dao =>
@@ -107,10 +109,10 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     *   parentIdField = "parentId") { }
     *
     * }
-   */
+    */
   abstract class ChildCollection[ChildType <: CaseClass, ChildId <: Any](override val collection: MongoCollection,
                                                                          val parentIdField: String)(implicit mct: Manifest[ChildType],
-  mcid: Manifest[ChildId], ctx: Context)
+                                                                                                    mcid: Manifest[ChildId], ctx: Context)
     extends SalatDAO[ChildType, ChildId](collection) {
 
     childDao =>
@@ -148,19 +150,19 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       childDao.find(parentIdsQuery(parentIds) ++ query)
     }
 
-    def updateByParentId[A <% DBObject](parentId: ID, o: A, upsert: Boolean, multi: Boolean, wc: WriteConcern = new WriteConcern): CommandResult = {
+    def updateByParentId[A <% DBObject](parentId: ID, o: A, upsert: Boolean, multi: Boolean, wc: WriteConcern = new WriteConcern) {
       childDao.update(parentIdQuery(parentId), o, upsert, multi, wc)
     }
 
-    def updateByParentIds[A <% DBObject](parentIds: List[ID], o: A, upsert: Boolean, multi: Boolean, wc: WriteConcern = new WriteConcern): CommandResult = {
+    def updateByParentIds[A <% DBObject](parentIds: List[ID], o: A, upsert: Boolean, multi: Boolean, wc: WriteConcern = new WriteConcern) {
       childDao.update(parentIdsQuery(parentIds), o, upsert, multi, wc)
     }
 
-    def removeByParentId(parentId: ID, wc: WriteConcern = new WriteConcern): CommandResult = {
+    def removeByParentId(parentId: ID, wc: WriteConcern = new WriteConcern) {
       childDao.remove(parentIdQuery(parentId), wc)
     }
 
-    def removeByParentIds(parentIds: List[ID], wc: WriteConcern = new WriteConcern): CommandResult = {
+    def removeByParentIds(parentIds: List[ID], wc: WriteConcern = new WriteConcern) {
       childDao.remove(parentIdsQuery(parentIds), wc)
     }
 
@@ -182,8 +184,8 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   }
 
   /**
-   * Default description is the case class simple name and the collection.
-   */
+    * Default description is the case class simple name and the collection.
+    */
   override lazy val description = "SalatDAO[%s,%s](%s)".format(mot.erasure.getSimpleName, mid.erasure.getSimpleName, collection.name)
 
   def insert(t: ObjectType) = insert(t, new WriteConcern())
@@ -194,26 +196,16 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       collection.db.requestStart()
       val wr = collection.insert(dbo, wc)
       if (wr.getLastError(wc).ok()) {
-        val _id = collection.findOne(dbo) match {
-          case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
-          case _ => None
+        val _id = dbo.getAs[ID]("_id") orElse {
+          collection.findOne(dbo) match {
+            case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
+            case _ => None
+          }
         }
         _id
       }
       else {
-        throw new Error("""
-
-        SalatDAO: insert failed!
-
-        Class: %s
-        Collection: %s
-        WriteConcern: %s
-        WriteResult: %s
-
-        FAILED TO INSERT DBO
-        %s
-
-        """.format(mot.getClass.getName, collection.getName(), wc, wr, dbo))
+        throw new SalatInsertError(description, collection, wc, wr, List(dbo))
       }
     }
     finally {
@@ -231,7 +223,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       if (wr.getLastError(wc).ok()) {
         val builder = List.newBuilder[Option[ID]]
         for (dbo <- dbos) {
-          builder += {
+          builder += dbo.getAs[ID]("_id") orElse {
             collection.findOne(dbo) match {
               case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
               case _ => None
@@ -241,23 +233,11 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
         builder.result()
       }
       else {
-        throw new Error("""
-
-        SalatDAO: insert failed on a collection of docs!
-
-        Class: %s
-        Collection: %s
-        WriteConcern: %s
-        WriteResult: %s
-
-        FAILED TO INSERT DBOS
-        %s
-
-        """.format(mot.getClass.getName, collection.getName(), wc, wr, dbos.mkString("\n")))
+        throw new SalatInsertError(description, collection, wc, wr, dbos.toList)
       }
     }
     finally {
-//      log.trace("insert: collection=%s request done", collection.getName())
+      //      log.trace("insert: collection=%s request done", collection.getName())
       collection.db.requestDone()
     }
 
@@ -272,73 +252,79 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def findOneByID(id: ID) = collection.findOneByID(id.asInstanceOf[AnyRef]).map(_grater.asObject(_))
 
-  def remove(t: ObjectType) = remove(t, new WriteConcern)
+  def remove(t: ObjectType) {
+    remove(t, new WriteConcern)
+  }
 
-  def remove(t: ObjectType, wc: WriteConcern) = {
-    val cr = try {
+  def remove(t: ObjectType, wc: WriteConcern) {
+    try {
       collection.db.requestStart()
-      val wr = collection.remove(_grater.asDBObject(t), wc)
-      wr.getLastError(wc)
+      val dbo = _grater.asDBObject(t)
+      val wr = collection.remove(dbo, wc)
+      val cr = wr.getLastError(wc)
+      if (!cr.ok()) {
+        throw new SalatRemoveError(description, collection, wc, wr, List(dbo))
+      }
     }
     finally {
       collection.db.requestDone()
     }
-    cr
   }
 
+  def remove[A <% DBObject](q: A) {
+    remove(q, new WriteConcern)
+  }
 
-  def remove[A <% DBObject](q: A) = remove(q, new WriteConcern)
-
-  def remove[A <% DBObject](q: A, wc: WriteConcern) = {
-    val cr = try {
+  def remove[A <% DBObject](q: A, wc: WriteConcern)  {
+    try {
       collection.db.requestStart()
       val wc = new WriteConcern()
       val wr = collection.remove(q, wc)
-      wr.getLastError(wc)
+      val cr = wr.getLastError(wc)
+      if (!cr.ok()) {
+        throw new SalatRemoveQueryError(description, collection, q, wc, wr)
+      }
     }
     finally {
       collection.db.requestDone()
     }
-    cr
   }
 
-  def save(t: ObjectType) = save(t, new WriteConcern())
+  def save(t: ObjectType) {
+    save(t, new WriteConcern())
+  }
 
-    def save(t: ObjectType, wc: WriteConcern) = {
-    val cr = try {
+  def save(t: ObjectType, wc: WriteConcern) {
+    try {
       collection.db.requestStart()
-      val wr = collection.save(_grater.asDBObject(t), wc)
-      wr.getLastError(wc)
+      val dbo = _grater.asDBObject(t)
+      val wr = collection.save(dbo, wc)
+      val cr = wr.getLastError(wc)
+      if (!cr.ok()) {
+        throw new SalatSaveError(description, collection, wc, wr, List(dbo))
+      }
     }
     finally {
       collection.db.requestDone()
     }
-    cr
   }
 
-  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = new WriteConcern()) = {
-    val cr = try {
+  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = new WriteConcern()) {
+    try {
       collection.db.requestStart()
       val wr = collection.update(q, o, upsert, multi, wc)
-      wr.getLastError(wc)
+      val cr = wr.getLastError(wc)
+      if (!cr.ok()) {
+        throw new SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
+      }
     }
     finally {
       collection.db.requestDone()
     }
-    cr
   }
 
-  def update[A <% DBObject](q: A, t: ObjectType, upsert: Boolean, multi: Boolean, wc: WriteConcern) = {
-    val cr = try {
-      collection.db.requestStart()
-      val wc = new WriteConcern()
-      val wr = collection.update(q, _grater.asDBObject(t), upsert, multi, wc)
-      wr.getLastError(wc)
-    }
-    finally {
-      collection.db.requestDone()
-    }
-    cr
+  def update[A <% DBObject](q: A, t: ObjectType, upsert: Boolean, multi: Boolean, wc: WriteConcern) {
+    update(q, _grater.asDBObject(t), upsert, multi, wc)
   }
 
   def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = SalatMongoCursor[ObjectType](_grater,
@@ -360,7 +346,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     }.getOrElse(None)
   }
 
-  def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P]  = {
+  def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P] = {
 
     // Casbah hiccup - needs to be cast to MongoCursor
     val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList
@@ -374,7 +360,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     builder.result()
   }
 
-  def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P]  = {
+  def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P] = {
 
     // Casbah hiccup - needs to be cast to MongoCursor
     val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList

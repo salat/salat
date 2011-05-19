@@ -53,7 +53,6 @@ class ChildCollectionSpec extends SalatSpec {
       val newLastUpdated = new DateMidnight(1812, FEBRUARY, 7).toDateTime
       val updateQuery = MongoDBObject("$set" -> MongoDBObject("childInfo.lastUpdated" -> newLastUpdated))
       val cr = ParentDAO.children.updateByParentId(parent1.id, updateQuery, false, true)
-      cr.ok must beTrue
 
       // number of children is unchanged
       ParentDAO.children.collection.count must_== 5L
@@ -70,7 +69,6 @@ class ChildCollectionSpec extends SalatSpec {
 
     "support removing children by parent id" in new parentChildContext {
       val cr = ParentDAO.children.removeByParentId(parent1.id)
-      cr.ok must beTrue
 
       // three children of parent1 have been removed from the child collection, overall count is reduced
       ParentDAO.children.findByParentId(parent1.id).toList must beEmpty

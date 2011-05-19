@@ -108,7 +108,6 @@ class SalatDAOSpec extends SalatSpec {
 
       // need to explicitly specify upsert and multi when updating using an object instead of dbo
       val cr = AlphaDAO.update(MongoDBObject("_id" -> 3), alpha3.copy(beta = List[Beta](Gamma("gamma3"))), false, false, new WriteConcern())
-      cr.ok() must beTrue
       AlphaDAO.collection.count must_== 1L
 
       val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(AlphaColl).findOne().get
@@ -123,7 +122,6 @@ class SalatDAOSpec extends SalatSpec {
       val alpha3_* = alpha3.copy(beta = List[Beta](Gamma("gamma3")))
       alpha3_* must_!= alpha3
       val cr = AlphaDAO.save(alpha3_*)
-      cr.ok() must beTrue
       AlphaDAO.collection.count must_== 1L
 
       val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(AlphaColl).findOne().get
@@ -138,7 +136,6 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.collection.count must_== 3L
 
       val cr = AlphaDAO.remove(alpha5)
-      cr.ok() must beTrue
       AlphaDAO.collection.count must_== 2L
 
       AlphaDAO.findOne(grater[Alpha].asDBObject(alpha5)) must beNone
