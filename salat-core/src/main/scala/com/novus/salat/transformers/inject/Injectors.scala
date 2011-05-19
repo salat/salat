@@ -280,7 +280,7 @@ trait DBObjectToInContext extends Transformer with InContextTransformer with Log
 
   private def transform0(dbo: MongoDBObject)(implicit ctx: Context) = (grater orElse ctx.lookup(path, dbo)) match {
     case Some(grater) => grater.asObject(dbo).asInstanceOf[CaseClass]
-    case None => throw new GraterFromDboGlitch(path, dbo)(ctx)
+    case None => throw GraterFromDboGlitch(path, dbo)(ctx)
   }
 
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
@@ -345,8 +345,8 @@ trait MapInjector extends Transformer {
   val parentType: TypeRefType
 }
 
-class EnumInflaterGlitch(clazz: Class[_], strategy: EnumStrategy, value: Any) extends Error("Not sure how to handle value='%s' as enum of class %s using strategy %s"
-  .format(value, clazz.getName, strategy))
+case class EnumInflaterGlitch(clazz: Class[_], strategy: EnumStrategy, value: Any) extends Error(
+  "Not sure how to handle value='%s' as enum of class %s using strategy %s".format(value, clazz.getName, strategy))
 
 trait EnumInflater extends Transformer with Logging {
   self: Transformer =>
@@ -386,9 +386,9 @@ trait EnumInflater extends Transformer with Logging {
       case (EnumStrategy.BY_ID, id: Int) => applyInt.invoke(companion, id.asInstanceOf[Integer])
       case (EnumStrategy.BY_ID, idAsString: String) => idAsString match {
         case IsInt(id) => applyInt.invoke(companion, id.asInstanceOf[Integer])
-        case _ => throw new EnumInflaterGlitch(clazz, strategy, value)
+        case _ => throw EnumInflaterGlitch(clazz, strategy, value)
       }
-      case _ => throw new EnumInflaterGlitch(clazz, strategy, value)
+      case _ => throw EnumInflaterGlitch(clazz, strategy, value)
     }
   }
 

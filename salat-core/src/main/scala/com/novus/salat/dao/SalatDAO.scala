@@ -205,7 +205,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
         _id
       }
       else {
-        throw new SalatInsertError(description, collection, wc, wr, List(dbo))
+        throw SalatInsertError(description, collection, wc, wr, List(dbo))
       }
     }
     finally {
@@ -233,7 +233,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
         builder.result()
       }
       else {
-        throw new SalatInsertError(description, collection, wc, wr, dbos.toList)
+        throw SalatInsertError(description, collection, wc, wr, dbos.toList)
       }
     }
     finally {
@@ -263,7 +263,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       val wr = collection.remove(dbo, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
-        throw new SalatRemoveError(description, collection, wc, wr, List(dbo))
+        throw SalatRemoveError(description, collection, wc, wr, List(dbo))
       }
     }
     finally {
@@ -282,7 +282,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       val wr = collection.remove(q, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
-        throw new SalatRemoveQueryError(description, collection, q, wc, wr)
+        throw SalatRemoveQueryError(description, collection, q, wc, wr)
       }
     }
     finally {
@@ -301,7 +301,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       val wr = collection.save(dbo, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
-        throw new SalatSaveError(description, collection, wc, wr, List(dbo))
+        throw SalatSaveError(description, collection, wc, wr, List(dbo))
       }
     }
     finally {
@@ -315,7 +315,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       val wr = collection.update(q, o, upsert, multi, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
-        throw new SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
+        throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
       }
     }
     finally {

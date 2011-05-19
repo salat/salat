@@ -46,19 +46,19 @@ abstract class SalatDAOError(whichDAO: String,
   if (dbos.size == 1) "DBO" else "DBOs",
   if (dbos.size == 1) dbos.head else dbos.mkString("\n")))
 
-class SalatInsertError(description: String,
+case class SalatInsertError(description: String,
                        collection: MongoCollection,
                        wc: WriteConcern,
                        wr: WriteResult,
                        dbos: List[DBObject]) extends SalatDAOError(description, "insert", collection, wc, wr, dbos)
 
-class SalatRemoveError(description: String,
+case class SalatRemoveError(description: String,
                        collection: MongoCollection,
                        wc: WriteConcern,
                        wr: WriteResult,
                        dbos: List[DBObject]) extends SalatDAOError(description, "remove", collection, wc, wr, dbos)
 
-class SalatSaveError(description: String,
+case class SalatSaveError(description: String,
                      collection: MongoCollection,
                      wc: WriteConcern,
                      wr: WriteResult,
@@ -81,13 +81,13 @@ abstract class SalatDAOQueryError(whichDAO: String,
 
  """.format(whichDAO, thingThatFailed, collection.getName(), wc, wr, query))
 
-class SalatRemoveQueryError(whichDAO: String,
+case class SalatRemoveQueryError(whichDAO: String,
                             collection: MongoCollection,
                             query: DBObject,
                             wc: WriteConcern,
                             wr: WriteResult) extends SalatDAOQueryError(whichDAO, "remove", collection, query, wc, wr)
 
-class SalatDAOUpdateError(whichDAO: String,
+case class SalatDAOUpdateError(whichDAO: String,
                           collection: MongoCollection,
                           query: DBObject,
                           o: DBObject,

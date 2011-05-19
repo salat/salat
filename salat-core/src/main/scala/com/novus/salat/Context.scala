@@ -149,7 +149,7 @@ trait Context extends Logging {
   catch {
     case e => {
       log.error(e, "generate: failed on clazz='%s'".format(clazz))
-      throw new GraterGlitch(clazz)(this)
+      throw GraterGlitch(clazz)(this)
     }
   }
 
@@ -196,9 +196,19 @@ trait Context extends Logging {
     }
 
   def lookup_!(dbo: MongoDBObject): Grater[_ <: CaseClass] = {
-    lookup(dbo).getOrElse(generate(extractTypeHint(dbo).getOrElse(throw new Exception("Couldn't find a type hint!"))))
+    lookup(dbo).getOrElse(generate(extractTypeHint(dbo).getOrElse(throw MissingTypeHint(dbo)(this))))
   }
 }
 
-class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
-class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
+case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
+case class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
+case class MissingTypeHint(dbo: MongoDBObject)(implicit ctx: Context) extends Error("""
+
+ NO TYPE HINT FOUND!
+
+ Expected type hint key: %s
+
+ DBO:
+ %s
+
+ """.format(ctx.typeHintStrategy.typeHint, dbo.toString()))

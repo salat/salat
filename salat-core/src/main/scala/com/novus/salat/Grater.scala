@@ -34,12 +34,12 @@ import com.novus.salat.util._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
 
-class MissingPickledSig(clazz: Class[_]) extends Error("FAIL: class '%s' is missing both @ScalaSig and .class file!".format(clazz))
-class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
+case class MissingPickledSig(clazz: Class[_]) extends Error("FAIL: class '%s' is missing both @ScalaSig and .class file!".format(clazz))
+case class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
                                                          .format(clazz))
-class MissingTopLevelClass(clazz: Class[_]) extends Error("Parsed pickled scala signature but found no top level class for: %s"
+case class MissingTopLevelClass(clazz: Class[_]) extends Error("Parsed pickled scala signature but found no top level class for: %s"
                                                           .format(clazz))
-class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String) extends Error("Didn't find owner=%s, outer=%s, inner=%s in pickled scala sig for %s"
+case class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String) extends Error("Didn't find owner=%s, outer=%s, inner=%s in pickled scala sig for %s"
                                                                                                 .format(owner, outer, inner, clazz))
 
 object Grater extends Logging {
@@ -100,8 +100,8 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     parseScalaSig(clazz).
       map(x => x.topLevelClasses.headOption.
         getOrElse(x.topLevelObjects.headOption.
-          getOrElse(throw new MissingExpectedType(clazz)))
-    ).getOrElse(throw new MissingPickledSig(clazz))
+          getOrElse(throw MissingExpectedType(clazz)))
+    ).getOrElse(throw MissingPickledSig(clazz))
   }
 
   protected lazy val sym = findSym(clazz)
@@ -330,10 +330,10 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       catch {
         // when something bad happens feeding args into constructor, catch these exceptions and
         // wrap them in a custom exception that will provide detailed information about what's happening.
-        case e: InstantiationException => throw new ToObjectGlitch(this, sym, constructor, args, e)
-        case e: IllegalAccessException => throw new ToObjectGlitch(this, sym, constructor, args, e)
-        case e: IllegalArgumentException => throw new ToObjectGlitch(this, sym, constructor, args, e)
-        case e: InvocationTargetException => throw new ToObjectGlitch(this, sym, constructor, args, e)
+        case e: InstantiationException => throw ToObjectGlitch(this, sym, constructor, args, e)
+        case e: IllegalAccessException => throw ToObjectGlitch(this, sym, constructor, args, e)
+        case e: IllegalArgumentException => throw ToObjectGlitch(this, sym, constructor, args, e)
+        case e: InvocationTargetException => throw ToObjectGlitch(this, sym, constructor, args, e)
         case e => throw e
       }
     }
@@ -346,8 +346,8 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   override def hashCode = sym.path.hashCode
 }
 
-class MissingConstructor(sym: SymbolInfoSymbol) extends Error("Couldn't find a constructor for %s".format(sym.path))
-class ToObjectGlitch[X<:CaseClass](grater: Grater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
+case class MissingConstructor(sym: SymbolInfoSymbol) extends Error("Couldn't find a constructor for %s".format(sym.path))
+case class ToObjectGlitch[X<:CaseClass](grater: Grater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
   """
 
   %s

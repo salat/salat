@@ -77,8 +77,8 @@ abstract class NeedsSalatAnnotation(what: String, t: Class[_]) extends Error("""
 
  """.format(what, t.getName))
 
-class NoAnnotationTrait(t: Class[_]) extends NeedsSalatAnnotation("trait", t)
-class NoAnnotationAbstractSuperclass(t: Class[_]) extends NeedsSalatAnnotation("abstract superclass", t)
+case class NoAnnotationTrait(t: Class[_]) extends NeedsSalatAnnotation("trait", t)
+case class NoAnnotationAbstractSuperclass(t: Class[_]) extends NeedsSalatAnnotation("abstract superclass", t)
 
 object IsTraitLike extends Logging {
 
@@ -90,12 +90,12 @@ object IsTraitLike extends Logging {
             val parsed = Grater.parseScalaSig0(clazz).get.topLevelClasses.head
             if (parsed.isTrait) {
               if (clazz.annotated_?[Salat]) Some(t) else {
-                throw new NoAnnotationTrait(clazz)
+                throw NoAnnotationTrait(clazz)
               }
             }
             else if (parsed.isAbstract) {
               if (clazz.annotated_?[Salat]) Some(t) else {
-                throw new NoAnnotationAbstractSuperclass(clazz)
+                throw NoAnnotationAbstractSuperclass(clazz)
               }
             }
             else None
