@@ -109,7 +109,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     case _ => Nil
   }
 
-  lazy val requiresTypeHint = {
+  protected lazy val requiresTypeHint = {
     clazz.annotated_?[Salat] || interestingInterfaces.map(_._1.annotated_?[Salat]).contains(true) || interestingSuperclass.map(_._1.annotated_?[Salat]).contains(true)
   }
 
@@ -132,7 +132,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     }
   }
 
-  def findAnnotatedMethodSymbol[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
+  protected def findAnnotatedMethodSymbol[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
     clazz
       .getDeclaredMethods.toList
       .filter(_.isAnnotationPresent(annotation))
@@ -152,7 +152,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     }
   }
 
-  def findAnnotatedFields[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
+  protected def findAnnotatedFields[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
     clazz
       .getDeclaredMethods.toList
       .filter(_.isAnnotationPresent(annotation))
@@ -172,7 +172,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     }
   }
 
-  lazy val extraFieldsToPersist = {
+  protected lazy val extraFieldsToPersist = {
     val persist = classOf[Persist]
     val fromClazz = findAnnotatedFields(clazz, persist)
     // not necessary to look directly on trait, is necessary to look directly on superclass
@@ -181,7 +181,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     fromClazz ++ fromSuperclass
   }
 
-  lazy val keyOverridesFromAbove = {
+  protected lazy val keyOverridesFromAbove = {
     val key = classOf[Key]
     val builder = Map.newBuilder[MethodSymbol, String]
     val annotated = interestingInterfaces.map(i => findAnnotatedMethodSymbol(i._1, key)).flatten ++
@@ -195,8 +195,8 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     builder.result
   }
 
-  lazy val companionClass = clazz.companionClass
-  lazy val companionObject = clazz.companionObject
+  protected lazy val companionClass = clazz.companionClass
+  protected lazy val companionObject = clazz.companionObject
 
 
   protected lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
