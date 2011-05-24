@@ -33,7 +33,6 @@ import com.novus.salat.util._
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
-import com.mongodb.DBObject
 
 abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends Logging {
   ctx.accept(this)
@@ -279,4 +278,3 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
   override def hashCode = sym.path.hashCode
 }
-
