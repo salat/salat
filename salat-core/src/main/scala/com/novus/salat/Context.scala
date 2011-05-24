@@ -95,7 +95,7 @@ trait Context extends Logging {
   def accept(grater: Grater[_ <: CaseClass]): Unit =
     if (!graters.contains(grater.clazz.getName)) {
       graters += grater.clazz.getName -> grater
-      log.trace("Context(%s) accepted Grater[%s]", name.getOrElse("<no name>"), grater.clazz)
+      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
     }
 
   // TODO: This check needs to be a little bit less naive. There are
@@ -129,7 +129,7 @@ trait Context extends Logging {
         }
         case Some(clazz) => {
 //          log.info("generate_?: creating Grater[CaseClass] for clazz=%s", clazz)
-          Some({ new Grater[CaseClass](clazz)(this) {} }.asInstanceOf[Grater[CaseClass]])
+          Some({ new ConcreteGrater[CaseClass](clazz)(this) {} }.asInstanceOf[Grater[CaseClass]])
         }
         case unknown => {
 //          log.warning("generate_?: no idea what to do with cc=%s", unknown)
@@ -143,7 +143,7 @@ trait Context extends Logging {
   protected def generate(clazz: String): Grater[_ <: CaseClass] = try {
     // if this blows up, we'll catch and rethrow with additional information
     val caseClass = getCaseClass(clazz)(this).map(_.asInstanceOf[Class[CaseClass]]).get
-    val grater = new Grater[CaseClass](caseClass)(this) {}
+    val grater = new ConcreteGrater[CaseClass](caseClass)(this) {}
     grater.asInstanceOf[Grater[CaseClass]]
   }
   catch {

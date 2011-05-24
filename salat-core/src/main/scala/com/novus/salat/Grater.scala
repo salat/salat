@@ -37,11 +37,42 @@ import com.mongodb.casbah.commons.Logging
 abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends Logging {
   ctx.accept(this)
 
+  def asDBObject(o: X): DBObject
+  def asObject(dbo: MongoDBObject): X
+  def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T]
+
+  type OutHandler = PartialFunction[(Any, SField), Option[(String, Any)]]
+
+  protected def outField: OutHandler = {
+    case (_, field) if field.ignore => None
+    case (null, _) => None
+    case (element, field) => {
+      field.out_!(element) match {
+        case Some(None) => None
+        case Some(serialized) => {
+          val key = ctx.determineFieldName(clazz, field)
+          val value = serialized match {
+            case Some(unwrapped) => unwrapped
+            case _ => serialized
+          }
+          Some(key -> value)
+        }
+
+        case _ => None
+      }
+    }
+  }
+
+  override def toString = "%s(%s @ %s)".format(getClass.getSimpleName, clazz, ctx)
+  override def equals(that: Any) = that.isInstanceOf[Grater[_]] && that.hashCode == this.hashCode
+}
+
+abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
   protected def findSym[A](clazz: Class[A]) = {
     ScalaSigUtil.parseScalaSig0(clazz).
       map(x => x.topLevelClasses.headOption.
-        getOrElse(x.topLevelObjects.headOption.
-          getOrElse(throw MissingExpectedType(clazz)))
+      getOrElse(x.topLevelObjects.headOption.
+      getOrElse(throw MissingExpectedType(clazz)))
     ).getOrElse(throw MissingPickledSig(clazz))
   }
 
@@ -51,7 +82,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   // but dragging them down manually allows for much nicer behaviour - this way you can specify @Persist or @Key
   // on a trait and have it work all the way down
   protected def interestingClass(clazz: Class[_]) = clazz match {
-    case clazz if clazz == null => false         // inconceivably, this happens!
+    case clazz if clazz == null => false // inconceivably, this happens!
     case clazz if clazz.getName.startsWith("java.") => false
     case clazz if clazz.getName.startsWith("javax.") => false
     case clazz if clazz.getName.startsWith("scala.") => false
@@ -61,7 +92,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
 
   protected lazy val interestingInterfaces: List[(Class[_], SymbolInfoSymbol)] = {
-    val interfaces = clazz.getInterfaces  // this should return an empty array, but...  sometimes returns null!
+    val interfaces = clazz.getInterfaces // this should return an empty array, but...  sometimes returns null!
     if (interfaces != null && interfaces.nonEmpty) {
       val builder = List.newBuilder[(Class[_], SymbolInfoSymbol)]
       for (interface <- interfaces) {
@@ -74,7 +105,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
     else Nil
   }
   protected lazy val interestingSuperclass: List[(Class[_], SymbolInfoSymbol)] = clazz.getSuperclass match {
-    case superClazz if interestingClass(superClazz)  => List((superClazz, findSym(superClazz)))
+    case superClazz if interestingClass(superClazz) => List((superClazz, findSym(superClazz)))
     case _ => Nil
   }
 
@@ -89,12 +120,12 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   protected lazy val indexedFields = {
     // don't use allTheChildren here!  this is the indexed fields for clazz and clazz alone
     sym.children
-    .filter(c => c.isCaseAccessor && !c.isPrivate)
-    .map(_.asInstanceOf[MethodSymbol])
-    .zipWithIndex
-    .map {
+      .filter(c => c.isCaseAccessor && !c.isPrivate)
+      .map(_.asInstanceOf[MethodSymbol])
+      .zipWithIndex
+      .map {
       case (ms, idx) => {
-//        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
+        //        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
         SField(idx, keyOverridesFromAbove.get(ms).getOrElse(ms.name), typeRefType(ms), clazz.getMethod(ms.name))
       }
 
@@ -170,7 +201,6 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
   protected lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
 
-
   protected lazy val defaults: Seq[Option[Method]] = indexedFields.map {
     field => try {
       Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
@@ -180,7 +210,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   }
 
   protected def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
-    case PolyType(tr @ TypeRefType(_, _, _), _) => tr
+    case PolyType(tr@TypeRefType(_, _, _), _) => tr
   }
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
@@ -189,31 +219,6 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       case (m, field) => m.invoke(o) -> field
     }
     (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
-  }
-
-  type OutHandler = PartialFunction[(Any, SField), Option[(String, Any)]]
-  protected def outField: OutHandler = {
-    case (_, field) if field.ignore => None
-    case (null, _) => None
-    case (element, field) => {
-      field.out_!(element) match {
-        case Some(None) => None
-        case Some(serialized) => {
-//          Some(ctx.keyOverrides.get(field.name).getOrElse(field.name) -> (serialized match {
-//            case Some(unwrapped) => unwrapped
-//            case _ => serialized
-//          }))
-          val key = ctx.determineFieldName(clazz, field)
-          val value = serialized match {
-            case Some(unwrapped) => unwrapped
-            case _ => serialized
-          }
-          Some(key -> value)
-        }
-
-        case _ => None
-      }
-    }
   }
 
   def asDBObject(o: X): DBObject = {
@@ -233,7 +238,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
   protected def safeDefault(field: SField) =
     defaults(field.idx).map(m => Some(m.invoke(companionObject))).getOrElse(None) match {
-      case yes @ Some(default) => yes
+      case yes@Some(default) => yes
       case _ => field.typeRefType match {
         case IsOption(_) => Some(None)
         case _ => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
@@ -249,13 +254,13 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
         case field if field.ignore => safeDefault(field)
         case field => {
           dbo.get(ctx.determineFieldName(clazz, field)) match {
-          case Some(value) => {
-            field.in_!(value)
-          }
-          case _ => safeDefault(field)
+            case Some(value) => {
+              field.in_!(value)
+            }
+            case _ => safeDefault(field)
           }
         }
-      }.map(_.get.asInstanceOf[AnyRef])  // TODO: if raw get blows up, throw a more informative error
+      }.map(_.get.asInstanceOf[AnyRef]) // TODO: if raw get blows up, throw a more informative error
 
       try {
         constructor.newInstance(args: _*)
@@ -270,11 +275,6 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
         case e => throw e
       }
     }
-
-
-  override def toString = "Grater(%s @ %s)".format(clazz, ctx)
-
-  override def equals(that: Any) = that.isInstanceOf[Grater[_]] && that.hashCode == this.hashCode
 
   override def hashCode = sym.path.hashCode
 }
