@@ -11,3 +11,4 @@ java_pid*.hprof
 tags
 .ensime
 *.iml
+salat-proto/src/test/java/com/novus/salat/proto/Test.java
