@@ -278,7 +278,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def remove[A <% DBObject](q: A, wc: WriteConcern)  {
     try {
       collection.db.requestStart()
-      val wc = collection.writeConcern
       val wr = collection.remove(q, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
