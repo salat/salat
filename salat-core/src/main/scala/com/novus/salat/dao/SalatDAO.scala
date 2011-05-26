@@ -150,19 +150,19 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       childDao.find(parentIdsQuery(parentIds) ++ query)
     }
 
-    def updateByParentId[A <% DBObject](parentId: ID, o: A, upsert: Boolean, multi: Boolean, wc: WriteConcern = new WriteConcern) {
+    def updateByParentId[A <% DBObject](parentId: ID, o: A, upsert: Boolean, multi: Boolean, wc: WriteConcern = collection.writeConcern) {
       childDao.update(parentIdQuery(parentId), o, upsert, multi, wc)
     }
 
-    def updateByParentIds[A <% DBObject](parentIds: List[ID], o: A, upsert: Boolean, multi: Boolean, wc: WriteConcern = new WriteConcern) {
+    def updateByParentIds[A <% DBObject](parentIds: List[ID], o: A, upsert: Boolean, multi: Boolean, wc: WriteConcern = collection.writeConcern) {
       childDao.update(parentIdsQuery(parentIds), o, upsert, multi, wc)
     }
 
-    def removeByParentId(parentId: ID, wc: WriteConcern = new WriteConcern) {
+    def removeByParentId(parentId: ID, wc: WriteConcern = collection.writeConcern) {
       childDao.remove(parentIdQuery(parentId), wc)
     }
 
-    def removeByParentIds(parentIds: List[ID], wc: WriteConcern = new WriteConcern) {
+    def removeByParentIds(parentIds: List[ID], wc: WriteConcern = collection.writeConcern) {
       childDao.remove(parentIdsQuery(parentIds), wc)
     }
 
@@ -188,7 +188,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     */
   override lazy val description = "SalatDAO[%s,%s](%s)".format(mot.erasure.getSimpleName, mid.erasure.getSimpleName, collection.name)
 
-  def insert(t: ObjectType) = insert(t, new WriteConcern())
+  def insert(t: ObjectType) = insert(t, collection.writeConcern)
 
   def insert(t: ObjectType, wc: WriteConcern) = {
     val _id = try {
@@ -215,7 +215,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     _id
   }
 
-  def insert(docs: ObjectType*)(implicit wc: WriteConcern = new WriteConcern()) = {
+  def insert(docs: ObjectType*)(implicit wc: WriteConcern = collection.writeConcern) = {
     val _ids = try {
       val dbos = docs.map(t => _grater.asDBObject(t))
       collection.db.requestStart()
@@ -253,7 +253,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def findOneByID(id: ID) = collection.findOneByID(id.asInstanceOf[AnyRef]).map(_grater.asObject(_))
 
   def remove(t: ObjectType) {
-    remove(t, new WriteConcern)
+    remove(t, collection.writeConcern)
   }
 
   def remove(t: ObjectType, wc: WriteConcern) {
@@ -272,13 +272,13 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   }
 
   def remove[A <% DBObject](q: A) {
-    remove(q, new WriteConcern)
+    remove(q, collection.writeConcern)
   }
 
   def remove[A <% DBObject](q: A, wc: WriteConcern)  {
     try {
       collection.db.requestStart()
-      val wc = new WriteConcern()
+      val wc = collection.writeConcern
       val wr = collection.remove(q, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
@@ -291,7 +291,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   }
 
   def save(t: ObjectType) {
-    save(t, new WriteConcern())
+    save(t, collection.writeConcern)
   }
 
   def save(t: ObjectType, wc: WriteConcern) {
@@ -309,7 +309,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     }
   }
 
-  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = new WriteConcern()) {
+  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = collection.writeConcern) {
     try {
       collection.db.requestStart()
       val wr = collection.update(q, o, upsert, multi, wc)
