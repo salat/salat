@@ -259,6 +259,9 @@ trait DoubleToFloat extends Transformer {
 
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case d: Double => d.toFloat
+    case i: Int => i.toFloat
+    case l: Long => l.toFloat
+    case s: Short => s.toFloat
   }
 }
 
