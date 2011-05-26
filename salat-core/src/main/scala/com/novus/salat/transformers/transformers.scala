@@ -36,6 +36,12 @@ package object transformers extends Logging {
     case _ => false
   }
 
+  def isFloat(path: String) = path match {
+    case path if path == "scala.Float" => true
+    case path if path == "java.lang.Float" => true
+    case _ => false
+  }
+
   def isChar(path: String) = path match {
     case path if path == "scala.Char" => true
     case path if path == "java.lang.Character" => true

@@ -44,6 +44,9 @@ package object out {
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with CharToString
 
+        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionExtractor with FloatToDouble
+
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with OptionExtractor with EnumStringifier
         }
@@ -67,6 +70,9 @@ package object out {
 
        case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigIntToLong with TraversableExtractor
+
+        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with FloatToDouble with TraversableExtractor
 
        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString with TraversableExtractor
@@ -99,6 +105,9 @@ package object out {
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString with MapExtractor
 
+        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with FloatToDouble with MapExtractor
+
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined =>
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with MapExtractor
 
@@ -124,6 +133,9 @@ package object out {
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString
+
+        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with FloatToDouble
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier
@@ -161,6 +173,14 @@ trait BigIntToLong extends Transformer {
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case bi: BigInt => bi.toLong
     case bi: java.math.BigInteger => bi.longValue
+  }
+}
+
+trait FloatToDouble extends Transformer {
+  self: Transformer =>
+  override def transform(value: Any)(implicit ctx: Context) = value match {
+    case f: Float => f.toDouble
+    case f: java.lang.Float => f.doubleValue()
   }
 }
 

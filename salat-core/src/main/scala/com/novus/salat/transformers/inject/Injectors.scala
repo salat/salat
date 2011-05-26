@@ -48,6 +48,9 @@ package object in {
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToChar
 
+        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToFloat
+
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DateToJodaDateTime
 
@@ -86,6 +89,11 @@ package object in {
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with StringToChar with TraversableInjector {
+            val parentType = pt
+          }
+
+        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DoubleToFloat with TraversableInjector {
             val parentType = pt
           }
 
@@ -143,6 +151,12 @@ package object in {
             val grater = ctx.lookup(symbol.path)
           }
 
+        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DoubleToFloat with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup(symbol.path)
+          }
+
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DateToJodaDateTime with MapInjector {
             val parentType = pt
@@ -185,6 +199,9 @@ package object in {
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with StringToChar
+
+        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, pt)(ctx) with DoubleToFloat
 
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with DateToJodaDateTime
@@ -236,6 +253,15 @@ trait DoubleToSBigDecimal extends Transformer {
     case s: Short => ScalaBigDecimal(s.toString, ctx.mathCtx)
   }
 }
+
+trait DoubleToFloat extends Transformer {
+  self: Transformer =>
+
+  override def transform(value: Any)(implicit ctx: Context): Any = value match {
+    case d: Double => d.toFloat
+  }
+}
+
 
 trait StringToChar extends Transformer {
   self: Transformer =>
