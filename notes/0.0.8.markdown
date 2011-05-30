@@ -1,3 +1,5 @@
 Features new in Salat 0.0.8 include:
 
+- cross-built for Scala 2.8.0 and 2.9.0-1
 - collection support has been expanded to everything traversable courtest of Oliver Dodd
+- added Float support
