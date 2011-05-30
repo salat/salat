@@ -32,12 +32,9 @@ Salat `0.0.7` release is available for Scala `2.8.1`.
 
 ### Latest snapshot
 
-Salat `0.0.8-SNAPSHOT` is available for both Scala `2.8.1` and `2.9.0`.
+Salat `0.0.8-SNAPSHOT` is available for both Scala `2.8.1` and `2.9.0-1`.
 
     val salat = "com.novus" %% "salat-core" % "0.0.8-SNAPSHOT"
-
-Please note that `2.9.0` still has some dependencies that were built against release candidates of `2.9.0`.  I will update
-this and republish as the final builds become available.
 
 # Goals
 
