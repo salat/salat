@@ -14,15 +14,9 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
   abstract class BaseSalatProject(info: ProjectInfo) extends DefaultProject(info) {
     override def compileOptions = super.compileOptions ++ Seq(Unchecked, Deprecation)
 
-    lazy val specs2CrossVersion = crossScalaVersionString match {
-      case "2.8.1" => "1.3"
-      case "2.9.0" => "1.4-SNAPSHOT"
-      case x => throw new Error("Unsupported Scala version '%s'".format(x))
-    }
-
-    val specs2 = "org.specs2" %% "specs2" % specs2CrossVersion % "test"
-    val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default" withSources()
-    val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default" withSources()
+    val specs2 = "org.specs2" %% "specs2" % "1.3" % "test"
+    val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default"
+    val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default"
 
     def specs2Framework = new TestFramework("org.specs2.runner.SpecsFramework")
 
@@ -37,25 +31,15 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
 
   class SalatCoreProject(info: ProjectInfo) extends BaseSalatProject(info) {
 
-    // TODO: get rid of this once casbah is published for 2.9.0.final
-    lazy val casbahCrossVersion = crossScalaVersionString match {
-      case "2.8.1" => "2.8.1"
-      case "2.9.0" => "2.9.0.RC1"
-      case x => throw new Error("Unsupported Scala version '%s'".format(x))
-    }
-
-    val mongodb = "org.mongodb" % "mongo-java-driver" % "2.5.3" withSources()
-    val casbah_core = "com.mongodb.casbah" % ("casbah-core_" + casbahCrossVersion) % "2.1.2" withSources()
+    val mongodb = "org.mongodb" % "mongo-java-driver" % "2.5.3"
+    val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5.0"
     val commons_pool = "commons-pool" % "commons-pool" % "1.5.5"
 
-    // Should be crossScalaVersionString, but 2.8.0's scalap appears to
-    // be totally frakked, whereas 2.8.1's works fine with 2.8.0. Go
-    // figure.
-    val scalap = "org.scala-lang" % "scalap" % crossScalaVersionString withSources()
+    val scalap = "org.scala-lang" % "scalap" % crossScalaVersionString
   }
 
   class SalatProtoProject(info: ProjectInfo) extends SalatCoreProject(info) with protobuf.ProtobufCompiler {
-    val protobuf = "com.google.protobuf" % "protobuf-java" % "2.3.0" withSources()
+    val protobuf = "com.google.protobuf" % "protobuf-java" % "2.3.0"
 
     override def protobufDirectory = "src" / "test" / "protobuf"
 
