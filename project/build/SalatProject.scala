@@ -14,7 +14,7 @@ class SalatProject(info: ProjectInfo) extends ParentProject(info) with posterous
   abstract class BaseSalatProject(info: ProjectInfo) extends DefaultProject(info) {
     override def compileOptions = super.compileOptions ++ Seq(Unchecked, Deprecation)
 
-    val specs2 = "org.specs2" %% "specs2" % "1.3" % "test"
+    val specs2 = "org.specs2" %% "specs2" % "1.4-SNAPSHOT" % "test"
     val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default"
     val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default"
 

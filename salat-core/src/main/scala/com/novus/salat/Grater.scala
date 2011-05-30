@@ -249,6 +249,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 
   protected def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
     case PolyType(tr @ TypeRefType(_, _, _), _) => tr
+    case NullaryMethodType(tr @ TypeRefType(_, _, _)) => tr
   }
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
