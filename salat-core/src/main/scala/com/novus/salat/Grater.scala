@@ -308,7 +308,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       }
     }
 
-  def asObject[A <% DBObject](dbo: A): X =
+  def asObject[A <% MongoDBObject](dbo: A): X =
     if (sym.isModule) {
       companionObject.asInstanceOf[X]
     }
