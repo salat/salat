@@ -33,6 +33,7 @@ import com.novus.salat.util._
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
+import com.mongodb.DBObject
 
 case class MissingPickledSig(clazz: Class[_]) extends Error("FAIL: class '%s' is missing both @ScalaSig and .class file!".format(clazz))
 case class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
@@ -307,7 +308,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
       }
     }
 
-  def asObject(dbo: MongoDBObject): X =
+  def asObject[A <% DBObject](dbo: A): X =
     if (sym.isModule) {
       companionObject.asInstanceOf[X]
     }
