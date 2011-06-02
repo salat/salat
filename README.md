@@ -93,11 +93,13 @@ However, Salat will never support classes defined in pure Java because they do n
 
 #### You can't freestyle in the REPL either
 
-*NB*: it turns out that ScalaSig is incapable of "parsing" classes defined in the REPL.
+*NB*: it turns out that ScalaSig is incapable of "parsing" classes defined in the REPL.  See [SI-4567](https://issues.scala-lang.org/browse/SI-4567)
+for the gory details.
 
- **None of this code will work with classes that have no corresponding `.class` file.**
+ **None of this code will work with classes that have no corresponding `.class` file or `ScalaSig` annotation.**
 
- We're hoping that this will be remedied with Scala 2.9, but until then, if you want to experiment with serialization in the REPL:
+Our ticket has been accepted as an improvement, but until this is fixed, if you want to experiment with serialization
+in the REPL:
 
  - define your model classes
  - run `sbt console`
