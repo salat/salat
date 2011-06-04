@@ -35,14 +35,6 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.Logging
 import com.mongodb.DBObject
 
-case class MissingPickledSig(clazz: Class[_]) extends Error("FAIL: class '%s' is missing both @ScalaSig and .class file!".format(clazz))
-case class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
-                                                         .format(clazz))
-case class MissingTopLevelClass(clazz: Class[_]) extends Error("Parsed pickled scala signature but found no top level class for: %s"
-                                                          .format(clazz))
-case class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String) extends Error("Didn't find owner=%s, outer=%s, inner=%s in pickled scala sig for %s"
-                                                                                                .format(owner, outer, inner, clazz))
-
 object Grater extends Logging {
 
 
@@ -228,15 +220,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   lazy val companionObject = clazz.companionObject
 
 
-  protected lazy val constructor: Constructor[X] = {
-    val cl = clazz.getConstructors.asInstanceOf[Array[Constructor[X]]]
-    if (cl.size > 1) {  // shouldn't ever happen as case class by definition has only a single constructor
-      throw new RuntimeException("constructor: clazz=%s, expected 1 constructor but found %d\n%s".format(clazz, cl.size, cl.mkString("\n")))
-    }
-    val c = cl.headOption.getOrElse(throw new MissingConstructor(sym))
-//    log.trace("constructor: clazz=%s ---> constructor=%s", clazz, c)
-    c
-  }
+  protected lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
 
 
   protected lazy val defaults: Seq[Option[Method]] = indexedFields.map {
@@ -348,16 +332,3 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   override def hashCode = sym.path.hashCode
 }
 
-case class MissingConstructor(sym: SymbolInfoSymbol) extends Error("Couldn't find a constructor for %s".format(sym.path))
-case class ToObjectGlitch[X<:CaseClass](grater: Grater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
-  """
-
-  %s
-
-  %s toObject failed on:
-  SYM: %s
-  CONSTRUCTOR: %s
-  ARGS:
-  %s
-
-  """.format(cause.getMessage, grater.toString, sym.path, constructor, ArgsPrettyPrinter(args)), cause)
