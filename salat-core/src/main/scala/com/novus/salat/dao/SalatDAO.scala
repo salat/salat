@@ -196,13 +196,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       collection.db.requestStart()
       val wr = collection.insert(dbo, wc)
       if (wr.getLastError(wc).ok()) {
-        val _id = dbo.getAs[ID]("_id") orElse {
-          collection.findOne(dbo) match {
-            case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
-            case _ => None
-          }
-        }
-        _id
+        dbo.getAs[ID]("_id")
       }
       else {
         throw SalatInsertError(description, collection, wc, wr, List(dbo))
