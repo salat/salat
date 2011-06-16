@@ -236,7 +236,7 @@ case class Page(
 class NotACaseClass(x: String)
 
 @Salat
-trait SomeTrait
+trait SomeTrait extends Product
 case class SomeTraitImpl1(x: String) extends SomeTrait
 case class SomeTraitImpl2(y: Int) extends SomeTrait
 
