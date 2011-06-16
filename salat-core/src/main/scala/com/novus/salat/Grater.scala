@@ -38,7 +38,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
   ctx.accept(this)
 
   def asDBObject(o: X): DBObject
-  def asObject(dbo: MongoDBObject): X
+  def asObject[A <% MongoDBObject](dbo: A): X
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T]
 
   type OutHandler = PartialFunction[(Any, SField), Option[(String, Any)]]
