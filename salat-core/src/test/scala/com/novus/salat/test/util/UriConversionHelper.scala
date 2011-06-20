@@ -20,21 +20,20 @@
 */
 package com.novus.salat.test.util
 
-import com.novus.salat.util.Logging
 import com.mongodb.casbah.commons.conversions.MongoConversionHelper
 import org.bson.{BSON, Transformer}
 
 // Want to write your own custon BSON encoding?  Look no further than this excellent example:
 // https://github.com/mongodb/casbah/blob/master/casbah-commons/src/main/scala/conversions/ScalaConversions.scala
 
-object RegisterURIConversionHelpers extends URIHelpers with Logging {
+object RegisterURIConversionHelpers extends URIHelpers with com.mongodb.casbah.commons.Logging {
   def apply(): Unit = {
     log.info("Registering java.net.URI Scala Conversions.")
     super.register()
   }
 }
 
-object DeregisterURIConversionHelpers extends URIHelpers with Logging {
+object DeregisterURIConversionHelpers extends URIHelpers with com.mongodb.casbah.commons.Logging {
   def apply() = {
     log.debug("Unregistering java.net.URI Scala Conversions.")
     super.unregister()
@@ -78,7 +77,7 @@ trait URISerializer extends MongoConversionHelper {
 trait URIDeserializer extends MongoConversionHelper {
 
   private val encodeType = classOf[String]
-  private val transformer = new Transformer with Logging {
+  private val transformer = new Transformer with com.mongodb.casbah.commons.Logging {
     log.trace("Decoding java.net.URI")
 
     def transform(o: AnyRef): AnyRef = o match {

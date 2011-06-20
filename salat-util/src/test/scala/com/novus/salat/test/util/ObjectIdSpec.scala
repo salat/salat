@@ -1,3 +1,5 @@
+package com.novus.salat.test.util
+
 /**
 * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
 *
@@ -18,21 +20,26 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat.test.dao
+import com.novus.salat.util._
+import org.specs2.mutable.Specification
+import org.bson.types.ObjectId
 
-import com.novus.salat.test.SalatSpec
-import com.novus.salat.dao.SalatDAOUtils
+class ObjectIdSpec extends Specification {
 
-class SalatDAOUtilSpec extends SalatSpec {
+  // use case?  unclear at this time!  but if you need to express object ids as numbers in base 36 instead of hex, this
+  // here's your ticket.
 
-  "DAO Utils" should {
-    "provide a method that returns exactly one result or detonates with a useful error" in {
-      SalatDAOUtils.exactlyOne(List(1)) must_== 1
-      SalatDAOUtils.exactlyOne(List(1, 2)) must throwA[Error]
+  "an ObjectId shortener" should {
+    "shorten ObjectId-s" in {
+      val oid = new ObjectId("4d2ba030eb79807454ca5cbf")
+      val shortened = oid.asShortString
+      shortened must_== "2bcw4m7j7ycxzdvgzwf"
+    }
 
-      SalatDAOUtils.exactlyOne(List("A")) must_== "A"
-      SalatDAOUtils.exactlyOne(List[String]()) must throwA[Error]
+    "explode ObjectId-s back from shortened strings" in {
+      val oid = new ObjectId
+      val shortened = oid.asShortString
+      shortened.asObjectId must_== oid
     }
   }
-
 }

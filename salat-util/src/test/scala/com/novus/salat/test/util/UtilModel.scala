@@ -18,7 +18,7 @@
  * http://github.com/novus/salat
  *
  */
-package com.novus.salat.test.model
+package com.novus.salat.test.util
 
 case class OneConstructorWithArgs(x: String)
 
