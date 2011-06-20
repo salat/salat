@@ -95,7 +95,7 @@ trait Context extends Logging {
   def accept(grater: Grater[_ <: CaseClass]): Unit =
     if (!graters.contains(grater.clazz.getName)) {
       graters += grater.clazz.getName -> grater
-      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
+      log.trace("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
     }
 
   // TODO: This check needs to be a little bit less naive. There are
