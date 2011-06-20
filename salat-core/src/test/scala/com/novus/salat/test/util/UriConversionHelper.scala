@@ -20,7 +20,7 @@
 */
 package com.novus.salat.test.util
 
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 import com.mongodb.casbah.commons.conversions.MongoConversionHelper
 import org.bson.{BSON, Transformer}
 

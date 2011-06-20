@@ -21,7 +21,7 @@
 package com.novus.salat.test.util
 
 import org.specs2.mutable.Specification
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 import com.novus.salat.util.BestAvailableConstructor
 import com.novus.salat.test.model._
 import com.novus.salat._

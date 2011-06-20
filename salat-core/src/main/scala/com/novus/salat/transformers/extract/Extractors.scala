@@ -28,7 +28,7 @@ import scala.collection.mutable.{Buffer, ArrayBuffer, Map => MMap}
 import com.novus.salat._
 import com.novus.salat.impls._
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 import com.novus.salat.transformers.out._
 
 package object out {

@@ -29,7 +29,7 @@ import scala.math.{BigDecimal => ScalaBigDecimal}
 import org.specs2.mutable._
 import org.apache.commons.lang.RandomStringUtils.{randomAscii => rs}
 import org.apache.commons.lang.math.RandomUtils.{nextInt => rn}
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 import org.specs2.execute.{Success, PendingUntilFixed}
 import com.mongodb.casbah.Imports._
 

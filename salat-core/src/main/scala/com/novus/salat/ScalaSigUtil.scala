@@ -1,7 +1,7 @@
 package com.novus.salat
 
 import com.novus.salat.annotations.util._
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 import reflect.ScalaSignature
 import reflect.generic.ByteCodecs
 import scala.tools.scalap.scalax.rules.scalasig._

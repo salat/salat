@@ -22,13 +22,12 @@ package com.novus.salat
 
 import java.math.{RoundingMode, MathContext}
 import scala.collection.mutable.{Map => MMap, HashMap}
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util._
 import com.mongodb.casbah.Imports._
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
-import com.novus.salat.util.MissingGraterExplanation
 import com.novus.salat.{Field => SField}
 
 case class TypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint) {
@@ -200,15 +199,3 @@ trait Context extends Logging {
   }
 }
 
-case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
-case class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
-case class MissingTypeHint(dbo: MongoDBObject)(implicit ctx: Context) extends Error("""
-
- NO TYPE HINT FOUND!
-
- Expected type hint key: %s
-
- DBO:
- %s
-
- """.format(ctx.typeHintStrategy.typeHint, dbo.toString()))

@@ -1,7 +1,7 @@
 package com.novus.salat.mongodb
 
 import com.mongodb.{MongoOptions, ServerAddress}
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 
 import java.net.Socket
 import java.io.BufferedInputStream

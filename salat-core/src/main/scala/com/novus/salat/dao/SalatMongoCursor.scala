@@ -22,7 +22,7 @@ package com.novus.salat.dao
 
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 import com.mongodb.DBCursor
 import com.mongodb.casbah.{MongoCursorBase, CursorExplanation, Imports}
 import scala.Predef._

@@ -29,8 +29,7 @@ import com.novus.salat.transformers._
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 
-import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 
 object Field {
   def apply(idx: Int, name: String, t: TypeRefType, method: Method)(implicit ctx: Context): Field = {

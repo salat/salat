@@ -20,7 +20,7 @@
  */
 package com.novus.salat
 
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 import org.scala_tools.time.Imports._
 
 package object transformers extends Logging {

@@ -18,15 +18,15 @@
  * http://github.com/novus/salat
  *
  */
-package com.novus
+package com.novus.salat
 
 import com.mongodb.casbah.Imports._
 
 import java.math.BigInteger
 import com.novus.salat.{Grater, Context}
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 
-package object salat extends Logging {
+object `package` extends Logging {
 
   type CaseClass = AnyRef with Product
 
@@ -73,13 +73,7 @@ package object salat extends Logging {
   protected[salat] def getCaseClass(c: String)(implicit ctx: Context): Option[Class[CaseClass]] =
     getClassNamed(c).filter(_.getInterfaces.contains(classOf[Product])).map(_.asInstanceOf[Class[CaseClass]])
 
-  implicit def shortenOID(oid: ObjectId) = new {
-    def asShortString = (new BigInteger(oid.toString, 16)).toString(36)
-  }
 
-  implicit def explodeOID(oid: String) = new {
-    def asObjectId = new ObjectId((new BigInteger(oid, 36)).toString(16))
-  }
 
   implicit def class2companion(clazz: Class[_]) = new {
     def companionClass: Class[_] =

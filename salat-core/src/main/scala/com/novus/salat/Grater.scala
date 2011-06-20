@@ -32,7 +32,7 @@ import com.novus.salat.annotations.util._
 import com.novus.salat.util._
 
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 
 abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends Logging {
   ctx.accept(this)
