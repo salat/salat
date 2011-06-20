@@ -20,23 +20,14 @@
 */
 package com.novus.salat.transformers
 
-import scala.collection.immutable.{List => IList, Map => IMap}
-import scala.collection.mutable.{Map => MMap}
 import scala.tools.scalap.scalax.rules.scalasig._
-import scala.math.{BigDecimal => ScalaBigDecimal}
-
 import com.novus.salat._
 
 abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) {
   def transform(value: Any)(implicit ctx: Context): Any = value
   def before(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
   def after(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
-
-  def transform_!(x: Any)(implicit ctx: Context): Option[Any] =
-    before(x) match {
-      case Some(x) => after(transform(x))
-      case _ => None
-    }
+  def transform_!(x: Any)(implicit ctx: Context): Option[Any] = before(x).flatMap(x => after(transform(x)))
 }
 
 trait InContextTransformer {
