@@ -27,7 +27,7 @@ import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import com.novus.salat.transformers._
 import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
+import com.novus.salat.util.{ScalaSigUtil, Logging}
 
 private object TypeMatchers {
   def matchesOneType(t: Type, name: String): Option[Type] = t match {

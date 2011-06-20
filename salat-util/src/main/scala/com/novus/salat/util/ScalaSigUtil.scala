@@ -1,4 +1,4 @@
-package com.novus.salat
+package com.novus.salat.util
 
 import com.novus.salat.annotations.util._
 import com.novus.salat.util.Logging

@@ -20,19 +20,8 @@
  */
 package com.novus.salat.util
 
-import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
 import com.novus.salat._
-import java.lang.reflect.{Constructor, Modifier}
-import java.lang.UnsupportedOperationException
-import scala.tools.scalap.scalax.rules.scalasig.SymbolInfoSymbol
-
-
-
-
-
-
-
+import com.mongodb.casbah.commons.Imports._
 
 /**
  * Hello, is this thing on?  If you are having trouble using Salat to serialize your thingy, dump it in here
@@ -85,10 +74,3 @@ object MapPrettyPrinter {
     builder.result.mkString("\n")
   }
 }
-
-
-
-
-
-
-

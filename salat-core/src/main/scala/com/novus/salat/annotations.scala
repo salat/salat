@@ -18,37 +18,14 @@
  * http://github.com/novus/salat
  *
  */
-package com.novus.salat
-
-import java.lang.reflect.AnnotatedElement
-import java.lang.annotation.Annotation
+package com.novus.salat.annotations
 
 import scala.annotation.target.getter
 
-package annotations {
-  object `package` {
-    type Key = com.novus.salat.annotations.raw.Key @getter
-    type Salat = com.novus.salat.annotations.raw.Salat @getter
-    type EnumAs = com.novus.salat.annotations.raw.EnumAs @getter
-    type Persist = com.novus.salat.annotations.raw.Persist @getter
-    type Ignore = com.novus.salat.annotations.raw.Ignore @getter
-  }
-
-  package util {
-    object `package` {
-      implicit def whatever2annotated(x: Any) = new PimpedAnnotatedElement(x)
-      class PimpedAnnotatedElement(x: Any) {
-        def annotation[A <: Annotation : Manifest]: Option[A] =
-          x match {
-            case x: AnnotatedElement if x != null => x.getAnnotation[A](manifest[A].erasure.asInstanceOf[Class[A]]) match {
-              case a: A if a != null => Some(a)
-              case _ => None
-            }
-            case _ => None
-          }
-
-        def annotated_?[A <: Annotation : Manifest]: Boolean = annotation[A](manifest[A]).isDefined
-      }
-    }
-  }
+object `package` {
+  type Key = com.novus.salat.annotations.raw.Key @getter
+  type Salat = com.novus.salat.annotations.raw.Salat @getter
+  type EnumAs = com.novus.salat.annotations.raw.EnumAs @getter
+  type Persist = com.novus.salat.annotations.raw.Persist @getter
+  type Ignore = com.novus.salat.annotations.raw.Ignore @getter
 }
