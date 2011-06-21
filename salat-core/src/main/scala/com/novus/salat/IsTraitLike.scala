@@ -38,6 +38,10 @@ abstract class NeedsSalatAnnotation(what: String, t: Class[_]) extends Error("""
 case class NoAnnotationTrait(t: Class[_]) extends NeedsSalatAnnotation("trait", t)
 case class NoAnnotationAbstractSuperclass(t: Class[_]) extends NeedsSalatAnnotation("abstract superclass", t)
 
+object UsesGrater extends Logging {
+  def unapply(path: String): Option[Type]
+}
+
 object IsTraitLike extends Logging {
 
   def unapply(t: TypeRefType)(implicit ctx: Context): Option[Type] = t match {

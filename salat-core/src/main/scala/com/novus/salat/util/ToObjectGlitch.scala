@@ -51,3 +51,6 @@ case class MissingTypeHint(dbo: MongoDBObject)(implicit ctx: Context) extends Er
  %s
 
  """.format(ctx.typeHintStrategy.typeHint, dbo.toString()))
+
+case class EnumInflaterGlitch(clazz: Class[_], strategy: EnumStrategy, value: Any) extends Error(
+  "Not sure how to handle value='%s' as enum of class %s using strategy %s".format(value, clazz.getName, strategy))

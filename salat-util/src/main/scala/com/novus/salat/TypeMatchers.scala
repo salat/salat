@@ -54,3 +54,15 @@ object IsEnum extends Logging {
     }
   }
 }
+
+object IsInt {
+  def unapply(s: String): Option[Int] = s match {
+    case s if s != null && s.nonEmpty => try {
+      Some(s.toInt)
+    }
+    catch {
+      case _: java.lang.NumberFormatException => None
+    }
+    case _ => None
+  }
+}
