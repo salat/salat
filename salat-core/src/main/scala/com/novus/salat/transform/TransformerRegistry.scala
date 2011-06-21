@@ -11,10 +11,10 @@ trait TransformerRegistry {
   val traversableTransformers: MMap[String, TransformationWithParentType]
   val mapTransformers: MMap[String, TransformationWithParentType]
 
-  def select(t: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformation = t match {
-    case IsOption(t @ TypeRefType(_, _, _)) => t match {
-
-    }
-  }
+//  def select(t: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformation = t match {
+//    case IsOption(t @ TypeRefType(_, _, _)) => t match {
+//
+//    }
+//  }
 
 }

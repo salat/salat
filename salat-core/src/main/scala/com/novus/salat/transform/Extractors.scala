@@ -36,7 +36,7 @@ import org.scala_tools.time.Imports._
 
 trait OptionExtractor extends Transformation {
   override def before(path: String, t: TypeRefType, value: Any)(implicit ctx: Context) = value match {
-    case Some(value) if value != null => Some(super.transform(path, t, value))
+    case Some(value) if value != null => Some(transform(path, t, value))
     case _ => None
   }
 }
