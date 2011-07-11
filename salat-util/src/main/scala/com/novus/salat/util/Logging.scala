@@ -50,7 +50,7 @@ protected[salat] trait Logging {
  * The logger uses String.format:
  * http://download-llnw.oracle.com/javase/6/docs/api/java/lang/String.html#format(java.lang.String,%20java.lang.Object...)
  */
-class Logger(val logger: SLFLogger) {
+protected[salat] class Logger(val logger: SLFLogger) {
   def name = logger.getName
 
   def trace_? = logger.isTraceEnabled
@@ -164,7 +164,7 @@ class Logger(val logger: SLFLogger) {
  * val rootLogger = Logger.root
  *
  */
-object Logger {
+protected[salat] object Logger {
 
   /* Uncomment to be able to debug what logging configuration will be used
   {

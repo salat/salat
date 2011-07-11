@@ -74,7 +74,7 @@ abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ct
 
 trait InContextTransformer {
   self: Transformer =>
-    val grater: Option[Grater[_ <: CaseClass]]
+    val grater: Option[Grater[_ <: AnyRef]]
 }
 
 

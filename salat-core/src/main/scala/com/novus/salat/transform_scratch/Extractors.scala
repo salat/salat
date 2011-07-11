@@ -82,7 +82,7 @@ trait EnumDeflator extends Transformation {
 trait InContextExtractor extends Transformation {
   // TODO: add proxyGrater
   def transform(path: String, t: TypeRefType, value: Any)(implicit ctx: Context) = value match {
-    case cc: CaseClass => ctx.lookup_!(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc)
+//    case cc: CaseClass => ctx.lookup_!(path, cc).asDBObject(cc)
     case _ => MongoDBObject("failed-to-convert" -> value.toString)
   }
 }

@@ -34,7 +34,8 @@ import com.novus.salat.util._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
 
-abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Context) extends Logging {
+abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Context) extends Logging {
+
   ctx.accept(this)
 
   def asDBObject(o: X): DBObject
@@ -68,6 +69,7 @@ abstract class Grater[X <: CaseClass](val clazz: Class[X])(implicit val ctx: Con
 }
 
 abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
+
   protected def findSym[A](clazz: Class[A]) = {
     ScalaSigUtil.parseScalaSig0(clazz).
       map(x => x.topLevelClasses.headOption.

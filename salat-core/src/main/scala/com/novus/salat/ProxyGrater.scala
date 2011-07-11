@@ -2,7 +2,7 @@ package com.novus.salat
 
 import com.mongodb.casbah.Imports._
 
-class ProxyGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
+class ProxyGrater[X <: AnyRef](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
   def asDBObject(o: X): DBObject =
     ctx.lookup_!(o.getClass.getName).asInstanceOf[Grater[X]].asDBObject(o)
 
