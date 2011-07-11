@@ -32,7 +32,7 @@ import org.slf4j.{Logger => SLFLogger, LoggerFactory => SLFLoggerFactory}
  *
  * @author <a href="http://jonasboner.com">Jonas Bon&#233;r</a>
  */
-trait Logging {
+protected[salat] trait Logging {
   @transient protected lazy val log = Logger(this.getClass.getName)
 }
 

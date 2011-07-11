@@ -1,4 +1,4 @@
-package com.novus.salat.transform
+package com.novus.salat.transform_scratch
 
 import scala.collection.mutable.{Map => MMap}
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType

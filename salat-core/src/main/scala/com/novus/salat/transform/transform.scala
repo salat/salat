@@ -1,84 +1,77 @@
+/**
+* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+* For questions and comments about this product, please see the project page at:
+*
+* http://github.com/novus/salat
+*
+*/
 package com.novus.salat.transform
 
-import com.novus.salat.{IsTraitLike, IsEnum, Context}
-import scala.tools.scalap.scalax.rules.scalasig.{SingleType, TypeRefType}
+import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.Implicits._
 
 object `package` {
-  
-  val BigDecimalType = "BigDecimalType"
-  val BigIntType = "BigIntType"
-  val IntType = "BigDecimalType"
-  val FloatType = "FloatType"
-  val CharType = "CharType"
-  val DateTimeType = "DateTimeType"
-  val EnumType = "EnumType"
-  val CaseClassType = "CaseClassType"
-  val StraightThroughType = "CaseClassType"
-  
-}
 
-//object IsIdentifiableType {
-//
-//  def unapply(t: TypeRefType, ctx: Context) = t.symbol.path match {
-//    case IdentifiableBigDecimal(t) => t
-//    case IdentifiableBigInt(t) => t
-//    case IdentifiableInt(t) => t
-//    case IdentifiableDateTime(t) => t
-//    case IdentifiableFloat(t) => t
-//    case IdentifiableChar(t) => t
-//    case IsEnum(t) => EnumType
-//    case IsTraitLike(t) => CaseClassType
-//    case _ => StraightThroughType
-//  }
-//}
-
-object IdentifiableBigDecimal {
-  def unapply(t: TypeRefType) = t.symbol.path match {
-    case "scala.math.BigDecimal" => Some(BigDecimalType)
-    case "scala.package.BigDecimal" => Some(BigDecimalType)
-    case "scala.Predef.BigDecimal" => Some(BigDecimalType)
-    case "scala.BigDecimal" => Some(BigDecimalType)
-    case _ => None
+  def isBigDecimal(path: String) = path match {
+    case "scala.math.BigDecimal" => true
+    case "scala.package.BigDecimal" => true
+    case "scala.Predef.BigDecimal" => true
+    case "scala.BigDecimal" => true
+    case _ => false
   }
-}
 
-object IdentifiableFloat {
-  def unapply(t: TypeRefType) = t.symbol.path match {
-    case "scala.Float" => Some(FloatType)
-    case "java.lang.Float" => Some(FloatType)
-    case _ => None
+  def isFloat(path: String) = path match {
+    case "scala.Float" => true
+    case "java.lang.Float" => true
+    case _ => false
   }
-}
 
-object IdentifiableChar {
-  def unapply(t: TypeRefType) = t.symbol.path match {
-    case "scala.Char" => Some(CharType)
-    case "java.lang.Character" => Some(CharType)
-    case _ => None
+  def isChar(path: String) = path match {
+    case "scala.Char" => true
+    case "java.lang.Character" => true
+    case _ => false
   }
-}
 
-object IdentifiableBigInt {
-  def unapply(t: TypeRefType) = t.symbol.path match {
-    case "scala.package.BigInt" => Some(BigIntType)
-    case "scala.math.BigInteger" => Some(BigIntType)
-    case "java.math.BigInteger" => Some(BigIntType)
-    case _ => None
+  def isBigInt(path: String) = path match {
+    case "scala.package.BigInt" => true
+    case "scala.math.BigInt" => true
+    case "java.math.BigInteger" => true
+    case _ => false
   }
-}
 
-object IdentifiableDateTime {
-  def unapply(t: TypeRefType) = t.symbol.path match {
-    case "org.joda.time.DateTime" => Some(DateTimeType)
-    case "org.scala_tools.time.TypeImports.DateTime" => Some(DateTimeType)
-    case _ => None
+  def isJodaDateTime(path: String) = path match {
+    case "org.joda.time.DateTime" => true
+    case "org.scala_tools.time.TypeImports.DateTime" => true
+    case _ => false
   }
-}
 
-object IdentifiableInt {
-  def unapply(t: TypeRefType) = t.symbol.path match {
-    case "java.lang.Integer" => Some(IntType)
-    case "scala.Int" => Some(IntType)
-    case _ => None
+  def isInt(path: String) = path match {
+    case "java.lang.Integer" => true
+    case "scala.Int" => true
+    case _ => false
+  }
+
+  object IsDbo {
+    def unapply(x: Any): Option[MongoDBObject] = x match {
+      case dbo: MongoDBObject => Some(dbo)
+      case dbo: DBObject => {
+        val m: MongoDBObject = dbo    // TODO: this is really stupid, I must be missing an implict somewhere
+        Some(m)
+      }
+      case _ => None
+    }
   }
 }

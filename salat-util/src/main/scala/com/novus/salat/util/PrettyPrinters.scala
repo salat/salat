@@ -20,6 +20,8 @@
  */
 package com.novus.salat.util
 
+import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
+
 object ArgsPrettyPrinter {
   def apply(args: Seq[AnyRef]) = if (args == null) {
     NullPlaceholder
@@ -39,12 +41,31 @@ object ArgsPrettyPrinter {
 }
 
 object ClassPrettyPrinter {
+
   def apply(x: AnyRef) = x match {
     case Some(x) => "Some[%s]".format(x.asInstanceOf[AnyRef].getClass) // bugger type erasure
     case None => NonePlaceholder
     case null => NullPlaceholder
     case Nil => EmptyPlaceholder
     case x => (x.asInstanceOf[AnyRef]).getClass.getName
+  }
+}
+
+object TransformPrettyPrinter {
+
+  def apply(which: String, value: Any, t: TypeRefType, xformed: Any): String = {
+    """
+    %s:
+    [BEFORE] %s:     '%s'
+        --[%s]-->
+    [AFTER] %s:     '%s'
+    """.format(which,
+      ClassPrettyPrinter(value.asInstanceOf[AnyRef]),
+      value,
+      t.symbol.path,
+      ClassPrettyPrinter(xformed.asInstanceOf[AnyRef]),
+      xformed
+    )
   }
 }
 

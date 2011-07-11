@@ -18,7 +18,7 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat.transform
+package com.novus.salat.transform_scratch
 
 import com.novus.salat._
 import com.novus.salat.impls._

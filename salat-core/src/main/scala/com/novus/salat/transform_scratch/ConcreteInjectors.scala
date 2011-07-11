@@ -18,7 +18,7 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat.transform
+package com.novus.salat.transform_scratch
 
 object StraightThroughOptionInjector extends OptionInjector with StraightThrough
 object OptionBigDecimalInjector extends OptionInjector with DoubleToSBigDecimal

@@ -20,8 +20,50 @@
 */
 package com.novus.salat.transformers
 
-import scala.tools.scalap.scalax.rules.scalasig._
 import com.novus.salat._
+import scala.tools.scalap.scalax.rules.scalasig._
+import scala.math.{BigDecimal => ScalaBigDecimal}
+
+object `package` {
+    def isBigDecimal(path: String) = path match {
+    case "scala.math.BigDecimal" => true
+    case "scala.package.BigDecimal" => true
+    case "scala.Predef.BigDecimal" => true
+    case "scala.BigDecimal" => true
+    case _ => false
+  }
+
+  def isFloat(path: String) = path match {
+    case "scala.Float" => true
+    case "java.lang.Float" => true
+    case _ => false
+  }
+
+  def isChar(path: String) = path match {
+    case "scala.Char" => true
+    case "java.lang.Character" => true
+    case _ => false
+  }
+
+  def isBigInt(path: String) = path match {
+    case "scala.package.BigInt" => true
+    case "scala.math.BigInteger" => true
+    case "java.math.BigInteger" => true
+    case _ => false
+  }
+
+  def isJodaDateTime(path: String) = path match {
+    case "org.joda.time.DateTime" => true
+    case "org.scala_tools.time.TypeImports.DateTime" => true
+    case _ => false
+  }
+
+  def isInt(path: String) = path match {
+    case "java.lang.Integer" => true
+    case "scala.Int" => true
+    case _ => false
+  }
+}
 
 abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) {
   def transform(value: Any)(implicit ctx: Context): Any = value

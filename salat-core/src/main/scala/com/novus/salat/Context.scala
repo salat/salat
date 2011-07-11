@@ -180,10 +180,7 @@ trait Context extends Logging {
     lookup(clazz, x).getOrElse(generate(x.getClass.getName))
 
   def lookup(clazz: String, dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
-    lookup(dbo) match {
-      case yes @ Some(grater) => yes
-      case _ => lookup(clazz)
-    }
+    lookup(clazz) orElse lookup(dbo)
 
   def lookup(dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
     extractTypeHint(dbo) match {

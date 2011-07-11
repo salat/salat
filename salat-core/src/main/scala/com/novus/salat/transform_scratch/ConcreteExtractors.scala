@@ -18,7 +18,7 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat.transform
+package com.novus.salat.transform_scratch
 
 object StraightThroughOptionExtractor extends OptionExtractor with StraightThrough
 object OptionBigDecimalExtractor extends OptionExtractor with SBigDecimalToDouble

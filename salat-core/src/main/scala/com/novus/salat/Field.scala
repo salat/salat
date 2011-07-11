@@ -46,5 +46,17 @@ sealed abstract class Field(val idx: Int, val name: String, val typeRefType: Typ
   def in_!(value: Any) = in.transform_!(value)
   def out_!(value: Any) = out.transform_!(value)
 
-  override def toString = "Field[%d/%s]".format(idx, name)
+//  override def toString = "Field[%d/%s]".format(idx, name)
+  override def toString = """
+
+  Field
+  idx: %d
+  name: '%s'
+  typeRefType: %s
+    prefix: %s
+    symbol: %s
+    typeArgs: %s
+
+  """.format(idx, name, typeRefType,
+    typeRefType.prefix, typeRefType.symbol, typeRefType.typeArgs)
 }

@@ -25,16 +25,13 @@ import com.mongodb.casbah.Imports._
 import java.math.BigInteger
 import com.novus.salat.{Grater, Context}
 import com.novus.salat.util.Logging
+import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
 object `package` extends Logging {
 
   type CaseClass = AnyRef with Product
 
-  val TypeHint = "_typeHint"
-
-  object TypeHintFrequency extends Enumeration {
-    val Never, WhenNecessary, Always = Value
-  }
+  val ModuleFieldName = "MODULE$"
 
   def timeAndLog[T](f: => T)(l: Long => Unit): T = {
     val t = System.currentTimeMillis
@@ -43,13 +40,26 @@ object `package` extends Logging {
     r
   }
 
+  implicit def class2companion(clazz: Class[_]) = new {
+    def companionClass: Class[_] =
+      Class.forName(if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName))
+
+    def companionObject = companionClass.getField(ModuleFieldName).get(null)
+  }
+
+  val TypeHint = "_typeHint"
+
+  object TypeHintFrequency extends Enumeration {
+    val Never, WhenNecessary, Always = Value
+  }
+
   def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup_![X](m)
 
   protected[salat] def getClassNamed(c: String)(implicit ctx: Context): Option[Class[_]] = {
-//    log.info("getClassNamed(): looking for %s in %d classloaders", c, ctx.classLoaders.size)
+    //    log.info("getClassNamed(): looking for %s in %d classloaders", c, ctx.classLoaders.size)
     try {
       var clazz: Class[_] = null
-//      var count = 0
+      //      var count = 0
       val iter = ctx.classLoaders.iterator
       while (clazz == null && iter.hasNext) {
         try {
@@ -59,8 +69,8 @@ object `package` extends Logging {
           case e: ClassNotFoundException => // keep going, maybe it's in the next one
         }
 
-//        log.info("getClassNamed: %s %s in classloader '%s' %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), ctx.name.getOrElse("N/A"), count, ctx.classLoaders.size)
-//        count += 1
+        //        log.info("getClassNamed: %s %s in classloader '%s' %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), ctx.name.getOrElse("N/A"), count, ctx.classLoaders.size)
+        //        count += 1
       }
 
       if (clazz != null) Some(clazz) else None
@@ -74,11 +84,4 @@ object `package` extends Logging {
     getClassNamed(c).filter(_.getInterfaces.contains(classOf[Product])).map(_.asInstanceOf[Class[CaseClass]])
 
 
-
-  implicit def class2companion(clazz: Class[_]) = new {
-    def companionClass: Class[_] =
-      Class.forName(if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName))
-
-    def companionObject = companionClass.getField("MODULE$").get(null)
-  }
 }
