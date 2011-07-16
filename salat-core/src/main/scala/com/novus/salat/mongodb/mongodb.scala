@@ -1,3 +1,4 @@
+/*
 package com.novus.salat.mongodb
 
 import com.mongodb.{MongoOptions, ServerAddress}
@@ -87,3 +88,4 @@ object `package` {
     result
   }
 }
+*/

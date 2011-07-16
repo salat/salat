@@ -21,7 +21,6 @@
 package com.novus.salat.util
 
 import java.math.BigInteger
-import org.bson.types.ObjectId
 
 object `package` {
 
@@ -83,11 +82,11 @@ object `package` {
     builder.result
   }
 
-  @deprecated("who's using this?") implicit def shortenOID(oid: ObjectId) = new {
-    def asShortString = (new BigInteger(oid.toString, 16)).toString(36)
-  }
+//  @deprecated("who's using this?") implicit def shortenOID(oid: ObjectId) = new {
+//    def asShortString = (new BigInteger(oid.toString, 16)).toString(36)
+//  }
 
-  @deprecated("who's using this?") implicit def explodeOID(oid: String) = new {
-    def asObjectId = new ObjectId((new BigInteger(oid, 36)).toString(16))
-  }
+//  @deprecated("who's using this?") implicit def explodeOID(oid: String) = new {
+//    def asObjectId = new ObjectId((new BigInteger(oid, 36)).toString(16))
+//  }
 }

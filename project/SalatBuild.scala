@@ -21,7 +21,8 @@ object SalatBuild extends Build {
     val id = "salat-util"
     val base = file("salat-util")
     val settings = buildSettings ++ Seq(
-      libraryDependencies ++= utilDeps, 
+      libraryDependencies ++= utilDeps,
+      libraryDependencies += slf4jSimple,  
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scalap" % _)
     )
     Project(id = id, base = base, settings = settings)
@@ -30,7 +31,7 @@ object SalatBuild extends Build {
   lazy val salatCore = Project(
     id = "salat-core", 
     base = file("salat-core"), 
-    settings = buildSettings //++ Seq(libraryDependencies += casbah_core)
+    settings = buildSettings ++ Seq(libraryDependencies += casbah_core)
   ) dependsOn (salatUtil)
   
 }
@@ -53,9 +54,9 @@ object BuildSettings {
 }
 
 object Dependencies {
-  val specs2 = "org.specs2" %% "specs2" % "1.5" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "1.4" % "test" intransitive()
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default"
-  val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.0" % "test->default"
+  val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.1"
   val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5.0"
   val commons_pool = "commons-pool" % "commons-pool" % "1.5.5"
