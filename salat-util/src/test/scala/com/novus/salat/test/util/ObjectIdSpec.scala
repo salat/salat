@@ -20,6 +20,8 @@ package com.novus.salat.test.util
 * http://github.com/novus/salat
 *
 */
+/*
+
 import com.novus.salat.util._
 import org.specs2.mutable.Specification
 import org.bson.types.ObjectId
@@ -43,3 +45,5 @@ class ObjectIdSpec extends Specification {
     }
   }
 }
+
+*/

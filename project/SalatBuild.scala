@@ -2,13 +2,12 @@ import sbt._
 import Keys._
 
 object SalatBuild extends Build {
-
-  import Repos._
+  
   import Dependencies._
   import BuildSettings._
 
-  val utilDeps = Seq(specs2, specs2Scalaz, slf4jSimple)
-  val casbahDeps = Seq(mongoJava, casbah_core)
+  val utilDeps = Seq(specs2, slf4jSimple)
+  val coreDeps = Seq(mongoJava, casbah_core, commonsLang, specs2)
 
   lazy val salat = Project(
     id = "salat",
@@ -39,13 +38,15 @@ object SalatBuild extends Build {
   lazy val salatCore = Project(
     id = "salat-core",
     base = file("salat-core"),
-    settings = buildSettings ++ Seq(libraryDependencies += casbah_core)
+    settings = buildSettings ++ Seq(libraryDependencies ++= coreDeps)
   ) dependsOn (salatUtil)
 
 }
 
 object BuildSettings {
 
+  import Repos._
+  
   val buildOrganization = "com.novus"
   val buildVersion = "0.0.8-SNAPSHOT"
   val buildScalaVersion = "2.8.1"
@@ -57,13 +58,14 @@ object BuildSettings {
     shellPrompt := ShellPrompt.buildShellPrompt,
     parallelExecution in Test := true,
     testFrameworks += TestFrameworks.Specs2,
+    resolvers ++= Seq(scalaToolsRepo, scalaToolsSnapRepo, novusRepo, novusSnapsRepo, typeSafeRepo), 
     scalacOptions ++= Seq("-deprecation", "-unchecked")
   )
 }
 
 object Dependencies {
   val specs2 = "org.specs2" %% "specs2" % "1.5" % "test"
-  val specs2Scalaz = "org.specs2" %% "specs2-scalaz-core" % "5.1-SNAPSHOT" % "test"
+  val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.1"
   val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5.0"
@@ -74,6 +76,7 @@ object Repos {
   val scalaToolsSnapRepo = "Scala Tools Snapshot Repository" at "http://scala-tools.org/repo-snapshots"
   val novusRepo = "Novus Release Repository" at "http://repo.novus.com/releases/"
   val novusSnapsRepo = "Novus Snapshots Repository" at "http://repo.novus.com/snapshots/"
+  val typeSafeRepo = "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 }
 
 // Shell prompt which show the current project, git branch and build version
