@@ -7,8 +7,8 @@ object SalatBuild extends Build {
   import Dependencies._
   import BuildSettings._
 
-  val utilDeps = Seq(specs2, commonsLang, slf4jSimple)
-  val casbahDeps = Seq(mongoJava, commons_pool, casbah_core)
+  val utilDeps = Seq(specs2, specs2Scalaz, slf4jSimple)
+  val casbahDeps = Seq(mongoJava, casbah_core)
 
   lazy val salat = Project(
     id = "salat",
@@ -29,6 +29,8 @@ object SalatBuild extends Build {
     val base = file("salat-util")
     val settings = buildSettings ++ Seq(
       libraryDependencies ++= utilDeps,
+    // TODO: ask on the specs2 mailing list why thisa dependency so consistently fails to resolve properly
+//      libraryDependencies += "org.specs2" %% "specs2-scalaz-core" % "5.1-SNAPSHOT" from "http://scala-tools.org/repo-snapshots/org/specs2/specs2-scalaz-core_2.8.1/5.1-SNAPSHOT/specs2-scalaz-core_2.8.1-5.1-SNAPSHOT.jar",
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scalap" % _)
     )
     Project(id = id, base = base, settings = settings)
@@ -60,12 +62,11 @@ object BuildSettings {
 }
 
 object Dependencies {
-  val specs2 = "org.specs2" %% "specs2" % "1.4" % "test" intransitive ()
-  val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test->default"
+  val specs2 = "org.specs2" %% "specs2" % "1.5" % "test"
+  val specs2Scalaz = "org.specs2" %% "specs2-scalaz-core" % "5.1-SNAPSHOT" % "test"
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.1"
   val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5.0"
-  val commons_pool = "commons-pool" % "commons-pool" % "1.5.5"
 }
 
 object Repos {
