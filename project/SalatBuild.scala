@@ -2,7 +2,7 @@ import sbt._
 import Keys._
 
 object SalatBuild extends Build {
-  
+
   import Dependencies._
   import BuildSettings._
 
@@ -12,16 +12,9 @@ object SalatBuild extends Build {
   lazy val salat = Project(
     id = "salat",
     base = file("."),
-    settings = buildSettings ++ Seq(
-      publishTo <<= (version) {
-        version: String =>
-          val r  = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
-            if (version.trim().toString.endsWith("-SNAPSHOT")) "snapshots" else "releases"
-          )) as (System.getProperty("user.name"))
-        Some(r)
-      }),
-      aggregate = Seq(salatUtil, salatCore)
-    )
+    settings = buildSettings,
+    aggregate = Seq(salatUtil, salatCore)
+  )
 
   lazy val salatUtil = {
     val id = "salat-util"
@@ -44,7 +37,7 @@ object SalatBuild extends Build {
 object BuildSettings {
 
   import Repos._
-  
+
   val buildOrganization = "com.novus"
   val buildVersion = "0.0.8-SNAPSHOT"
   val buildScalaVersion = "2.8.1"
@@ -56,8 +49,15 @@ object BuildSettings {
     shellPrompt := ShellPrompt.buildShellPrompt,
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
-    resolvers ++= Seq(scalaToolsRepo, scalaToolsSnapRepo, novusRepo, novusSnapsRepo, typeSafeRepo), 
-    scalacOptions ++= Seq("-deprecation", "-unchecked")
+    resolvers ++= Seq(scalaToolsRepo, scalaToolsSnapRepo, novusRepo, novusSnapsRepo, typeSafeRepo),
+    scalacOptions ++= Seq("-deprecation", "-unchecked"),
+    publishTo <<= (version) {
+      version: String =>
+        val r = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
+          if (version.trim().toString.endsWith("-SNAPSHOT")) "snapshots" else "releases"
+        )) as (System.getProperty("user.name"))
+        Some(r)
+    }
   )
 }
 
