@@ -28,8 +28,6 @@ object SalatBuild extends Build {
     val base = file("salat-util")
     val settings = buildSettings ++ Seq(
       libraryDependencies ++= utilDeps,
-    // TODO: ask on the specs2 mailing list why thisa dependency so consistently fails to resolve properly
-//      libraryDependencies += "org.specs2" %% "specs2-scalaz-core" % "5.1-SNAPSHOT" from "http://scala-tools.org/repo-snapshots/org/specs2/specs2-scalaz-core_2.8.1/5.1-SNAPSHOT/specs2-scalaz-core_2.8.1-5.1-SNAPSHOT.jar",
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scalap" % _)
     )
     Project(id = id, base = base, settings = settings)
@@ -56,7 +54,7 @@ object BuildSettings {
     version := buildVersion,
     scalaVersion := buildScalaVersion,
     shellPrompt := ShellPrompt.buildShellPrompt,
-    parallelExecution in Test := true,
+    parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
     resolvers ++= Seq(scalaToolsRepo, scalaToolsSnapRepo, novusRepo, novusSnapsRepo, typeSafeRepo), 
     scalacOptions ++= Seq("-deprecation", "-unchecked")
