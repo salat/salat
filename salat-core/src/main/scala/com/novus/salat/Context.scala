@@ -21,7 +21,6 @@
 package com.novus.salat
 
 import java.math.{RoundingMode, MathContext}
-import scala.collection.mutable.{Map => MMap, HashMap}
 import com.novus.salat.util._
 import com.mongodb.casbah.Imports._
 
@@ -29,6 +28,9 @@ import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
 import com.novus.salat.{Field => SField}
+import scala.collection.mutable.{ConcurrentMap, Map => MMap, HashMap}
+import scala.collection.JavaConversions.JConcurrentMapWrapper
+import java.util.concurrent.ConcurrentHashMap
 
 case class TypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint) {
   assume(when != null, "Context requires non-null value for type hint strategy instead of %s!".format(when))
@@ -37,7 +39,7 @@ case class TypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = Ty
 }
 
 trait Context extends Logging {
-  private[salat] val graters: MMap[String, Grater[_ <: AnyRef]] = HashMap.empty
+  private[salat] val graters: ConcurrentMap[String, Grater[_ <: AnyRef]] = JConcurrentMapWrapper(new ConcurrentHashMap[String, Grater[_ <: AnyRef]]())
 
   val name: Option[String]
   // TODO: make this an MSeq and private to [salat] - what on earth could I have been thinking here?
