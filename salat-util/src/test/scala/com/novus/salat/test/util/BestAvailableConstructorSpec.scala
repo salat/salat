@@ -1,3 +1,5 @@
+package com.novus.salat.test.util
+
 /**
  * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
  *
@@ -18,13 +20,8 @@
  * http://github.com/novus/salat
  *
  */
-package com.novus.salat.test.util
-
 import org.specs2.mutable.Specification
-import com.mongodb.casbah.commons.Logging
-import com.novus.salat.util.BestAvailableConstructor
-import com.novus.salat.test.model._
-import com.novus.salat._
+import com.novus.salat.util._
 
 class BestAvailableConstructorSpec extends Specification with Logging {
 

@@ -28,8 +28,9 @@ import scala.math.{BigDecimal => ScalaBigDecimal}
 
 import com.novus.salat._
 import com.novus.salat.impls._
+import com.novus.salat.util._
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 import org.scala_tools.time.Imports._
 
 package object in {
@@ -374,8 +375,6 @@ trait MapInjector extends Transformer {
   val parentType: TypeRefType
 }
 
-case class EnumInflaterGlitch(clazz: Class[_], strategy: EnumStrategy, value: Any) extends Error(
-  "Not sure how to handle value='%s' as enum of class %s using strategy %s".format(value, clazz.getName, strategy))
 
 trait EnumInflater extends Transformer with Logging {
   self: Transformer =>

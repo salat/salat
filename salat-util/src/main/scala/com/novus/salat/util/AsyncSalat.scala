@@ -18,17 +18,17 @@
  * http://github.com/novus/salat
  *
  */
-package com.novus.salat.test.model
+package com.novus.salat.util
 
-case class OneConstructorWithArgs(x: String)
-
-case class OneConstructorWithArgsOneEmpty(x: String) {
-  def this() = this("")
+// one megabyte
+class AsyncSalatRunnable(f: => Any)(r: Either[Throwable, Any] => Unit) extends Runnable {
+  def run {
+    try {
+      r(Right(f))
+    }
+    catch {
+      case t => r(Left(t))
+    }
+  }
 }
 
-case class TwoConstructorsWithArgs (x: String, y: Boolean) {
-  def this() = this("", false)
-  def this(y: Boolean) = this("", y)
-}
-
-case class OnlyEmptyConstructor()

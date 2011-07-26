@@ -29,8 +29,7 @@ import com.novus.salat.transformers._
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 
-import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 
 object Field {
   def apply(idx: Int, name: String, t: TypeRefType, method: Method)(implicit ctx: Context): Field = {
@@ -47,5 +46,17 @@ sealed abstract class Field(val idx: Int, val name: String, val typeRefType: Typ
   def in_!(value: Any) = in.transform_!(value)
   def out_!(value: Any) = out.transform_!(value)
 
-  override def toString = "Field[%d/%s]".format(idx, name)
+//  override def toString = "Field[%d/%s]".format(idx, name)
+  override def toString = """
+
+  Field
+  idx: %d
+  name: '%s'
+  typeRefType: %s
+    prefix: %s
+    symbol: %s
+    typeArgs: %s
+
+  """.format(idx, name, typeRefType,
+    typeRefType.prefix, typeRefType.symbol, typeRefType.typeArgs)
 }

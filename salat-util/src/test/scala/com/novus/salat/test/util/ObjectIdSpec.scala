@@ -1,3 +1,5 @@
+package com.novus.salat.test.util
+
 /**
 * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
 *
@@ -18,12 +20,13 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat.test
+/*
 
-import com.novus.salat._
-import com.mongodb.casbah.Imports._
+import com.novus.salat.util._
+import org.specs2.mutable.Specification
+import org.bson.types.ObjectId
 
-class ObjectIdSpec extends SalatSpec {
+class ObjectIdSpec extends Specification {
 
   // use case?  unclear at this time!  but if you need to express object ids as numbers in base 36 instead of hex, this
   // here's your ticket.
@@ -42,3 +45,5 @@ class ObjectIdSpec extends SalatSpec {
     }
   }
 }
+
+*/

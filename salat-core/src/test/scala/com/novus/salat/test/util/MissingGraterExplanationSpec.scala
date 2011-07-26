@@ -26,6 +26,7 @@ import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.test._
 import com.mongodb.util.JSON
+import com.novus.salat.util.GraterFromDboGlitch
 
 
 class MissingGraterExplanationSpec extends SalatSpec {

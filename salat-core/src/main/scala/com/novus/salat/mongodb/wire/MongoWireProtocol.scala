@@ -9,7 +9,7 @@ import com.novus.salat.annotations._
 import org.bson._
 import org.bson.io._
 
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 
 abstract class OpCode(val code: Int)
 

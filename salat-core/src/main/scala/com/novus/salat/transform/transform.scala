@@ -18,14 +18,14 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat.transformers
+package com.novus.salat.transform
 
-import com.novus.salat._
-import scala.tools.scalap.scalax.rules.scalasig._
-import scala.math.{BigDecimal => ScalaBigDecimal}
+import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.Implicits._
 
 object `package` {
-    def isBigDecimal(path: String) = path match {
+
+  def isBigDecimal(path: String) = path match {
     case "scala.math.BigDecimal" => true
     case "scala.package.BigDecimal" => true
     case "scala.Predef.BigDecimal" => true
@@ -47,7 +47,7 @@ object `package` {
 
   def isBigInt(path: String) = path match {
     case "scala.package.BigInt" => true
-    case "scala.math.BigInteger" => true
+    case "scala.math.BigInt" => true
     case "java.math.BigInteger" => true
     case _ => false
   }
@@ -63,18 +63,15 @@ object `package` {
     case "scala.Int" => true
     case _ => false
   }
+
+  object IsDbo {
+    def unapply(x: Any): Option[MongoDBObject] = x match {
+      case dbo: MongoDBObject => Some(dbo)
+      case dbo: DBObject => {
+        val m: MongoDBObject = dbo    // TODO: this is really stupid, I must be missing an implict somewhere
+        Some(m)
+      }
+      case _ => None
+    }
+  }
 }
-
-abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) {
-  def transform(value: Any)(implicit ctx: Context): Any = value
-  def before(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
-  def after(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
-  def transform_!(x: Any)(implicit ctx: Context): Option[Any] = before(x).flatMap(x => after(transform(x)))
-}
-
-trait InContextTransformer {
-  self: Transformer =>
-    val grater: Option[Grater[_ <: AnyRef]]
-}
-
-

@@ -1,3 +1,5 @@
+package com.novus.salat.test.util
+
 /**
 * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
 *
@@ -18,12 +20,10 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat.test.dao
+import org.specs2.mutable.Specification
+import com.novus.salat.util.SalatDAOUtils
 
-import com.novus.salat.test.SalatSpec
-import com.novus.salat.dao.SalatDAOUtils
-
-class SalatDAOUtilSpec extends SalatSpec {
+class SalatDAOUtilSpec extends Specification {
 
   "DAO Utils" should {
     "provide a method that returns exactly one result or detonates with a useful error" in {

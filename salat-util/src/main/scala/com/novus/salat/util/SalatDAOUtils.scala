@@ -18,7 +18,7 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat.dao
+package com.novus.salat.util
 
 object SalatDAOUtils {
 
@@ -28,9 +28,19 @@ object SalatDAOUtils {
    */
   def exactlyOne[Z](list: List[Z]): Z = list match {
     case head :: Nil => head
-    case head :: tail => throw new Error("exactlyOne: expected exactly one result but found %d items in the result list:\n%s\n".
-      format(list.size, list.mkString("\n")))   // how long is the list?  that depends on how badly things went wrong back in your collection....
     case Nil => throw new Error("exactlyOne: expected exactly one but found an empty result list!")
+    case list => throw new Error("exactlyOne: expected exactly one result but found %d items in the result list:\n%s\n".
+      format(list.size, list.mkString("\n"))) // how long is the list?  that depends on how badly things went wrong back in your collection....
+  }
+
+  /**
+    * Guarantee one or none.
+    */
+  def oneOrNone[Z](list: List[Z]): Option[Z] = list match {
+    case head :: Nil => Some(head)
+    case Nil => None
+    case list => throw new Error("oneOrNone: expected one or none result but found %d items in the result list:\n%s\n".
+      format(list.size, list.mkString("\n")))
   }
 
 }

@@ -18,27 +18,5 @@
 * http://github.com/novus/salat
 *
 */
-package com.novus.salat.test
+package com.novus.salat.transform
 
-import com.novus.salat.util.Logging
-import org.specs2.execute.PendingUntilFixed
-import com.mongodb.casbah.Imports._
-import org.specs2.mutable._
-import org.specs2.specification.Step
-
-trait SalatSpec extends Specification with Logging {
-
-  override def is =
-    Step {
-//      log.info("beforeSpec: registering BSON conversion helpers")
-      com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
-      com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
-
-    } ^
-      super.is ^
-      Step {
-//        log.info("afterSpec: dropping test MongoDB '%s'".format(SalatSpecDb))
-        MongoConnection().dropDatabase(SalatSpecDb)
-      }
-
-}

@@ -18,14 +18,17 @@
  * http://github.com/novus/salat
  *
  */
-package com.novus.salat.annotations
+package com.novus.salat.test.util
 
-import scala.annotation.target.getter
+case class OneConstructorWithArgs(x: String)
 
-object `package` {
-  type Key = com.novus.salat.annotations.raw.Key @getter
-  type Salat = com.novus.salat.annotations.raw.Salat @getter
-  type EnumAs = com.novus.salat.annotations.raw.EnumAs @getter
-  type Persist = com.novus.salat.annotations.raw.Persist @getter
-  type Ignore = com.novus.salat.annotations.raw.Ignore @getter
+case class OneConstructorWithArgsOneEmpty(x: String) {
+  def this() = this("")
 }
+
+case class TwoConstructorsWithArgs (x: String, y: Boolean) {
+  def this() = this("", false)
+  def this(y: Boolean) = this("", y)
+}
+
+case class OnlyEmptyConstructor()

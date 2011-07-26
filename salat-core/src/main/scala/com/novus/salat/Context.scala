@@ -21,15 +21,16 @@
 package com.novus.salat
 
 import java.math.{RoundingMode, MathContext}
-import scala.collection.mutable.{Map => MMap, HashMap}
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util._
 import com.mongodb.casbah.Imports._
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
-import com.novus.salat.util.MissingGraterExplanation
 import com.novus.salat.{Field => SField}
+import scala.collection.mutable.{ConcurrentMap, Map => MMap, HashMap}
+import scala.collection.JavaConversions.JConcurrentMapWrapper
+import java.util.concurrent.ConcurrentHashMap
 
 case class TypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint) {
   assume(when != null, "Context requires non-null value for type hint strategy instead of %s!".format(when))
@@ -38,7 +39,7 @@ case class TypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = Ty
 }
 
 trait Context extends Logging {
-  private[salat] val graters: MMap[String, Grater[_ <: CaseClass]] = HashMap.empty
+  private[salat] val graters: ConcurrentMap[String, Grater[_ <: AnyRef]] = JConcurrentMapWrapper(new ConcurrentHashMap[String, Grater[_ <: AnyRef]]())
 
   val name: Option[String]
   // TODO: make this an MSeq and private to [salat] - what on earth could I have been thinking here?
@@ -92,11 +93,12 @@ trait Context extends Logging {
     log.info("registerGlobalKeyOverride: context=%s will globally remap key='%s' to '%s'", name, remapThis, toThisInstead)
   }
 
-  def accept(grater: Grater[_ <: CaseClass]): Unit =
+  def accept(grater: Grater[_ <: AnyRef]) {
     if (!graters.contains(grater.clazz.getName)) {
       graters += grater.clazz.getName -> grater
-      log.trace("Context(%s) accepted Grater[%s]", name.getOrElse("<no name>"), grater.clazz)
+      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
     }
+  }
 
   // TODO: This check needs to be a little bit less naive. There are
   // other types (Joda Time, anyone?) that are either directly
@@ -114,22 +116,20 @@ trait Context extends Logging {
 
   protected def suitable_?(clazz: Class[_]): Boolean = suitable_?(clazz.getName)
 
-  protected def generate_?(c: String): Option[Grater[_ <: CaseClass]] = {
+  protected def generate_?(c: String): Option[Grater[_ <: AnyRef]] = {
     if (suitable_?(c)) {
       val cc = getCaseClass(c)(this)
 //      log.info("generate_?: c=%s, case class=%s", c, cc.getOrElse("[NOT FOUND]"))
       cc match {
         case  Some(clazz) if (clazz.isInterface) => {
-//          log.warning("generate_?: clazz=%s is interface, no grater found", clazz)
-          None
+          Some((new ProxyGrater(clazz)(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
         }
         case Some(clazz) if Modifier.isAbstract(clazz.getModifiers()) => {
-//          log.warning("generate_?: clazz=%s is abstract, no grater found", clazz)
-          None
+          Some((new ProxyGrater(clazz)(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
         }
         case Some(clazz) => {
 //          log.info("generate_?: creating Grater[CaseClass] for clazz=%s", clazz)
-          Some({ new Grater[CaseClass](clazz)(this) {} }.asInstanceOf[Grater[CaseClass]])
+          Some({ new ConcreteGrater[CaseClass](clazz)(this) {} }.asInstanceOf[Grater[CaseClass]])
         }
         case unknown => {
 //          log.warning("generate_?: no idea what to do with cc=%s", unknown)
@@ -140,10 +140,10 @@ trait Context extends Logging {
     else None
   }
 
-  protected def generate(clazz: String): Grater[_ <: CaseClass] = try {
+  protected def generate(clazz: String): Grater[_ <: AnyRef] = try {
     // if this blows up, we'll catch and rethrow with additional information
     val caseClass = getCaseClass(clazz)(this).map(_.asInstanceOf[Class[CaseClass]]).get
-    val grater = new Grater[CaseClass](caseClass)(this) {}
+    val grater = new ConcreteGrater[CaseClass](caseClass)(this) {}
     grater.asInstanceOf[Grater[CaseClass]]
   }
   catch {
@@ -153,12 +153,9 @@ trait Context extends Logging {
     }
   }
 
-  def lookup(clazz: String): Option[Grater[_ <: CaseClass]] = graters.get(clazz) match {
-    case yes @ Some(_) => yes
-    case _ => generate_?(clazz)
-  }
+  def lookup(clazz: String): Option[Grater[_ <: AnyRef]] = graters.get(clazz) orElse generate_?(clazz)
 
-  def lookup_!(clazz: String): Grater[_ <: CaseClass] = lookup(clazz).getOrElse(generate(clazz))
+  def lookup_!(clazz: String): Grater[_ <: AnyRef] = lookup(clazz).getOrElse(generate(clazz))
 
   def lookup_![X <: CaseClass : Manifest]: Grater[X] =
     lookup_!(manifest[X].erasure.getName).asInstanceOf[Grater[X]]
@@ -169,24 +166,18 @@ trait Context extends Logging {
       case _ => None
     } else None
 
-  def lookup(x: CaseClass): Option[Grater[_ <: CaseClass]] = lookup(x.getClass.getName)
+  def lookup(x: CaseClass): Option[Grater[_ <: AnyRef]] = lookup(x.getClass.getName)
 
-  def lookup(clazz: String, x: CaseClass): Option[Grater[_ <: CaseClass]] =
-    lookup(clazz) match {
-      case yes @ Some(grater) => yes
-      case _ => lookup(x)
-    }
+  def lookup(clazz: String, x: CaseClass): Option[Grater[_ <: AnyRef]] =
+    lookup(clazz) orElse lookup(x)
 
-  def lookup_!(clazz: String, x: CaseClass): Grater[_ <: CaseClass] =
+  def lookup_!(clazz: String, x: CaseClass): Grater[_ <: AnyRef] =
     lookup(clazz, x).getOrElse(generate(x.getClass.getName))
 
-  def lookup(clazz: String, dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
-    lookup(dbo) match {
-      case yes @ Some(grater) => yes
-      case _ => lookup(clazz)
-    }
+  def lookup(clazz: String, dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] =
+    lookup(clazz) orElse lookup(dbo)
 
-  def lookup(dbo: MongoDBObject): Option[Grater[_ <: CaseClass]] =
+  def lookup(dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] =
     extractTypeHint(dbo) match {
       case Some(hint: String) => graters.get(hint) match {
         case Some(g) => Some(g)
@@ -195,20 +186,8 @@ trait Context extends Logging {
       case _ => None
     }
 
-  def lookup_!(dbo: MongoDBObject): Grater[_ <: CaseClass] = {
+  def lookup_!(dbo: MongoDBObject): Grater[_ <: AnyRef] = {
     lookup(dbo).getOrElse(generate(extractTypeHint(dbo).getOrElse(throw MissingTypeHint(dbo)(this))))
   }
 }
 
-case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
-case class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
-case class MissingTypeHint(dbo: MongoDBObject)(implicit ctx: Context) extends Error("""
-
- NO TYPE HINT FOUND!
-
- Expected type hint key: %s
-
- DBO:
- %s
-
- """.format(ctx.typeHintStrategy.typeHint, dbo.toString()))
