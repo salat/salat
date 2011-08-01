@@ -36,12 +36,4 @@ case class OnlyEmptyConstructor()
 abstract class AbstractCaseObject
 case object ConcreteCaseObject extends AbstractCaseObject
 
-
-
-
-
-
-
-
-
-
+case class ἀρετή(πρᾶξις: Boolean = false)
