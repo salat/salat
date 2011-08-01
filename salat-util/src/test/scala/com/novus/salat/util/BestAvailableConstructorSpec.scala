@@ -1,4 +1,4 @@
-package com.novus.salat.test.util
+package com.novus.salat.util
 
 /**
  * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
@@ -21,7 +21,9 @@ package com.novus.salat.test.util
  *
  */
 import org.specs2.mutable.Specification
+
 import com.novus.salat.util._
+import com.novus.salat.util.model._
 
 class BestAvailableConstructorSpec extends Specification with Logging {
 

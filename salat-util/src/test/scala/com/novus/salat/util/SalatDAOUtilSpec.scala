@@ -1,4 +1,4 @@
-package com.novus.salat.test.util
+package com.novus.salat.util
 
 /**
 * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>

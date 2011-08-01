@@ -19,10 +19,9 @@
  */
 package com.novus.salat.util
 
-import math.Numeric
-
 protected[salat] object Digits {
-
+  // TODO: couldn't find a less cumbersome way to do this - curious!
+  val ZeroToNine = Range(0, 10).toList.map(_.toString.charAt(0))
 }
 
 protected[salat] object LetterFrequency {
@@ -61,20 +60,20 @@ object TypeHintEncoding {
   })
 
   /**
-   * Representing the smallest set of most likely classnames: US ASCII, dot, dollar, underscore, and 0-9
+   * Representing the smallest set of most likely class names: US ASCII, dot, dollar, underscore, and 0-9
    */
   val UsAsciiClassNames = TypeHintEncoding({
     LetterFrequency.English :::
       '.' ::
       '$' ::
-      Range(0, 10).toList.map(_.toString.charAt(0)) :::
+      Digits.ZeroToNine :::
       '_' ::
       Nil
   })
 
 }
 
-case class TypeHintEncoding(chars: List[Char]) {
+case class TypeHintEncoding(chars: List[Char]) extends Logging {
   require(chars.distinct.size == chars.size, "no duplicate chars allowed")
 
   private val Zero = BigInt(0)
@@ -86,14 +85,35 @@ case class TypeHintEncoding(chars: List[Char]) {
   lazy val n2c = c2n.map(_.swap).toMap
 
   def encode(s: String): BigInt = {
-    s.zipWithIndex.map {
-      case (c, i) => c2n(c) * base.pow(i)
+//    log.info("\n\n\nencode: BEGIN '%s'", s)
+    val encoded = s.zipWithIndex.map {
+      case (c, i) => {
+        val num = c2n(c) * base.pow(i)
+//        log.info("encode[%d]: '%s' ---> '%s'", i, c, num)
+        num
+      }
     }.sum
+//    log.info("encode: END '%s' ---> %s \n\n\n", s, encoded)
+    encoded
   }
+
 
   def decode(n: BigInt): List[BigInt] = {
     if (n == Zero) Nil else n.mod(base) :: decode(n / base)
   }
 
-  def format(cs: List[BigInt]) = cs.map(n2c.apply).mkString("")
+  def format(cs: List[BigInt]) = {
+    //  cs.map(n2c.apply).mkString("")
+    val sb = new StringBuilder
+    val iter = cs.iterator
+    var counter = 0
+    while (iter.hasNext) {
+      val num = iter.next()
+      val char = n2c.apply(num)
+//      log.info("format[%d]: '%s' ---> '%s'", counter, num, char)
+      sb += char
+      counter += 1
+    }
+    sb.result()
+  }
 }

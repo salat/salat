@@ -18,7 +18,7 @@
  * http://github.com/novus/salat
  *
  */
-package com.novus.salat.test.util
+package com.novus.salat.util.model
 
 case class OneConstructorWithArgs(x: String)
 
@@ -32,3 +32,16 @@ case class TwoConstructorsWithArgs (x: String, y: Boolean) {
 }
 
 case class OnlyEmptyConstructor()
+
+abstract class AbstractCaseObject
+case object ConcreteCaseObject extends AbstractCaseObject
+
+
+
+
+
+
+
+
+
+
