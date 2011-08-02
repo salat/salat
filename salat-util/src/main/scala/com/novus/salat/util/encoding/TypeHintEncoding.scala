@@ -134,5 +134,5 @@ case class TypeHintEncoding(chars: List[Char]) extends Logging {
     sb.result()
   }
 
-  override def toString = "TypeHintEncoding: base=%s".format(base)
+  override def toString = "TypeHintEncoding: base=%s chars='%s'".format(base, chars.mkString(""))
 }

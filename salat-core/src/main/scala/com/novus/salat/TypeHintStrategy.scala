@@ -117,8 +117,8 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
           log.info("fromTypeHint: put %s ---> '%s'", encoded, in)
           fromTypeHint.put(encoded, in)
         }
-        encoded.toByteArray
-      }
+        encoded
+      }.toByteArray
     }
   }
 }
