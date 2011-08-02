@@ -35,16 +35,16 @@ class TypeHintStrategySpec extends Specification with Logging {
       val clazzName = classOf[SomeSubclassExtendingSaidTrait].getName
       val expected = BigInt("692984074727956783039651647384290191570936777613175552267852671289279014922270519922204214854615810047")
       "encode class name as BitInt" in {
-        bths.encode(clazzName) must_== expected
+        bths.encode(clazzName) must_== expected.toByteArray
       }
       "decode a BigInt into a class name" in {
-        bths.decode(bths.encode(clazzName)) must_== clazzName
+        bths.decode(expected.toByteArray) must_== clazzName
       }
       "for legacy purposes, pass a string type hint back through" in {
         bths.decode(clazzName) must_== clazzName
       }
       "aggressively memoizes" in {
-        for (i <- 1 to 1000) {
+        for (i <- 1 to 100) {
           bths.encode(clazzName)
           bths.decode(expected)
         }
