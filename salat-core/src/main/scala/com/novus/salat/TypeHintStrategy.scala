@@ -21,7 +21,11 @@
 package com.novus.salat
 
 import com.novus.salat.util.encoding.TypeHintEncoding
-import com.novus.salat.util.ClassPrettyPrinter
+import java.util.regex.Pattern
+import scala.collection.mutable.ConcurrentMap
+import scala.collection.JavaConversions.JConcurrentMapWrapper
+import java.util.concurrent.ConcurrentHashMap
+import com.novus.salat.util.{Logging, ClassPrettyPrinter}
 
 // TODO: oof.  this is not OO design at its most graceful.  refactor it!
 
@@ -61,7 +65,14 @@ case class StringTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
   def encode(in: String) = in
 }
 
-case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint, encoding: TypeHintEncoding = TypeHintEncoding.UsAsciiEncoding) extends TypeHintStrategy {
+case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint,
+                                  encoding: TypeHintEncoding = TypeHintEncoding.UsAsciiEncoding) extends TypeHintStrategy with Logging {
+
+  private val PossibleBigInt = Pattern.compile("^[-]?\\d+$")
+
+  protected[salat] val toTypeHint: ConcurrentMap[String, BigInt] = JConcurrentMapWrapper(new ConcurrentHashMap[String, BigInt]())
+  protected[salat] val fromTypeHint: ConcurrentMap[BigInt, String] = JConcurrentMapWrapper(new ConcurrentHashMap[BigInt, String]())
+
   assume(when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
     "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when))
 
@@ -70,13 +81,46 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
     case _ => "BinaryTypeHintStrategy: when='%s', typeHint='%s', encoding='%s'".format(when, typeHint, encoding.toString)
   }
 
+  protected[salat] def decodeAndMemoize(bi: BigInt) = {
+    fromTypeHint.get(bi).getOrElse {
+      val decoded = encoding.format(encoding.decode(bi))
+      log.info("fromTypeHint: put %s ---> '%s'", bi, decoded)
+      fromTypeHint.put(bi, decoded)
+      if (!toTypeHint.contains(decoded)) {
+        log.info("toTypeHint: put '%s' ---> %s", decoded, bi)
+        toTypeHint.put(decoded, bi)
+      }
+      decoded
+    }
+  }
+
   def decode(in: Any) = in match {
-    case bi: BigInt => encoding.format(encoding.decode(bi))
+    case ba: Array[Byte] => decodeAndMemoize(BigInt(ba))
+    case bi: BigInt => decodeAndMemoize(bi)
+//    case s: String if PossibleBigInt.matcher(s).matches() => encoding.format(encoding.decode(BigInt(s, 10)))  // TODO: hmmm, performance suckage
     case s: String => s // TODO: ??? for backwards compatibility or just a bad idea?
     case x => throw new Error("BinaryTypeHintStrategy: don't know what to do with in='%s' (%s)".format(x, ClassPrettyPrinter(x.asInstanceOf[AnyRef])))
   }
 
-  def encode(in: String) = null
+  // TODO: add a feature to choose whether or not case objects are encoded
+  def encode(in: String) = {
+//    if (in.endsWith("$")) in else encoding.encode(in)
+    if (in.endsWith("$")) {
+      in
+    }
+    else {
+      toTypeHint.get(in).getOrElse {
+        val encoded = encoding.encode(in)
+        log.info("toTypeHint: put '%s' ---> %s", in, encoded)
+        toTypeHint.put(in, encoded)
+        if (!fromTypeHint.contains(encoded)) {
+          log.info("fromTypeHint: put %s ---> '%s'", encoded, in)
+          fromTypeHint.put(encoded, in)
+        }
+        encoded
+      }
+    }
+  }
 }
 
 object IsAlways {

@@ -24,6 +24,8 @@ import java.math.{MathContext, RoundingMode}
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.test.model.Rhoda
+import com.novus.salat.util.encoding.TypeHintEncoding
+import com.mongodb.casbah.Imports
 
 package object always {
 
@@ -81,4 +83,13 @@ package object per_class_key_remapping {
     val name = Some("TestContext-PerClassKeyRemapping")
   }
   ctx.registerPerClassKeyOverride(classOf[Rhoda], remapThis = "consumed", toThisInstead = "fire")
+}
+
+package object when_necessary_binary_type_hint_encoding {
+  implicit val ctx = new Context {
+    val name = Some("TestContext-BinaryTypeHint")
+    override val typeHintStrategy = BinaryTypeHintStrategy(when = TypeHintFrequency.WhenNecessary,
+      typeHint = "t",
+      encoding = TypeHintEncoding.UsAsciiEncoding)
+  }
 }

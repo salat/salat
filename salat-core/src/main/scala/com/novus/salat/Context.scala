@@ -90,7 +90,8 @@ trait Context extends Logging {
   def accept(grater: Grater[_ <: AnyRef]) {
     if (!graters.contains(grater.clazz.getName)) {
       graters += grater.clazz.getName -> grater
-      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
+//      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
+      log.info("accept: ctx='%s' accepted grater[%s]", name.getOrElse("<no name>"), grater.clazz.getName)
     }
   }
 
@@ -156,7 +157,7 @@ trait Context extends Logging {
 
   def extractTypeHint(dbo: MongoDBObject): Option[String] =
     if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHintStrategy.typeHint) match {
-      case Some(hint: String) => Some(hint)
+      case Some(hint) => Some(typeHintStrategy.decode(hint))
       case _ => None
     } else None
 
