@@ -44,7 +44,7 @@ package object in {
           new Transformer(symbol.path, t)(ctx) with OptionInjector with LongToInt
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with LongToBigInt
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with ByteArrayToBigInt
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToChar
@@ -84,7 +84,7 @@ package object in {
           }
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with LongToBigInt with TraversableInjector {
+          new Transformer(symbol.path, t)(ctx) with ByteArrayToBigInt with TraversableInjector {
             val parentType = pt
           }
 
@@ -141,7 +141,7 @@ package object in {
           }
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with LongToBigInt with MapInjector {
+          new Transformer(symbol.path, t)(ctx) with ByteArrayToBigInt with MapInjector {
             val parentType = pt
             val grater = ctx.lookup(symbol.path)
           }
@@ -196,7 +196,7 @@ package object in {
           new Transformer(symbol.path, pt)(ctx) with LongToInt
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, pt)(ctx) with LongToBigInt
+          new Transformer(symbol.path, pt)(ctx) with ByteArrayToBigInt
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with StringToChar
@@ -284,7 +284,7 @@ trait DateToJodaDateTime extends Transformer {
   }
 }
 
-trait LongToBigInt extends Transformer {
+trait ByteArrayToBigInt extends Transformer {
   self: Transformer =>
 
   override def transform(value: Any)(implicit ctx: Context): Any = value match {

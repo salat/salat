@@ -41,4 +41,14 @@ trait SalatSpec extends Specification with Logging {
         MongoConnection().dropDatabase(SalatSpecDb)
       }
 
+
+  // TODO: matchmaker, matchmaker, make me a MatchResult[Any]....
+  def checkByteArrays(actual: Array[Byte], expected: Array[Byte]) = {
+    actual.size must_== expected.size
+    actual.zip(expected).foreach {
+      v => v._1 must_== v._2
+    }
+    actual must not beEmpty   // i feel so hollow.  maybe i should just return success and have done with it?
+  }
+
 }

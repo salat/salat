@@ -225,10 +225,11 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   def asDBObject(o: X): DBObject = {
     val builder = MongoDBObject.newBuilder
-    ctx.typeHintStrategy match {
-      case TypeHintStrategy(TypeHintFrequency.Always, hint) => builder += hint -> clazz.getName
-      case TypeHintStrategy(TypeHintFrequency.WhenNecessary, hint) if requiresTypeHint => builder += hint -> clazz.getName
-      case _ =>
+
+    // handle type hinting, where necessary
+    if (ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
+      (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && requiresTypeHint)) {
+      builder += ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(clazz.getName)
     }
 
     iterateOut(o) {

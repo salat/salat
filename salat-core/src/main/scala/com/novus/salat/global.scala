@@ -26,12 +26,12 @@ package object global {
   // example of a context that never uses type hints
   val WhenNecessary = new Context {
     val name = Some("global-when-necessary")
-    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
+    override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
   }
 
   // example of a context that never uses type hints
   val NoTypeHints = new Context {
     val name = Some("global-no-type-hints")
-    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Never)
+    override val typeHintStrategy = NeverTypeHint
   }
 }

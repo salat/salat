@@ -28,16 +28,20 @@ import com.mongodb.casbah.Imports._
 class BigIntSpec extends SalatSpec {
   "A grater" should {
     "support BigInt" in {
-      val l = Leo(swallowed = Some(BigInt("1234567890")), tacks = BigInt(Integer.MAX_VALUE + 1))
+      val swallowed = BigInt("1234567890")
+      val tacks = BigInt(Long.MaxValue + 1L)
+      val l = Leo(swallowed = Some(swallowed), tacks = tacks)
       val dbo: MongoDBObject = grater[Leo].asDBObject(l)
 //      println(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Leo")
-      dbo must havePair("swallowed" -> 1234567890)
-      dbo must havePair("tacks" -> -2147483648)
+      checkByteArrays(actual = dbo.expand[Array[Byte]]("swallowed").getOrElse(Array.empty[Byte]),
+        swallowed.toByteArray)
+      checkByteArrays(actual = dbo.expand[Array[Byte]]("tacks").getOrElse(Array.empty[Byte]),
+        BigInt("-9223372036854775808").toByteArray)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_big_int_test_1")
       val wr = coll.insert(dbo)
-      //      println("WR: %s".format(wr))
+//      println("WR: %s".format(wr))
 
       val l_* = grater[Leo].asObject(coll.findOne().get)
 //      println(MapPrettyPrinter(l_*))

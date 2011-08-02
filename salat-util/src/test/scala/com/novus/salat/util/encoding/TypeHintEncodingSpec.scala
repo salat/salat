@@ -17,10 +17,11 @@
  *
  * http://github.com/novus/salat
  */
-package com.novus.salat.util
+package com.novus.salat.util.encoding
 
 import org.specs2.mutable.Specification
 import com.novus.salat.util.model._
+import com.novus.salat.util.Logging
 
 class TypeHintEncodingSpec extends Specification with Logging {
 
@@ -53,7 +54,7 @@ class TypeHintEncodingSpec extends Specification with Logging {
   }
   
   def testFullJLSEncoding(clazzName: String) = {
-//    log.debug("testUsAsciiEncoding: clazzName='%s'", clazzName)
+//    log.debug("testFullJLSEncoding: clazzName='%s'", clazzName)
     val encoded = TypeHintEncoding.FullJavaLangSpec.encode(clazzName)
     // well, you got your unicode support here, but.... ugh.
     encoded.toByteArray.size must be lessThan 2 * clazzName.size

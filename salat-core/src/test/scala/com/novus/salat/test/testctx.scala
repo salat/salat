@@ -29,7 +29,7 @@ package object always {
 
   implicit val ctx = new Context {
     val name = Some("TestContext-Always")
-    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
+    override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
   }
 }
 
@@ -37,14 +37,14 @@ package object when_necessary {
 
   implicit val ctx = new Context {
     val name = Some("TestContext-WhenNecessary")
-    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
+    override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
   }
 }
 
 package object never {
   implicit val ctx = new Context {
     val name = Some("TestContext-AlwaysTypeHints")
-    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Never)
+    override val typeHintStrategy = NeverTypeHint
   }
 }
 
@@ -54,7 +54,7 @@ package object custom_type_hint {
 
   implicit val ctx = new Context {
     val name = Some("TestContext-Always")
-    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = CustomTypeHint)
+    override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = CustomTypeHint)
   }
 }
 
@@ -62,7 +62,7 @@ package object always_with_implicits {
 
   implicit val ctx = new Context {
     val name = Some("TestContext-Always-Implicits")
-    override val typeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
+    override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
   }
 
   implicit def dbo2Obj[X <: CaseClass](obj: X): DBObject = ctx.lookup_!(obj.getClass.getName)

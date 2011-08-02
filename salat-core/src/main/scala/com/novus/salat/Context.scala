@@ -32,12 +32,6 @@ import scala.collection.mutable.{ConcurrentMap, Map => MMap, HashMap}
 import scala.collection.JavaConversions.JConcurrentMapWrapper
 import java.util.concurrent.ConcurrentHashMap
 
-case class TypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint) {
-  assume(when != null, "Context requires non-null value for type hint strategy instead of %s!".format(when))
-  assume(when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
-    "Type hint stratregy %s requires a type hint but you have supplied none!".format(when))
-}
-
 trait Context extends Logging {
   private[salat] val graters: ConcurrentMap[String, Grater[_ <: AnyRef]] = JConcurrentMapWrapper(new ConcurrentHashMap[String, Grater[_ <: AnyRef]]())
 
@@ -45,7 +39,7 @@ trait Context extends Logging {
   // TODO: make this an MSeq and private to [salat] - what on earth could I have been thinking here?
   implicit var classLoaders: Seq[ClassLoader] = Seq(getClass.getClassLoader)
 
-  val typeHintStrategy: TypeHintStrategy = TypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
+  val typeHintStrategy: TypeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
 
   // sets up a default enum strategy of using toString to serialize/deserialize enums
   val defaultEnumStrategy = EnumStrategy.BY_VALUE

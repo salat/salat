@@ -17,7 +17,9 @@
  *
  * http://github.com/novus/salat
  */
-package com.novus.salat.util
+package com.novus.salat.util.encoding
+
+import com.novus.salat.util.Logging
 
 protected[salat] object Digits {
   // TODO: couldn't find a less cumbersome way to do this - curious!
@@ -82,6 +84,8 @@ case class TypeHintEncoding(chars: List[Char]) extends Logging {
   require(chars.nonEmpty, "chars must not be empty")
   require(chars.distinct.size == chars.size, "no duplicate chars allowed")
 
+  // TODO: memoize this!
+
   private val Zero = BigInt(0)
 
   lazy val base = BigInt(c2n.size)
@@ -129,4 +133,6 @@ case class TypeHintEncoding(chars: List[Char]) extends Logging {
 
     sb.result()
   }
+
+  override def toString = "TypeHintEncoding: base=%s".format(base)
 }
