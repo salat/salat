@@ -47,7 +47,7 @@ object `package` {
 
   def isBigInt(path: String) = path match {
     case "scala.package.BigInt" => true
-    case "scala.math.BigInteger" => true
+    case "scala.math.BigInt" => true
     case "java.math.BigInteger" => true
     case _ => false
   }

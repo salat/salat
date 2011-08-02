@@ -173,6 +173,8 @@ trait BigIntToByteArray extends Transformer {
   override def transform(value: Any)(implicit ctx: Context): Any = value match {
     case bi: BigInt => bi.toByteArray
     case bi: java.math.BigInteger => bi.toByteArray
+    case l: Long => BigInt(l).toByteArray
+    case i: Int => BigInt(i).toByteArray
   }
 }
 
