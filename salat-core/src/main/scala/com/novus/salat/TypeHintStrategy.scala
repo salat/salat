@@ -95,6 +95,7 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
   }
 
   def decode(in: Any) = in match {
+    case b: org.bson.types.Binary => decodeAndMemoize(BigInt(b.getData)) // getData() returns byte[] of the bindata
     case ba: Array[Byte] => decodeAndMemoize(BigInt(ba))
     case bi: BigInt => decodeAndMemoize(bi)
 //    case s: String if PossibleBigInt.matcher(s).matches() => encoding.format(encoding.decode(BigInt(s, 10)))  // TODO: hmmm, performance suckage
