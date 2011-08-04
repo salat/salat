@@ -87,8 +87,17 @@ package object per_class_key_remapping {
 
 package object when_necessary_binary_type_hint_encoding {
   implicit val ctx = new Context {
-    val name = Some("TestContext-BinaryTypeHint")
+    val name = Some("WhenNecessary-BinaryTypeHint")
     override val typeHintStrategy = BinaryTypeHintStrategy(when = TypeHintFrequency.WhenNecessary,
+      typeHint = "t",
+      encoding = TypeHintEncoding.UsAsciiEncoding)
+  }
+}
+
+package object always_binary_type_hint_encoding {
+  implicit val ctx = new Context {
+    val name = Some("Always-BinaryTypeHint")
+    override val typeHintStrategy = BinaryTypeHintStrategy(when = TypeHintFrequency.Always,
       typeHint = "t",
       encoding = TypeHintEncoding.UsAsciiEncoding)
   }
