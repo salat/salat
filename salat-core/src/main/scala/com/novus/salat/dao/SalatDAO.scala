@@ -209,7 +209,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     _id
   }
 
-  def insert(docs: ObjectType*)(implicit wc: WriteConcern = collection.writeConcern) = {
+  def insert(docs: ObjectType*)(implicit wc: WriteConcern = collection.writeConcern) = if (docs.nonEmpty) {
     val _ids = try {
       val dbos = docs.map(t => _grater.asDBObject(t))
       collection.db.requestStart()
@@ -237,6 +237,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
     _ids
   }
+  else Nil
 
   def ids[A <% DBObject](query: A): List[ID] = {
     collection.find(query, MongoDBObject("_id" -> 1)).map(_.expand[ID]("_id")(mid).get).toList

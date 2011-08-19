@@ -80,6 +80,10 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.next must_== alpha6
     }
 
+    "no-op inserting an empty collection of objects" in {
+      AlphaDAO.insert() must_==  Nil
+    }
+
     "support findOne returning Option[T]" in new alphaContext {
       val _ids = AlphaDAO.insert(alpha4, alpha5, alpha6)
       _ids must contain(Some(alpha4.id))
