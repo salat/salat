@@ -1,5 +1,6 @@
 import sbt._
 import Keys._
+import ScalariformPlugin.{ format, formatPreferences }
 
 object SalatBuild extends Build {
 
@@ -42,7 +43,31 @@ object BuildSettings {
   val buildVersion = "0.0.8-SNAPSHOT"
   val buildScalaVersion = "2.8.1"
 
-  val buildSettings = Defaults.defaultSettings ++ Seq(
+  lazy val formatSettings = ScalariformPlugin.settings ++ Seq(
+    formatPreferences in Compile := formattingPreferences,
+    formatPreferences in Test    := formattingPreferences
+  )
+
+  def formattingPreferences = {
+    import scalariform.formatter.preferences._
+    FormattingPreferences().setPreference(AlignParameters, true).
+      setPreference(AlignSingleLineCaseStatements, true).
+      setPreference(CompactControlReadability, true). // waiting for CCR patch to go mainstream, patiently patiently
+      setPreference(CompactStringConcatenation, true).
+      setPreference(DoubleIndentClassDeclaration, true).
+      setPreference(FormatXml, true).
+      setPreference(IndentLocalDefs, true).
+      setPreference(IndentPackageBlocks, true).
+      setPreference(IndentSpaces, 2).
+      setPreference(PreserveSpaceBeforeArguments, false).
+      setPreference(PreserveDanglingCloseParenthesis, false).
+      setPreference(RewriteArrowSymbols, false).  // to thine own self be true, I suppose
+      setPreference(SpaceBeforeColon, false).
+      setPreference(SpaceInsideBrackets, false).
+      setPreference(SpacesWithinPatternBinders, true)
+  }
+
+  val buildSettings = Defaults.defaultSettings ++ formatSettings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
