@@ -23,7 +23,7 @@ package com.novus.salat
 import com.mongodb.casbah.Imports._
 
 import java.math.BigInteger
-import com.novus.salat.{Grater, Context}
+import com.novus.salat.{ Grater, Context }
 import com.novus.salat.util.Logging
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
@@ -82,6 +82,5 @@ object `package` extends Logging {
 
   protected[salat] def getCaseClass(c: String)(implicit ctx: Context): Option[Class[CaseClass]] =
     getClassNamed(c).filter(_.getInterfaces.contains(classOf[Product])).map(_.asInstanceOf[Class[CaseClass]])
-
 
 }

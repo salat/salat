@@ -33,7 +33,7 @@ class UUIDSupportSpec extends SalatSpec {
       val uuid = java.util.UUID.randomUUID
       val o = Olive(uuid)
       val dbo: MongoDBObject = grater[Olive].asDBObject(o)
-//      log.info(MapPrettyPrinter(dbo))
+      //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("awl" -> uuid)
 
       val coll = MongoConnection()(SalatSpecDb)("uuid_test_1")
@@ -46,7 +46,7 @@ class UUIDSupportSpec extends SalatSpec {
       val uuid = new java.util.UUID(123L, 456L)
       val o = Olive(uuid)
       val dbo: MongoDBObject = grater[Olive].asDBObject(o)
-//      log.info(MapPrettyPrinter(dbo))
+      //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("awl" -> uuid)
 
       val coll = MongoConnection()(SalatSpecDb)("uuid_test_2")
@@ -59,7 +59,7 @@ class UUIDSupportSpec extends SalatSpec {
       val uuid = java.util.UUID.nameUUIDFromBytes("pierced".getBytes)
       val o = Olive(uuid)
       val dbo: MongoDBObject = grater[Olive].asDBObject(o)
-//      log.info(MapPrettyPrinter(dbo))
+      //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("awl" -> uuid)
 
       val coll = MongoConnection()(SalatSpecDb)("uuid_test_3")

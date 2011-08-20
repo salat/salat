@@ -49,10 +49,9 @@ protected[salat] object CharSets {
       .toList
       // TODO: why is the ASCII bell a legal Java identifier?  ding dong.
       .filter(c => Character.isJavaIdentifierPart(c) &&
-      Character.getType(c) != Character.CONTROL)
+        Character.getType(c) != Character.CONTROL)
       .map(_.toChar)
   }
-
 
   val UsAscii = '.' :: // ACHTUNG! dot must be first because the encoding will be 0, and an ending dot would be truncated
     LetterFrequency.English :::
@@ -110,7 +109,6 @@ case class TypeHintEncoding(chars: List[Char]) extends Logging {
     //    log.info(sb.result())
     encoded
   }
-
 
   def decode(n: BigInt): List[BigInt] = {
     if (n == Zero) Nil else n.mod(base) :: decode(n / base)

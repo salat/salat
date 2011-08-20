@@ -57,7 +57,7 @@ object MapPrettyPrinter {
     builder += {
       what match {
         case Some(what) => mapDesc.format(what, m.size)
-        case None => mapDesc.format(m.getClass.getName, m.size) // TODO: fix this using parametrized types
+        case None       => mapDesc.format(m.getClass.getName, m.size) // TODO: fix this using parametrized types
       }
     }
     val kv = "[%d] k=%s\tv=%s\n\t%s -> %s"

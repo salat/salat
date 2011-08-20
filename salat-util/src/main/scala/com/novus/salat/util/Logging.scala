@@ -25,7 +25,7 @@
  */
 package com.novus.salat.util
 
-import org.slf4j.{Logger => SLFLogger, LoggerFactory => SLFLoggerFactory}
+import org.slf4j.{ Logger => SLFLogger, LoggerFactory => SLFLoggerFactory }
 
 /**
  * Base trait for all classes that wants to be able use the logging infrastructure.

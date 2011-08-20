@@ -21,11 +21,11 @@
 package com.novus.salat
 
 import scala.tools.scalap.scalax.rules.scalasig._
-import com.novus.salat.{Field => SField}
+import com.novus.salat.{ Field => SField }
 import scala.reflect.generic.ByteCodecs
 import scala.reflect.ScalaSignature
 
-import java.lang.reflect.{InvocationTargetException, Constructor, Method}
+import java.lang.reflect.{ InvocationTargetException, Constructor, Method }
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
@@ -46,7 +46,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   protected def outField: OutHandler = {
     case (_, field) if field.ignore => None
-    case (null, _) => None
+    case (null, _)                  => None
     case (element, field) => {
       field.out_!(element) match {
         case Some(None) => None
@@ -54,7 +54,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
           val key = ctx.determineFieldName(clazz, field)
           val value = serialized match {
             case Some(unwrapped) => unwrapped
-            case _ => serialized
+            case _               => serialized
           }
           Some(key -> value)
         }
@@ -73,9 +73,8 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   protected def findSym[A](clazz: Class[A]) = {
     ScalaSigUtil.parseScalaSig0(clazz).
       map(x => x.topLevelClasses.headOption.
-      getOrElse(x.topLevelObjects.headOption.
-      getOrElse(throw MissingExpectedType(clazz)))
-    ).getOrElse(throw MissingPickledSig(clazz))
+        getOrElse(x.topLevelObjects.headOption.
+          getOrElse(throw MissingExpectedType(clazz)))).getOrElse(throw MissingPickledSig(clazz))
   }
 
   protected lazy val sym = findSym(clazz)
@@ -91,7 +90,6 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     case clazz if clazz.getEnclosingClass != null => false // filter out nested traits and superclasses
     case _ => true
   }
-
 
   protected lazy val interestingInterfaces: List[(Class[_], SymbolInfoSymbol)] = {
     val interfaces = clazz.getInterfaces // this should return an empty array, but...  sometimes returns null!
@@ -126,12 +124,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       .map(_.asInstanceOf[MethodSymbol])
       .zipWithIndex
       .map {
-      case (ms, idx) => {
-        //        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
-        SField(idx, keyOverridesFromAbove.get(ms).getOrElse(ms.name), typeRefType(ms), clazz.getMethod(ms.name))
-      }
+        case (ms, idx) => {
+          //        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
+          SField(idx, keyOverridesFromAbove.get(ms).getOrElse(ms.name), typeRefType(ms), clazz.getMethod(ms.name))
+        }
 
-    }
+      }
   }
 
   protected def findAnnotatedMethodSymbol[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
@@ -140,18 +138,18 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       .filter(_.isAnnotationPresent(annotation))
       .filterNot(m => m.annotated_?[Ignore])
       .map {
-      case m: Method => m -> {
-        log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
-        // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
-        allTheChildren
-          .filter(f => f.name == m.getName && f.isAccessor)
-          .map(_.asInstanceOf[MethodSymbol])
-          .headOption match {
-          case Some(ms) => ms
-          case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+        case m: Method => m -> {
+          log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
+          // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
+          allTheChildren
+            .filter(f => f.name == m.getName && f.isAccessor)
+            .map(_.asInstanceOf[MethodSymbol])
+            .headOption match {
+              case Some(ms) => ms
+              case None     => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+            }
         }
       }
-    }
   }
 
   protected def findAnnotatedFields[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
@@ -160,18 +158,18 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       .filter(_.isAnnotationPresent(annotation))
       .filterNot(m => m.annotated_?[Ignore])
       .map {
-      case m: Method => m -> {
-        log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
-        // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
-        allTheChildren
-          .filter(f => f.name == m.getName && f.isAccessor)
-          .map(_.asInstanceOf[MethodSymbol])
-          .headOption match {
-          case Some(ms) => SField(-1, ms.name, typeRefType(ms), m) // TODO: -1 magic number for idx which is required but not used
-          case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+        case m: Method => m -> {
+          log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
+          // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
+          allTheChildren
+            .filter(f => f.name == m.getName && f.isAccessor)
+            .map(_.asInstanceOf[MethodSymbol])
+            .headOption match {
+              case Some(ms) => SField(-1, ms.name, typeRefType(ms), m) // TODO: -1 magic number for idx which is required but not used
+              case None     => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+            }
         }
       }
-    }
   }
 
   protected lazy val extraFieldsToPersist = {
@@ -191,7 +189,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     for ((method, ms) <- annotated) {
       method.annotation[Key].map(_.value) match {
         case Some(key) => builder += ms -> key
-        case None =>
+        case None      =>
       }
     }
     builder.result
@@ -200,19 +198,20 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   protected lazy val companionClass = clazz.companionClass
   protected lazy val companionObject = clazz.companionObject
 
-
   protected lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
 
   protected lazy val defaults: Seq[Option[Method]] = indexedFields.map {
-    field => try {
-      Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
-    } catch {
-      case _ => None
-    }
+    field =>
+      try {
+        Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
+      }
+      catch {
+        case _ => None
+      }
   }
 
   protected def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
-    case PolyType(tr@TypeRefType(_, _, _), _) => tr
+    case PolyType(tr @ TypeRefType(_, _, _), _) => tr
   }
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
@@ -241,10 +240,10 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   protected def safeDefault(field: SField) =
     defaults(field.idx).map(m => Some(m.invoke(companionObject))).getOrElse(None) match {
-      case yes@Some(default) => yes
+      case yes @ Some(default) => yes
       case _ => field.typeRefType match {
         case IsOption(_) => Some(None)
-        case _ => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
+        case _           => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
       }
     }
 
@@ -271,11 +270,11 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       catch {
         // when something bad happens feeding args into constructor, catch these exceptions and
         // wrap them in a custom exception that will provide detailed information about what's happening.
-        case e: InstantiationException => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e: IllegalAccessException => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e: IllegalArgumentException => throw ToObjectGlitch(this, sym, constructor, args, e)
+        case e: InstantiationException    => throw ToObjectGlitch(this, sym, constructor, args, e)
+        case e: IllegalAccessException    => throw ToObjectGlitch(this, sym, constructor, args, e)
+        case e: IllegalArgumentException  => throw ToObjectGlitch(this, sym, constructor, args, e)
         case e: InvocationTargetException => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e => throw e
+        case e                            => throw e
       }
     }
 

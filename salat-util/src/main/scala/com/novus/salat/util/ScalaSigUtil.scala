@@ -27,11 +27,11 @@ import scala.tools.scalap.scalax.rules.scalasig._
 object ScalaSigUtil extends Logging {
   private[salat] def parseClassFileFromByteCode(clazz: Class[_]): Option[ClassFile] = try {
     // taken from ScalaSigParser parse method with the explicit purpose of walking away from NPE
-    val byteCode  = ByteCode.forClass(clazz)
+    val byteCode = ByteCode.forClass(clazz)
     Option(ClassFileParser.parse(byteCode))
   }
   catch {
-    case e: NullPointerException => None  // yes, this is the exception, but it is totally unhelpful to the end user
+    case e: NullPointerException => None // yes, this is the exception, but it is totally unhelpful to the end user
   }
 
   private[salat] def parseByteCodeFromAnnotation(clazz: Class[_]): Option[ByteCode] = {
@@ -51,19 +51,19 @@ object ScalaSigUtil extends Logging {
     val clazz = if (_clazz.getName.endsWith("$")) Class.forName(_clazz.getName.replaceFirst("\\$$", "")) else _clazz
     assume(clazz != null, "parseScalaSig0: cannot parse ScalaSig from null class=%s".format(_clazz))
 
-//    val sigFromAnnotation = parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_))
-//    val sigFromBytes: Option[ScalaSig] = parseClassFileFromByteCode(clazz).map(ScalaSigParser.parse(_)).getOrElse(None)
+    //    val sigFromAnnotation = parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_))
+    //    val sigFromBytes: Option[ScalaSig] = parseClassFileFromByteCode(clazz).map(ScalaSigParser.parse(_)).getOrElse(None)
 
-//    log.info("""
-//
-//     parseScalaSig0: clazz=%s --->
-//     FROM ANNOTATION? %s
-//     FROM BYTES? %s
-//
-//     """, clazz, sigFromAnnotation.isDefined, sigFromBytes.isDefined)
+    //    log.info("""
+    //
+    //     parseScalaSig0: clazz=%s --->
+    //     FROM ANNOTATION? %s
+    //     FROM BYTES? %s
+    //
+    //     """, clazz, sigFromAnnotation.isDefined, sigFromBytes.isDefined)
 
     parseClassFileFromByteCode(clazz).map(ScalaSigParser.parse(_)).getOrElse(None) orElse
-    parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_)) orElse
-    None
+      parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_)) orElse
+      None
   }
 }

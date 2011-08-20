@@ -1,27 +1,27 @@
 /**
-* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-* For questions and comments about this product, please see the project page at:
-*
-* http://github.com/novus/salat
-*
-*/
+ * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For questions and comments about this product, please see the project page at:
+ *
+ * http://github.com/novus/salat
+ *
+ */
 package com.novus.salat.test.util
 
 import com.mongodb.casbah.commons.conversions.MongoConversionHelper
-import org.bson.{BSON, Transformer}
+import org.bson.{ BSON, Transformer }
 
 // Want to write your own custon BSON encoding?  Look no further than this excellent example:
 // https://github.com/mongodb/casbah/blob/master/casbah-commons/src/main/scala/conversions/ScalaConversions.scala
@@ -55,20 +55,20 @@ trait URISerializer extends MongoConversionHelper {
     def transform(o: AnyRef): AnyRef = o match {
       // the dumbest way to encode a URI that actually works for the purposes of my spec
       case uri: java.net.URI => "URI~%s".format(uri.toString)
-      case _ => o
+      case _                 => o
     }
 
   }
 
   override def register() = {
-    log.debug("Hooking up java.net.URI serializer.") 
+    log.debug("Hooking up java.net.URI serializer.")
     /** Encoding hook for MongoDB To be able to persist java.net.URI to MongoDB */
     BSON.addEncodingHook(encodeType, transformer)
     super.register()
   }
 
   override def unregister() = {
-    log.debug("De-registering java.net.URI serializer.") 
+    log.debug("De-registering java.net.URI serializer.")
     BSON.removeEncodingHooks(encodeType)
     super.unregister()
   }
@@ -91,7 +91,7 @@ trait URIDeserializer extends MongoConversionHelper {
   }
 
   override def register() = {
-    log.debug("Hooking up java.net.URI deserializer")  
+    log.debug("Hooking up java.net.URI deserializer")
     /** Encoding hook for MongoDB To be able to read java.net.URI from MongoDB's BSON Date */
     BSON.addDecodingHook(encodeType, transformer)
     super.register()

@@ -1,23 +1,23 @@
 /**
-* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-* For questions and comments about this product, please see the project page at:
-*
-* http://github.com/novus/salat
-*
-*/
+ * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For questions and comments about this product, please see the project page at:
+ *
+ * http://github.com/novus/salat
+ *
+ */
 package com.novus.salat.test
 
 import com.novus.salat._
@@ -99,7 +99,7 @@ class CustomContextSpec extends SalatSpec {
         }) must beSome(testClassForName)
         // well, with a full-on classloader mock, this might be possible - let's just settle for, it resolves in both classloaders
         // but by because custom precedes default it is obviously resolving from the custom
-//        getClassNamed(TestClassName)(Seq(default)) must beNone
+        //        getClassNamed(TestClassName)(Seq(default)) must beNone
       }
 
       "allow creation of a context overrides defaults to specify its own classloader" in {
@@ -117,7 +117,7 @@ class CustomContextSpec extends SalatSpec {
         ctx.name must beSome(CustomContextName)
         ctx.classLoaders must haveSize(1)
         ctx.classLoaders(0) must_== customCl
-        ctx.classLoaders must not contain(ctx.getClass.getClassLoader)
+        ctx.classLoaders must not contain (ctx.getClass.getClassLoader)
 
         // try to register another classloader and confirm it didn't work, because we overrode the default impl
         val customCl2: ClassLoader = new ScalaClassLoader() {
@@ -126,8 +126,8 @@ class CustomContextSpec extends SalatSpec {
         ctx.registerClassLoader(customCl2)
         ctx.classLoaders must haveSize(1)
         ctx.classLoaders(0) must_== customCl
-        ctx.classLoaders must not contain(customCl2)
-        ctx.classLoaders must not contain(ctx.getClass.getClassLoader)
+        ctx.classLoaders must not contain (customCl2)
+        ctx.classLoaders must not contain (ctx.getClass.getClassLoader)
 
         // resolving a class from the default classloader doesn't work
         getClassNamed(Alice.getClass.getName)(ctx) must beNone
@@ -199,7 +199,7 @@ class CustomContextSpec extends SalatSpec {
       dbo must havePair("_typeHint", "com.novus.salat.test.model.Rhoda")
       dbo must havePair("fire", "indeed") // per class keymapping turns "consumed" into "fire" for Rhoda
       grater[Rhoda].asObject(dbo) must_== rhoda
-      
+
       val rhoda3 = Rhoda3(consumed = Some("indeed"))
       val dbo2: MongoDBObject = grater[Rhoda3].asDBObject(rhoda3)
       dbo2 must havePair("_typeHint", "com.novus.salat.test.model.Rhoda3")

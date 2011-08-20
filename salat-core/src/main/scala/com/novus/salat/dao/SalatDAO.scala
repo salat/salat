@@ -1,36 +1,36 @@
 /**
-  * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  *
-  * For questions and comments about this product, please see the project page at:
-  *
-  * http://github.com/novus/salat
-  *
-  */
+ * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For questions and comments about this product, please see the project page at:
+ *
+ * http://github.com/novus/salat
+ *
+ */
 package com.novus.salat.dao
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoCursorBase
 import com.novus.salat._
-import com.mongodb.casbah.commons.{MongoDBObject, Logging}
-import com.mongodb.{WriteConcern, DBObject, CommandResult}
+import com.mongodb.casbah.commons.{ MongoDBObject, Logging }
+import com.mongodb.{ WriteConcern, DBObject, CommandResult }
 
 /**
-  * Base DAO class.
-  * @type ObjectType case class type
-  * @type ID _id type
-  */
+ * Base DAO class.
+ * @type ObjectType case class type
+ * @type ID _id type
+ */
 trait DAO[ObjectType <: CaseClass, ID <: Any] {
 
   val collection: MongoCollection
@@ -79,10 +79,9 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
   def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P]
 }
 
-
 abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
                                                                                              mid: Manifest[ID], ctx: Context)
-  extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
+    extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
 
   dao =>
 
@@ -90,37 +89,36 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   val _grater = grater[ObjectType](ctx, mot)
 
   /**
-    *  Inner abstract class to facilitate working with child collections using a typed parent id -
-    *  no cascading support will be offered, but you can override saves and deletes in the parent DAO
-    *  to manually cascade children as you like.
-    *
-    *  Given parent class Foo and child class Bar:
-    *  case class Foo(_id: ObjectId, //  etc )
-    *  case class Bar(_id: ObjectId,
-    *                 parentId: ObjectId, // this refers back to a parent in Foo collection
-    *                 //  etc )
-    *
-    *
-    *  object FooDAO extends SalatDAO[Foo, ObjectId](collection = MongoConnection()("db")("fooCollection")) {
-    *
-    *  // and here is a child DAO you can use within FooDAO to work with children of type Bar whose parentId field matches
-    *  // the supplied parent id of an instance of Foo
-    *   val bar = new ChildCollection[Bar, ObjectId](collection = MongoConnection()("db")("barCollection"),
-    *   parentIdField = "parentId") { }
-    *
-    * }
-    */
+   *  Inner abstract class to facilitate working with child collections using a typed parent id -
+   *  no cascading support will be offered, but you can override saves and deletes in the parent DAO
+   *  to manually cascade children as you like.
+   *
+   *  Given parent class Foo and child class Bar:
+   *  case class Foo(_id: ObjectId, //  etc )
+   *  case class Bar(_id: ObjectId,
+   *                 parentId: ObjectId, // this refers back to a parent in Foo collection
+   *                 //  etc )
+   *
+   *
+   *  object FooDAO extends SalatDAO[Foo, ObjectId](collection = MongoConnection()("db")("fooCollection")) {
+   *
+   *  // and here is a child DAO you can use within FooDAO to work with children of type Bar whose parentId field matches
+   *  // the supplied parent id of an instance of Foo
+   *   val bar = new ChildCollection[Bar, ObjectId](collection = MongoConnection()("db")("barCollection"),
+   *   parentIdField = "parentId") { }
+   *
+   * }
+   */
   abstract class ChildCollection[ChildType <: CaseClass, ChildId <: Any](override val collection: MongoCollection,
                                                                          val parentIdField: String)(implicit mct: Manifest[ChildType],
                                                                                                     mcid: Manifest[ChildId], ctx: Context)
-    extends SalatDAO[ChildType, ChildId](collection) {
+      extends SalatDAO[ChildType, ChildId](collection) {
 
     childDao =>
 
     override lazy val description = "SalatDAO[%s,%s](%s) -> ChildCollection[%s,%s](%s)".format(
       mot.erasure.getSimpleName, mid.erasure.getSimpleName, dao.collection.name,
-      mct.erasure.getSimpleName, mcid.erasure.getSimpleName, childDao.collection.name
-    )
+      mct.erasure.getSimpleName, mcid.erasure.getSimpleName, childDao.collection.name)
 
     def parentIdQuery(parentId: ID): DBObject = {
       MongoDBObject(parentIdField -> parentId)
@@ -184,8 +182,8 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   }
 
   /**
-    * Default description is the case class simple name and the collection.
-    */
+   * Default description is the case class simple name and the collection.
+   */
   override lazy val description = "SalatDAO[%s,%s](%s)".format(mot.erasure.getSimpleName, mid.erasure.getSimpleName, collection.name)
 
   def insert(t: ObjectType) = insert(t, collection.writeConcern)
@@ -220,7 +218,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
           builder += dbo.getAs[ID]("_id") orElse {
             collection.findOne(dbo) match {
               case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
-              case _ => None
+              case _                   => None
             }
           }
         }
@@ -270,7 +268,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     remove(q, collection.writeConcern)
   }
 
-  def remove[A <% DBObject](q: A, wc: WriteConcern)  {
+  def remove[A <% DBObject](q: A, wc: WriteConcern) {
     try {
       collection.db.requestStart()
       val wr = collection.remove(q, wc)
@@ -369,11 +367,11 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   }
 
   /**
-    * Convenience method on collection.count
-    * @q optional query with default argument of empty query
-    * @fieldsThatMustExist list of field names to append to the query with "fieldName" -> { "$exists" -> true }
-    * @fieldsThatMustNotExist list of field names to append to the query with "fieldName" -> { "$exists" -> false }
-    */
+   * Convenience method on collection.count
+   * @q optional query with default argument of empty query
+   * @fieldsThatMustExist list of field names to append to the query with "fieldName" -> { "$exists" -> true }
+   * @fieldsThatMustNotExist list of field names to append to the query with "fieldName" -> { "$exists" -> false }
+   */
   def count(q: DBObject = MongoDBObject(), fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
     // convenience method - don't personally enjoy writing these queries
     val query = {

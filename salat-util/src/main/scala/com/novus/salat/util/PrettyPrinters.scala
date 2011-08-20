@@ -44,10 +44,10 @@ object ClassPrettyPrinter {
 
   def apply(x: AnyRef) = x match {
     case Some(x) => "Some[%s]".format(x.asInstanceOf[AnyRef].getClass) // bugger type erasure
-    case None => NonePlaceholder
-    case null => NullPlaceholder
-    case Nil => EmptyPlaceholder
-    case x => (x.asInstanceOf[AnyRef]).getClass.getName
+    case None    => NonePlaceholder
+    case null    => NullPlaceholder
+    case Nil     => EmptyPlaceholder
+    case x       => (x.asInstanceOf[AnyRef]).getClass.getName
   }
 }
 
@@ -64,8 +64,7 @@ object TransformPrettyPrinter {
       value,
       t.symbol.path,
       ClassPrettyPrinter(xformed.asInstanceOf[AnyRef]),
-      xformed
-    )
+      xformed)
   }
 }
 

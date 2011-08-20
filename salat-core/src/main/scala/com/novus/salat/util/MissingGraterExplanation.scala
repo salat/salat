@@ -57,11 +57,11 @@ object MissingGraterExplanation extends Logging {
 
   def getReasonForPathClazz(pathClazz: Option[Class[_]], path: String): String = {
     pathClazz match {
-      case Some(clazz) if clazz.getEnclosingClass != null => "Class %s has enclosing class %s".format(clazz.getName, clazz.getEnclosingClass.getName)
-      case Some(clazz) if clazz.isInstanceOf[CaseClass] => "Well, this is a case class, so... not sure what went wrong."
-      case Some(clazz) if clazz.isInterface => "Class %s is an interface".format(clazz.getName)
+      case Some(clazz) if clazz.getEnclosingClass != null         => "Class %s has enclosing class %s".format(clazz.getName, clazz.getEnclosingClass.getName)
+      case Some(clazz) if clazz.isInstanceOf[CaseClass]           => "Well, this is a case class, so... not sure what went wrong."
+      case Some(clazz) if clazz.isInterface                       => "Class %s is an interface".format(clazz.getName)
       case Some(clazz) if Modifier.isAbstract(clazz.getModifiers) => "Class %s is abstract".format(clazz.getName)
-      case Some(clazz) if !clazz.isInstanceOf[CaseClass] => "Class %s is not an instance of CaseClass".format(clazz.getName)
+      case Some(clazz) if !clazz.isInstanceOf[CaseClass]          => "Class %s is not an instance of CaseClass".format(clazz.getName)
       case None if path != null && pathClazz.isEmpty => "Very strange!  Path='%s' from pickled ScalaSig causes ClassNotFoundException".
         format(path)
       case _ => "Unable to determine why grater was not found"
@@ -93,15 +93,15 @@ object MissingGraterExplanation extends Logging {
     val hintClazz = clazzFromTypeHint(typeHint)(ctx)
     val pathClazz = clazzFromPath(path)
     val reason = hintClazz match {
-      case Some(clazz) if clazz.getEnclosingClass != null => "Class %s has enclosing class %s".format(clazz.getName, clazz.getEnclosingClass.getName)
-      case Some(clazz) if clazz.isInstanceOf[CaseClass] => "Well, this is a case class, so... not sure what went wrong."
-      case Some(clazz) if clazz.isInterface => "Class %s is an interface".format(clazz.getName)
+      case Some(clazz) if clazz.getEnclosingClass != null         => "Class %s has enclosing class %s".format(clazz.getName, clazz.getEnclosingClass.getName)
+      case Some(clazz) if clazz.isInstanceOf[CaseClass]           => "Well, this is a case class, so... not sure what went wrong."
+      case Some(clazz) if clazz.isInterface                       => "Class %s is an interface".format(clazz.getName)
       case Some(clazz) if Modifier.isAbstract(clazz.getModifiers) => "Class %s is abstract".format(clazz.getName)
-      case Some(clazz) if !clazz.isInstanceOf[CaseClass] => "Class %s is not an instance of CaseClass".format(clazz.getName)
+      case Some(clazz) if !clazz.isInstanceOf[CaseClass]          => "Class %s is not an instance of CaseClass".format(clazz.getName)
       case None if typeHint.isDefined && hintClazz.isEmpty => "Type hint %s='%s' causes ClassNotFoundException".
         format(ctx.typeHintStrategy.typeHint, typeHint)
       case None if path == null && typeHint.isEmpty => "Unknown class: type hint is empty and path from pickled ScalaSig is null"
-      case _ => getReasonForPathClazz(pathClazz, path)
+      case _                                        => getReasonForPathClazz(pathClazz, path)
     }
 
     val explanation = """

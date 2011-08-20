@@ -1,23 +1,23 @@
 /**
-* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-* For questions and comments about this product, please see the project page at:
-*
-* http://github.com/novus/salat
-*
-*/
+ * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For questions and comments about this product, please see the project page at:
+ *
+ * http://github.com/novus/salat
+ *
+ */
 package com.novus.salat.test
 
 import com.novus.salat._
@@ -25,8 +25,8 @@ import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.Implicits._
-import java.math.{RoundingMode, MathContext}
-import scala.math.{BigDecimal => ScalaBigDecimal}
+import java.math.{ RoundingMode, MathContext }
+import scala.math.{ BigDecimal => ScalaBigDecimal }
 
 class BigDecimalPrecisionTest extends SalatSpec {
 
@@ -45,9 +45,9 @@ class BigDecimalPrecisionTest extends SalatSpec {
       dbo must havePair("someNumber" -> PrecisePi)
       dbo must not have key("noNumber")
 
-      val coll =  MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test")
+      val coll = MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test")
       val wr = coll.insert(dbo)
-//      println("WR: %s".format(wr))
+      //      println("WR: %s".format(wr))
 
       val g_* = grater[George].asObject(coll.findOne().get)
       g_* must_== g
@@ -73,9 +73,9 @@ class BigDecimalPrecisionTest extends SalatSpec {
       dbo must havePair("someNumber" -> PrecisePi)
       dbo must not have key("noNumber")
 
-      val coll =  MongoConnection()(SalatSpecDb)("scala_big_decimal_precision_test")
+      val coll = MongoConnection()(SalatSpecDb)("scala_big_decimal_precision_test")
       val wr = coll.insert(dbo)
-//      println("WR: %s".format(wr))
+      //      println("WR: %s".format(wr))
 
       val h_* = grater[George2].asObject(coll.findOne().get)
       h_* must_== h
@@ -98,11 +98,11 @@ class BigDecimalPrecisionTest extends SalatSpec {
       val dbo: MongoDBObject = grater[Ida].asDBObject(i)
       dbo must havePair("lake" -> lake)
 
-       val coll =  MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test_2")
-       val wr = coll.insert(dbo)
-//       println("WR: %s".format(wr))
+      val coll = MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test_2")
+      val wr = coll.insert(dbo)
+      //       println("WR: %s".format(wr))
 
-       val i_* = grater[Ida].asObject(coll.findOne().get)
+      val i_* = grater[Ida].asObject(coll.findOne().get)
       i_* must_== i
 
     }
@@ -114,11 +114,11 @@ class BigDecimalPrecisionTest extends SalatSpec {
       val dbo: MongoDBObject = grater[Ida].asDBObject(i)
       dbo must havePair("lake" -> lake)
 
-       val coll =  MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test_3")
-       val wr = coll.insert(dbo)
-//       println("WR: %s".format(wr))
+      val coll = MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test_3")
+      val wr = coll.insert(dbo)
+      //       println("WR: %s".format(wr))
 
-       val i_* = grater[Ida].asObject(coll.findOne().get)
+      val i_* = grater[Ida].asObject(coll.findOne().get)
       i_* must_== i
     }
   }

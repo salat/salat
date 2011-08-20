@@ -19,9 +19,9 @@
  */
 package com.novus.salat
 
-import scala.math.{BigDecimal => ScalaBigDecimal}
+import scala.math.{ BigDecimal => ScalaBigDecimal }
 import com.novus.salat.util.Logging
-import scala.tools.scalap.scalax.rules.scalasig.{SingleType, TypeRefType, Type}
+import scala.tools.scalap.scalax.rules.scalasig.{ SingleType, TypeRefType, Type }
 
 private object TypeMatchers {
   def matchesOneType(t: Type, name: String): Option[Type] = t match {
@@ -68,7 +68,7 @@ object IsEnum extends Logging {
   def unapply(t: TypeRefType): Option[SingleType] = {
     t match {
       case TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" =>
-	Some(prefix)
+        Some(prefix)
       case _ => None
     }
   }

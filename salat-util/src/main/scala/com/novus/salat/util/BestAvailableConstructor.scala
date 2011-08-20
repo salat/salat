@@ -25,16 +25,16 @@ import java.lang.reflect.Constructor
 object BestAvailableConstructor extends Logging {
   def apply[X <: AnyRef with Product](clazz: Class[X]): Constructor[X] = {
     val cl = clazz.getConstructors.toList.asInstanceOf[List[Constructor[X]]]
-//    log.info("constructor: found %d:\n%s", cl.size, cl.mkString("\n"))
+    //    log.info("constructor: found %d:\n%s", cl.size, cl.mkString("\n"))
     if (cl.isEmpty) {
       throw MissingConstructor(clazz)
     }
     else {
       val (someArgs, noArgs) = cl.partition(_.getParameterTypes.nonEmpty)
-//      log.info("constructor: someArgs ---> found %d:\n%s", someArgs.size, someArgs.mkString("\n"))
-//      log.info("constructor: noArgs ---> found %d:\n%s", noArgs.size, noArgs.mkString("\n"))
+      //      log.info("constructor: someArgs ---> found %d:\n%s", someArgs.size, someArgs.mkString("\n"))
+      //      log.info("constructor: noArgs ---> found %d:\n%s", noArgs.size, noArgs.mkString("\n"))
       someArgs match {
-        case head :: Nil => head
+        case head :: Nil  => head
         case head :: tail => throw TooManyConstructorsWithArgs(clazz, someArgs)
         case Nil => noArgs match {
           case head :: _ => {

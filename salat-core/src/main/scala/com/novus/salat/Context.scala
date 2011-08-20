@@ -1,34 +1,34 @@
 /**
-* Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-* For questions and comments about this product, please see the project page at:
-*
-* http://github.com/novus/salat
-*
-*/
+ * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For questions and comments about this product, please see the project page at:
+ *
+ * http://github.com/novus/salat
+ *
+ */
 package com.novus.salat
 
-import java.math.{RoundingMode, MathContext}
+import java.math.{ RoundingMode, MathContext }
 import com.novus.salat.util._
 import com.mongodb.casbah.Imports._
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
-import com.novus.salat.{Field => SField}
-import scala.collection.mutable.{ConcurrentMap, Map => MMap, HashMap}
+import com.novus.salat.{ Field => SField }
+import scala.collection.mutable.{ ConcurrentMap, Map => MMap, HashMap }
 import scala.collection.JavaConversions.JConcurrentMapWrapper
 import java.util.concurrent.ConcurrentHashMap
 
@@ -61,7 +61,7 @@ trait Context extends Logging {
 
     globalKeyOverrides.get(field.name).
       getOrElse(perClassKeyOverrides.get((clazz.getName, field.name)).
-      getOrElse(field.name))
+        getOrElse(field.name))
   }
 
   def registerPerClassKeyOverride(clazz: Class[_], remapThis: String, toThisInstead: String) {
@@ -90,7 +90,7 @@ trait Context extends Logging {
   def accept(grater: Grater[_ <: AnyRef]) {
     if (!graters.contains(grater.clazz.getName)) {
       graters += grater.clazz.getName -> grater
-//      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
+      //      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
       log.info("accept: ctx='%s' accepted grater[%s]", name.getOrElse("<no name>"), grater.clazz.getName)
     }
   }
@@ -104,30 +104,29 @@ trait Context extends Logging {
       clazz.startsWith("java.") ||
       clazz.startsWith("javax.")) ||
       getClassNamed(clazz)(this).map(_.annotated_?[Salat]).getOrElse(false)
-//    log.info("suitable_?: clazz=%s, suitable=%s", clazz, s)
+    //    log.info("suitable_?: clazz=%s, suitable=%s", clazz, s)
     s
   }
-
 
   protected def suitable_?(clazz: Class[_]): Boolean = suitable_?(clazz.getName)
 
   protected def generate_?(c: String): Option[Grater[_ <: AnyRef]] = {
     if (suitable_?(c)) {
       val cc = getCaseClass(c)(this)
-//      log.info("generate_?: c=%s, case class=%s", c, cc.getOrElse("[NOT FOUND]"))
+      //      log.info("generate_?: c=%s, case class=%s", c, cc.getOrElse("[NOT FOUND]"))
       cc match {
-        case  Some(clazz) if (clazz.isInterface) => {
+        case Some(clazz) if (clazz.isInterface) => {
           Some((new ProxyGrater(clazz)(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
         }
         case Some(clazz) if Modifier.isAbstract(clazz.getModifiers()) => {
           Some((new ProxyGrater(clazz)(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
         }
         case Some(clazz) => {
-//          log.info("generate_?: creating Grater[CaseClass] for clazz=%s", clazz)
+          //          log.info("generate_?: creating Grater[CaseClass] for clazz=%s", clazz)
           Some({ new ConcreteGrater[CaseClass](clazz)(this) {} }.asInstanceOf[Grater[CaseClass]])
         }
         case unknown => {
-//          log.warning("generate_?: no idea what to do with cc=%s", unknown)
+          //          log.warning("generate_?: no idea what to do with cc=%s", unknown)
           None
         }
       }
@@ -152,14 +151,15 @@ trait Context extends Logging {
 
   def lookup_!(clazz: String): Grater[_ <: AnyRef] = lookup(clazz).getOrElse(generate(clazz))
 
-  def lookup_![X <: CaseClass : Manifest]: Grater[X] =
+  def lookup_![X <: CaseClass: Manifest]: Grater[X] =
     lookup_!(manifest[X].erasure.getName).asInstanceOf[Grater[X]]
 
   def extractTypeHint(dbo: MongoDBObject): Option[String] =
     if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHintStrategy.typeHint) match {
       case Some(hint) => Some(typeHintStrategy.decode(hint))
-      case _ => None
-    } else None
+      case _          => None
+    }
+    else None
 
   def lookup(x: CaseClass): Option[Grater[_ <: AnyRef]] = lookup(x.getClass.getName)
 
@@ -176,7 +176,7 @@ trait Context extends Logging {
     extractTypeHint(dbo) match {
       case Some(hint: String) => graters.get(hint) match {
         case Some(g) => Some(g)
-        case None => generate_?(hint)
+        case None    => generate_?(hint)
       }
       case _ => None
     }

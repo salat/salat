@@ -56,7 +56,6 @@ class TypeHintStrategySpec extends Specification with Logging {
       bths.encode(Zoot.getClass.getName) must_== Zoot.getClass.getName
     }
 
-
   }
 
 }

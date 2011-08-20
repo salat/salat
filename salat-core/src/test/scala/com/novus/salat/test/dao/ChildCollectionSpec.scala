@@ -29,7 +29,7 @@ import com.novus.salat.test.dao._
 import org.scala_tools.time.Imports._
 import org.joda.time.DateTimeConstants._
 import org.joda.time.DateMidnight
-import com.mongodb.casbah.commons.{MongoDBList, MongoDBObject}
+import com.mongodb.casbah.commons.{ MongoDBList, MongoDBObject }
 
 class ChildCollectionSpec extends SalatSpec {
 
@@ -60,8 +60,7 @@ class ChildCollectionSpec extends SalatSpec {
       ParentDAO.children.findByParentId(parent1.id).toList must contain(
         child1Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated)),
         child2Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated)),
-        child3Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated))
-      ).only
+        child3Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated))).only
       // child collection is otherwise unchanged
       ParentDAO.children.findByParentId(parent2.id).toList must contain(child1Parent2, child2Parent2).only
       ParentDAO.children.findByParentId(parent3.id).toList must beEmpty

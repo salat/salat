@@ -24,13 +24,13 @@ import com.novus.salat._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
 import scala.collection.mutable.ArrayBuffer
-import scala.math.{BigDecimal => ScalaBigDecimal}
+import scala.math.{ BigDecimal => ScalaBigDecimal }
 
 import org.specs2.mutable._
-import org.apache.commons.lang.RandomStringUtils.{randomAscii => rs}
-import org.apache.commons.lang.math.RandomUtils.{nextInt => rn}
+import org.apache.commons.lang.RandomStringUtils.{ randomAscii => rs }
+import org.apache.commons.lang.math.RandomUtils.{ nextInt => rn }
 import com.novus.salat.util.Logging
-import org.specs2.execute.{Success, PendingUntilFixed}
+import org.specs2.execute.{ Success, PendingUntilFixed }
 import com.mongodb.casbah.Imports._
 
 class TimingSpec extends Specification with PendingUntilFixed with Logging {
@@ -81,29 +81,31 @@ class TimingSpec extends Specification with PendingUntilFixed with Logging {
       log.info("%s bytes deflated", grater[ListNode].asDBObject(tree).toString.length)
 
       (0 until 50).foreach {
-        _ => {
-          timeAndLog {
-            grater[ListNode].asDBObject(tree)
-          } {
-            m =>
-              log.info("%s deflation time: %d msec", tree.getClass.getName, m)
-              outTimes += m
+        _ =>
+          {
+            timeAndLog {
+              grater[ListNode].asDBObject(tree)
+            } {
+              m =>
+                log.info("%s deflation time: %d msec", tree.getClass.getName, m)
+                outTimes += m
+            }
           }
-        }
       }
 
       val deflated = grater[ListNode].asDBObject(tree)
 
       (0 until 50).foreach {
-        _ => {
-          timeAndLog {
-            grater[ListNode].asObject(deflated)
-          } {
-            m =>
-              log.info("%s inflation time: %d msec", tree.getClass.getName, m)
-              outTimes += m
+        _ =>
+          {
+            timeAndLog {
+              grater[ListNode].asObject(deflated)
+            } {
+              m =>
+                log.info("%s inflation time: %d msec", tree.getClass.getName, m)
+                outTimes += m
+            }
           }
-        }
       }
 
       1 must_== 1 // we're here, so not all is lost
@@ -116,12 +118,13 @@ class TimingSpec extends Specification with PendingUntilFixed with Logging {
       NodeCounter.n += 1
       if (rn(10) % 2 == 0) {
         Some(ListNode(crap, (1 to many).toList.map(_ => node(level - 1)).filter(_.isDefined).map(_.get)))
-      } else {
+      }
+      else {
         Some(MapNode(crap, Map.empty[String, Node] ++ (1 to many).toList.map {
           _ =>
             node(level - 1) match {
               case Some(n) => Some(n.name -> n)
-              case _ => None
+              case _       => None
             }
         }.filter(_.isDefined).map(_.get)))
       }
@@ -133,7 +136,7 @@ class TimingSpec extends Specification with PendingUntilFixed with Logging {
   private def _many: Int =
     rn(10) match {
       case n if n < 3 => many
-      case n => n
+      case n          => n
     }
 
   private def crap: String = rs(many)

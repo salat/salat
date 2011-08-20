@@ -45,16 +45,16 @@ class TypeHintEncodingSpec extends Specification with Logging {
   }
 
   def testUsAsciiEncoding(clazzName: String) = {
-//    log.debug("testUsAsciiEncoding: clazzName='%s'", clazzName)
+    //    log.debug("testUsAsciiEncoding: clazzName='%s'", clazzName)
     val encoded = TypeHintEncoding.UsAsciiEncoding.encode(clazzName)
     encoded.toByteArray.size must be lessThan clazzName.size
     val decoded = TypeHintEncoding.UsAsciiEncoding.decode(encoded)
     decoded.size must_== clazzName.length()
     TypeHintEncoding.UsAsciiEncoding.format(decoded) must_== clazzName
   }
-  
+
   def testFullJLSEncoding(clazzName: String) = {
-//    log.debug("testFullJLSEncoding: clazzName='%s'", clazzName)
+    //    log.debug("testFullJLSEncoding: clazzName='%s'", clazzName)
     val encoded = TypeHintEncoding.FullJavaLangSpec.encode(clazzName)
     // well, you got your unicode support here, but.... ugh.
     encoded.toByteArray.size must be lessThan 2 * clazzName.size
@@ -62,7 +62,7 @@ class TypeHintEncodingSpec extends Specification with Logging {
     decoded.size must_== clazzName.length()
     TypeHintEncoding.FullJavaLangSpec.format(decoded) must_== clazzName
   }
-  
+
   "encode and decode to BigInt" in {
     "a simple class name consisting of a-zA-z and dots" in {
       testUsAsciiEncoding(classOf[OneConstructorWithArgs].getName)

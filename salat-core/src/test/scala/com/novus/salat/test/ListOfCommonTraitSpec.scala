@@ -38,8 +38,7 @@ class ListOfCommonTraitSpec extends SalatSpec {
           AnotherSubclassExtendingSaidTrait(d = 2.0),
           AnotherSubclassExtendingSaidTrait(d = 3.0),
           SomeSubclassExtendingSaidTrait(b = 4),
-          SomeSubclassExtendingSaidTrait(b = 5)
-        ))
+          SomeSubclassExtendingSaidTrait(b = 5)))
 
       val dbo: MongoDBObject = grater[SomeContainerClass].asDBObject(scc)
       //      Map(_typeHint -> com.novus.salat.test.model.SomeContainerClass, e -> Tergiversation,
@@ -50,7 +49,6 @@ class ListOfCommonTraitSpec extends SalatSpec {
       //         { "_typeHint" : "com.novus.salat.test.model.SomeSubclassExtendingSaidTrait" , "b" : 4} ,
       //         { "_typeHint" : "com.novus.salat.test.model.SomeSubclassExtendingSaidTrait" , "b" : 5}
       //        ])
-
 
       dbo must havePair("e" -> scc.e)
       dbo must haveKey("theListWhichNeedsToBeTested") // TODO: look at casbah specs and figure out how to test a DBList

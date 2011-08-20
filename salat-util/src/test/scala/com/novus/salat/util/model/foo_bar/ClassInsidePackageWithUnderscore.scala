@@ -22,21 +22,3 @@ package com.novus.salat.util.model.foo_bar
  */
 case class ClassInsidePackageWithUnderscore(x: String)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -30,12 +30,11 @@ import com.novus.salat.dao.SalatDAO
 
 @Salat
 trait Beta {
-   val y: String
+  val y: String
 }
 case class Gamma(y: String) extends Beta
 case class Delta(y: String, z: String) extends Beta
 case class Alpha(@Key("_id") id: Int, beta: List[Beta] = Nil)
-
 
 //
 // Instant Salat DAO in under two minutes:

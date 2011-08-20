@@ -26,7 +26,7 @@ case class OneConstructorWithArgsOneEmpty(x: String) {
   def this() = this("")
 }
 
-case class TwoConstructorsWithArgs (x: String, y: Boolean) {
+case class TwoConstructorsWithArgs(x: String, y: Boolean) {
   def this() = this("", false)
   def this(y: Boolean) = this("", y)
 }

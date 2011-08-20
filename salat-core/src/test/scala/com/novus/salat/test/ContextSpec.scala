@@ -108,9 +108,9 @@ class ContextSpec extends SalatSpec {
       import com.novus.salat.test.always_with_implicits._
 
       "implicitly convert case class <-> dbo" in {
-        val coll =  MongoConnection()(SalatSpecDb)("context_test_1")
-        val wr = coll += j     // implicit conversion from case class James to DBObject
-//        log.info("WR: %s", wr)
+        val coll = MongoConnection()(SalatSpecDb)("context_test_1")
+        val wr = coll += j // implicit conversion from case class James to DBObject
+        //        log.info("WR: %s", wr)
         val j_* : James = coll.findOne().get // implicit conversion from DBObject to case class James
         j_* must_== j
       }
