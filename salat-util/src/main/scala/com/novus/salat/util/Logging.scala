@@ -1,54 +1,50 @@
-/**
- * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+/** Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  *
- * For questions and comments about this product, please see the project page at:
+ *  For questions and comments about this product, please see the project page at:
  *
- * http://github.com/novus/salat
+ *  http://github.com/novus/salat
  *
- * NOTICE: This Logging Class is derived from the Apache License 2.0
- * Akka Project, available from http://akkasource.org/
+ *  NOTICE: This Logging Class is derived from the Apache License 2.0
+ *  Akka Project, available from http://akkasource.org/
  */
-/**
- * Derived from work Copyright (C) 2009-2010 Scalable Solutions AB <http://scalablesolutions.se>
+/** Derived from work Copyright (C) 2009-2010 Scalable Solutions AB <http://scalablesolutions.se>
  */
 package com.novus.salat.util
 
 import org.slf4j.{ Logger => SLFLogger, LoggerFactory => SLFLoggerFactory }
 
-/**
- * Base trait for all classes that wants to be able use the logging infrastructure.
+/** Base trait for all classes that wants to be able use the logging infrastructure.
  *
- * @author <a href="http://jonasboner.com">Jonas Bon&#233;r</a>
+ *  @author <a href="http://jonasboner.com">Jonas Bon&#233;r</a>
  */
 protected[salat] trait Logging {
   @transient protected lazy val log = Logger(this.getClass.getName)
 }
 
-/**
- * Scala SLF4J wrapper
+/** Scala SLF4J wrapper
  *
- * Example:
- * <pre>
- * class Foo extends Logging {
+ *  Example:
+ *  <pre>
+ *  class Foo extends Logging {
  *   log.info("My foo is %s","alive")
  *   log.error(new Exception(),"My foo is %s","broken")
- * }
- * </pre>
+ *  }
+ *  </pre>
  *
- * The logger uses String.format:
- * http://download-llnw.oracle.com/javase/6/docs/api/java/lang/String.html#format(java.lang.String,%20java.lang.Object...)
+ *  The logger uses String.format:
+ *  http://download-llnw.oracle.com/javase/6/docs/api/java/lang/String.html#format(java.lang.String,%20java.lang.Object...)
  */
 protected[salat] class Logger(val logger: SLFLogger) {
   def name = logger.getName
@@ -154,14 +150,13 @@ protected[salat] class Logger(val logger: SLFLogger) {
   }
 }
 
-/**
- * Logger factory
+/** Logger factory
  *
- * ex.
+ *  ex.
  *
- * val logger = Logger("my.cool.logger")
- * val logger = Logger(classOf[Banana])
- * val rootLogger = Logger.root
+ *  val logger = Logger("my.cool.logger")
+ *  val logger = Logger(classOf[Banana])
+ *  val rootLogger = Logger.root
  *
  */
 protected[salat] object Logger {

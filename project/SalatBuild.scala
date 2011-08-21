@@ -59,9 +59,10 @@ object BuildSettings {
       setPreference(IndentLocalDefs, true).
       setPreference(IndentPackageBlocks, true).
       setPreference(IndentSpaces, 2).
+      setPreference(MultilineScaladocCommentsStartOnFirstLine, true).
       setPreference(PreserveSpaceBeforeArguments, false).
       setPreference(PreserveDanglingCloseParenthesis, false).
-      setPreference(RewriteArrowSymbols, false).  // to thine own self be true, I suppose
+      setPreference(RewriteArrowSymbols, false).
       setPreference(SpaceBeforeColon, false).
       setPreference(SpaceInsideBrackets, false).
       setPreference(SpacesWithinPatternBinders, true)

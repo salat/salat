@@ -1,5 +1,4 @@
-/**
- * @version $Id$
+/** @version $Id$
  */
 package com.novus.salat.test
 

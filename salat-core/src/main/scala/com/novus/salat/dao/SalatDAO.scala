@@ -1,21 +1,20 @@
-/**
- * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+/** Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  *
- * For questions and comments about this product, please see the project page at:
+ *  For questions and comments about this product, please see the project page at:
  *
- * http://github.com/novus/salat
+ *  http://github.com/novus/salat
  *
  */
 package com.novus.salat.dao
@@ -26,10 +25,9 @@ import com.novus.salat._
 import com.mongodb.casbah.commons.{ MongoDBObject, Logging }
 import com.mongodb.{ WriteConcern, DBObject, CommandResult }
 
-/**
- * Base DAO class.
- * @type ObjectType case class type
- * @type ID _id type
+/** Base DAO class.
+ *  @type ObjectType case class type
+ *  @type ID _id type
  */
 trait DAO[ObjectType <: CaseClass, ID <: Any] {
 
@@ -88,8 +86,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   // get the grater from the implicit context and object type erasure
   val _grater = grater[ObjectType](ctx, mot)
 
-  /**
-   *  Inner abstract class to facilitate working with child collections using a typed parent id -
+  /** Inner abstract class to facilitate working with child collections using a typed parent id -
    *  no cascading support will be offered, but you can override saves and deletes in the parent DAO
    *  to manually cascade children as you like.
    *
@@ -107,7 +104,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
    *   val bar = new ChildCollection[Bar, ObjectId](collection = MongoConnection()("db")("barCollection"),
    *   parentIdField = "parentId") { }
    *
-   * }
+   *  }
    */
   abstract class ChildCollection[ChildType <: CaseClass, ChildId <: Any](override val collection: MongoCollection,
                                                                          val parentIdField: String)(implicit mct: Manifest[ChildType],
@@ -181,8 +178,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     }
   }
 
-  /**
-   * Default description is the case class simple name and the collection.
+  /** Default description is the case class simple name and the collection.
    */
   override lazy val description = "SalatDAO[%s,%s](%s)".format(mot.erasure.getSimpleName, mid.erasure.getSimpleName, collection.name)
 
@@ -366,11 +362,10 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     builder.result()
   }
 
-  /**
-   * Convenience method on collection.count
-   * @q optional query with default argument of empty query
-   * @fieldsThatMustExist list of field names to append to the query with "fieldName" -> { "$exists" -> true }
-   * @fieldsThatMustNotExist list of field names to append to the query with "fieldName" -> { "$exists" -> false }
+  /** Convenience method on collection.count
+   *  @q optional query with default argument of empty query
+   *  @fieldsThatMustExist list of field names to append to the query with "fieldName" -> { "$exists" -> true }
+   *  @fieldsThatMustNotExist list of field names to append to the query with "fieldName" -> { "$exists" -> false }
    */
   def count(q: DBObject = MongoDBObject(), fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
     // convenience method - don't personally enjoy writing these queries
