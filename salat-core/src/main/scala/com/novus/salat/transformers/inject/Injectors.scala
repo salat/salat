@@ -375,7 +375,9 @@ package in {
   trait EnumInflater extends Transformer with Logging {
     self: Transformer =>
 
-    val clazz = Class.forName(path)
+    val clazz = getClassNamed(path).getOrElse(throw new Error(
+      "Could not resolve enum='%s' in any of the %d classpaths in ctx='%s'".
+        format(path, ctx.classLoaders.size, ctx.name.getOrElse("N/A"))))
     val companion: Any = clazz.companionObject
 
     val withName: Method = {
