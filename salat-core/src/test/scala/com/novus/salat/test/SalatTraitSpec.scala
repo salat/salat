@@ -1,6 +1,5 @@
 package com.novus.salat.test
 
-
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
@@ -41,15 +40,13 @@ class SalatTraitSpec extends SalatSpec {
 
     "handle a collection of concrete instances of an abstract class annotated with @Salat" in {
       val container = VertebrateList(vList = List[Vertebrate](
-          Bird("Sammy Sparrow"),
-          Bird("Oscar Ostrich", false),
-          Squirrel("Joe"),
-          Squirrel("Rocky", true)
-        )
-      )
-//      println(MapPrettyPrinter(container))
+        Bird("Sammy Sparrow"),
+        Bird("Oscar Ostrich", false),
+        Squirrel("Joe"),
+        Squirrel("Rocky", true)))
+      //      println(MapPrettyPrinter(container))
       val dbo: MongoDBObject = grater[VertebrateList].asDBObject(container)
-//      println(MapPrettyPrinter(dbo))
+      //      println(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint", "com.novus.salat.test.model.VertebrateList")
       dbo must havePair("vList", {
         val listBuilder = MongoDBList.newBuilder
@@ -130,7 +127,7 @@ class SalatTraitSpec extends SalatSpec {
     dbo1 must havePair("someTrait", {
       // _typeHint shows that @Salat annotation on SomeTrait is working
       MongoDBObject("_typeHint" -> "com.novus.salat.test.model.SomeTraitImpl1",
-      "x" -> "Hello")
+        "x" -> "Hello")
     })
     grater[ContainsFieldTypedToTrait].asObject(dbo1) must_== container1
 
@@ -140,7 +137,7 @@ class SalatTraitSpec extends SalatSpec {
     dbo2 must havePair("someTrait", {
       // _typeHint shows that @Salat annotation on SomeTrait is working
       MongoDBObject("_typeHint" -> "com.novus.salat.test.model.SomeTraitImpl2",
-      "y" -> 33)
+        "y" -> 33)
     })
     grater[ContainsFieldTypedToTrait].asObject(dbo2) must_== container2
   }
@@ -149,8 +146,7 @@ class SalatTraitSpec extends SalatSpec {
     val investments = Investments(contracts = List[Contract](
       Stock(name = "Apple", ticker = "AAPL"),
       Turbo(name = "Knock out", ticker = "ASX"),
-      Index(name = "FTSE 100")
-    ))
+      Index(name = "FTSE 100")))
     val dbo: MongoDBObject = grater[Investments].asDBObject(investments)
     dbo must havePair("_typeHint", "com.novus.salat.test.model.Investments")
     dbo must havePair("contracts", {

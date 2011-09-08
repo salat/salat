@@ -9,24 +9,24 @@ import com.novus.salat.annotations._
 import org.bson._
 import org.bson.io._
 
-import com.mongodb.casbah.commons.Logging
+import com.novus.salat.util.Logging
 
 abstract class OpCode(val code: Int)
 
-case object OP_REPLY        extends OpCode(1)
-case object OP_MSG          extends OpCode(1000)
-case object OP_UPDATE       extends OpCode(2001)
-case object OP_INSERT       extends OpCode(2002)
-case object RESERVED        extends OpCode(2003)
-case object OP_QUERY        extends OpCode(2004)
-case object OP_GET_MORE     extends OpCode(2005)
-case object OP_DELETE       extends OpCode(2006)
+case object OP_REPLY extends OpCode(1)
+case object OP_MSG extends OpCode(1000)
+case object OP_UPDATE extends OpCode(2001)
+case object OP_INSERT extends OpCode(2002)
+case object RESERVED extends OpCode(2003)
+case object OP_QUERY extends OpCode(2004)
+case object OP_GET_MORE extends OpCode(2005)
+case object OP_DELETE extends OpCode(2006)
 case object OP_KILL_CURSORS extends OpCode(2007)
 
 object OpCode {
   val * = {
     OP_REPLY :: OP_MSG :: OP_UPDATE :: OP_INSERT :: RESERVED ::
-    OP_QUERY :: OP_GET_MORE :: OP_DELETE :: OP_KILL_CURSORS :: Nil
+      OP_QUERY :: OP_GET_MORE :: OP_DELETE :: OP_KILL_CURSORS :: Nil
   }
 
   def apply(code: Int): OpCode = * find { _.code == code } getOrElse { throw new RuntimeException("bad op code: %d".format(code)) }
@@ -94,17 +94,17 @@ case class MsgHeader(requestID: Int, responseTo: Option[Int], op: OpCode) extend
 
 object MsgHeader extends Readable[MsgHeader] with Logging {
   def read(in: BufferedInputStream): Option[(Int, MsgHeader)] = {
-    val len = Bits.readInt(in) - (32/8) * 4
+    val len = Bits.readInt(in) - (32 / 8) * 4
     Some(len -> MsgHeader(requestID = Bits.readInt(in),
-                          responseTo = Some(Bits.readInt(in)),
-                          op = OpCode(Bits.readInt(in))))
+      responseTo = Some(Bits.readInt(in)),
+      op = OpCode(Bits.readInt(in))))
   }
 }
 
 @Salat
 trait Op extends Writable with Logging {
   self =>
-    val code: OpCode
+  val code: OpCode
 
   def toByteArray: Array[Byte] = {
     val bytes = {
@@ -114,7 +114,7 @@ trait Op extends Writable with Logging {
           hh.header.write(tmp)
           hh match {
             case zah: ZeroAfterHeader => tmp.writeInt(0)
-            case _ =>
+            case _                    =>
           }
         }
         case _ =>
@@ -123,7 +123,7 @@ trait Op extends Writable with Logging {
       tmp.out.toByteArray
     }
     val enc = encoder
-    enc.writeInt(32/8 + bytes.size)
+    enc.writeInt(32 / 8 + bytes.size)
     enc.out.write(bytes)
     log.trace("WRITE: %s", implicitly[Context].lookup_!(self.getClass.getName).asInstanceOf[Grater[CaseClass]].asDBObject(self.asInstanceOf[CaseClass]))
     enc.out.toByteArray
@@ -150,7 +150,7 @@ case class OpUpdate(header: MsgHeader, fullCollectionName: String, flags: List[O
 
 object OpUpdate {
   abstract class Flag(val bits: List[Int], name: String) extends GenericFlag
-  case object Update      extends Flag(List(0), "Update")
+  case object Update extends Flag(List(0), "Update")
   case object MultiUpdate extends Flag(List(1), "MultiUpdate")
 }
 
@@ -176,20 +176,20 @@ case class OpQuery(header: MsgHeader, flags: List[OpQuery.Flag], fullCollectionN
 
 object OpQuery {
   abstract class Flag(val bits: List[Int], name: String) extends GenericFlag
-  case object Reserved        extends Flag(List(0), "Reserved")
-  case object TailableCursor  extends Flag(List(1), "TailableCursor")
-  case object SlaveOk         extends Flag(List(2), "SlaveOk")
-  case object OplogReplay     extends Flag(List(3), "OplogReplay")
+  case object Reserved extends Flag(List(0), "Reserved")
+  case object TailableCursor extends Flag(List(1), "TailableCursor")
+  case object SlaveOk extends Flag(List(2), "SlaveOk")
+  case object OplogReplay extends Flag(List(3), "OplogReplay")
   case object NoCursorTimeout extends Flag(List(4), "NoCursorTimeout")
-  case object AwaitData       extends Flag(List(5), "AwaitData")
-  case object Exhaust         extends Flag(List(6), "Exhaust")
-  case object Partial         extends Flag(List(7), "Partial")
+  case object AwaitData extends Flag(List(5), "AwaitData")
+  case object Exhaust extends Flag(List(6), "Exhaust")
+  case object Partial extends Flag(List(7), "Partial")
 
   abstract class QueryElement(name: String)
-  case object $query    extends QueryElement("$query")
-  case object $orderby  extends QueryElement("$orderby")
-  case object $hint     extends QueryElement("$hint")
-  case object $explain  extends QueryElement("$extends")
+  case object $query extends QueryElement("$query")
+  case object $orderby extends QueryElement("$orderby")
+  case object $hint extends QueryElement("$hint")
+  case object $explain extends QueryElement("$extends")
   case object $snapshot extends QueryElement("$snapshot")
 }
 
@@ -237,10 +237,10 @@ case class OpReply(header: MsgHeader, flags: List[OpReply.Flag], cursorID: Long,
 
 object OpReply {
   abstract class Flag(val bits: List[Int], name: String) extends GenericFlag
-  case object CursorNotFound   extends Flag(List(0), "CursorNotFound")
-  case object QueryFailure     extends Flag(List(1), "QueryFailure")
+  case object CursorNotFound extends Flag(List(0), "CursorNotFound")
+  case object QueryFailure extends Flag(List(1), "QueryFailure")
   case object ShardConfigStale extends Flag(List(2), "ShardConfigStale")
-  case object AwaitCapable     extends Flag(List(3), "AwaitCapable")
+  case object AwaitCapable extends Flag(List(3), "AwaitCapable")
 }
 
 case class OpMsg(header: MsgHeader, message: String) extends Op with HasHeader {

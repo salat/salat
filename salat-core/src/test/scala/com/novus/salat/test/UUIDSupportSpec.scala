@@ -1,21 +1,20 @@
-/**
- * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+/** Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  *
- * For questions and comments about this product, please see the project page at:
+ *  For questions and comments about this product, please see the project page at:
  *
- * http://github.com/novus/salat
+ *  http://github.com/novus/salat
  *
  */
 package com.novus.salat.test
@@ -33,7 +32,7 @@ class UUIDSupportSpec extends SalatSpec {
       val uuid = java.util.UUID.randomUUID
       val o = Olive(uuid)
       val dbo: MongoDBObject = grater[Olive].asDBObject(o)
-//      log.info(MapPrettyPrinter(dbo))
+      //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("awl" -> uuid)
 
       val coll = MongoConnection()(SalatSpecDb)("uuid_test_1")
@@ -46,7 +45,7 @@ class UUIDSupportSpec extends SalatSpec {
       val uuid = new java.util.UUID(123L, 456L)
       val o = Olive(uuid)
       val dbo: MongoDBObject = grater[Olive].asDBObject(o)
-//      log.info(MapPrettyPrinter(dbo))
+      //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("awl" -> uuid)
 
       val coll = MongoConnection()(SalatSpecDb)("uuid_test_2")
@@ -59,7 +58,7 @@ class UUIDSupportSpec extends SalatSpec {
       val uuid = java.util.UUID.nameUUIDFromBytes("pierced".getBytes)
       val o = Olive(uuid)
       val dbo: MongoDBObject = grater[Olive].asDBObject(o)
-//      log.info(MapPrettyPrinter(dbo))
+      //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("awl" -> uuid)
 
       val coll = MongoConnection()(SalatSpecDb)("uuid_test_3")

@@ -1,23 +1,22 @@
-/**
-  * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  *
-  * For questions and comments about this product, please see the project page at:
-  *
-  * http://github.com/novus/salat
-  *
-  */
+/** Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  For questions and comments about this product, please see the project page at:
+ *
+ *  http://github.com/novus/salat
+ *
+ */
 package com.novus.salat.test
 
 import com.novus.salat._
@@ -158,7 +157,7 @@ class CollectionSupportSpec extends SalatSpec {
     }
 
     "support Seq[_]" in {
-      
+
       "support scala.collection.Seq[_]" in {
         val coll = scala.collection.Seq(Thingy("A"), Thingy("B"))
         val gee = Gee(coll = coll)
@@ -175,7 +174,7 @@ class CollectionSupportSpec extends SalatSpec {
         _id must beSome(gee.id)
         dao.findOneByID(gee.id) must beSome(gee)
       }
-      
+
       "support scala.collection.immutable.Seq[_]" in {
         val coll = scala.collection.immutable.Seq(Thingy("A"), Thingy("B"))
         val how = How(coll = coll)
@@ -192,7 +191,7 @@ class CollectionSupportSpec extends SalatSpec {
         _id must beSome(how.id)
         dao.findOneByID(how.id) must beSome(how)
       }
-      
+
       "support scala.collection.mutable.Seq[_]" in {
         val coll = scala.collection.mutable.Seq(Thingy("A"), Thingy("B"))
         val item = Item(coll = coll)
@@ -266,7 +265,7 @@ class CollectionSupportSpec extends SalatSpec {
     }
 
     "support IndexedSeq[_]" in {
-      
+
       "support scala.collection.IndexedSeq[_]" in {
         val coll = scala.collection.IndexedSeq(Thingy("A"), Thingy("B"))
         val nab = Nab(coll = coll)
@@ -283,7 +282,7 @@ class CollectionSupportSpec extends SalatSpec {
         _id must beSome(nab.id)
         dao.findOneByID(nab.id) must beSome(nab)
       }
-      
+
       "support scala.collection.immutable.IndexedSeq[_]" in {
         val coll = scala.collection.immutable.IndexedSeq(Thingy("A"), Thingy("B"))
         val oboe = Oboe(coll = coll)
@@ -353,7 +352,7 @@ class CollectionSupportSpec extends SalatSpec {
         dao.findOneByID(roger.id) must beSome(roger)
       }
     }
-    
+
     // TODO: moar collection types
   }
 }

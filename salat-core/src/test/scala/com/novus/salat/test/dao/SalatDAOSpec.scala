@@ -1,21 +1,20 @@
-/**
- * Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+/** Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  *
- * For questions and comments about this product, please see the project page at:
+ *  For questions and comments about this product, please see the project page at:
  *
- * http://github.com/novus/salat
+ *  http://github.com/novus/salat
  *
  */
 package com.novus.salat.test.dao
@@ -78,6 +77,10 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.next must_== alpha4
       salatCursor.next must_== alpha5
       salatCursor.next must_== alpha6
+    }
+
+    "no-op inserting an empty collection of objects" in {
+      AlphaDAO.insert() must_== Nil
     }
 
     "support findOne returning Option[T]" in new alphaContext {
@@ -184,7 +187,7 @@ class SalatDAOSpec extends SalatSpec {
 
     "support find with a set of keys" in new alphaContextWithData {
       val salatCursor = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$lt" -> 3)),
-        keys = MongoDBObject("beta" -> 0))  // forces beta key to be excluded
+        keys = MongoDBObject("beta" -> 0)) // forces beta key to be excluded
       salatCursor.next must_== alpha1.copy(beta = Nil)
       salatCursor.next must_== alpha2.copy(beta = Nil)
       salatCursor.hasNext must beFalse
@@ -211,7 +214,7 @@ class SalatDAOSpec extends SalatSpec {
         .sort(orderBy = MongoDBObject("_id" -> -1)) // sort by _id desc
         .skip(1)
         .limit(1)
-        .toList   // yay!
+        .toList // yay!
       results must haveSize(1)
       results must contain(alpha5)
 
@@ -225,7 +228,7 @@ class SalatDAOSpec extends SalatSpec {
 
       val projList = ThetaDAO.primitiveProjections[String](MongoDBObject(), "y")
       projList must haveSize(4)
-      projList must contain("y1", "y2", "y3", "y4")    // theta5 has a null value for y, not in the list
+      projList must contain("y1", "y2", "y3", "y4") // theta5 has a null value for y, not in the list
     }
 
     "support using a projection on an Option field to filter out Nones" in new xiContext {
@@ -236,7 +239,7 @@ class SalatDAOSpec extends SalatSpec {
 
       val projList = XiDAO.primitiveProjections[String](MongoDBObject(), "y")
       projList must haveSize(4)
-      projList must contain("y1", "y2", "y3", "y4")    // xi5 has a null value for y, not in the list
+      projList must contain("y1", "y2", "y3", "y4") // xi5 has a null value for y, not in the list
     }
 
     "support case class projections" in new kappaContext {
@@ -287,12 +290,12 @@ class SalatDAOSpec extends SalatSpec {
     _ids must contain(Option(theta1.id), Option(theta2.id), Option(theta3.id), Option(theta4.id), Option(theta5.id))
     ThetaDAO.collection.count must_== 5L
   }
-  
+
   trait xiContext extends Scope {
     log.debug("before: dropping %s", XiDAO.collection.getFullName())
     XiDAO.collection.drop()
     XiDAO.collection.count must_== 0L
-    
+
     val xi1 = Xi(x = "x1", y = Some("y1"))
     val xi2 = Xi(x = "x2", y = Some("y2"))
     val xi3 = Xi(x = "x3", y = Some("y3"))
@@ -302,7 +305,7 @@ class SalatDAOSpec extends SalatSpec {
     _ids must contain(Option(xi1.id), Option(xi2.id), Option(xi3.id), Option(xi4.id), Option(xi5.id))
     XiDAO.collection.count must_== 5L
   }
-  
+
   trait kappaContext extends Scope {
     log.debug("before: dropping %s", KappaDAO.collection.getFullName())
     KappaDAO.collection.drop()
