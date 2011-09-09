@@ -39,9 +39,14 @@ object `package` extends Logging {
     r
   }
 
-  implicit def class2companion(clazz: Class[_]) = new {
-    def companionClass: Class[_] =
-      Class.forName(if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName))
+  implicit def class2companion(clazz: Class[_])(implicit ctx: Context) = new {
+    def companionClass: Class[_] = {
+      val path = if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName)
+      getClassNamed(path).getOrElse {
+        throw new Error("Could not resolve clazz='%s' in any of the %d classpaths in ctx='%s'".
+          format(path, ctx.classLoaders.size, ctx.name.getOrElse("N/A")))
+      }
+    }
 
     def companionObject = companionClass.getField(ModuleFieldName).get(null)
   }
