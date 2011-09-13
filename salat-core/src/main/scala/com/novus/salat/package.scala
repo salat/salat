@@ -23,7 +23,7 @@ import com.mongodb.casbah.Imports._
 
 import java.math.BigInteger
 import com.novus.salat.{ Grater, Context }
-import com.novus.salat.util.Logging
+import com.novus.salat.util._
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
 object `package` extends Logging {
@@ -59,29 +59,13 @@ object `package` extends Logging {
 
   def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup_![X](m)
 
+  protected[salat] def getClassNamed_!(c: String)(implicit ctx: Context): Class[_] = getClassNamed(c)(ctx).getOrElse {
+    throw new Error("getClassNamed: path='%s' does not resolve in any of %d classloaders registered with context='%s'".
+      format(c, ctx.classLoaders.size, ctx.name.getOrElse("N/A")))
+  }
+
   protected[salat] def getClassNamed(c: String)(implicit ctx: Context): Option[Class[_]] = {
-    //    log.info("getClassNamed(): looking for %s in %d classloaders", c, ctx.classLoaders.size)
-    try {
-      var clazz: Class[_] = null
-      //      var count = 0
-      val iter = ctx.classLoaders.iterator
-      while (clazz == null && iter.hasNext) {
-        try {
-          clazz = Class.forName(c, true, iter.next)
-        }
-        catch {
-          case e: ClassNotFoundException => // keep going, maybe it's in the next one
-        }
-
-        //        log.info("getClassNamed: %s %s in classloader '%s' %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), ctx.name.getOrElse("N/A"), count, ctx.classLoaders.size)
-        //        count += 1
-      }
-
-      if (clazz != null) Some(clazz) else None
-    }
-    catch {
-      case _ => None
-    }
+    resolveClass(c, ctx.classLoaders)
   }
 
   protected[salat] def getCaseClass(c: String)(implicit ctx: Context): Option[Class[CaseClass]] =

@@ -78,7 +78,7 @@ trait EnumInflation extends Transformation {
 
   def transform(path: String, t: TypeRefType, value: Any)(implicit ctx: Context) = {
 
-    val clazz = Class.forName(path)
+    val clazz = getClassNamed_!(path)
     val companionObject = clazz.companionObject
     val strategy = clazz.getAnnotation(classOf[EnumAs]) match {
       case specific: EnumAs => specific.strategy

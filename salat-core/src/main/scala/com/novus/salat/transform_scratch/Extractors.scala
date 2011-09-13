@@ -65,7 +65,7 @@ trait MapExtractor extends TransformationWithParentType {
 
 trait EnumDeflator extends Transformation {
   def transform(path: String, t: TypeRefType, value: Any)(implicit ctx: Context) = {
-    val strategy = Class.forName(path).getAnnotation(classOf[EnumAs]) match {
+    val strategy = getClassNamed_!(path).getAnnotation(classOf[EnumAs]) match {
       case specific: EnumAs => specific.strategy
       case _                => ctx.defaultEnumStrategy
     }

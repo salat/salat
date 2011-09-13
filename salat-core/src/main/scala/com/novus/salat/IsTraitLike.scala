@@ -43,7 +43,7 @@ object IsTraitLike extends Logging {
       try {
         getClassNamed(symbol.path) match {
           case Some(clazz: Class[_]) => {
-            val parsed = ScalaSigUtil.parseScalaSig0(clazz).get.topLevelClasses.head
+            val parsed = ScalaSigUtil.parseScalaSig0(clazz, ctx.classLoaders).get.topLevelClasses.head
             if (parsed.isTrait) {
               if (clazz.annotated_?[Salat]) Some(t) else {
                 throw NoAnnotationTrait(clazz)

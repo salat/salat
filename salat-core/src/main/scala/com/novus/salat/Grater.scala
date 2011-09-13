@@ -70,7 +70,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
 
   protected def findSym[A](clazz: Class[A]) = {
-    ScalaSigUtil.parseScalaSig0(clazz).
+    ScalaSigUtil.parseScalaSig0(clazz, ctx.classLoaders).
       map(x => x.topLevelClasses.headOption.
         getOrElse(x.topLevelObjects.headOption.
           getOrElse(throw MissingExpectedType(clazz)))).getOrElse(throw MissingPickledSig(clazz))

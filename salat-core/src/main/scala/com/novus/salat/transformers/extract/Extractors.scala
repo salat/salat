@@ -247,7 +247,7 @@ package out {
   trait EnumStringifier extends Transformer {
     self: Transformer =>
 
-    val strategy = Class.forName(path).getAnnotation(classOf[EnumAs]) match {
+    val strategy = getClassNamed_!(path).getAnnotation(classOf[EnumAs]) match {
       case specific: EnumAs => specific.strategy
       case _                => ctx.defaultEnumStrategy
     }
