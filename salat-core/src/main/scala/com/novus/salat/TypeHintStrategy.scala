@@ -83,10 +83,10 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
   protected[salat] def decodeAndMemoize(bi: BigInt) = {
     fromTypeHint.get(bi).getOrElse {
       val decoded = encoding.format(encoding.decode(bi))
-      log.info("fromTypeHint: put %s ---> '%s'", bi, decoded)
+      log.trace("fromTypeHint: put %s ---> '%s'", bi, decoded)
       fromTypeHint.put(bi, decoded)
       if (!toTypeHint.contains(decoded)) {
-        log.info("toTypeHint: put '%s' ---> %s", decoded, bi)
+        log.trace("toTypeHint: put '%s' ---> %s", decoded, bi)
         toTypeHint.put(decoded, bi)
       }
       decoded
@@ -111,10 +111,10 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
     else {
       toTypeHint.get(in).getOrElse {
         val encoded = encoding.encode(in)
-        log.info("toTypeHint: put '%s' ---> %s", in, encoded)
+        log.trace("toTypeHint: put '%s' ---> %s", in, encoded)
         toTypeHint.put(in, encoded)
         if (!fromTypeHint.contains(encoded)) {
-          log.info("fromTypeHint: put %s ---> '%s'", encoded, in)
+          log.trace("fromTypeHint: put %s ---> '%s'", encoded, in)
           fromTypeHint.put(encoded, in)
         }
         encoded

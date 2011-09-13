@@ -27,7 +27,7 @@ object MissingGraterExplanation extends Logging {
 
   def clazzFromTypeHint(typeHint: Option[String])(implicit ctx: Context): Option[Class[_]] = typeHint match {
     case Some(typeHint) => try {
-      Some(Class.forName(typeHint))
+      getClassNamed(typeHint)
     }
     catch {
       case c: ClassNotFoundException => None
@@ -39,9 +39,9 @@ object MissingGraterExplanation extends Logging {
     }
   }
 
-  def clazzFromPath(path: String): Option[Class[_]] = if (path != null) {
+  def clazzFromPath(path: String)(implicit ctx: Context): Option[Class[_]] = if (path != null) {
     try {
-      Some(Class.forName(path))
+      getClassNamed(path)
     }
     catch {
       case c: ClassNotFoundException => None

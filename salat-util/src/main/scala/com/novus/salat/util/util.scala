@@ -88,4 +88,33 @@ object `package` {
   //  @deprecated("who's using this?") implicit def explodeOID(oid: String) = new {
   //    def asObjectId = new ObjectId((new BigInteger(oid, 36)).toString(16))
   //  }
+
+  protected[salat] def resolveClass_!(c: String, classLoaders: Seq[ClassLoader]): Class[_] = resolveClass(c, classLoaders).getOrElse {
+    throw new Error("resolveClass: path='%s' does not resolve in any of %d available classloaders".format(c, classLoaders.size))
+  }
+
+  protected[salat] def resolveClass(c: String, classLoaders: Seq[ClassLoader]): Option[Class[_]] = {
+    //    log.info("resolveClass(): looking for %s in %d classloaders", c, classLoaders.size)
+    try {
+      var clazz: Class[_] = null
+      //      var count = 0
+      val iter = classLoaders.iterator
+      while (clazz == null && iter.hasNext) {
+        try {
+          clazz = Class.forName(c, true, iter.next)
+        }
+        catch {
+          case e: ClassNotFoundException => // keep going, maybe it's in the next one
+        }
+
+        //        log.info("resolveClass: %s %s in classloader '%s' %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), ctx.name.getOrElse("N/A"), count, ctx.classLoaders.size)
+        //        count += 1
+      }
+
+      if (clazz != null) Some(clazz) else None
+    }
+    catch {
+      case _ => None
+    }
+  }
 }

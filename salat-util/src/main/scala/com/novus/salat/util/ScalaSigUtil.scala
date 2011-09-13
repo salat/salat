@@ -44,10 +44,19 @@ object ScalaSigUtil extends Logging {
     }
   }
 
-  private[salat] def parseScalaSig0(_clazz: Class[_]): Option[ScalaSig] = {
+  private[salat] def parseScalaSig0(_clazz: Class[_], classloaders: Seq[ClassLoader] = Seq.empty): Option[ScalaSig] = {
 
     // support case objects by selectively re-jiggering the class that has been passed in
-    val clazz = if (_clazz.getName.endsWith("$")) Class.forName(_clazz.getName.replaceFirst("\\$$", "")) else _clazz
+    val clazz = if (_clazz.getName.endsWith("$")) {
+      val caseObject = _clazz.getName.replaceFirst("\\$$", "")
+      if (classloaders.isEmpty) {
+        Class.forName(caseObject)
+      }
+      else {
+        resolveClass_!(caseObject, classloaders)
+      }
+    }
+    else _clazz
     assume(clazz != null, "parseScalaSig0: cannot parse ScalaSig from null class=%s".format(_clazz))
 
     //    val sigFromAnnotation = parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_))

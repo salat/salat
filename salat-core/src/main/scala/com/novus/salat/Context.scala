@@ -90,7 +90,7 @@ trait Context extends Logging {
     if (!graters.contains(grater.clazz.getName)) {
       graters += grater.clazz.getName -> grater
       //      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
-      log.info("accept: ctx='%s' accepted grater[%s]", name.getOrElse("<no name>"), grater.clazz.getName)
+      log.debug("accept: ctx='%s' accepted grater[%s]", name.getOrElse("<no name>"), grater.clazz.getName)
     }
   }
 
