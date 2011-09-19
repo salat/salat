@@ -145,6 +145,14 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       childDao.find(parentIdsQuery(parentIds) ++ query)
     }
 
+    def findByParentId(parentId: ID, query: DBObject, keys: DBObject): SalatMongoCursor[ChildType] = {
+      childDao.find(parentIdQuery(parentId) ++ query, keys)
+    }
+
+    def findByParentIds(parentIds: List[ID], query: DBObject, keys: DBObject): SalatMongoCursor[ChildType] = {
+      childDao.find(parentIdsQuery(parentIds) ++ query, keys)
+    }
+
     def updateByParentId[A <% DBObject](parentId: ID, o: A, upsert: Boolean, multi: Boolean, wc: WriteConcern = collection.writeConcern) {
       childDao.update(parentIdQuery(parentId), o, upsert, multi, wc)
     }
