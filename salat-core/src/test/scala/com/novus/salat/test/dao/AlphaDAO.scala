@@ -26,6 +26,8 @@ import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations._
 import org.scala_tools.time.Imports._
 import com.novus.salat.dao.SalatDAO
+import org.joda.time.DateMidnight
+import org.joda.time.DateTimeConstants._
 
 @Salat
 trait Beta {
@@ -58,10 +60,10 @@ object XiDAO extends SalatDAO[Xi, ObjectId](collection = MongoConnection()(Salat
 
 object KappaDAO extends SalatDAO[Kappa, ObjectId](collection = MongoConnection()(SalatSpecDb)(KappaColl))
 
-case class ChildInfo(lastUpdated: DateTime = DateTime.now)
+case class ChildInfo(lastUpdated: DateTime = new DateMidnight(0L).toDateTime)
 case class Child(@Key("_id") id: Int,
                  parentId: ObjectId,
-                 x: String,
+                 x: String = "",
                  childInfo: ChildInfo = ChildInfo(),
                  y: Option[String] = None)
 case class Parent(@Key("_id") id: ObjectId = new ObjectId, name: String)
