@@ -74,6 +74,7 @@ package object always_with_implicits {
   implicit def obj2MDbo[X <: CaseClass](dbo: MongoDBObject): X = ctx.lookup_!(dbo)
     .asInstanceOf[Grater[X]]
     .asObject(dbo)
+
   implicit def obj2Dbo[X <: CaseClass](dbo: DBObject): X = obj2MDbo(wrapDBObj(dbo))
 }
 
@@ -99,5 +100,19 @@ package object always_binary_type_hint_encoding {
     override val typeHintStrategy = BinaryTypeHintStrategy(when = TypeHintFrequency.Always,
       typeHint = "t",
       encoding = TypeHintEncoding.UsAsciiEncoding)
+  }
+}
+
+package object suppress_default_args {
+  implicit val ctx = new Context {
+    val name = Some("SuppressDefaultValues")
+    override val suppressDefaultArgs = true
+  }
+}
+
+package object dont_suppress_default_args {
+  implicit val ctx = new Context {
+    val name = Some("DontSuppressDefaultValues")
+    override val suppressDefaultArgs = false
   }
 }

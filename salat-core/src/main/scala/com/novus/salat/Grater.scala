@@ -38,32 +38,15 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
   ctx.accept(this)
 
   def asDBObject(o: X): DBObject
+
   def asObject[A <% MongoDBObject](dbo: A): X
+
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T]
 
   type OutHandler = PartialFunction[(Any, SField), Option[(String, Any)]]
 
-  protected def outField: OutHandler = {
-    case (_, field) if field.ignore => None
-    case (null, _)                  => None
-    case (element, field) => {
-      field.out_!(element) match {
-        case Some(None) => None
-        case Some(serialized) => {
-          val key = ctx.determineFieldName(clazz, field)
-          val value = serialized match {
-            case Some(unwrapped) => unwrapped
-            case _               => serialized
-          }
-          Some(key -> value)
-        }
-
-        case _ => None
-      }
-    }
-  }
-
   override def toString = "%s(%s @ %s)".format(getClass.getSimpleName, clazz, ctx)
+
   override def equals(that: Any) = that.isInstanceOf[Grater[_]] && that.hashCode == this.hashCode
 }
 
@@ -115,6 +98,56 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   // for use when you just want to find something and whether it was declared in clazz, some trait clazz extends, or clazz' own superclass
   // is not a concern
   protected lazy val allTheChildren: Seq[Symbol] = sym.children ++ interestingInterfaces.map(_._2.children).flatten ++ interestingSuperclass.map(_._2.children).flatten
+
+  protected def outField: OutHandler = {
+    case (_, field) if field.ignore => None
+    case (null, _)                  => None
+    case (element, field) => {
+      field.out_!(element) match {
+        case Some(None) => None
+        case Some(serialized) => {
+          //          log.info("""
+          //
+          //          field.name = '%s'
+          //          value = %s  [%s]
+          //          default = %s [%s]
+          //          value == default? %s
+          //
+          //          """, field.name,
+          //            serialized,
+          //            serialized.asInstanceOf[AnyRef].getClass.getName,
+          //            safeDefault(field),
+          //            safeDefault(field).map(_.asInstanceOf[AnyRef].getClass.getName).getOrElse("N/A"),
+          //            (safeDefault(field).map(dv => dv == serialized).getOrElse(false)))
+
+          serialized match {
+            case serialized if ctx.suppressDefaultArgs && safeDefault(field).map(dv => dv == serialized).getOrElse(false)   => None
+            case serialized: BasicDBList if ctx.suppressDefaultArgs && serialized.isEmpty && emptyTraversableDefault(field) => None
+            case serialized: BasicDBObject if ctx.suppressDefaultArgs && serialized.isEmpty && emptyMapDefault(field)       => None
+            case serialized => {
+              val key = ctx.determineFieldName(clazz, field)
+              val value = serialized match {
+                case Some(unwrapped) => unwrapped
+                case _               => serialized
+              }
+              Some(key -> value)
+            }
+          }
+        }
+        case _ => None
+      }
+    }
+  }
+
+  protected def emptyMapDefault(field: SField) = safeDefault(field) match {
+    case Some(m: Map[_, _]) if m.asInstanceOf[Map[_, _]].isEmpty => true
+    case _ => false
+  }
+
+  protected def emptyTraversableDefault(field: SField) = safeDefault(field) match {
+    case Some(t: Traversable[_]) if t.asInstanceOf[Traversable[_]].isEmpty => true
+    case _ => false
+  }
 
   protected[salat] lazy val indexedFields = {
     // don't use allTheChildren here!  this is the indexed fields for clazz and clazz alone

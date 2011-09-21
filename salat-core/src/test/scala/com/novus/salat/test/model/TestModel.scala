@@ -161,6 +161,24 @@ case class Rhoda(consumed: Option[String] = None)
 case class Rhoda2(howHot: Option[BigDecimal] = None)
 case class Rhoda3(consumed: Option[String] = None)
 
+object SuppressDefaults {
+  val HowDefault = "who"
+  val PerishedDefault = true
+  val FitsDefault = Nil
+  val AboutDefault = Map.empty[String, String]
+}
+
+case class Fit(length: Int = 3)
+object Susan {
+  val empty = Susan()
+}
+case class Susan(how: String = SuppressDefaults.HowDefault,
+                 perished: Boolean = SuppressDefaults.PerishedDefault,
+                 fits: List[Fit] = SuppressDefaults.FitsDefault,
+                 about: Map[String, String] = SuppressDefaults.AboutDefault)
+
+case class Susan2(how: String = "who", perished: Boolean = true, fits: List[Fit])
+
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
 case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])

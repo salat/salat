@@ -49,6 +49,8 @@ trait Context extends Logging {
 
   val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
 
+  val suppressDefaultArgs: Boolean = false
+
   def registerClassLoader(cl: ClassLoader): Unit = {
     // any explicitly-registered classloader is assumed to take priority over the boot time classloader
     classLoaders = (Seq.newBuilder[ClassLoader] += cl ++= classLoaders).result
