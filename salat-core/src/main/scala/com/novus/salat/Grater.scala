@@ -321,7 +321,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
 case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(implicit val ctx: Context) {
 
-  def suppress(serialized: Any) = if (ctx.suppressDefaultArgs) {
+  def suppress(serialized: Any) = if (ctx.suppressDefaultArgs && field.name != "_id") {
     value.map {
       v =>
         serialized match {
