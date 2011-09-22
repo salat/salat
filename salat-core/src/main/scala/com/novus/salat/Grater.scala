@@ -121,9 +121,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
           //            (safeDefault(field).map(dv => dv == serialized).getOrElse(false)))
 
           serialized match {
-            case serialized if ctx.suppressDefaultArgs && safeDefault(field).map(dv => dv == serialized).getOrElse(false)   => None
-            case serialized: BasicDBList if ctx.suppressDefaultArgs && serialized.isEmpty && emptyTraversableDefault(field) => None
-            case serialized: BasicDBObject if ctx.suppressDefaultArgs && serialized.isEmpty && emptyMapDefault(field)       => None
+            case serialized if defaultArg(field).suppress(serialized) => None
             case serialized => {
               val key = ctx.determineFieldName(clazz, field)
               val value = serialized match {
@@ -137,16 +135,6 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         case _ => None
       }
     }
-  }
-
-  protected def emptyMapDefault(field: SField) = safeDefault(field) match {
-    case Some(m: Map[_, _]) if m.asInstanceOf[Map[_, _]].isEmpty => true
-    case _ => false
-  }
-
-  protected def emptyTraversableDefault(field: SField) = safeDefault(field) match {
-    case Some(t: Traversable[_]) if t.asInstanceOf[Traversable[_]].isEmpty => true
-    case _ => false
   }
 
   protected[salat] lazy val indexedFields = {
@@ -232,16 +220,6 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   protected lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
 
-  protected lazy val defaults: Seq[Option[Method]] = indexedFields.map {
-    field =>
-      try {
-        Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
-      }
-      catch {
-        case _ => None
-      }
-  }
-
   protected def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
     case PolyType(tr @ TypeRefType(_, _, _), _) => tr
   }
@@ -269,15 +247,6 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
     builder.result
   }
-
-  protected def safeDefault(field: SField) =
-    defaults(field.idx).map(m => Some(m.invoke(companionObject))).getOrElse(None) match {
-      case yes @ Some(default) => yes
-      case _ => field.typeRefType match {
-        case IsOption(_) => Some(None)
-        case _           => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
-      }
-    }
 
   def asObject[A <% MongoDBObject](dbo: A): X =
     if (sym.isModule) {
@@ -311,4 +280,74 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     }
 
   override def hashCode = sym.path.hashCode
+
+  protected lazy val defaults: Seq[Option[Method]] = indexedFields.map {
+    field =>
+      try {
+        Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
+      }
+      catch {
+        case _ => None
+      }
+  }
+
+  def defaultArg(field: SField): DefaultArg = {
+    betterDefaults.get(field).getOrElse {
+      throw new Exception("Grater error: clazz='%s' field '%s' needs to register presence or absence of default values".
+        format(clazz, field.name))
+    }
+  }
+
+  protected def safeDefault(field: SField) = {
+    defaultArg(field).safeValue
+  }
+
+  lazy val betterDefaults = {
+    val builder = Map.newBuilder[SField, DefaultArg]
+    for (field <- indexedFields) {
+      val defaultMethod = try {
+        Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
+      }
+      catch {
+        case _ => None // indicates no default value was supplied
+      }
+      builder += field -> DefaultArg(clazz, field, defaultMethod.map(m => Some(m.invoke(companionObject))).getOrElse(None))
+    }
+    // pad out with extra fields to persist
+    extraFieldsToPersist.foreach(f => builder += f._2 -> DefaultArg(clazz, f._2, None))
+    builder.result()
+  }
+}
+
+case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(implicit val ctx: Context) {
+
+  def suppress(serialized: Any) = if (ctx.suppressDefaultArgs) {
+    value.map {
+      v =>
+        serialized match {
+          case serialized: BasicDBList if serialized.isEmpty && isEmptyTraversable => true
+          case serialized: BasicDBObject if serialized.isEmpty && isEmptyMap => true
+          case serialized => serialized == v
+        }
+    }.getOrElse(false)
+  }
+  else false
+
+  lazy val safeValue: Some[AnyRef] = value match {
+    case v @ Some(_) => v
+    case _ => field.typeRefType match {
+      case IsOption(_) => Some(None)
+      case _           => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
+    }
+  }
+
+  lazy val isEmptyMap = value match {
+    case Some(m: Map[_, _]) if m.asInstanceOf[Map[_, _]].isEmpty => true
+    case _ => false
+  }
+
+  lazy val isEmptyTraversable = value match {
+    case Some(t: Traversable[_]) if t.asInstanceOf[Traversable[_]].isEmpty => true
+    case _ => false
+  }
 }
