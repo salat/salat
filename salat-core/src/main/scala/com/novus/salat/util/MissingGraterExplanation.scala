@@ -37,6 +37,7 @@ object MissingGraterExplanation extends Logging {
         None
       }
     }
+    case _ => None
   }
 
   def clazzFromPath(path: String)(implicit ctx: Context): Option[Class[_]] = if (path != null) {
