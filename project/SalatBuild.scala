@@ -41,7 +41,7 @@ object BuildSettings {
 
   val buildOrganization = "com.novus"
   val buildVersion = "0.0.8-SNAPSHOT"
-  val buildScalaVersion = "2.9.0-1"
+  val buildScalaVersion = "2.9.1"
 
   lazy val formatSettings = ScalariformPlugin.settings ++ Seq(
     formatPreferences in Compile := formattingPreferences,
@@ -88,11 +88,11 @@ object BuildSettings {
 }
 
 object Dependencies {
-  val specs2 = "org.specs2" %% "specs2" % "1.5" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "1.6.1" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.1"
-  val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
-  val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5.0"
+  val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.6.5"
+  val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5-1"
 }
 
 object Repos {
