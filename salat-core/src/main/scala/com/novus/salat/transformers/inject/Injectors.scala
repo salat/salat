@@ -234,9 +234,17 @@ package in {
   trait LongToInt extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context) = value match {
-      case l: Long  => l.intValue
-      case i: Int   => i
-      case s: Short => s.intValue
+      case l: Long   => l.intValue
+      case d: Double => d.intValue // Mongo 1.8.3 shell quirk - fixed with NumberInt in 1.9.1 (see https://jira.mongodb.org/browse/SERVER-854)
+      case f: Float  => f.intValue // Mongo 1.8.3 shell quirk - fixed with NumberInt in 1.9.1 (see https://jira.mongodb.org/browse/SERVER-854)
+      case i: Int    => i
+      case s: Short  => s.intValue
+      case x: String => try {
+        Integer.valueOf(x)
+      }
+      catch {
+        case e => None
+      }
     }
   }
 
