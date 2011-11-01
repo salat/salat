@@ -8,16 +8,18 @@ object SalatBuild extends Build {
   import BuildSettings._
 
   val utilDeps = Seq(specs2, slf4jSimple)
-  val coreDeps = Seq(mongoJava, casbah_core, commonsLang, specs2)
+  val coreDeps = Seq(mongoJava, casbah_core, commonsLang, specs2, lift_json)
 
   lazy val salat = Project(
     id = "salat",
     base = file("."),
-    settings = buildSettings,
-    aggregate = Seq(salatUtil, salatCore)
-  )
+    settings = buildSettings ++ Seq(
+      publishArtifact := false
+    ),
+    aggregate = Seq(util, core)
+  ) dependsOn(util, core)
 
-  lazy val salatUtil = {
+  lazy val util = {
     val id = "salat-util"
     val base = file("salat-util")
     val settings = buildSettings ++ Seq(
@@ -27,11 +29,11 @@ object SalatBuild extends Build {
     Project(id = id, base = base, settings = settings)
   }
 
-  lazy val salatCore = Project(
+  lazy val core = Project(
     id = "salat-core",
     base = file("salat-core"),
     settings = buildSettings ++ Seq(libraryDependencies ++= coreDeps)
-  ) dependsOn (salatUtil)
+  ) dependsOn (util)
 
 }
 
@@ -43,12 +45,25 @@ object BuildSettings {
   val buildVersion = "0.0.8-SNAPSHOT"
   val buildScalaVersion = "2.8.1"
 
-  lazy val formatSettings = ScalariformPlugin.settings ++ Seq(
+  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
+    organization := buildOrganization,
+    version := buildVersion,
+    scalaVersion := buildScalaVersion,
+    shellPrompt := ShellPrompt.buildShellPrompt,
+    parallelExecution in Test := false,
+    testFrameworks += TestFrameworks.Specs2,
+    resolvers ++= Seq(scalaToolsRepo, scalaToolsSnapRepo, novusRepo, novusSnapsRepo, typeSafeRepo),
+    scalacOptions ++= Seq("-deprecation", "-unchecked")
+  )
+}
+
+object Format {
+  lazy val settings = ScalariformPlugin.settings ++ Seq(
     formatPreferences in Compile := formattingPreferences,
     formatPreferences in Test    := formattingPreferences
   )
 
-  def formattingPreferences = {
+  private def formattingPreferences = {
     import scalariform.formatter.preferences._
     FormattingPreferences().setPreference(AlignParameters, true).
       setPreference(AlignSingleLineCaseStatements, true).
@@ -67,16 +82,10 @@ object BuildSettings {
       setPreference(SpaceInsideBrackets, false).
       setPreference(SpacesWithinPatternBinders, true)
   }
+}
 
-  val buildSettings = Defaults.defaultSettings ++ formatSettings ++ Seq(
-    organization := buildOrganization,
-    version := buildVersion,
-    scalaVersion := buildScalaVersion,
-    shellPrompt := ShellPrompt.buildShellPrompt,
-    parallelExecution in Test := false,
-    testFrameworks += TestFrameworks.Specs2,
-    resolvers ++= Seq(scalaToolsRepo, scalaToolsSnapRepo, novusRepo, novusSnapsRepo, typeSafeRepo),
-    scalacOptions ++= Seq("-deprecation", "-unchecked"),
+object Publish {
+  lazy val settings = Seq(
     publishTo <<= (version) {
       version: String =>
         val r = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
@@ -93,6 +102,7 @@ object Dependencies {
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.1"
   val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5.0"
+  val lift_json = "net.liftweb" %% "lift-json" % "2.3"
 }
 
 object Repos {
