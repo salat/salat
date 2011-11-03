@@ -7,8 +7,8 @@ object SalatBuild extends Build {
   import Dependencies._
   import BuildSettings._
 
-  val utilDeps = Seq(specs2, slf4jSimple)
-  val coreDeps = Seq(mongoJava, casbah_core, commonsLang, specs2, lift_json)
+  val utilDeps = Seq(specs2, slf4jApi, slf4jSimple)
+  val coreDeps = Seq(mongoJava, casbah_core, commonsLang, specs2)
 
   lazy val salat = Project(
     id = "salat",
@@ -99,10 +99,10 @@ object Publish {
 object Dependencies {
   val specs2 = "org.specs2" %% "specs2" % "1.5" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
-  val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.1"
+  val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
+  val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.4" % "test"
   val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5.0"
-  val lift_json = "net.liftweb" %% "lift-json" % "2.3"
 }
 
 object Repos {
