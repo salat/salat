@@ -73,7 +73,7 @@ class SalatDAOSpec extends SalatSpec {
       mongoCursor.next() must_== grater[Alpha].asDBObject(alpha6)
 
       // BUT the Salat DAO returns a cursor types to case classes!
-      val salatCursor = AlphaDAO.find(MongoDBObject())
+      val salatCursor = AlphaDAO.find(MongoDBObject.empty)
       salatCursor.next must_== alpha4
       salatCursor.next must_== alpha5
       salatCursor.next must_== alpha6
@@ -144,7 +144,7 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.findOne(grater[Alpha].asDBObject(alpha5)) must beNone
 
       // and then there were two!
-      val salatCursor = AlphaDAO.find(MongoDBObject())
+      val salatCursor = AlphaDAO.find(MongoDBObject.empty)
       salatCursor.next must_== alpha4
       salatCursor.next must_== alpha6
     }
@@ -226,7 +226,7 @@ class SalatDAOSpec extends SalatSpec {
       // a projection on a findOne that brings nothing back
       ThetaDAO.primitiveProjection[String](MongoDBObject("x" -> "x99"), "y") must beNone
 
-      val projList = ThetaDAO.primitiveProjections[String](MongoDBObject(), "y")
+      val projList = ThetaDAO.primitiveProjections[String](MongoDBObject.empty, "y")
       projList must haveSize(4)
       projList must contain("y1", "y2", "y3", "y4") // theta5 has a null value for y, not in the list
     }
@@ -237,7 +237,7 @@ class SalatDAOSpec extends SalatSpec {
       // a projection on a findOne that brings nothing back
       XiDAO.primitiveProjection[String](MongoDBObject("x" -> "x99"), "y") must beNone
 
-      val projList = XiDAO.primitiveProjections[String](MongoDBObject(), "y")
+      val projList = XiDAO.primitiveProjections[String](MongoDBObject.empty, "y")
       projList must haveSize(4)
       projList must contain("y1", "y2", "y3", "y4") // xi5 has a null value for y, not in the list
     }
