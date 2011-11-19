@@ -195,7 +195,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def insert(t: ObjectType, wc: WriteConcern) = {
     val _id = try {
       val dbo = _grater.asDBObject(t)
-      collection.db.requestStart()
       val wr = collection.insert(dbo, wc)
       if (wr.getLastError(wc).ok()) {
         dbo.getAs[ID]("_id")
@@ -204,9 +203,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
         throw SalatInsertError(description, collection, wc, wr, List(dbo))
       }
     }
-    finally {
-      collection.db.requestDone()
-    }
 
     _id
   }
@@ -214,7 +210,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def insert(docs: ObjectType*)(implicit wc: WriteConcern = collection.writeConcern) = if (docs.nonEmpty) {
     val _ids = try {
       val dbos = docs.map(t => _grater.asDBObject(t))
-      collection.db.requestStart()
       val wr = collection.insert(dbos, wc)
       if (wr.getLastError(wc).ok()) {
         val builder = List.newBuilder[Option[ID]]
@@ -231,10 +226,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       else {
         throw SalatInsertError(description, collection, wc, wr, dbos.toList)
       }
-    }
-    finally {
-      //      log.trace("insert: collection=%s request done", collection.getName())
-      collection.db.requestDone()
     }
 
     _ids
@@ -255,16 +246,12 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def remove(t: ObjectType, wc: WriteConcern) {
     try {
-      collection.db.requestStart()
       val dbo = _grater.asDBObject(t)
       val wr = collection.remove(dbo, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
         throw SalatRemoveError(description, collection, wc, wr, List(dbo))
       }
-    }
-    finally {
-      collection.db.requestDone()
     }
   }
 
@@ -274,15 +261,11 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def remove[A <% DBObject](q: A, wc: WriteConcern) {
     try {
-      collection.db.requestStart()
       val wr = collection.remove(q, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
         throw SalatRemoveQueryError(description, collection, q, wc, wr)
       }
-    }
-    finally {
-      collection.db.requestDone()
     }
   }
 
@@ -292,7 +275,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def save(t: ObjectType, wc: WriteConcern) {
     try {
-      collection.db.requestStart()
       val dbo = _grater.asDBObject(t)
       val wr = collection.save(dbo, wc)
       val cr = wr.getLastError(wc)
@@ -300,22 +282,15 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
         throw SalatSaveError(description, collection, wc, wr, List(dbo))
       }
     }
-    finally {
-      collection.db.requestDone()
-    }
   }
 
   def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = collection.writeConcern) {
     try {
-      collection.db.requestStart()
       val wr = collection.update(q, o, upsert, multi, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
         throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
       }
-    }
-    finally {
-      collection.db.requestDone()
     }
   }
 
