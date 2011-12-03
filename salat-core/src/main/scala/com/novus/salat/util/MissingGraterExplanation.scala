@@ -82,7 +82,7 @@ object MissingGraterExplanation extends Logging {
       Path from pickled Scala sig: '%s'
 
 
-       """.format(reason, ctx.name.getOrElse("No name supplied"), path)
+       """.format(reason, ctx.name, path)
 
     explanation
   }
@@ -117,7 +117,7 @@ object MissingGraterExplanation extends Logging {
       FELL DOWN DESERIALZIING:
       %s
 
-       """.format(reason, ctx.name.getOrElse("No name supplied"), path, typeHint.getOrElse(""), dbo)
+       """.format(reason, ctx.name, path, typeHint.getOrElse(""), dbo)
 
     explanation
   }

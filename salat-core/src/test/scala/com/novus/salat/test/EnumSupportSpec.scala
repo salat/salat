@@ -66,7 +66,7 @@ class EnumSupportSpec extends SalatSpec {
 
     "allow for context-level custom enum handling strategy" in {
       implicit val ctx = new Context {
-        val name = Some("EnumSupportSpec-1")
+        val name = "EnumSupportSpec-1"
         override val defaultEnumStrategy = EnumStrategy.BY_ID
       }
 
@@ -102,7 +102,7 @@ class EnumSupportSpec extends SalatSpec {
     "allow an individual enum annotated with EnumAs to override custom enum handling strategy" in {
 
       implicit val ctx = new Context {
-        val name = Some("EnumSupportSpec-4")
+        val name = "EnumSupportSpec-4"
         override val defaultEnumStrategy = EnumStrategy.BY_ID
       }
 

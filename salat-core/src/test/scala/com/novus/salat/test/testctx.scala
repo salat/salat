@@ -28,23 +28,24 @@ import com.mongodb.casbah.Imports
 
 package object always {
 
+  val ContextName = "TestContext-Always"
+
   implicit val ctx = new Context {
-    val name = Some("TestContext-Always")
-    override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
+    val name = ContextName
   }
 }
 
 package object when_necessary {
 
   implicit val ctx = new Context {
-    val name = Some("TestContext-WhenNecessary")
+    val name = "TestContext-WhenNecessary"
     override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
   }
 }
 
 package object never {
   implicit val ctx = new Context {
-    val name = Some("TestContext-AlwaysTypeHints")
+    val name = "TestContext-AlwaysTypeHints"
     override val typeHintStrategy = NeverTypeHint
   }
 }
@@ -54,7 +55,7 @@ package object custom_type_hint {
   val CustomTypeHint = "_t"
 
   implicit val ctx = new Context {
-    val name = Some("TestContext-Always")
+    val name = "TestContext-Always"
     override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = CustomTypeHint)
   }
 }
@@ -62,16 +63,16 @@ package object custom_type_hint {
 package object always_with_implicits {
 
   implicit val ctx = new Context {
-    val name = Some("TestContext-Always-Implicits")
+    val name = "TestContext-Always-Implicits"
     override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
   }
 
-  implicit def dbo2Obj[X <: CaseClass](obj: X): DBObject = ctx.lookup_!(obj.getClass.getName)
+  implicit def dbo2Obj[X <: CaseClass](obj: X): DBObject = ctx.lookup(obj.getClass.getName)
     .asInstanceOf[Grater[X]]
     .asDBObject(obj)
 
   // this requires ALWAYS using _typeHint, all the time!
-  implicit def obj2MDbo[X <: CaseClass](dbo: MongoDBObject): X = ctx.lookup_!(dbo)
+  implicit def obj2MDbo[X <: CaseClass](dbo: MongoDBObject): X = ctx.lookup(dbo)
     .asInstanceOf[Grater[X]]
     .asObject(dbo)
 
@@ -80,14 +81,14 @@ package object always_with_implicits {
 
 package object per_class_key_remapping {
   implicit val ctx = new Context {
-    val name = Some("TestContext-PerClassKeyRemapping")
+    val name = "TestContext-PerClassKeyRemapping"
   }
   ctx.registerPerClassKeyOverride(classOf[Rhoda], remapThis = "consumed", toThisInstead = "fire")
 }
 
 package object when_necessary_binary_type_hint_encoding {
   implicit val ctx = new Context {
-    val name = Some("WhenNecessary-BinaryTypeHint")
+    val name = "WhenNecessary-BinaryTypeHint"
     override val typeHintStrategy = BinaryTypeHintStrategy(when = TypeHintFrequency.WhenNecessary,
       typeHint = "t",
       encoding = TypeHintEncoding.UsAsciiEncoding)
@@ -96,7 +97,7 @@ package object when_necessary_binary_type_hint_encoding {
 
 package object always_binary_type_hint_encoding {
   implicit val ctx = new Context {
-    val name = Some("Always-BinaryTypeHint")
+    val name = "Always-BinaryTypeHint"
     override val typeHintStrategy = BinaryTypeHintStrategy(when = TypeHintFrequency.Always,
       typeHint = "t",
       encoding = TypeHintEncoding.UsAsciiEncoding)
@@ -105,14 +106,14 @@ package object always_binary_type_hint_encoding {
 
 package object suppress_default_args {
   implicit val ctx = new Context {
-    val name = Some("SuppressDefaultValues")
+    val name = "SuppressDefaultValues"
     override val suppressDefaultArgs = true
   }
 }
 
 package object dont_suppress_default_args {
   implicit val ctx = new Context {
-    val name = Some("DontSuppressDefaultValues")
+    val name = "DontSuppressDefaultValues"
     override val suppressDefaultArgs = false
   }
 }

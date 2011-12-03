@@ -48,7 +48,7 @@ trait TraversableExtractor extends TransformationWithParentType {
 trait MapExtractor extends TransformationWithParentType {
 
   override def after(path: String, t: TypeRefType, pt: TypeRefType, value: Any)(implicit ctx: Context) = value match {
-    case map: scala.collection.Map[String, _] => {
+    case map: scala.collection.Map[_, _] => {
       val builder = MongoDBObject.newBuilder
       map.foreach {
         case (k, el) =>
@@ -79,7 +79,7 @@ trait EnumDeflator extends Transformation {
 trait InContextExtractor extends Transformation {
   // TODO: add proxyGrater
   def transform(path: String, t: TypeRefType, value: Any)(implicit ctx: Context) = value match {
-    //    case cc: CaseClass => ctx.lookup_!(path, cc).asDBObject(cc)
+    //    case cc: CaseClass => ctx.lookup(path, cc).asDBObject(cc)
     case _ => MongoDBObject("failed-to-convert" -> value.toString)
   }
 }

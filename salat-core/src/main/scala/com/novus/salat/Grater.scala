@@ -33,6 +33,9 @@ import com.novus.salat.util._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
 
+// TODO: create companion object to serve as factory for grater creation - there
+// is not reason for this logic to be wodged in Context
+
 abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Context) extends Logging {
 
   ctx.accept(this)

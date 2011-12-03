@@ -48,8 +48,8 @@ trait TraversableInjector extends TransformationWithParentType {
   }
 
   override def after(path: String, t: TypeRefType, pt: TypeRefType, value: Any)(implicit ctx: Context) = value match {
-    case traversable: Traversable[Any] => Some(traversableImpl(pt, traversable.map(transform(path, t, _))))
-    case _                             => None
+    case traversable: Traversable[_] => Some(traversableImpl(pt, traversable.map(transform(path, t, _))))
+    case _                           => None
   }
 }
 
@@ -91,11 +91,11 @@ trait EnumInflation extends Transformation {
         invoke(companionObject, name)
       case (EnumStrategy.BY_ID, id: Int) => clazz.getDeclaredMethods.
         filter(_.getName == "apply").head.
-        invoke(companionObject, id.asInstanceOf[Integer])
+        invoke(companionObject, id.asInstanceOf[java.lang.Integer])
       case (EnumStrategy.BY_ID, idAsString: String) => idAsString match {
         case IsInt(id) => clazz.getDeclaredMethods.
           filter(_.getName == "apply").head.
-          invoke(companionObject, id.asInstanceOf[Integer])
+          invoke(companionObject, id.asInstanceOf[java.lang.Integer])
         case _ => throw EnumInflaterGlitch(clazz, strategy, value)
       }
       case _ => throw EnumInflaterGlitch(clazz, strategy, value)
@@ -114,10 +114,8 @@ trait InContextInjector extends Transformation {
     case _                   => None
   }
 
-  // TODO: add proxyGrater
-  private def transform0(path: String, t: TypeRefType, dbo: MongoDBObject)(implicit ctx: Context) = (ctx.lookup(t.symbol.path) orElse ctx.lookup(path, dbo)) match {
-    case Some(grater) => grater.asObject(dbo).asInstanceOf[CaseClass]
-    case None         => throw GraterFromDboGlitch(path, dbo)(ctx)
+  private def transform0(path: String, t: TypeRefType, dbo: MongoDBObject)(implicit ctx: Context) = {
+    (ctx.lookup_?(t.symbol.path) orElse ctx.lookup_?(path)).getOrElse(ctx.lookup(dbo)).asObject(dbo)
   }
 
   def transform(path: String, t: TypeRefType, value: Any)(implicit ctx: Context) = value match {
