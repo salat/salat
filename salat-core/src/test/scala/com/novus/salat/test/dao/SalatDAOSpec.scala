@@ -149,6 +149,20 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.next must_== alpha6
     }
 
+    "support removing by ID" in new alphaContext {
+      AlphaDAO.insert(alpha1)
+      AlphaDAO.collection.count must_== 1L
+      AlphaDAO.removeById(alpha1.id)
+      AlphaDAO.collection.count must_== 0L
+    }
+
+    "support removing by a list of IDs" in new alphaContext {
+      val _ids = AlphaDAO.insert(alpha4, alpha5, alpha6)
+      AlphaDAO.collection.count must_== 3L
+      AlphaDAO.removeByIds(_ids.flatten)
+      AlphaDAO.collection.count must_== 0L
+    }
+
     "support find returning a Mongo cursor typed to a case class" in new alphaContextWithData {
 
       val salatCursor = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$gte" -> 2)))

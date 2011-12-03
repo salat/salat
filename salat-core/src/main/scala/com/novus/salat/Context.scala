@@ -144,7 +144,7 @@ trait Context extends Logging {
 
   def lookup(c: String, clazz: CaseClass): Grater[_ <: AnyRef] = lookup_?(c).getOrElse(lookup(clazz.getClass.getName))
 
-  def lookup_?(c: String, dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] = 
+  def lookup_?(c: String, dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] =
     lookup_?(c) orElse extractTypeHint(dbo).flatMap(lookup_?(_))
 
   def lookup(dbo: MongoDBObject): Grater[_ <: AnyRef] = extractTypeHint(dbo).map(lookup(_)).getOrElse(throw MissingTypeHint(dbo)(this))

@@ -66,6 +66,9 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
   def remove[A <% DBObject](q: A)
   def remove[A <% DBObject](q: A, wc: WriteConcern)
 
+  def removeById(id: ID, wc: WriteConcern = collection.writeConcern)
+  def removeByIds(ids: List[ID], wc: WriteConcern = collection.writeConcern)
+
   def count(q: DBObject = MongoDBObject.empty, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long
 
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P]
@@ -267,6 +270,14 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
         throw SalatRemoveQueryError(description, collection, q, wc, wr)
       }
     }
+  }
+
+  def removeById(id: ID, wc: WriteConcern = collection.writeConcern) {
+    remove(MongoDBObject("_id" -> id), wc)
+  }
+
+  def removeByIds(ids: List[ID], wc: WriteConcern) {
+    remove(MongoDBObject("_id" -> MongoDBObject("$in" -> MongoDBList(ids: _*))), wc)
   }
 
   def save(t: ObjectType) {
