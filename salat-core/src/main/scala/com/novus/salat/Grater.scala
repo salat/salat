@@ -38,9 +38,9 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   ctx.accept(this)
 
-  def asDBObject(o: X): DBObject
+  @deprecated("Use ctx.toDBObject instead") def asDBObject(o: X): DBObject
 
-  def asObject[A <% MongoDBObject](dbo: A): X
+  @deprecated("Use ctx.fromDBObject instead") def asObject[A <% MongoDBObject](dbo: A): X
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T]
 
@@ -51,12 +51,6 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
   override def equals(that: Any) = that.isInstanceOf[Grater[_]] && that.hashCode == this.hashCode
 
   protected[salat] lazy val requiresTypeHint = true
-
-  //  @deprecated("Use ctx.toDBObject instead") def asDBObject(o: X): DBObject = ctx.toDBObject[X](o)
-  //
-  //  @deprecated("Use ctx.fromDBObject instead") def asObject[B <% MongoDBObject](dbo: B): X = {
-  //    ctx.fromDBObject[X, B](dbo)
-  //  }
 
 }
 
@@ -250,53 +244,6 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   @deprecated("Use ctx.fromDBObject instead") def asObject[B <% MongoDBObject](dbo: B): X = {
     ctx.fromDBObject[X, B](dbo)
   }
-
-  //  def asDBObject(o: X): DBObject = {
-  //    val builder = MongoDBObject.newBuilder
-  //
-  //    // handle type hinting, where necessary
-  //    if (ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
-  //      (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && requiresTypeHint)) {
-  //      builder += ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(clazz.getName)
-  //    }
-  //
-  //    iterateOut(o) {
-  //      case (key, value) => builder += key -> value
-  //    }.toList
-  //
-  //    builder.result
-  //  }
-
-  //  def asObject[A <% MongoDBObject](dbo: A): X =
-  //    if (sym.isModule) {
-  //      companionObject.asInstanceOf[X]
-  //    }
-  //    else {
-  //      val args = indexedFields.map {
-  //        case field if field.ignore => safeDefault(field)
-  //        case field => {
-  //          dbo.get(ctx.determineFieldName(clazz, field)) match {
-  //            case Some(value) => {
-  //              field.in_!(value)
-  //            }
-  //            case _ => safeDefault(field)
-  //          }
-  //        }
-  //      }.map(_.get.asInstanceOf[AnyRef]) // TODO: if raw get blows up, throw a more informative error
-  //
-  //      try {
-  //        constructor.newInstance(args: _*)
-  //      }
-  //      catch {
-  //        // when something bad happens feeding args into constructor, catch these exceptions and
-  //        // wrap them in a custom exception that will provide detailed information about what's happening.
-  //        case e: InstantiationException    => throw ToObjectGlitch(this, sym, constructor, args, e)
-  //        case e: IllegalAccessException    => throw ToObjectGlitch(this, sym, constructor, args, e)
-  //        case e: IllegalArgumentException  => throw ToObjectGlitch(this, sym, constructor, args, e)
-  //        case e: InvocationTargetException => throw ToObjectGlitch(this, sym, constructor, args, e)
-  //        case e                            => throw e
-  //      }
-  //    }
 
   override def hashCode = sym.path.hashCode
 
