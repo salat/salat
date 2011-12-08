@@ -28,7 +28,7 @@ import com.novus.salat.{ Field => SField }
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
-trait Context extends Logging with ContextDBObjectTransformation {
+trait Context extends ContextDBObjectTransformation with Logging {
 
   /**Name of the context */
   val name: String

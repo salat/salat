@@ -81,13 +81,11 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
 }
 
 abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
-                                                                                             mid: Manifest[ID], ctx: Context)
+                                                                                             mid: Manifest[ID],
+                                                                                             ctx: Context with ContextDBObjectTransformation)
     extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
 
   dao =>
-
-  // get the grater from the implicit context and object type erasure
-  val _grater = grater[ObjectType](ctx, mot)
 
   /** Inner abstract class to facilitate working with child collections using a typed parent id -
    *  no cascading support will be offered, but you can override saves and deletes in the parent DAO
@@ -111,7 +109,8 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
    */
   abstract class ChildCollection[ChildType <: CaseClass, ChildId <: Any](override val collection: MongoCollection,
                                                                          val parentIdField: String)(implicit mct: Manifest[ChildType],
-                                                                                                    mcid: Manifest[ChildId], ctx: Context)
+                                                                                                    mcid: Manifest[ChildId],
+                                                                                                    ctx: Context with ContextDBObjectTransformation)
       extends SalatDAO[ChildType, ChildId](collection) {
 
     childDao =>
@@ -197,7 +196,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def insert(t: ObjectType, wc: WriteConcern) = {
     val _id = try {
-      val dbo = _grater.asDBObject(t)
+      val dbo = ctx.toDBObject(t)
       val wr = collection.insert(dbo, wc)
       if (wr.getLastError(wc).ok()) {
         dbo.getAs[ID]("_id")
@@ -212,7 +211,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def insert(docs: ObjectType*)(implicit wc: WriteConcern = collection.writeConcern) = if (docs.nonEmpty) {
     val _ids = try {
-      val dbos = docs.map(t => _grater.asDBObject(t))
+      val dbos = docs.map(t => ctx.toDBObject(t))
       val wr = collection.insert(dbos, wc)
       if (wr.getLastError(wc).ok()) {
         val builder = List.newBuilder[Option[ID]]
@@ -239,9 +238,9 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     collection.find(query, MongoDBObject("_id" -> 1)).map(_.expand[ID]("_id")(mid).get).toList
   }
 
-  def findOne[A <% DBObject](t: A) = collection.findOne(t).map(_grater.asObject(_))
+  def findOne[A <% DBObject](t: A) = collection.findOne(t).map(ctx.fromDBObject(_))
 
-  def findOneByID(id: ID) = collection.findOneByID(id.asInstanceOf[AnyRef]).map(_grater.asObject(_))
+  def findOneByID(id: ID) = collection.findOneByID(id.asInstanceOf[AnyRef]).map(ctx.fromDBObject(_))
 
   def remove(t: ObjectType) {
     remove(t, collection.writeConcern)
@@ -249,7 +248,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def remove(t: ObjectType, wc: WriteConcern) {
     try {
-      val dbo = _grater.asDBObject(t)
+      val dbo = ctx.toDBObject(t)
       val wr = collection.remove(dbo, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
@@ -286,7 +285,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def save(t: ObjectType, wc: WriteConcern) {
     try {
-      val dbo = _grater.asDBObject(t)
+      val dbo = ctx.toDBObject(t)
       val wr = collection.save(dbo, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
@@ -306,10 +305,10 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   }
 
   def update[A <% DBObject](q: A, t: ObjectType, upsert: Boolean, multi: Boolean, wc: WriteConcern) {
-    update(q, _grater.asDBObject(t), upsert, multi, wc)
+    update(q, ctx.toDBObject(t), upsert, multi, wc)
   }
 
-  def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = SalatMongoCursor[ObjectType](_grater,
+  def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = SalatMongoCursor[ObjectType](ctx,
     collection.find(ref, keys).asInstanceOf[MongoCursorBase].underlying)
 
   def find[A <% DBObject](ref: A) = find(ref.asInstanceOf[DBObject], MongoDBObject.empty)
@@ -317,7 +316,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
     collection.findOne(query, MongoDBObject(field -> 1)).map {
       dbo =>
-        dbo.expand[DBObject](field).map(grater[P].asObject(_))
+        dbo.expand[DBObject](field).map(ctx.fromDBObject[P, DBObject](_)) // TODO: this syntax is a bit clunkier than I hoped, hmm....
     }.getOrElse(None)
   }
 
@@ -336,7 +335,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     val builder = List.newBuilder[P]
     results.foreach {
       r =>
-        r.expand[DBObject](field).map(grater[P].asObject(_)).foreach(builder += _)
+        r.expand[DBObject](field).map(ctx.fromDBObject[P, DBObject](_)).foreach(builder += _)
     }
 
     builder.result()

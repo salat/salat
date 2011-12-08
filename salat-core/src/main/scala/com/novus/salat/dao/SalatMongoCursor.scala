@@ -36,11 +36,11 @@ trait SalatMongoCursorBase[T <: CaseClass] extends Logging {
 
   import scalaj.collection.Imports._
 
-  val _grater: Grater[T]
+  val ctx: Context with ContextDBObjectTransformation
 
   val underlying: DBCursor
 
-  def next() = _grater.asObject(underlying.next)
+  def next() = ctx.fromDBObject(underlying.next)
 
   def hasNext = underlying.hasNext
 
@@ -142,7 +142,7 @@ trait SalatMongoCursorBase[T <: CaseClass] extends Logging {
   def copy(): SalatMongoCursorBase[T] = _newInstance(underlying.copy()) // parens for side-effects
 }
 
-case class SalatMongoCursor[T <: CaseClass: Manifest](_grater: Grater[T], underlying: DBCursor) extends SalatMongoCursorBase[T] with Iterator[T] {
+case class SalatMongoCursor[T <: CaseClass: Manifest](ctx: Context with ContextDBObjectTransformation, underlying: DBCursor) extends SalatMongoCursorBase[T] with Iterator[T] {
 
-  def _newInstance(cursor: DBCursor) = SalatMongoCursor(_grater, cursor)
+  def _newInstance(cursor: DBCursor) = SalatMongoCursor(ctx, cursor)
 }
