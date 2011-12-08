@@ -145,21 +145,21 @@ class ContextSpec extends SalatSpec {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(classOf[James].getName)
         //        g_* must beAnInstanceOf[Grater[_]]
-        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James]) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by case class manifest" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup[James]
         g_* must beAnInstanceOf[Grater[James]]
-        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James]) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by class name or instance of class" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(classOf[James].getName, James("Red Devil"))
         //        g_* must beAnInstanceOf[Grater[_]]
-        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James]) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by dbo with type hint" in new testContext {
@@ -167,7 +167,7 @@ class ContextSpec extends SalatSpec {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(dbo)
         //        g_* must beAnInstanceOf[Grater[_]]
-        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James]) {}).clazz.getName
         ctx.graters must have size (1)
       }
     }
@@ -188,7 +188,7 @@ class ContextSpec extends SalatSpec {
   "The context" should {
     "accept a new grater" in new testContext {
       ctx.graters must beEmpty
-      val grater = new ConcreteGrater[James](classOf[James])(ctx) {}
+      val grater = new ConcreteGrater[James](classOf[James]) {}
       ctx.accept(grater)
       ctx.graters.size must_== 1
       ctx.graters.get(James.getClass.getName.replace("$", "")) must beSome(grater)

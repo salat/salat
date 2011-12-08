@@ -40,7 +40,9 @@ trait SalatMongoCursorBase[T <: CaseClass] extends Logging {
 
   val underlying: DBCursor
 
-  def next() = ctx.fromDBObject(underlying.next)
+  implicit val m: Manifest[T] = manifest[T]
+
+  def next(): T = ctx.fromDBObject[T, DBObject](underlying.next)
 
   def hasNext = underlying.hasNext
 

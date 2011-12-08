@@ -33,8 +33,6 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
 
   val collection: MongoCollection
 
-  val _grater: Grater[ObjectType]
-
   lazy val description: String = "DAO"
 
   def insert(t: ObjectType): Option[ID]
