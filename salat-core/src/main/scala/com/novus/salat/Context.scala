@@ -20,19 +20,15 @@
 package com.novus.salat
 
 import java.math.{ RoundingMode => JRoundingMode, MathContext => JMathContext }
-import scala.collection.mutable.{ ConcurrentMap }
+import scala.collection.mutable.ConcurrentMap
 import scala.collection.JavaConversions.JConcurrentMapWrapper
-import scala.collection.JavaConversions.JCollectionWrapper
 
 import com.novus.salat.util._
 import com.novus.salat.{ Field => SField }
-import com.novus.salat.annotations._
-import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
-import com.mongodb.casbah.commons.MongoDBObject
-import java.util.concurrent.{ CopyOnWriteArrayList, ConcurrentHashMap }
+import java.util.concurrent.ConcurrentHashMap
 
-trait Context extends Logging {
+trait Context extends Logging with ContextDBObjectTransformation {
 
   /**Name of the context */
   val name: String
@@ -122,16 +118,18 @@ trait Context extends Logging {
     case _                               => true
   }
 
-  private[salat] def lookup_?[X <: AnyRef](c: String): Option[Grater[_ <: AnyRef]] = graters.get(c) orElse {
+  private[salat] def lookup_?[X <: AnyRef: Manifest](c: String): Option[Grater[_ <: AnyRef]] = graters.get(c) orElse {
     if (suitable_?(c)) {
+      implicit val ctx = this
       resolveClass(c, classLoaders) match {
-        case IsCaseClass(clazz) => Some((new ConcreteGrater[CaseClass](clazz)(this) {}).
-          asInstanceOf[Grater[_ <: AnyRef]])
+        case Some(clazz) if clazz.getInterfaces.contains(classOf[Product]) =>
+          Some((new ConcreteGrater[CaseClass](clazz.asInstanceOf[Class[CaseClass]]) {}).
+            asInstanceOf[Grater[_ <: AnyRef]])
         case Some(clazz) if Modifier.isAbstract(clazz.getModifiers) => Some((
-          new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).
+          new ProxyGrater(clazz.asInstanceOf[Class[X]]) {}).
           asInstanceOf[Grater[_ <: AnyRef]])
         case Some(clazz) if clazz.isInterface => Some((
-          new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
+          new ProxyGrater(clazz.asInstanceOf[Class[X]]) {}).asInstanceOf[Grater[_ <: AnyRef]])
         case _ => None
       }
     }
@@ -144,14 +142,6 @@ trait Context extends Logging {
 
   def lookup(c: String, clazz: CaseClass): Grater[_ <: AnyRef] = lookup_?(c).getOrElse(lookup(clazz.getClass.getName))
 
-  def lookup_?(c: String, dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] =
-    lookup_?(c) orElse extractTypeHint(dbo).flatMap(lookup_?(_))
-
-  def lookup(dbo: MongoDBObject): Grater[_ <: AnyRef] = extractTypeHint(dbo).map(lookup(_)).getOrElse(throw MissingTypeHint(dbo)(this))
-
-  def extractTypeHint(dbo: MongoDBObject): Option[String] = {
-    dbo.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_))
-  }
 }
 
 case class ContextDiagnosticOptions(logGraterCreation: Boolean = false)

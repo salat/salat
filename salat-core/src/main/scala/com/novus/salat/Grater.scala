@@ -21,10 +21,8 @@ package com.novus.salat
 
 import scala.tools.scalap.scalax.rules.scalasig._
 import com.novus.salat.{ Field => SField }
-import scala.reflect.generic.ByteCodecs
-import scala.reflect.ScalaSignature
 
-import java.lang.reflect.{ InvocationTargetException, Constructor, Method }
+import java.lang.reflect.{ Constructor, Method }
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
@@ -51,18 +49,28 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
   override def toString = "%s(%s @ %s)".format(getClass.getSimpleName, clazz, ctx)
 
   override def equals(that: Any) = that.isInstanceOf[Grater[_]] && that.hashCode == this.hashCode
+
+  protected[salat] lazy val requiresTypeHint = true
+
+  //  @deprecated("Use ctx.toDBObject instead") def asDBObject(o: X): DBObject = ctx.toDBObject[X](o)
+  //
+  //  @deprecated("Use ctx.fromDBObject instead") def asObject[B <% MongoDBObject](dbo: B): X = {
+  //    ctx.fromDBObject[X, B](dbo)
+  //  }
+
 }
 
-abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
+abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Context, m: Manifest[X]) extends Grater[X](clazz)(ctx) {
 
   protected def findSym[A](clazz: Class[A]) = {
     ScalaSigUtil.parseScalaSig0(clazz, ctx.classLoaders).
       map(x => x.topLevelClasses.headOption.
         getOrElse(x.topLevelObjects.headOption.
-          getOrElse(throw MissingExpectedType(clazz)))).getOrElse(throw MissingPickledSig(clazz))
+          getOrElse(throw MissingExpectedType(clazz)))).
+      getOrElse(throw MissingPickledSig(clazz))
   }
 
-  protected lazy val sym = findSym(clazz)
+  protected[salat] lazy val sym = findSym(clazz)
 
   // annotations on a getter don't actually inherit from a trait or an abstract superclass,
   // but dragging them down manually allows for much nicer behaviour - this way you can specify @Persist or @Key
@@ -94,8 +102,10 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     case _ => Nil
   }
 
-  protected lazy val requiresTypeHint = {
-    clazz.annotated_?[Salat] || interestingInterfaces.map(_._1.annotated_?[Salat]).contains(true) || interestingSuperclass.map(_._1.annotated_?[Salat]).contains(true)
+  protected[salat] override lazy val requiresTypeHint = {
+    clazz.annotated_?[Salat] ||
+      interestingInterfaces.map(_._1.annotated_?[Salat]).contains(true) ||
+      interestingSuperclass.map(_._1.annotated_?[Salat]).contains(true)
   }
 
   // for use when you just want to find something and whether it was declared in clazz, some trait clazz extends, or clazz' own superclass
@@ -219,9 +229,9 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 
   protected lazy val companionClass = clazz.companionClass
-  protected lazy val companionObject = clazz.companionObject
+  protected[salat] lazy val companionObject = clazz.companionObject
 
-  protected lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
+  protected[salat] lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
 
   protected def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
     case PolyType(tr @ TypeRefType(_, _, _), _) => tr
@@ -235,52 +245,58 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
   }
 
-  def asDBObject(o: X): DBObject = {
-    val builder = MongoDBObject.newBuilder
+  @deprecated("Use ctx.toDBObject instead") def asDBObject(o: X): DBObject = ctx.toDBObject[X](o)
 
-    // handle type hinting, where necessary
-    if (ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
-      (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && requiresTypeHint)) {
-      builder += ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(clazz.getName)
-    }
-
-    iterateOut(o) {
-      case (key, value) => builder += key -> value
-    }.toList
-
-    builder.result
+  @deprecated("Use ctx.fromDBObject instead") def asObject[B <% MongoDBObject](dbo: B): X = {
+    ctx.fromDBObject[X, B](dbo)
   }
 
-  def asObject[A <% MongoDBObject](dbo: A): X =
-    if (sym.isModule) {
-      companionObject.asInstanceOf[X]
-    }
-    else {
-      val args = indexedFields.map {
-        case field if field.ignore => safeDefault(field)
-        case field => {
-          dbo.get(ctx.determineFieldName(clazz, field)) match {
-            case Some(value) => {
-              field.in_!(value)
-            }
-            case _ => safeDefault(field)
-          }
-        }
-      }.map(_.get.asInstanceOf[AnyRef]) // TODO: if raw get blows up, throw a more informative error
+  //  def asDBObject(o: X): DBObject = {
+  //    val builder = MongoDBObject.newBuilder
+  //
+  //    // handle type hinting, where necessary
+  //    if (ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
+  //      (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && requiresTypeHint)) {
+  //      builder += ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(clazz.getName)
+  //    }
+  //
+  //    iterateOut(o) {
+  //      case (key, value) => builder += key -> value
+  //    }.toList
+  //
+  //    builder.result
+  //  }
 
-      try {
-        constructor.newInstance(args: _*)
-      }
-      catch {
-        // when something bad happens feeding args into constructor, catch these exceptions and
-        // wrap them in a custom exception that will provide detailed information about what's happening.
-        case e: InstantiationException    => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e: IllegalAccessException    => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e: IllegalArgumentException  => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e: InvocationTargetException => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e                            => throw e
-      }
-    }
+  //  def asObject[A <% MongoDBObject](dbo: A): X =
+  //    if (sym.isModule) {
+  //      companionObject.asInstanceOf[X]
+  //    }
+  //    else {
+  //      val args = indexedFields.map {
+  //        case field if field.ignore => safeDefault(field)
+  //        case field => {
+  //          dbo.get(ctx.determineFieldName(clazz, field)) match {
+  //            case Some(value) => {
+  //              field.in_!(value)
+  //            }
+  //            case _ => safeDefault(field)
+  //          }
+  //        }
+  //      }.map(_.get.asInstanceOf[AnyRef]) // TODO: if raw get blows up, throw a more informative error
+  //
+  //      try {
+  //        constructor.newInstance(args: _*)
+  //      }
+  //      catch {
+  //        // when something bad happens feeding args into constructor, catch these exceptions and
+  //        // wrap them in a custom exception that will provide detailed information about what's happening.
+  //        case e: InstantiationException    => throw ToObjectGlitch(this, sym, constructor, args, e)
+  //        case e: IllegalAccessException    => throw ToObjectGlitch(this, sym, constructor, args, e)
+  //        case e: IllegalArgumentException  => throw ToObjectGlitch(this, sym, constructor, args, e)
+  //        case e: InvocationTargetException => throw ToObjectGlitch(this, sym, constructor, args, e)
+  //        case e                            => throw e
+  //      }
+  //    }
 
   override def hashCode = sym.path.hashCode
 
@@ -294,18 +310,18 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       }
   }
 
-  def defaultArg(field: SField): DefaultArg = {
+  protected[salat] def defaultArg(field: SField): DefaultArg = {
     betterDefaults.get(field).getOrElse {
       throw new Exception("Grater error: clazz='%s' field '%s' needs to register presence or absence of default values".
         format(clazz, field.name))
     }
   }
 
-  protected def safeDefault(field: SField) = {
+  protected[salat] def safeDefault(field: SField) = {
     defaultArg(field).safeValue
   }
 
-  lazy val betterDefaults = {
+  protected[salat] lazy val betterDefaults = {
     val builder = Map.newBuilder[SField, DefaultArg]
     for (field <- indexedFields) {
       val defaultMethod = try {
@@ -324,7 +340,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
 case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(implicit val ctx: Context) {
 
-  def suppress(serialized: Any) = if (ctx.suppressDefaultArgs && field.name != "_id") {
+  protected[salat] def suppress(serialized: Any) = if (ctx.suppressDefaultArgs && field.name != "_id") {
     value.map {
       v =>
         serialized match {
@@ -336,7 +352,7 @@ case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(imp
   }
   else false
 
-  lazy val safeValue: Some[AnyRef] = value match {
+  protected[salat] lazy val safeValue: Some[AnyRef] = value match {
     case v @ Some(_) => v
     case _ => field.typeRefType match {
       case IsOption(_) => Some(None)
@@ -344,12 +360,12 @@ case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(imp
     }
   }
 
-  lazy val isEmptyMap = value match {
+  protected[salat] lazy val isEmptyMap = value match {
     case Some(m: Map[_, _]) if m.asInstanceOf[Map[_, _]].isEmpty => true
     case _ => false
   }
 
-  lazy val isEmptyTraversable = value match {
+  protected[salat] lazy val isEmptyTraversable = value match {
     case Some(t: Traversable[_]) if t.asInstanceOf[Traversable[_]].isEmpty => true
     case _ => false
   }

@@ -1,4 +1,4 @@
-/** Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
+/**Copyright (c) 2010, 2011 Novus Partners, Inc. <http://novus.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,7 +25,11 @@ import java.lang.reflect.Constructor
 import com.mongodb.casbah.commons.TypeImports._
 import com.novus.salat.util.MissingGraterExplanation._
 
-case class ToObjectGlitch[X <: AnyRef with Product](grater: Grater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
+case class ToObjectGlitch(grater: ConcreteGrater[_ <: CaseClass],
+                          sym: SymbolInfoSymbol,
+                          constructor: Constructor[_],
+                          args: Seq[AnyRef],
+                          cause: Throwable) extends Error(
   """
 
   %s
@@ -39,7 +43,9 @@ case class ToObjectGlitch[X <: AnyRef with Product](grater: Grater[X], sym: Symb
   """.format(cause.getMessage, grater.toString, sym.path, constructor, ArgsPrettyPrinter(args)), cause)
 
 case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
+
 case class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
+
 case class MissingTypeHint(dbo: MongoDBObject)(implicit ctx: Context) extends Error("""
 
  NO TYPE HINT FOUND!
