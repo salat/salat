@@ -39,7 +39,7 @@ class ListOfCommonTraitSpec extends SalatSpec {
           SomeSubclassExtendingSaidTrait(b = 4),
           SomeSubclassExtendingSaidTrait(b = 5)))
 
-      val dbo: MongoDBObject = grater[SomeContainerClass].asDBObject(scc)
+      val dbo: MongoDBObject = ctx.toDBObject(scc)
       //      Map(_typeHint -> com.novus.salat.test.model.SomeContainerClass, e -> Tergiversation,
       //        theListWhichNeedsToBeTested -> [
       //         { "_typeHint" : "com.novus.salat.test.model.SomeSubclassExtendingSaidTrait" , "b" : 1} ,
@@ -79,7 +79,7 @@ class ListOfCommonTraitSpec extends SalatSpec {
 
         val scc = SomeContainerClass(e = "Neurotic", theListWhichNeedsToBeTested = List(sct1, sct2, sct3, sct4, sct5))
 
-        val dbo: MongoDBObject = grater[SomeContainerClass].asDBObject(scc)
+        val dbo: MongoDBObject = ctx.toDBObject(scc)
         //      Map(_typeHint -> com.novus.salat.test.model.SomeContainerClass,
         //       e -> Neurotic,
         //      theListWhichNeedsToBeTested -> [

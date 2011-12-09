@@ -32,7 +32,7 @@ class DateTimeSpec extends SalatSpec {
       import org.scala_tools.time.Imports._
       val dt = DateTime.now
       val n = Neville(asOf = dt)
-      val dbo: MongoDBObject = grater[Neville].asDBObject(n)
+      val dbo: MongoDBObject = ctx.toDBObject(n)
       //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint", "com.novus.salat.test.model.Neville")
       dbo must havePair("ennui" -> true)
@@ -47,7 +47,7 @@ class DateTimeSpec extends SalatSpec {
     "support org.joda.time.DateTime" in {
       val dt = new org.joda.time.DateTime()
       val n = Neville(asOf = dt)
-      val dbo: MongoDBObject = grater[Neville].asDBObject(n)
+      val dbo: MongoDBObject = ctx.toDBObject(n)
       //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint", "com.novus.salat.test.model.Neville")
       dbo must havePair("ennui" -> true)
@@ -61,7 +61,7 @@ class DateTimeSpec extends SalatSpec {
 
     "support dates parsed from JSON" in {
       val n = Neville(asOf = new org.joda.time.DateMidnight().toDateTime)
-      val json = grater[Neville].asDBObject(n).toString
+      val json = ctx.toDBObject(n).toString
       //      log.info(json)
       val n_* = grater[Neville].asObject(parse(json).asInstanceOf[DBObject])
       n_* must_== n

@@ -29,7 +29,7 @@ class CharacterSpec extends SalatSpec {
   "A grater" should {
     "support characters" in {
       val k = Kate(axe = 'A', struckWith = 'S')
-      val dbo: MongoDBObject = grater[Kate].asDBObject(k)
+      val dbo: MongoDBObject = ctx.toDBObject(k)
       //      println(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Kate")
       dbo must havePair("axe" -> "A")

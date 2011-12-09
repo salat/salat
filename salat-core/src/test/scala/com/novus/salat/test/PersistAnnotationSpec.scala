@@ -33,7 +33,7 @@ class PersistAnnotationSpec extends SalatSpec {
       "a simple string val" in {
         val m = Maud(swept = "swept", out = "out")
 
-        val dbo: MongoDBObject = grater[Maud].asDBObject(m)
+        val dbo: MongoDBObject = ctx.toDBObject(m)
         //      log.info(MapPrettyPrinter(dbo))
         dbo must havePair("swept", "swept")
         dbo must havePair("out", "out")
@@ -46,7 +46,7 @@ class PersistAnnotationSpec extends SalatSpec {
 
       "a value that requires a transformer" in {
         val m = Maud2(swept = "swept", out = "out")
-        val dbo: MongoDBObject = grater[Maud2].asDBObject(m)
+        val dbo: MongoDBObject = ctx.toDBObject(m)
         //        log.info(MapPrettyPrinter(dbo))
         dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud2")
         dbo must havePair("swept", "swept")
@@ -65,7 +65,7 @@ class PersistAnnotationSpec extends SalatSpec {
 
       "a var" in {
         val m = Maud3(swept = "swept", out = "out")
-        val dbo: MongoDBObject = grater[Maud3].asDBObject(m)
+        val dbo: MongoDBObject = ctx.toDBObject(m)
         //        log.info(MapPrettyPrinter(dbo))
         dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud3")
         dbo must havePair("swept", "swept")
@@ -88,7 +88,7 @@ class PersistAnnotationSpec extends SalatSpec {
     "respect @Ignore" in {
       val m = Maud4(swept = "swept", out = "out")
 
-      val dbo: MongoDBObject = grater[Maud4].asDBObject(m)
+      val dbo: MongoDBObject = ctx.toDBObject(m)
       //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("swept", "swept")
       dbo must havePair("out", "out")
@@ -102,7 +102,7 @@ class PersistAnnotationSpec extends SalatSpec {
 
     "respect @Persist declared in a trait" in {
       val m = Maud8(swept = "swept", out = "out")
-      val dbo: MongoDBObject = grater[Maud8].asDBObject(m)
+      val dbo: MongoDBObject = ctx.toDBObject(m)
       dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud8")
       dbo must havePair("swept", "swept")
       dbo must havePair("out", "out")
@@ -114,7 +114,7 @@ class PersistAnnotationSpec extends SalatSpec {
 
     "respect @Persist declared in immediate superclass" in {
       val m = Maud11(swept = "swept", out = "out")
-      val dbo: MongoDBObject = grater[Maud11].asDBObject(m)
+      val dbo: MongoDBObject = ctx.toDBObject(m)
       dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud11")
       dbo must havePair("swept", "swept")
       dbo must havePair("out", "out")
@@ -131,7 +131,7 @@ class PersistAnnotationSpec extends SalatSpec {
           Maud5(swept = "swept", out = "out"),
           Maud6(swept = "swept", out = "out"),
           Maud7(swept = "swept", out = "out")))
-        val dbo: MongoDBObject = grater[ManyMauds].asDBObject(m)
+        val dbo: MongoDBObject = ctx.toDBObject(m)
         //      log.info(MapPrettyPrinter(dbo))
         dbo must havePair("_typeHint", "com.novus.salat.test.model.ManyMauds")
         dbo must havePair("mauds", {
@@ -178,7 +178,7 @@ class PersistAnnotationSpec extends SalatSpec {
           Maud8(swept = "swept", out = "out"),
           Maud9(swept = "swept", out = "out"),
           Maud10(swept = "swept", out = "out")))
-        val dbo: MongoDBObject = grater[Maudelic].asDBObject(m)
+        val dbo: MongoDBObject = ctx.toDBObject(m)
         //        log.info(MapPrettyPrinter(dbo))
         dbo must havePair("_typeHint", "com.novus.salat.test.model.Maudelic")
         dbo must havePair("mauds", {

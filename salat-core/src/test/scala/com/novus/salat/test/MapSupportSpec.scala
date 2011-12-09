@@ -37,7 +37,7 @@ class MapSupportSpec extends SalatSpec {
         "bar" -> UrlID(dh = 3L, ph = 4L))
       val ao = AttributeObject(_id = 42L, key = "testKey1", bestDef = "bestDef1", urls)
 
-      val dbo: MongoDBObject = grater[AttributeObject].asDBObject(ao)
+      val dbo: MongoDBObject = ctx.toDBObject(ao)
       log.info(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint", "com.novus.salat.test.model.AttributeObject")
       dbo must havePair("_id", 42L)

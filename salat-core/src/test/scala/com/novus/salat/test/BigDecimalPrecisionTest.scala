@@ -39,7 +39,7 @@ class BigDecimalPrecisionTest extends SalatSpec {
 
       val g = George(number = PrecisePi, someNumber = Some(PrecisePi), noNumber = None)
 
-      val dbo: MongoDBObject = grater[George].asDBObject(g)
+      val dbo: MongoDBObject = ctx.toDBObject(g)
       dbo must havePair("number" -> PrecisePi)
       dbo must havePair("someNumber" -> PrecisePi)
       dbo must not have key("noNumber")
@@ -67,7 +67,7 @@ class BigDecimalPrecisionTest extends SalatSpec {
 
       val h = George2(number = PrecisePi, someNumber = Some(PrecisePi), noNumber = None)
 
-      val dbo: MongoDBObject = grater[George2].asDBObject(h)
+      val dbo: MongoDBObject = ctx.toDBObject(h)
       dbo must havePair("number" -> PrecisePi)
       dbo must havePair("someNumber" -> PrecisePi)
       dbo must not have key("noNumber")
@@ -76,7 +76,7 @@ class BigDecimalPrecisionTest extends SalatSpec {
       val wr = coll.insert(dbo)
       //      println("WR: %s".format(wr))
 
-      val h_* = grater[George2].asObject(coll.findOne().get)
+      val h_* = ctx.fromDBObject[George2](coll.findOne().get)
       h_* must_== h
       h_*.number.precision must_== 16
       h_*.someNumber.get.precision must_== 16
@@ -94,14 +94,14 @@ class BigDecimalPrecisionTest extends SalatSpec {
       val lake = BigDecimal(123.toString, mc)
       val i = Ida(Some(lake))
 
-      val dbo: MongoDBObject = grater[Ida].asDBObject(i)
+      val dbo: MongoDBObject = ctx.toDBObject(i)
       dbo must havePair("lake" -> lake)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test_2")
       val wr = coll.insert(dbo)
       //       println("WR: %s".format(wr))
 
-      val i_* = grater[Ida].asObject(coll.findOne().get)
+      val i_* = ctx.fromDBObject[Ida](coll.findOne().get)
       i_* must_== i
 
     }
@@ -110,7 +110,7 @@ class BigDecimalPrecisionTest extends SalatSpec {
       val lake = BigDecimal((1.23).toString, mc)
       val i = Ida(Some(lake))
 
-      val dbo: MongoDBObject = grater[Ida].asDBObject(i)
+      val dbo: MongoDBObject = ctx.toDBObject(i)
       dbo must havePair("lake" -> lake)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test_3")

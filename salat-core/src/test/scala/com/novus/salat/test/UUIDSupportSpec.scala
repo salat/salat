@@ -31,7 +31,7 @@ class UUIDSupportSpec extends SalatSpec {
     "support serializing and deserializing a random uuid" in {
       val uuid = java.util.UUID.randomUUID
       val o = Olive(uuid)
-      val dbo: MongoDBObject = grater[Olive].asDBObject(o)
+      val dbo: MongoDBObject = ctx.toDBObject(o)
       //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("awl" -> uuid)
 
@@ -44,7 +44,7 @@ class UUIDSupportSpec extends SalatSpec {
     "support serializing and deserializing a msb/lsb uuid" in {
       val uuid = new java.util.UUID(123L, 456L)
       val o = Olive(uuid)
-      val dbo: MongoDBObject = grater[Olive].asDBObject(o)
+      val dbo: MongoDBObject = ctx.toDBObject(o)
       //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("awl" -> uuid)
 
@@ -57,7 +57,7 @@ class UUIDSupportSpec extends SalatSpec {
     "support serializing and deserializing a uuid with name from bytes" in {
       val uuid = java.util.UUID.nameUUIDFromBytes("pierced".getBytes)
       val o = Olive(uuid)
-      val dbo: MongoDBObject = grater[Olive].asDBObject(o)
+      val dbo: MongoDBObject = ctx.toDBObject(o)
       //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("awl" -> uuid)
 

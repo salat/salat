@@ -197,7 +197,7 @@ package out {
   trait InContextToDBObject extends Transformer with InContextTransformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case cc: CaseClass => ctx.lookup(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc)
+      case cc: CaseClass => ctx.toDBObject(cc)
       case _             => MongoDBObject("failed-to-convert" -> value.toString)
     }
   }
@@ -206,9 +206,21 @@ package out {
     self: Transformer =>
 
     // ok, Some(null) should never happen.  except sometimes it does.
-    override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
-      case Some(value) if value != null => Some(super.transform(value))
-      case _                            => None
+    override def before(value: Any)(implicit ctx: Context): Option[Any] = {
+      val v = value match {
+        case Some(x) if x != null => {
+          val t = super.transform(x)
+          val v = Some(t)
+          log.debug("before:\nIN: %s\nX: %s\nT: %s\nV: %s", value, x, t, v)
+          v
+        }
+        case x => {
+          log.info("before: not sure what to do with value='%s', suppressing...", x)
+          None
+        }
+      }
+      log.info("before: %s ---> %s", value, v)
+      v
     }
   }
 

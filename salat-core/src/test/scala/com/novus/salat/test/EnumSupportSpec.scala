@@ -32,7 +32,7 @@ class EnumSupportSpec extends SalatSpec {
       "be able to serialize Scala enums" in {
         val me = Me("max")
         val g = grater[Me]
-        val dbo: MongoDBObject = g.asDBObject(me)
+        val dbo: MongoDBObject = ctx.toDBObject(me)
         dbo("_typeHint") must_== classOf[Me].getName
         dbo("state") must_== Frakked.BeyondRepair.toString
       }
@@ -40,7 +40,7 @@ class EnumSupportSpec extends SalatSpec {
       "be able to deserialize Scala enums" in {
         val me = Me("max")
         val g = grater[Me]
-        val dbo = g.asDBObject(me)
+        val dbo = ctx.toDBObject(me)
         val me_* = g.asObject(dbo)
         me must_== me_*
       }
@@ -56,7 +56,7 @@ class EnumSupportSpec extends SalatSpec {
 
       ctx.defaultEnumStrategy must_== EnumStrategy.BY_VALUE
 
-      val dbo: MongoDBObject = grater[Hector].asDBObject(h)
+      val dbo: MongoDBObject = ctx.toDBObject(h)
       dbo must havePair("thug" -> "Just a good boy who loves his mum")
       dbo must havePair("doneIn" -> "OhDear")
 
@@ -72,7 +72,7 @@ class EnumSupportSpec extends SalatSpec {
 
       ctx.defaultEnumStrategy must_== EnumStrategy.BY_ID
 
-      val dbo: MongoDBObject = grater[Hector].asDBObject(h)
+      val dbo: MongoDBObject = ctx.toDBObject(h)
       dbo must havePair("thug" -> 2)
       dbo must havePair("doneIn" -> 3)
 
@@ -90,7 +90,7 @@ class EnumSupportSpec extends SalatSpec {
 
       val h1 = HectorOverrideId(thug = ThugLevel.Two, doneInById = DoneInById.PiningForTheFjords)
 
-      val dbo: MongoDBObject = grater[HectorOverrideId].asDBObject(h1)
+      val dbo: MongoDBObject = ctx.toDBObject(h1)
       dbo must havePair("thug" -> "Honour student")
       dbo must havePair("doneInById" -> 1)
 
@@ -111,7 +111,7 @@ class EnumSupportSpec extends SalatSpec {
 
       val h1 = HectorOverrideValue(thug = ThugLevel.Two, doneInByValue = DoneInByValue.PiningForTheFjords)
 
-      val dbo: MongoDBObject = grater[HectorOverrideValue].asDBObject(h1)
+      val dbo: MongoDBObject = ctx.toDBObject(h1)
       dbo must havePair("thug" -> 1)
       dbo must havePair("doneInByValue" -> "PiningForTheFjords")
 

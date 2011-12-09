@@ -20,7 +20,6 @@
 package com.novus.salat
 
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.Implicits._
 import com.novus.salat.util.ToObjectGlitch._
 import java.lang.reflect.InvocationTargetException
 import com.novus.salat.util.{ ToObjectGlitch, Logging }
@@ -36,7 +35,14 @@ trait ContextDBObjectTransformation {
 
   //  def concreteLookup[A <: CaseClass : Manifest] = lookup[A].asInstanceOf[ConcreteGrater[A]]
 
-  def concreteLookup[A <: AnyRef: Manifest, B <% MongoDBObject](dbo: B): ConcreteGrater[_ <: CaseClass] = {
+  //  def concreteLookup[A <: AnyRef: Manifest](o: A): ConcreteGrater[_ <: CaseClass] = {
+  //    getCaseClass(o.getClass.getName)(ctx) match {
+  //  case Some(clazz) => lookup(o.getClass.getName, o.asInstanceOf[CaseClass]).asInstanceOf[ConcreteGrater[_ <: CaseClass]]
+  //  case _           => error("concreteLookup: A='%s', o='%s' is not concrete".format(manifest[A].erasure.getClass.getName, o.getClass.getName))
+  //    }
+  //  }
+
+  def concreteLookup[A <: AnyRef: Manifest](dbo: DBObject): ConcreteGrater[_ <: CaseClass] = {
     val m = manifest[A].erasure
     // if class is concrete, hole in one
     if (m.getInterfaces.contains(classOf[Product])) {
@@ -56,11 +62,19 @@ trait ContextDBObjectTransformation {
 
   @deprecated("Use toDBObject instead") def asDBObject[A <: AnyRef: Manifest](o: A): DBObject = toDBObject[A](o)
 
-  @deprecated("Use fromDBObject instead") def asObject[A <: AnyRef: Manifest, B <% MongoDBObject](dbo: B): A =
-    fromDBObject[A, B](dbo)
+  @deprecated("Use fromDBObject instead") def asObject[A <: AnyRef: Manifest](dbo: DBObject): A =
+    fromDBObject[A](dbo)
 
   def toDBObject[A <: AnyRef: Manifest](o: A): DBObject = {
     val g = lookup(o.getClass.getName).asInstanceOf[Grater[A]]
+
+    log.info("""
+
+toDBObject:
+  o.getClass.getName = %s
+  g = %s
+
+    """, o.getClass.getName, g.toString)
 
     val builder = MongoDBObject.newBuilder
     // handle type hinting, where necessary
@@ -69,28 +83,62 @@ trait ContextDBObjectTransformation {
       builder += ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(g.clazz.getName)
     }
     g.iterateOut(o) {
-      case (key, value) => builder += key -> value
+      case (key, value) => {
+        log.info("toDBObject: K='%s', V='%s'", key, value)
+        builder += key -> value
+      }
     }.toList
     builder.result()
   }
 
-  def fromDBObject[A <: AnyRef: Manifest, B <% MongoDBObject](dbo: B): A = {
-    val g = concreteLookup[A, B](dbo)
+  //  def toDBObject[X <: AnyRef: Manifest](o: X): DBObject = {
+  //    if (o.getClass.getInterfaces.contains(classOf[Product])) {
+  //      toDBObject(o.asInstanceOf[CaseClass])
+  //    }
+  //    else error("NOT CONCRETE")
+  //  }
+
+  // moving away from view bounds on DBObject - it's not any use to me here, and it complicates life on the other side
+  def fromDBObject[A <: AnyRef: Manifest](dbo: DBObject): A = {
+    val g = concreteLookup[A](dbo)
     if (g.sym.isModule) {
       g.companionObject.asInstanceOf[A]
     }
     else {
+      // DBObject.get returns AnyRef, but MongoDBObject.get returns Option[AnyRef]
+      val mdbo = wrapDBObj(dbo)
       val args = g.indexedFields.map {
-        case field if field.ignore => g.safeDefault(field)
+        case field if field.ignore => {
+          val v = g.safeDefault(field)
+          log.info("%s: ignore, use safe default %s", field.name, v)
+          v
+        }
         case field => {
-          dbo.get(ctx.determineFieldName(g.clazz, field)) match {
+          val name = ctx.determineFieldName(g.clazz, field)
+          val value1 = mdbo.get(name)
+          log.info("value1: %s", value1)
+          value1 match {
             case Some(value) => {
-              field.in_!(value)
+              val v = field.in_!(value)
+              log.info("%s: name='%s' %s ---> %s", field.name, name, value, v)
+              v
             }
-            case _ => g.safeDefault(field)
+            case _ => {
+              val v = g.safeDefault(field)
+              log.info("%s: ??? falling back to safe default %s", field.name, v)
+              v
+            }
           }
         }
-      }.flatten.map(_.asInstanceOf[AnyRef])
+      }.map(_.get.asInstanceOf[AnyRef]) // TODO: if raw get blows up, throw a more informative error
+
+      log.info("ARGS:\n%s\n", args.mkString("\n"))
+
+      var counter = 0
+      for (field <- g.indexedFields) {
+        log.info("[%d] %s ---> %s", counter, field.name, args(counter))
+        counter += 1
+      }
 
       try {
         (g.constructor.newInstance(args: _*)).asInstanceOf[A]

@@ -67,9 +67,7 @@ package object always_with_implicits {
     override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
   }
 
-  implicit def dbo2Obj[X <: CaseClass](obj: X): DBObject = ctx.lookup(obj.getClass.getName)
-    .asInstanceOf[Grater[X]]
-    .asDBObject(obj)
+  implicit def dbo2Obj[X <: CaseClass: Manifest](obj: X): DBObject = ctx.toDBObject(obj)
 
   // this requires ALWAYS using _typeHint, all the time!
   implicit def obj2MDbo[X <: CaseClass](dbo: MongoDBObject): X = ctx.lookup(dbo)

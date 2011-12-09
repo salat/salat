@@ -28,7 +28,7 @@ class FloatSpec extends SalatSpec {
   "A grater" should {
     "support floats" in {
       val q = Quentin(mire = 3.14f)
-      val dbo: MongoDBObject = grater[Quentin].asDBObject(q)
+      val dbo: MongoDBObject = ctx.toDBObject(q)
       //      println(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Quentin")
       dbo must havePair("mire" -> 3.14f)

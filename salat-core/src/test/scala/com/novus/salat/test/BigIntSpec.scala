@@ -30,7 +30,7 @@ class BigIntSpec extends SalatSpec {
       val swallowed = BigInt("1234567890")
       val tacks = BigInt(Long.MaxValue + 1L)
       val l = Leo(swallowed = Some(swallowed), tacks = tacks)
-      val dbo: MongoDBObject = grater[Leo].asDBObject(l)
+      val dbo: MongoDBObject = ctx.toDBObject(l)
       //      println(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Leo")
       checkByteArrays(actual = dbo.expand[Array[Byte]]("swallowed").getOrElse(Array.empty[Byte]),

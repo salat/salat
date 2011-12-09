@@ -36,7 +36,7 @@ class CollectionSupportSpec extends SalatSpec {
       "scala.collection.Map[String, _]" in {
         val coll = scala.collection.Map("a" -> Thingy("A"), "b" -> Thingy("B"))
         val omphalos = Omphalos(coll = coll)
-        val dbo: MongoDBObject = grater[Omphalos].asDBObject(omphalos)
+        val dbo: MongoDBObject = ctx.toDBObject(omphalos)
         dbo must havePair("coll" -> {
           val builder = MongoDBObject.newBuilder
           builder += "a" -> MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -53,7 +53,7 @@ class CollectionSupportSpec extends SalatSpec {
       "scala.collection.immutable.Map[String, _]" in {
         val coll = scala.collection.immutable.Map("a" -> Thingy("A"), "b" -> Thingy("B"))
         val able = Able(coll = coll)
-        val dbo: MongoDBObject = grater[Able].asDBObject(able)
+        val dbo: MongoDBObject = ctx.toDBObject(able)
         dbo must havePair("coll" -> {
           val builder = MongoDBObject.newBuilder
           builder += "a" -> MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -70,7 +70,7 @@ class CollectionSupportSpec extends SalatSpec {
       "scala.collection.mutable.Map[String, _]" in {
         val coll = scala.collection.mutable.Map("a" -> Thingy("A"), "b" -> Thingy("B"))
         val baker = Baker(coll = coll)
-        val dbo: MongoDBObject = grater[Baker].asDBObject(baker)
+        val dbo: MongoDBObject = ctx.toDBObject(baker)
         dbo must havePair("coll" -> {
           val builder = MongoDBObject.newBuilder
           builder += "a" -> MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -90,7 +90,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.Set[_]" in {
         val coll = scala.collection.Set(Thingy("A"), Thingy("B"))
         val charlie = Charlie(coll = coll)
-        val dbo: MongoDBObject = grater[Charlie].asDBObject(charlie)
+        val dbo: MongoDBObject = ctx.toDBObject(charlie)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -107,7 +107,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.immutable.Set[_]" in {
         val coll = scala.collection.immutable.Set(Thingy("A"), Thingy("B"))
         val dog = Dog(coll = coll)
-        val dbo: MongoDBObject = grater[Dog].asDBObject(dog)
+        val dbo: MongoDBObject = ctx.toDBObject(dog)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -124,7 +124,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.mutable.Set[_]" in {
         val coll = scala.collection.mutable.Set(Thingy("A"), Thingy("B"))
         val easy = Easy(coll = coll)
-        val dbo: MongoDBObject = grater[Easy].asDBObject(easy)
+        val dbo: MongoDBObject = ctx.toDBObject(easy)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -142,7 +142,7 @@ class CollectionSupportSpec extends SalatSpec {
     "support List[_]" in {
       val coll = List(Thingy("A"), Thingy("B"))
       val fox = Fox(coll = coll)
-      val dbo: MongoDBObject = grater[Fox].asDBObject(fox)
+      val dbo: MongoDBObject = ctx.toDBObject(fox)
       dbo must havePair("coll" -> {
         val builder = MongoDBList.newBuilder
         builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -161,7 +161,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.Seq[_]" in {
         val coll = scala.collection.Seq(Thingy("A"), Thingy("B"))
         val gee = Gee(coll = coll)
-        val dbo: MongoDBObject = grater[Gee].asDBObject(gee)
+        val dbo: MongoDBObject = ctx.toDBObject(gee)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -178,7 +178,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.immutable.Seq[_]" in {
         val coll = scala.collection.immutable.Seq(Thingy("A"), Thingy("B"))
         val how = How(coll = coll)
-        val dbo: MongoDBObject = grater[How].asDBObject(how)
+        val dbo: MongoDBObject = ctx.toDBObject(how)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -195,7 +195,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.mutable.Seq[_]" in {
         val coll = scala.collection.mutable.Seq(Thingy("A"), Thingy("B"))
         val item = Item(coll = coll)
-        val dbo: MongoDBObject = grater[Item].asDBObject(item)
+        val dbo: MongoDBObject = ctx.toDBObject(item)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -215,7 +215,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.mutable.Buffer[_]" in {
         val coll = scala.collection.mutable.Buffer(Thingy("A"), Thingy("B"))
         val jig = Jig(coll = coll)
-        val dbo: MongoDBObject = grater[Jig].asDBObject(jig)
+        val dbo: MongoDBObject = ctx.toDBObject(jig)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -232,7 +232,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.mutable.ArrayBuffer[_]" in {
         val coll = scala.collection.mutable.ArrayBuffer(Thingy("A"), Thingy("B"))
         val king = King(coll = coll)
-        val dbo: MongoDBObject = grater[King].asDBObject(king)
+        val dbo: MongoDBObject = ctx.toDBObject(king)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -250,7 +250,7 @@ class CollectionSupportSpec extends SalatSpec {
     "support Vector[_]" in {
       val coll = scala.collection.immutable.Vector(Thingy("A"), Thingy("B"))
       val mike = Mike(coll = coll)
-      val dbo: MongoDBObject = grater[Mike].asDBObject(mike)
+      val dbo: MongoDBObject = ctx.toDBObject(mike)
       dbo must havePair("coll" -> {
         val builder = MongoDBList.newBuilder
         builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -269,7 +269,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.IndexedSeq[_]" in {
         val coll = scala.collection.IndexedSeq(Thingy("A"), Thingy("B"))
         val nab = Nab(coll = coll)
-        val dbo: MongoDBObject = grater[Nab].asDBObject(nab)
+        val dbo: MongoDBObject = ctx.toDBObject(nab)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -286,7 +286,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.immutable.IndexedSeq[_]" in {
         val coll = scala.collection.immutable.IndexedSeq(Thingy("A"), Thingy("B"))
         val oboe = Oboe(coll = coll)
-        val dbo: MongoDBObject = grater[Oboe].asDBObject(oboe)
+        val dbo: MongoDBObject = ctx.toDBObject(oboe)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -303,7 +303,7 @@ class CollectionSupportSpec extends SalatSpec {
       "support scala.collection.mutable.IndexedSeq[_]" in {
         val coll = scala.collection.mutable.IndexedSeq(Thingy("A"), Thingy("B"))
         val prep = Prep(coll = coll)
-        val dbo: MongoDBObject = grater[Prep].asDBObject(prep)
+        val dbo: MongoDBObject = ctx.toDBObject(prep)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -322,7 +322,7 @@ class CollectionSupportSpec extends SalatSpec {
       "LinkedList[_]" in {
         val coll = scala.collection.mutable.LinkedList(Thingy("A"), Thingy("B"))
         val queen = Queen(coll = coll)
-        val dbo: MongoDBObject = grater[Queen].asDBObject(queen)
+        val dbo: MongoDBObject = ctx.toDBObject(queen)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
@@ -338,7 +338,7 @@ class CollectionSupportSpec extends SalatSpec {
       "DoubleLinkedList[_]" in {
         val coll = scala.collection.mutable.DoubleLinkedList(Thingy("A"), Thingy("B"))
         val roger = Roger(coll = coll)
-        val dbo: MongoDBObject = grater[Roger].asDBObject(roger)
+        val dbo: MongoDBObject = ctx.toDBObject(roger)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")

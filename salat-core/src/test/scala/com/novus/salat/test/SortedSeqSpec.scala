@@ -37,7 +37,7 @@ class SortedSeqSpec extends SalatSpec {
 
       walrus.manyThings must_== expectedOrder
       "a case class with a sorted list" in {
-        val dbo: MongoDBObject = grater[Walrus[String]].asDBObject(walrus)
+        val dbo: MongoDBObject = ctx.toDBObject(walrus)
         dbo.get("manyThings") must beSome[AnyRef]
 
         val walrus_* = grater[Walrus[String]].asObject(dbo)
@@ -58,7 +58,7 @@ class SortedSeqSpec extends SalatSpec {
         }))
         herd.manyThings must_== expectedHerd
 
-        val dbo: MongoDBObject = grater[Walrus[Walrus[String]]].asDBObject(herd)
+        val dbo: MongoDBObject = ctx.toDBObject(herd)
         dbo.get("manyThings") must beSome[AnyRef]
 
         val herd_* = grater[Walrus[Walrus[String]]].asObject(dbo)

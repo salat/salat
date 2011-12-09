@@ -32,7 +32,7 @@ class KeyAnnotationSpec extends SalatSpec {
 
     "override a field name to persist with the given value" in {
       val j = James2("peach pits", true)
-      val dbo: MongoDBObject = grater[James2].asDBObject(j)
+      val dbo: MongoDBObject = ctx.toDBObject(j)
       // the field name is "lye" but the @Key annotation specifies "cyanide"
       dbo must havePair("cyanide", "peach pits")
       dbo must havePair("byMistake", true)
@@ -43,7 +43,7 @@ class KeyAnnotationSpec extends SalatSpec {
 
     "override a field name when used in a trait" in {
       val j = James3("old lace", false)
-      val dbo: MongoDBObject = grater[James3].asDBObject(j)
+      val dbo: MongoDBObject = ctx.toDBObject(j)
       // the field name is "lye" but the @Key annotation specifies "arsenic"
       dbo must havePair("arsenic", "old lace")
       dbo must havePair("byMistake", false)
@@ -54,7 +54,7 @@ class KeyAnnotationSpec extends SalatSpec {
 
     "override a field name when used in an abstract superclass" in {
       val j = James4("mad as a hatter", true)
-      val dbo: MongoDBObject = grater[James4].asDBObject(j)
+      val dbo: MongoDBObject = ctx.toDBObject(j)
       // the field name is "lye" but the @Key annotation specifies "mercury"
       dbo must havePair("mercury", "mad as a hatter")
       dbo must havePair("byMistake", true)
@@ -74,7 +74,7 @@ class KeyAnnotationSpec extends SalatSpec {
         title = Some("title"),
         description = Some("description"),
         keywords = Some("very clever minus two"))
-      val dbo: MongoDBObject = grater[Page].asDBObject(p)
+      val dbo: MongoDBObject = ctx.toDBObject(p)
       dbo must havePair("_typeHint", "com.novus.salat.test.model.Page")
       // @Key overrides field name "uri" with "_id"
       // the value will be serialized as a String using our custom java.net.URI -> String BSON encoding hook

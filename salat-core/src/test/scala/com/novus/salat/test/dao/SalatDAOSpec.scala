@@ -68,9 +68,9 @@ class SalatDAOSpec extends SalatSpec {
 
       // the standard collection cursor returns DBOs
       val mongoCursor = AlphaDAO.collection.find()
-      mongoCursor.next() must_== grater[Alpha].asDBObject(alpha4)
-      mongoCursor.next() must_== grater[Alpha].asDBObject(alpha5)
-      mongoCursor.next() must_== grater[Alpha].asDBObject(alpha6)
+      mongoCursor.next() must_== ctx.toDBObject(alpha4)
+      mongoCursor.next() must_== ctx.toDBObject(alpha5)
+      mongoCursor.next() must_== ctx.toDBObject(alpha6)
 
       // BUT the Salat DAO returns a cursor types to case classes!
       val salatCursor = AlphaDAO.find(MongoDBObject.empty)
@@ -91,7 +91,7 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.collection.count must_== 3L
 
       // note: you can query using an object transformed into a dbo
-      AlphaDAO.findOne(grater[Alpha].asDBObject(alpha6)) must beSome(alpha6)
+      AlphaDAO.findOne(ctx.toDBObject(alpha6)) must beSome(alpha6)
     }
 
     "support findOneById returning Option[T]" in new alphaContext {
@@ -141,7 +141,7 @@ class SalatDAOSpec extends SalatSpec {
       val cr = AlphaDAO.remove(alpha5)
       AlphaDAO.collection.count must_== 2L
 
-      AlphaDAO.findOne(grater[Alpha].asDBObject(alpha5)) must beNone
+      AlphaDAO.findOne(ctx.toDBObject(alpha5)) must beNone
 
       // and then there were two!
       val salatCursor = AlphaDAO.find(MongoDBObject.empty)
@@ -173,7 +173,7 @@ class SalatDAOSpec extends SalatSpec {
       salatCursor.next must_== alpha6
       salatCursor.hasNext must beFalse
 
-      val salatCursor2 = AlphaDAO.find(ref = grater[Alpha].asDBObject(alpha6))
+      val salatCursor2 = AlphaDAO.find(ref = ctx.toDBObject(alpha6))
       salatCursor2.next must_== alpha6
       salatCursor2.hasNext must beFalse
 
@@ -213,7 +213,7 @@ class SalatDAOSpec extends SalatSpec {
       _id must beSome(e.id)
       EpsilonDAO.collection.count must_== 1L
 
-      val e_* = EpsilonDAO.findOne(grater[Epsilon].asDBObject(e))
+      val e_* = EpsilonDAO.findOne(ctx.toDBObject(e))
       e_* must not beNone
     }
 

@@ -33,7 +33,7 @@ class SetSpec extends SalatSpec {
 
       elephantSeal.distinctThings must_== expectedSet
       "a case class with a set" in {
-        val dbo: MongoDBObject = grater[ElephantSeal[String]].asDBObject(elephantSeal)
+        val dbo: MongoDBObject = ctx.toDBObject(elephantSeal)
         dbo.get("distinctThings") must beSome[AnyRef]
 
         val elephantSeal_* = grater[ElephantSeal[String]].asObject(dbo)
@@ -52,7 +52,7 @@ class SetSpec extends SalatSpec {
         val herd = ElephantSeal(distinctThings = Set(elephantSeal, elephantSeal2, elephantSeal3))
         herd.distinctThings must_== expectedHerd
 
-        val dbo: MongoDBObject = grater[ElephantSeal[ElephantSeal[String]]].asDBObject(herd)
+        val dbo: MongoDBObject = ctx.toDBObject(herd)
         dbo.get("distinctThings") must beSome[AnyRef]
 
         val herd_* = grater[ElephantSeal[ElephantSeal[String]]].asObject(dbo)

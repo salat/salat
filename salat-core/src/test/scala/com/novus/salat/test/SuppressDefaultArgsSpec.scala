@@ -21,7 +21,7 @@ class SuppressDefaultArgsSpec extends SalatSpec {
       s.perished must_== SuppressDefaults.PerishedDefault
       s.fits must_== SuppressDefaults.FitsDefault
       s.about must_== SuppressDefaults.AboutDefault
-      val dbo: MongoDBObject = grater[Susan].asDBObject(s)
+      val dbo: MongoDBObject = ctx.toDBObject(s)
       //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint", "com.novus.salat.test.model.Susan")
       dbo.get("how") must beNone
@@ -40,7 +40,7 @@ class SuppressDefaultArgsSpec extends SalatSpec {
       s.perished must_!= SuppressDefaults.PerishedDefault
       s.fits must_!= SuppressDefaults.FitsDefault
       s.about must_!= SuppressDefaults.AboutDefault
-      val dbo: MongoDBObject = grater[Susan].asDBObject(s)
+      val dbo: MongoDBObject = ctx.toDBObject(s)
       //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint", "com.novus.salat.test.model.Susan")
       dbo must havePair("how", "why")

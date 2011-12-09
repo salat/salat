@@ -42,10 +42,9 @@ object Field {
 
 sealed abstract class Field(val idx: Int, val name: String, val typeRefType: TypeRefType,
                             val in: Transformer, val out: Transformer, val ignore: Boolean)(implicit val ctx: Context) extends Logging {
-  def in_!(value: Any) = in.transform_!(value)
-  def out_!(value: Any) = out.transform_!(value)
+  def in_!(value: Any) = in.transform_!("in_!", value)
+  def out_!(value: Any) = out.transform_!("out_!", value)
 
-  //  override def toString = "Field[%d/%s]".format(idx, name)
   override def toString = """
 
   Field
@@ -55,7 +54,8 @@ sealed abstract class Field(val idx: Int, val name: String, val typeRefType: Typ
     prefix: %s
     symbol: %s
     typeArgs: %s
+  ignore: %s
 
   """.format(idx, name, typeRefType,
-    typeRefType.prefix, typeRefType.symbol, typeRefType.typeArgs)
+    typeRefType.prefix, typeRefType.symbol, typeRefType.typeArgs, ignore)
 }

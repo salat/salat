@@ -46,7 +46,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   type OutHandler = PartialFunction[(Any, SField), Option[(String, Any)]]
 
-  override def toString = "%s(%s @ %s)".format(getClass.getSimpleName, clazz, ctx)
+  override def toString = "%s(%s @ %s)".format(getClass.getSimpleName, clazz, ctx.name)
 
   override def equals(that: Any) = that.isInstanceOf[Grater[_]] && that.hashCode == this.hashCode
 
@@ -106,43 +106,97 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   // is not a concern
   protected lazy val allTheChildren: Seq[Symbol] = sym.children ++ interestingInterfaces.map(_._2.children).flatten ++ interestingSuperclass.map(_._2.children).flatten
 
-  protected def outField: OutHandler = {
-    case (_, field) if field.ignore => None
-    case (null, _)                  => None
-    case (element, field) => {
-      field.out_!(element) match {
-        case Some(None) => None
-        case Some(serialized) => {
-          //          log.info("""
-          //
-          //          field.name = '%s'
-          //          value = %s  [%s]
-          //          default = %s [%s]
-          //          value == default? %s
-          //
-          //          """, field.name,
-          //            serialized,
-          //            serialized.asInstanceOf[AnyRef].getClass.getName,
-          //            safeDefault(field),
-          //            safeDefault(field).map(_.asInstanceOf[AnyRef].getClass.getName).getOrElse("N/A"),
-          //            (safeDefault(field).map(dv => dv == serialized).getOrElse(false)))
+  protected def outField(in: (Any, SField)): Option[(String, Any)] = {
+    val v: Option[(String, Any)] = in match {
+      case (_, field) if field.ignore => {
+        log.info("outField: field='%s', ignoring...", field.name)
+        None
+      }
+      case (null, _) => {
+        log.info("outField: field='%s', value is null")
+        None
+      }
+      case (elem, field) => {
+        val out = field.out_!(elem)
+        log.info("outField:\nFIELD: %s\nELEM: %s\nOUT: %s", field.name, elem, out)
+        out match {
+          case Some(None) => None
+          case Some(serialized) => {
+            log.info("""
+            
+            field.name = '%s'
+            value = %s  [%s]
+            default = %s [%s]
+            value == default? %s
+            
+                                """, field.name,
+              serialized,
+              serialized.asInstanceOf[AnyRef].getClass.getName,
+              safeDefault(field),
+              safeDefault(field).map(_.asInstanceOf[AnyRef].getClass.getName).getOrElse("N/A"),
+              (safeDefault(field).map(dv => dv == serialized).getOrElse(false)))
 
-          serialized match {
-            case serialized if ctx.suppressDefaultArgs && defaultArg(field).suppress(serialized) => None
-            case serialized => {
-              val key = ctx.determineFieldName(clazz, field)
-              val value = serialized match {
-                case Some(unwrapped) => unwrapped
-                case _               => serialized
+            serialized match {
+              case serialized if ctx.suppressDefaultArgs && defaultArg(field).suppress(serialized) => None
+              case serialized => {
+                val key = ctx.determineFieldName(clazz, field)
+                val value = serialized match {
+                  case Some(unwrapped) => unwrapped
+                  case _               => serialized
+                }
+                Some(key -> value)
               }
-              Some(key -> value)
             }
           }
+          case x => {
+            log.info("outField: field='%s', not sure what to do with value='%s', suppressing...", field.name, x)
+            None
+          }
         }
-        case _ => None
       }
     }
+
+    log.info("outField: field='%s'\nIN: %s\nOUT: %s", in._2.name, in._1, v)
+    v
   }
+
+  //  protected def outField(in: (Any, SField)): Option[(String, Any)] = in match {
+  //    case (_, field) if field.ignore => None
+  //    case (null, _) => None
+  //    case (element, field) => {
+  //      field.out_!(element) match {
+  //        case Some(None) => None
+  //        case Some(serialized) => {
+  //          log.info("""
+  //
+  //field.name = '%s'
+  //value = %s  [%s]
+  //default = %s [%s]
+  //value == default? %s
+  //
+  //                    """, field.name,
+  //            serialized,
+  //            serialized.asInstanceOf[AnyRef].getClass.getName,
+  //            safeDefault(field),
+  //            safeDefault(field).map(_.asInstanceOf[AnyRef].getClass.getName).getOrElse("N/A"),
+  //            (safeDefault(field).map(dv => dv == serialized).getOrElse(false)))
+  //
+  //          serialized match {
+  //            case serialized if ctx.suppressDefaultArgs && defaultArg(field).suppress(serialized) => None
+  //            case serialized => {
+  //              val key = ctx.determineFieldName(clazz, field)
+  //              val value = serialized match {
+  //                case Some(unwrapped) => unwrapped
+  //                case _ => serialized
+  //              }
+  //              Some(key -> value)
+  //            }
+  //          }
+  //        }
+  //        case _ => None
+  //      }
+  //    }
+  //  }
 
   protected[salat] lazy val indexedFields = {
     // don't use allTheChildren here!  this is the indexed fields for clazz and clazz alone
@@ -232,17 +286,28 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
-    val fromConstructor = o.productIterator.zip(indexedFields.iterator)
+    val fromConstructor = o.productIterator.zip(indexedFields.iterator).toList
     val withPersist = extraFieldsToPersist.iterator.map {
       case (m, field) => m.invoke(o) -> field
+    }.toList
+    val list = fromConstructor ++ withPersist
+    log.info("iterateOut: found %d\n%s", list.size, list.map(v => "K: %s\nV: %s".format(v._1, v._2.name)).mkString("\n"))
+    val toOut = list.map {
+      next =>
+
+        val v = outField(next)
+        log.info("next:\nIN: K=%s, V=%s\nOUT: K=%s V=%s\n", next._1, next._2.name, v.map(_._1).getOrElse(""), v.map(_._2).getOrElse(""))
+        v
     }
-    (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
+    val flatten = toOut.flatten
+    log.info("iterateOut: found %d\n%s", flatten.size, flatten.map(v => "K: %s\nV: %s".format(v._1, v._2)).mkString("\n"))
+    flatten.map(f(_)).iterator
   }
 
   @deprecated("Use ctx.toDBObject instead") def asDBObject(o: X): DBObject = ctx.toDBObject[X](o)
 
   @deprecated("Use ctx.fromDBObject instead") def asObject[B <% MongoDBObject](dbo: B): X = {
-    ctx.fromDBObject[X, B](dbo)
+    ctx.fromDBObject[X](unwrapDBObj(dbo))
   }
 
   override def hashCode = sym.path.hashCode

@@ -314,7 +314,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
     collection.findOne(query, MongoDBObject(field -> 1)).map {
       dbo =>
-        dbo.expand[DBObject](field).map(ctx.fromDBObject[P, DBObject](_)) // TODO: this syntax is a bit clunkier than I hoped, hmm....
+        dbo.expand[DBObject](field).map(ctx.fromDBObject[P](_))
     }.getOrElse(None)
   }
 
@@ -333,7 +333,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     val builder = List.newBuilder[P]
     results.foreach {
       r =>
-        r.expand[DBObject](field).map(ctx.fromDBObject[P, DBObject](_)).foreach(builder += _)
+        r.expand[DBObject](field).map(ctx.fromDBObject[P](_)).foreach(builder += _)
     }
 
     builder.result()

@@ -31,7 +31,7 @@ class CaseObjectSupport extends SalatSpec {
       "be able to serialize case objects" in {
         val mine = Wardrobe(suits = List(Zoot))
         log.info("mine: %s", mine)
-        val dbo: MongoDBObject = grater[Wardrobe].asDBObject(mine)
+        val dbo: MongoDBObject = ctx.toDBObject(mine)
         log.info("dbo : %s", dbo)
         val suits = dbo.expand[BasicDBList]("suits")
         suits must beSome[BasicDBList]
@@ -48,8 +48,8 @@ class CaseObjectSupport extends SalatSpec {
 
       "be able to deserialize case objects" in {
         val mine = Wardrobe(suits = List(WhatArmstrongWore, Zoot))
-        val dbo = grater[Wardrobe].asDBObject(mine)
-        val mine_* = grater[Wardrobe].asObject(dbo)
+        val dbo = ctx.toDBObject(mine)
+        val mine_* = ctx.fromDBObject[Wardrobe](dbo)
         mine must_== mine_*
       }
     }

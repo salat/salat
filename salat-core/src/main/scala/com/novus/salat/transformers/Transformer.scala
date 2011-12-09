@@ -22,6 +22,7 @@ package com.novus.salat.transformers
 import com.novus.salat._
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{ BigDecimal => ScalaBigDecimal }
+import com.novus.salat.util.Logging
 
 object `package` {
   def isBigDecimal(path: String) = path match {
@@ -64,11 +65,27 @@ object `package` {
   }
 }
 
-abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) {
+abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) extends Logging {
   def transform(value: Any)(implicit ctx: Context): Any = value
   def before(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
   def after(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
-  def transform_!(x: Any)(implicit ctx: Context): Option[Any] = before(x).flatMap(x => after(transform(x)))
+  def transform_!(dir: String, x: Any)(implicit ctx: Context): Option[Any] = {
+    before(x).flatMap {
+      x =>
+        val t = transform(x)
+        val a = after(t)
+        log.info("""
+
+transform_!: %s
+  path: %s
+  before: %s
+  transform: %s
+  after: %s
+
+        """, dir, path, x, t, a)
+        a
+    }
+  }
 }
 
 trait InContextTransformer {

@@ -77,13 +77,13 @@ class TimingSpec extends Specification with PendingUntilFixed with Logging {
         m => log.info("generated %d nodes in %d msec", NodeCounter.n, m)
       }
 
-      log.info("%s bytes deflated", grater[ListNode].asDBObject(tree).toString.length)
+      log.info("%s bytes deflated", ctx.toDBObject(tree).toString.length)
 
       (0 until 50).foreach {
         _ =>
           {
             timeAndLog {
-              grater[ListNode].asDBObject(tree)
+              ctx.toDBObject(tree)
             } {
               m =>
                 log.info("%s deflation time: %d msec", tree.getClass.getName, m)
@@ -92,7 +92,7 @@ class TimingSpec extends Specification with PendingUntilFixed with Logging {
           }
       }
 
-      val deflated = grater[ListNode].asDBObject(tree)
+      val deflated = ctx.toDBObject(tree)
 
       (0 until 50).foreach {
         _ =>
