@@ -74,7 +74,7 @@ abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ct
       x =>
         val t = transform(x)
         val a = after(t)
-        log.info("""
+        log.trace("""
 
 transform_!: %s
   path: %s

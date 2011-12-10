@@ -27,6 +27,7 @@ import scala.math.{ BigDecimal => SBigDecimal }
 import com.novus.salat.util.GraterFromDboGlitch._
 import com.mongodb.DBObject
 import com.novus.salat.util.{ ClassPrettyPrinter, GraterFromDboGlitch, TransformPrettyPrinter }
+import scala.reflect.{ Manifest, ClassManifest }
 
 object DBObjectInjectorChain extends TransformerChain {
 
@@ -62,23 +63,24 @@ object DBObjectInjectorChain extends TransformerChain {
 
   def caseClassTransformer = {
     case (path, t @ TypeRefType(_, symbol, _), ctx, IsDbo(dbo)) => {
-      //      log.info("""
-      //
-      //      caseClassTransformer:
-      //      path: %s
-      //      trt: %s
-      //      value: %s
-      //      %s
-      //
-      //      """, path, t, ClassPrettyPrinter(value.asInstanceOf[AnyRef]), value)
+      log.info("""
 
-      val grater = (ctx.extractTypeHint(dbo) match {
-        case Some(typeHint) => ctx.lookup_?(typeHint)
-        case None           => ctx.lookup_?(symbol.path) orElse ctx.lookup_?(path)
-      }).getOrElse(throw GraterFromDboGlitch(symbol.path, dbo)(ctx))
-      val xformed = grater.asObject(dbo)
-      log.info(TransformPrettyPrinter("caseClassTransformer", dbo, t, xformed.asInstanceOf[AnyRef]))
-      xformed
+            caseClassTransformer:
+            path: %s
+            trt: %s
+            value: %s
+            %s
+
+            """, path, t, ClassPrettyPrinter(dbo.asInstanceOf[AnyRef]), dbo)
+
+      //      val grater = (ctx.extractTypeHint(dbo) match {
+      //        case Some(typeHint) => ctx.lookup_?(typeHint)
+      //        case None           => ctx.lookup_?(symbol.path) orElse ctx.lookup_?(path)
+      //      }).getOrElse(throw GraterFromDboGlitch(symbol.path, dbo)(ctx))
+
+      val xformed = ctx.fromDBObject[CaseClass](dbo = dbo)(Manifest.classType(getClassNamed(symbol.path)(ctx).getOrElse(getClassNamed_!(path)(ctx))))
+      //      log.info(TransformPrettyPrinter("caseClassTransformer", dbo, t, xformed.asInstanceOf[AnyRef]))
+      xformed.asInstanceOf[AnyRef]
     }
   }
 

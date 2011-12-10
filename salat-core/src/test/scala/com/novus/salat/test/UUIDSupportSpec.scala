@@ -23,6 +23,7 @@ import com.novus.salat._
 import com.novus.salat.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
+import com.novus.salat.util.MapPrettyPrinter
 
 class UUIDSupportSpec extends SalatSpec {
 
@@ -32,7 +33,7 @@ class UUIDSupportSpec extends SalatSpec {
       val uuid = java.util.UUID.randomUUID
       val o = Olive(uuid)
       val dbo: MongoDBObject = ctx.toDBObject(o)
-      //      log.info(MapPrettyPrinter(dbo))
+      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("awl" -> uuid)
 
       val coll = MongoConnection()(SalatSpecDb)("uuid_test_1")
@@ -41,31 +42,31 @@ class UUIDSupportSpec extends SalatSpec {
       o_* must_== o
     }
 
-    "support serializing and deserializing a msb/lsb uuid" in {
-      val uuid = new java.util.UUID(123L, 456L)
-      val o = Olive(uuid)
-      val dbo: MongoDBObject = ctx.toDBObject(o)
-      //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("awl" -> uuid)
-
-      val coll = MongoConnection()(SalatSpecDb)("uuid_test_2")
-      val wr = coll.insert(dbo)
-      val o_* = grater[Olive].asObject(coll.findOne().get)
-      o_* must_== o
-    }
-
-    "support serializing and deserializing a uuid with name from bytes" in {
-      val uuid = java.util.UUID.nameUUIDFromBytes("pierced".getBytes)
-      val o = Olive(uuid)
-      val dbo: MongoDBObject = ctx.toDBObject(o)
-      //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("awl" -> uuid)
-
-      val coll = MongoConnection()(SalatSpecDb)("uuid_test_3")
-      val wr = coll.insert(dbo)
-      val o_* = grater[Olive].asObject(coll.findOne().get)
-      o_* must_== o
-    }
+    //    "support serializing and deserializing a msb/lsb uuid" in {
+    //      val uuid = new java.util.UUID(123L, 456L)
+    //      val o = Olive(uuid)
+    //      val dbo: MongoDBObject = ctx.toDBObject(o)
+    //      //      log.info(MapPrettyPrinter(dbo))
+    //      dbo must havePair("awl" -> uuid)
+    //
+    //      val coll = MongoConnection()(SalatSpecDb)("uuid_test_2")
+    //      val wr = coll.insert(dbo)
+    //      val o_* = grater[Olive].asObject(coll.findOne().get)
+    //      o_* must_== o
+    //    }
+    //
+    //    "support serializing and deserializing a uuid with name from bytes" in {
+    //      val uuid = java.util.UUID.nameUUIDFromBytes("pierced".getBytes)
+    //      val o = Olive(uuid)
+    //      val dbo: MongoDBObject = ctx.toDBObject(o)
+    //      //      log.info(MapPrettyPrinter(dbo))
+    //      dbo must havePair("awl" -> uuid)
+    //
+    //      val coll = MongoConnection()(SalatSpecDb)("uuid_test_3")
+    //      val wr = coll.insert(dbo)
+    //      val o_* = grater[Olive].asObject(coll.findOne().get)
+    //      o_* must_== o
+    //    }
 
   }
 

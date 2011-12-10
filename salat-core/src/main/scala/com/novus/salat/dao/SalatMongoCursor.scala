@@ -21,26 +21,18 @@ package com.novus.salat.dao
 
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
-import com.mongodb.DBCursor
-import com.mongodb.casbah.{ MongoCursorBase, CursorExplanation, Imports }
-import scala.Predef._
+import scalaj.collection.Imports._
+import com.mongodb.{ DBCursor }
+import com.mongodb.casbah.CursorExplanation
 
 /** Unfortunately, MongoCursorBase is typed to DBObject, but....
  *  Ripped off from casbah-mapper.
  *  https://github.com/maxaf/casbah-mapper/blob/master/src/main/scala/mapper/MappedCollection.scala
  *
  */
+case class SalatMongoCursor[T <: CaseClass: Manifest](ctx: Context with ContextDBObjectTransformation, underlying: DBCursor) extends Iterator[T] {
 
-trait SalatMongoCursorBase[T <: CaseClass] extends Logging {
-
-  import scalaj.collection.Imports._
-
-  val ctx: Context with ContextDBObjectTransformation
-
-  val underlying: DBCursor
-
-  implicit val m: Manifest[T] = manifest[T]
+  def _newInstance(cursor: DBCursor) = SalatMongoCursor(ctx, cursor)
 
   def next(): T = ctx.fromDBObject[T](underlying.next)
 
@@ -139,12 +131,5 @@ trait SalatMongoCursorBase[T <: CaseClass] extends Logging {
 
   def $hint[A <% DBObject](obj: A): this.type = addSpecial("$hint", obj)
 
-  def _newInstance(cursor: DBCursor): SalatMongoCursorBase[T]
-
-  def copy(): SalatMongoCursorBase[T] = _newInstance(underlying.copy()) // parens for side-effects
-}
-
-case class SalatMongoCursor[T <: CaseClass: Manifest](ctx: Context with ContextDBObjectTransformation, underlying: DBCursor) extends SalatMongoCursorBase[T] with Iterator[T] {
-
-  def _newInstance(cursor: DBCursor) = SalatMongoCursor(ctx, cursor)
+  def copy(): SalatMongoCursor[T] = _newInstance(underlying.copy()) // parens for side-effects
 }

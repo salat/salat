@@ -211,15 +211,15 @@ package out {
         case Some(x) if x != null => {
           val t = super.transform(x)
           val v = Some(t)
-          log.debug("before:\nIN: %s\nX: %s\nT: %s\nV: %s", value, x, t, v)
+          log.trace("before:\nIN: %s\nX: %s\nT: %s\nV: %s", value, x, t, v)
           v
         }
         case x => {
-          log.info("before: not sure what to do with value='%s', suppressing...", x)
+          log.trace("before: not sure what to do with value='%s', suppressing...", x)
           None
         }
       }
-      log.info("before: %s ---> %s", value, v)
+      log.trace("before: %s ---> %s", value, v)
       v
     }
   }

@@ -21,9 +21,9 @@ package com.novus.salat
 
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.ToObjectGlitch._
-import java.lang.reflect.InvocationTargetException
 import com.novus.salat.util.{ ToObjectGlitch, Logging }
 import com.novus.salat.util.MissingTypeHint
+import java.lang.reflect.{ Constructor, InvocationTargetException }
 
 trait ContextDBObjectTransformation {
   ctx: Context =>
@@ -33,24 +33,16 @@ trait ContextDBObjectTransformation {
 
   def lookup[B <% MongoDBObject](dbo: B): Grater[_ <: AnyRef] = extractTypeHint(dbo).map(lookup(_)).getOrElse(throw MissingTypeHint(dbo)(this))
 
-  //  def concreteLookup[A <: CaseClass : Manifest] = lookup[A].asInstanceOf[ConcreteGrater[A]]
-
-  //  def concreteLookup[A <: AnyRef: Manifest](o: A): ConcreteGrater[_ <: CaseClass] = {
-  //    getCaseClass(o.getClass.getName)(ctx) match {
-  //  case Some(clazz) => lookup(o.getClass.getName, o.asInstanceOf[CaseClass]).asInstanceOf[ConcreteGrater[_ <: CaseClass]]
-  //  case _           => error("concreteLookup: A='%s', o='%s' is not concrete".format(manifest[A].erasure.getClass.getName, o.getClass.getName))
-  //    }
-  //  }
-
-  def concreteLookup[A <: AnyRef: Manifest](dbo: DBObject): ConcreteGrater[_ <: CaseClass] = {
+  def concreteLookup[A <: AnyRef: Manifest](dbo: DBObject, path: Option[String] = None): ConcreteGrater[_ <: CaseClass] = {
     val m = manifest[A].erasure
+    log.info("concreteLookup: A=%s dbo.%s='%s'", m.getName, ctx.typeHintStrategy.typeHint, extractTypeHint(dbo))
     // if class is concrete, hole in one
     if (m.getInterfaces.contains(classOf[Product])) {
       lookup(m.getName).asInstanceOf[ConcreteGrater[_ <: CaseClass]]
     }
     else {
-      // otherwise, we depend on a type hint in the DBO to know what it is
-      lookup(dbo).asInstanceOf[ConcreteGrater[_ <: CaseClass]]
+      // otherwise, we depend on a path or a type hint in the DBO to know what it is
+      path.map(lookup(_)).getOrElse(lookup(dbo)).asInstanceOf[ConcreteGrater[_ <: CaseClass]]
     }
   }
 
@@ -98,9 +90,12 @@ toDBObject:
   //    else error("NOT CONCRETE")
   //  }
 
-  // moving away from view bounds on DBObject - it's not any use to me here, and it complicates life on the other side
+  // moving away from view bounds on DBObject - it complicates life at the callsite
+  // ironically, i actually require a MongoDBObject here - the hell with it, just wrap it manually.
   def fromDBObject[A <: AnyRef: Manifest](dbo: DBObject): A = {
+    log.info("fromDBObject: m.erasure.getName='%s'", manifest[A].erasure.getName)
     val g = concreteLookup[A](dbo)
+    log.info("fromDBObject: g.clazz='%s'", g.clazz.getName)
     if (g.sym.isModule) {
       g.companionObject.asInstanceOf[A]
     }

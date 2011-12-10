@@ -109,7 +109,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   protected def outField(in: (Any, SField)): Option[(String, Any)] = {
     val v: Option[(String, Any)] = in match {
       case (_, field) if field.ignore => {
-        log.info("outField: field='%s', ignoring...", field.name)
+        log.trace("outField: field='%s', ignoring...", field.name)
         None
       }
       case (null, _) => {
@@ -118,17 +118,17 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       }
       case (elem, field) => {
         val out = field.out_!(elem)
-        log.info("outField:\nFIELD: %s\nELEM: %s\nOUT: %s", field.name, elem, out)
+        log.trace("outField:\nFIELD: %s\nELEM: %s\nOUT: %s", field.name, elem, out)
         out match {
           case Some(None) => None
           case Some(serialized) => {
-            log.info("""
-            
+            log.trace("""
+
             field.name = '%s'
             value = %s  [%s]
             default = %s [%s]
             value == default? %s
-            
+
                                 """, field.name,
               serialized,
               serialized.asInstanceOf[AnyRef].getClass.getName,
@@ -149,14 +149,14 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
             }
           }
           case x => {
-            log.info("outField: field='%s', not sure what to do with value='%s', suppressing...", field.name, x)
+            log.trace("outField: field='%s', not sure what to do with value='%s', suppressing...", field.name, x)
             None
           }
         }
       }
     }
 
-    log.info("outField: field='%s'\nIN: %s\nOUT: %s", in._2.name, in._1, v)
+    log.trace("outField: field='%s'\nIN: %s\nOUT: %s", in._2.name, in._1, v)
     v
   }
 
@@ -291,16 +291,16 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       case (m, field) => m.invoke(o) -> field
     }.toList
     val list = fromConstructor ++ withPersist
-    log.info("iterateOut: found %d\n%s", list.size, list.map(v => "K: %s\nV: %s".format(v._1, v._2.name)).mkString("\n"))
+    log.trace("iterateOut: found %d\n%s", list.size, list.map(v => "K: %s\nV: %s".format(v._1, v._2.name)).mkString("\n"))
     val toOut = list.map {
       next =>
 
         val v = outField(next)
-        log.info("next:\nIN: K=%s, V=%s\nOUT: K=%s V=%s\n", next._1, next._2.name, v.map(_._1).getOrElse(""), v.map(_._2).getOrElse(""))
+        log.trace("next:\nIN: K=%s, V=%s\nOUT: K=%s V=%s\n", next._1, next._2.name, v.map(_._1).getOrElse(""), v.map(_._2).getOrElse(""))
         v
     }
     val flatten = toOut.flatten
-    log.info("iterateOut: found %d\n%s", flatten.size, flatten.map(v => "K: %s\nV: %s".format(v._1, v._2)).mkString("\n"))
+    log.trace("iterateOut: found %d\n%s", flatten.size, flatten.map(v => "K: %s\nV: %s".format(v._1, v._2)).mkString("\n"))
     flatten.map(f(_)).iterator
   }
 
@@ -364,11 +364,11 @@ case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(imp
   }
   else false
 
-  protected[salat] lazy val safeValue: Some[AnyRef] = value match {
+  protected[salat] lazy val safeValue: Option[AnyRef] = value match {
     case v @ Some(_) => v
     case _ => field.typeRefType match {
       case IsOption(_) => Some(None)
-      case _           => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
+      case _           => None //throw new Exception("%s requires value for '%s'".format(clazz, field.name))
     }
   }
 
