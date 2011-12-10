@@ -63,21 +63,17 @@ object DBObjectInjectorChain extends TransformerChain {
 
   def caseClassTransformer = {
     case (path, t @ TypeRefType(_, symbol, _), ctx, IsDbo(dbo)) => {
-      log.info("""
+      //      log.info("""
+      //
+      //            caseClassTransformer:
+      //            path: %s
+      //            trt: %s
+      //            value: %s
+      //            %s
+      //
+      //            """, path, t, ClassPrettyPrinter(dbo.asInstanceOf[AnyRef]), dbo)
 
-            caseClassTransformer:
-            path: %s
-            trt: %s
-            value: %s
-            %s
-
-            """, path, t, ClassPrettyPrinter(dbo.asInstanceOf[AnyRef]), dbo)
-
-      //      val grater = (ctx.extractTypeHint(dbo) match {
-      //        case Some(typeHint) => ctx.lookup_?(typeHint)
-      //        case None           => ctx.lookup_?(symbol.path) orElse ctx.lookup_?(path)
-      //      }).getOrElse(throw GraterFromDboGlitch(symbol.path, dbo)(ctx))
-
+      // swizz of the century - the type param says one thing, the manifest something else - must figure out why this actually works!
       val xformed = ctx.fromDBObject[CaseClass](dbo = dbo)(Manifest.classType(getClassNamed(symbol.path)(ctx).getOrElse(getClassNamed_!(path)(ctx))))
       //      log.info(TransformPrettyPrinter("caseClassTransformer", dbo, t, xformed.asInstanceOf[AnyRef]))
       xformed.asInstanceOf[AnyRef]
