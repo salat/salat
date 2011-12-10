@@ -31,6 +31,7 @@ import com.novus.salat.util.{ Logging, ClassPrettyPrinter }
 trait TypeHintStrategy {
   val when: TypeHintFrequency.Value
   val typeHint: String
+  val diagnosticLogging: Boolean = false
 
   def encode(in: String): Any
 
@@ -46,7 +47,9 @@ object NeverTypeHint extends TypeHintStrategy {
   def decode(in: Any) = null
 }
 
-case class StringTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint) extends TypeHintStrategy {
+case class StringTypeHintStrategy(when: TypeHintFrequency.Value,
+                                  typeHint: String = TypeHint,
+                                  override val diagnosticLogging: Boolean = false) extends TypeHintStrategy {
 
   assume(when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
     "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when))
@@ -64,8 +67,10 @@ case class StringTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
   def encode(in: String) = in
 }
 
-case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint,
-                                  encoding: TypeHintEncoding = TypeHintEncoding.UsAsciiEncoding) extends TypeHintStrategy with Logging {
+case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value,
+                                  typeHint: String = TypeHint,
+                                  encoding: TypeHintEncoding = TypeHintEncoding.UsAsciiEncoding,
+                                  override val diagnosticLogging: Boolean = false) extends TypeHintStrategy with Logging {
 
   private val PossibleBigInt = Pattern.compile("^[-]?\\d+$")
 
@@ -83,10 +88,10 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
   protected[salat] def decodeAndMemoize(bi: BigInt) = {
     fromTypeHint.get(bi).getOrElse {
       val decoded = encoding.format(encoding.decode(bi))
-      log.trace("fromTypeHint: put %s ---> '%s'", bi, decoded)
+      if (diagnosticLogging) log.info("fromTypeHint: put %s ---> '%s'", bi, decoded)
       fromTypeHint.put(bi, decoded)
       if (!toTypeHint.contains(decoded)) {
-        log.trace("toTypeHint: put '%s' ---> %s", decoded, bi)
+        if (diagnosticLogging) log.info("toTypeHint: put '%s' ---> %s", decoded, bi)
         toTypeHint.put(decoded, bi)
       }
       decoded
@@ -111,10 +116,10 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
     else {
       toTypeHint.get(in).getOrElse {
         val encoded = encoding.encode(in)
-        log.trace("toTypeHint: put '%s' ---> %s", in, encoded)
+        if (diagnosticLogging) log.info("toTypeHint: put '%s' ---> %s", in, encoded)
         toTypeHint.put(in, encoded)
         if (!fromTypeHint.contains(encoded)) {
-          log.trace("fromTypeHint: put %s ---> '%s'", encoded, in)
+          if (diagnosticLogging) log.info("fromTypeHint: put %s ---> '%s'", encoded, in)
           fromTypeHint.put(encoded, in)
         }
         encoded

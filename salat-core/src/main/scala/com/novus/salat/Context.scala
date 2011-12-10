@@ -45,7 +45,9 @@ trait Context extends ContextDBObjectTransformation with Logging {
   /**Per class key overrides - map key is (clazz.getName, field name) */
   private[salat] val perClassKeyOverrides: ConcurrentMap[(String, String), String] = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
 
-  val typeHintStrategy: TypeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
+  val typeHintStrategy: TypeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always,
+    typeHint = TypeHint,
+    diagnosticLogging = debug.typeHinting)
 
   /**Enum handling strategy is defined at the context-level, but can be overridden at the individual enum level */
   val defaultEnumStrategy = EnumStrategy.BY_VALUE
@@ -58,7 +60,7 @@ trait Context extends ContextDBObjectTransformation with Logging {
   // TODO: BigDecimal handling strategy: binary vs double
   // TODO: BigInt handling strategy: binary vs int
 
-  val diagnostics: ContextDiagnosticOptions = ContextDiagnosticOptions(logGraterCreation = true)
+  lazy val debug: ContextDiagnosticOptions = ContextDiagnosticOptions.silence
 
   def registerClassLoader(cl: ClassLoader) {
     classLoaders = cl +: classLoaders
@@ -101,8 +103,7 @@ trait Context extends ContextDBObjectTransformation with Logging {
   def accept(grater: Grater[_ <: AnyRef]) {
     if (!graters.contains(grater.clazz.getName)) {
       graters += grater.clazz.getName -> grater
-      //      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
-      log.debug("accept: ctx='%s' accepted grater[%s]", name, grater.clazz.getName)
+      if (debug.graters) log.debug("accept: ctx='%s' accepted Grater[%s]", name, grater.clazz.getName)
     }
   }
 
@@ -144,4 +145,20 @@ trait Context extends ContextDBObjectTransformation with Logging {
 
 }
 
-case class ContextDiagnosticOptions(logGraterCreation: Boolean = false)
+object ContextDiagnosticOptions {
+  lazy val silence = ContextDiagnosticOptions()
+  lazy val debugGraters = ContextDiagnosticOptions(graters = true)
+  lazy val debugTypeInfo = ContextDiagnosticOptions(typeInformation = true)
+  lazy val debugSerialization = ContextDiagnosticOptions(in = true)
+  lazy val debugDeserialization = ContextDiagnosticOptions(out = true)
+  lazy val debugAnnotations = ContextDiagnosticOptions(annotations = true)
+  lazy val debugTypeHints = ContextDiagnosticOptions(typeHinting = true)
+  lazy val debugAll = ContextDiagnosticOptions(true, true, true, true, true, true)
+}
+
+case class ContextDiagnosticOptions(graters: Boolean = false,
+                                    annotations: Boolean = false,
+                                    typeInformation: Boolean = false,
+                                    typeHinting: Boolean = false,
+                                    in: Boolean = false,
+                                    out: Boolean = false)

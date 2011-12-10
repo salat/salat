@@ -35,7 +35,7 @@ trait ContextDBObjectTransformation {
 
   def concreteLookup[A <: AnyRef: Manifest](dbo: DBObject, path: Option[String] = None): ConcreteGrater[_ <: CaseClass] = {
     val m = manifest[A].erasure
-    log.info("concreteLookup: A=%s dbo.%s='%s'", m.getName, ctx.typeHintStrategy.typeHint, extractTypeHint(dbo))
+    if (ctx.debug.typeInformation) log.debug("concreteLookup: A=%s dbo.%s='%s'", m.getName, ctx.typeHintStrategy.typeHint, extractTypeHint(dbo))
     // if class is concrete, hole in one
     if (m.getInterfaces.contains(classOf[Product])) {
       lookup(m.getName).asInstanceOf[ConcreteGrater[_ <: CaseClass]]
@@ -60,13 +60,7 @@ trait ContextDBObjectTransformation {
   def toDBObject[A <: AnyRef: Manifest](o: A): DBObject = {
     val g = lookup(o.getClass.getName).asInstanceOf[Grater[A]]
 
-    log.info("""
-
-toDBObject:
-  o.getClass.getName = %s
-  g = %s
-
-    """, o.getClass.getName, g.toString)
+    if (ctx.debug.typeInformation) log.info("toDBObject: o.getClass.getName = %s g = %s", o.getClass.getName, g.toString)
 
     val builder = MongoDBObject.newBuilder
     // handle type hinting, where necessary
@@ -76,26 +70,19 @@ toDBObject:
     }
     g.iterateOut(o) {
       case (key, value) => {
-        log.info("toDBObject: K='%s', V='%s'", key, value)
+        if (ctx.debug.in) log.info("toDBObject: K='%s', V='%s'", key, value)
         builder += key -> value
       }
     }.toList
     builder.result()
   }
 
-  //  def toDBObject[X <: AnyRef: Manifest](o: X): DBObject = {
-  //    if (o.getClass.getInterfaces.contains(classOf[Product])) {
-  //      toDBObject(o.asInstanceOf[CaseClass])
-  //    }
-  //    else error("NOT CONCRETE")
-  //  }
-
   // moving away from view bounds on DBObject - it complicates life at the callsite
   // ironically, i actually require a MongoDBObject here - the hell with it, just wrap it manually.
   def fromDBObject[A <: AnyRef: Manifest](dbo: DBObject): A = {
-    log.info("fromDBObject: m.erasure.getName='%s'", manifest[A].erasure.getName)
+    if (ctx.debug.typeInformation) log.info("fromDBObject: m.erasure.getName='%s'", manifest[A].erasure.getName)
     val g = concreteLookup[A](dbo)
-    log.info("fromDBObject: g.clazz='%s'", g.clazz.getName)
+    if (ctx.debug.typeInformation) log.info("fromDBObject: g.clazz='%s'", g.clazz.getName)
     if (g.sym.isModule) {
       g.companionObject.asInstanceOf[A]
     }
@@ -105,33 +92,33 @@ toDBObject:
       val args = g.indexedFields.map {
         case field if field.ignore => {
           val v = g.safeDefault(field)
-          log.info("%s: ignore, use safe default %s", field.name, v)
+          if (ctx.debug.out) log.info("%s: ignore, use safe default %s", field.name, v)
           v
         }
         case field => {
           val name = ctx.determineFieldName(g.clazz, field)
           val value1 = mdbo.get(name)
-          log.info("value1: %s", value1)
+          if (ctx.debug.out) log.info("value1: %s", value1)
           value1 match {
             case Some(value) => {
               val v = field.in_!(value)
-              log.info("%s: name='%s' %s ---> %s", field.name, name, value, v)
+              if (ctx.debug.out) log.info("%s: name='%s' %s ---> %s", field.name, name, value, v)
               v
             }
             case _ => {
               val v = g.safeDefault(field)
-              log.info("%s: ??? falling back to safe default %s", field.name, v)
+              if (ctx.debug.out) log.info("%s: ??? falling back to safe default %s", field.name, v)
               v
             }
           }
         }
       }.map(_.get.asInstanceOf[AnyRef]) // TODO: if raw get blows up, throw a more informative error
 
-      log.info("ARGS:\n%s\n", args.mkString("\n"))
+      if (ctx.debug.out) log.info("ARGS:\n%s\n", args.mkString("\n"))
 
       var counter = 0
       for (field <- g.indexedFields) {
-        log.info("[%d] %s ---> %s", counter, field.name, args(counter))
+        if (ctx.debug.out) log.info("[%d] %s ---> %s", counter, field.name, args(counter))
         counter += 1
       }
 
@@ -148,6 +135,5 @@ toDBObject:
         case e                            => throw e
       }
     }
-
   }
 }

@@ -67,22 +67,28 @@ object `package` {
 
 abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) extends Logging {
   def transform(value: Any)(implicit ctx: Context): Any = value
+
   def before(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
+
   def after(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
+
   def transform_!(dir: String, x: Any)(implicit ctx: Context): Option[Any] = {
     before(x).flatMap {
       x =>
-        val t = transform(x)
-        val a = after(t)
-        log.trace("""
+        val xform = transform(x)
+        val a = after(xform)
+        if (ctx.debug.in || ctx.debug.out) {
+          log.trace("""
 
-transform_!: %s
-  path: %s
-  before: %s
-  transform: %s
-  after: %s
+          transform_!: %s
+            t: %s
+            path: %s
+            before: %s
+            transform: %s
+            after: %s
 
-        """, dir, path, x, t, a)
+                  """, dir, t, path, x, xform, a)
+        }
         a
     }
   }
