@@ -41,7 +41,6 @@ case class Item(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.
 case class Jig(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.Buffer[Thingy])
 case class King(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.ArrayBuffer[Thingy])
 
-// TODO: Salat does *not* offer support for arrays yet!
 case class Love(@Key("_id") id: ObjectId = new ObjectId, coll: Array[Thingy])
 
 case class Mike(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.immutable.Vector[Thingy])
@@ -53,8 +52,9 @@ case class Prep(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.
 case class Queen(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.LinkedList[Thingy])
 case class Roger(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.DoubleLinkedList[Thingy])
 
-//Sugar
-//Tare
+case class Sugar(@Key("_id") id: ObjectId = new ObjectId, coll: Array[Int])
+case class Tare(@Key("_id") id: ObjectId = new ObjectId, coll: Array[Option[BigDecimal]])
+
 //Uncle
 //Victor
 //William

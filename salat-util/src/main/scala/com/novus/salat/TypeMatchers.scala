@@ -59,6 +59,13 @@ object IsTraversable {
     }
 }
 
+object IsArray extends Logging {
+  def unapply(t: Type): Option[Type] = t match {
+    case TypeRefType(_, symbol, List(e)) if (symbol.path.endsWith(".Array")) => Some(e)
+    case _ => None
+  }
+}
+
 object IsScalaBigDecimal {
   def unapply(t: Type): Option[Type] = TypeMatchers.matchesOneType(t, classOf[ScalaBigDecimal].getName)
 }

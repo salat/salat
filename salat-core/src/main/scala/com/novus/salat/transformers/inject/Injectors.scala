@@ -128,6 +128,76 @@ package object in {
         }
       }
 
+      case IsArray(t @ TypeRefType(_, _, _)) => {
+
+        // IsArray: t=TypeRefType(ThisType(scala),
+        // scala.Array
+        // ,List(TypeRefType(ThisType(com.novus.salat.test.model),com.novus.salat.test.model.Thingy,List())))
+
+        println("IsArray: t=%s".format(t))
+        //        println("IsArray: typeArgs=%s", arr.typeArgs)
+        //
+        //        val t = arr.typeArgs.
+        //          filter(_.isInstanceOf[TypeRefType]).
+        //          headOption.
+        //          getOrElse(throw new Error("Ugh. Arrays.")).
+        //          asInstanceOf[TypeRefType]
+        //        match {
+        //          case x: TypeRefType => x
+        //          case _ => throw new Error("help")
+        //        }
+
+        t match {
+          case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
+            new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with ArrayInjector {
+              val parentType = pt
+            }
+
+          case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
+            new Transformer(symbol.path, t)(ctx) with LongToInt with ArrayInjector {
+              val parentType = pt
+            }
+
+          case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
+            new Transformer(symbol.path, t)(ctx) with ByteArrayToBigInt with ArrayInjector {
+              val parentType = pt
+            }
+
+          case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+            new Transformer(symbol.path, t)(ctx) with StringToChar with ArrayInjector {
+              val parentType = pt
+            }
+
+          case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
+            new Transformer(symbol.path, t)(ctx) with DateToJodaDateTime with ArrayInjector {
+              val parentType = pt
+            }
+
+          case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+            new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater with ArrayInjector {
+              val parentType = pt
+            }
+          }
+
+          case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
+            new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with ArrayInjector {
+              val parentType = pt
+              val grater = ctx.lookup_?(symbol.path)
+            }
+
+          case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
+            new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with ArrayInjector {
+              val parentType = pt
+              val grater = ctx.lookup_?(symbol.path)
+            }
+
+          case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with ArrayInjector {
+            val parentType = pt
+            val grater = ctx.lookup_?(symbol.path)
+          }
+        }
+      }
+
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with MapInjector {
@@ -231,7 +301,7 @@ package object in {
 package in {
 
   import java.lang.Integer
-  import com.novus.salat.annotations.EnumAs
+  import scala.reflect.{ Manifest, ClassManifest }
 
   trait LongToInt extends Transformer {
     self: Transformer =>
@@ -426,6 +496,65 @@ package in {
       }
     }
 
+  }
+
+  trait ArrayInjector extends Transformer with Logging {
+    self: Transformer =>
+    override def transform(value: Any)(implicit ctx: Context): Any = value
+
+    override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case dbl: BasicDBList => {
+        val list: MongoDBList = dbl
+        Some(list.toList)
+      }
+      case _ => None
+    }
+
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = {
+
+      value match {
+        case list: List[_] => {
+          // this is not the most glamourous thing i have ever done, mind you.
+          val arr = t.symbol.path match {
+            case x if x.endsWith(".Boolean") => list.toArray(ClassManifest.Boolean.asInstanceOf[ClassManifest[Any]])
+            case x if x.endsWith(".BigInt") => list.map(super.transform(_).asInstanceOf[AnyRef]).
+              toArray(ClassManifest.fromClass(classOf[BigInt]).asInstanceOf[ClassManifest[AnyRef]])
+            case x if x.endsWith(".BigDecimal") => list.map(super.transform(_).asInstanceOf[AnyRef]).
+              toArray(ClassManifest.fromClass(classOf[BigDecimal]).asInstanceOf[ClassManifest[AnyRef]])
+            case x if x.endsWith(".Byte")   => list.toArray(ClassManifest.Byte.asInstanceOf[ClassManifest[Any]])
+            case x if x.endsWith(".Char")   => list.toArray(ClassManifest.Char.asInstanceOf[ClassManifest[Any]])
+            case x if x.endsWith(".Double") => list.toArray(ClassManifest.Double.asInstanceOf[ClassManifest[Any]])
+            case x if x.endsWith(".Float")  => list.toArray(ClassManifest.Float.asInstanceOf[ClassManifest[Any]])
+            case x if x.endsWith(".Int")    => list.toArray(Manifest.Int.asInstanceOf[ClassManifest[Any]])
+            case x if x.endsWith(".Long")   => list.toArray(Manifest.Long.asInstanceOf[ClassManifest[Any]])
+            case x if x.endsWith(".Short")  => list.toArray(ClassManifest.Short.asInstanceOf[ClassManifest[Any]])
+            case _ => list.map(super.transform(_).asInstanceOf[AnyRef]).
+              toArray(ClassManifest.classType(getClassNamed_!(t.symbol.path)(ctx)))
+          }
+
+          log.info("""
+
+after:
+RAW INPUTS
+  t: %s
+  t.symbol.path: %s
+  parentType: %s
+  parentType.symbol.path: %s
+  value: %s
+ARRAY
+  %s
+  size: %d
+  %s
+
+                """, t, t.symbol.path, parentType, parentType.symbol.path, value, arr.getClass.getName, arr.size, arr.mkString("\n"))
+
+          Option(arr)
+        }
+        case _ => None
+      }
+    }
+
+    val parentType: TypeRefType
   }
 
 }

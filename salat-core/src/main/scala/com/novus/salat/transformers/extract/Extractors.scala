@@ -95,6 +95,34 @@ package object out {
           new Transformer(symbol.path, t)(ctx) with TraversableExtractor
       }
 
+      case IsArray(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with ArrayExtractor
+
+        case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with BigIntToByteArray with ArrayExtractor
+
+        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with CharToString with ArrayExtractor
+
+        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
+          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with ArrayExtractor
+        }
+
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
+          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with ArrayExtractor {
+            val grater = ctx.lookup_?(symbol.path)
+          }
+
+        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
+          new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with ArrayExtractor {
+            val grater = ctx.lookup_?(t.symbol.path)
+          }
+
+        case TypeRefType(_, symbol, _) =>
+          new Transformer(symbol.path, t)(ctx) with ArrayExtractor
+      }
+
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with MapExtractor
@@ -269,5 +297,39 @@ package out {
     }
   }
 
+  trait ArrayExtractor extends Transformer with Logging {
+    self: Transformer =>
+    override def transform(value: Any)(implicit ctx: Context): Any = value
+
+    //  override def after(value: Any)(implicit ctx: Context):Option[Any] = {
+    //
+    //   log.info("MADE IT TO ArrayExtractor!  value=%s", value)
+    //   log.info("value.isInstanceOf[Array[_]]=%s", value.isInstanceOf[Array[_]])
+    //
+    //    value match {
+    //    case array if value.isInstanceOf[Array[_]]  => {
+    //      log.info("trying to transform Array[_]!")
+    //      val arr = array.asInstanceOf[Array[_]]
+    //      log.info("arr=%s", arr)
+    ////      Some(MongoDBList(arr.map {
+    ////        case el => super.transform(el)
+    ////      }.toList: _*))
+    //
+    //      for (a <- arr)
+    //
+    //
+    //    }
+    //
+    //    case _ => None
+    //  }
+    //  }
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case array: Array[_] =>
+        Some(MongoDBList(array.map {
+          case el => super.transform(el)
+        }.toList: _*))
+      case _ => None
+    }
+  }
 }
 
