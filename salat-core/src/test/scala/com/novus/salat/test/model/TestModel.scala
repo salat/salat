@@ -27,6 +27,7 @@ import com.novus.salat.annotations._
 import scala.collection.immutable.{ Map => IMap }
 import scala.collection.mutable.{ Map => MMap }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
+import com.mongodb.casbah.Imports._
 
 import org.scala_tools.time.Imports._
 
@@ -268,3 +269,9 @@ case class Turbo(name: String, ticker: String) extends Security
 case class Index(name: String) extends Contract
 
 case class Investments(contracts: List[Contract])
+
+case class Titus(@Ignore ignoreMe: String = "bits", dontIgnoreMe: Int)
+case class Titus2(@Ignore ignoreMe: String = null, dontIgnoreMe: Int)
+case class SomeClassWithUnsupportedField(@Key("_id") val id: ObjectId = new ObjectId,
+                                         text: Option[String] = None,
+                                         @Ignore unsupportedType: java.io.File = null)
