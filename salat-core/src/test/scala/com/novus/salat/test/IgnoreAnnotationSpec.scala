@@ -12,12 +12,12 @@ class IgnoreAnnotationSpec extends SalatSpec {
   "The @Ignore annotation" should {
     "suppress serialization of the field while populating with the default arg during deserialization" in {
       val t = Titus(ignoreMe = "look", dontIgnoreMe = -999)
-      val dbo: MongoDBObject = grater[Titus].asDBObject(t)
+      val dbo: MongoDBObject = ctx.toDBObject(t)
       //      println(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Titus")
       dbo must havePair("dontIgnoreMe" -> -999)
       dbo.getAs[String]("ignoreMe") must beNone
-      val t_* = grater[Titus].asObject(dbo)
+      val t_* = ctx.fromDBObject[Titus](dbo)
       // because of @Ignore, the supplied value "look" is discarded on serialization 
       // on deserialization, ignoreMe field is populated with default value "bits"
       t_* must_== t.copy(ignoreMe = "bits")
@@ -27,12 +27,12 @@ class IgnoreAnnotationSpec extends SalatSpec {
 
     "allow a null default value" in {
       val t = Titus2(ignoreMe = "look", dontIgnoreMe = -999)
-      val dbo: MongoDBObject = grater[Titus2].asDBObject(t)
+      val dbo: MongoDBObject = ctx.toDBObject(t)
       //      println(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Titus2")
       dbo must havePair("dontIgnoreMe" -> -999)
       dbo.getAs[String]("ignoreMe") must beNone
-      val t_* = grater[Titus2].asObject(dbo)
+      val t_* = ctx.fromDBObject[Titus2](dbo)
       // because of @Ignore, the supplied value "look" is discarded on serialization
       // on deserialization, ignoreMe field is populated with default value null
       t_* must_== t.copy(ignoreMe = null)
@@ -42,13 +42,13 @@ class IgnoreAnnotationSpec extends SalatSpec {
     "ignore a field with an unsupported type annotated with @Ignore" in {
       val _id = new ObjectId
       val s = SomeClassWithUnsupportedField(id = _id, unsupportedType = new java.io.File("."))
-      val dbo: MongoDBObject = grater[SomeClassWithUnsupportedField].asDBObject(s)
+      val dbo: MongoDBObject = ctx.toDBObject(s)
       //      println(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.SomeClassWithUnsupportedField")
       dbo must havePair("_id" -> _id)
       dbo.getAs[String]("text") must beNone
       dbo.getAs[java.io.File]("unsupportedType") must beNone
-      val s_* = grater[SomeClassWithUnsupportedField].asObject(dbo)
+      val s_* = ctx.fromDBObject[SomeClassWithUnsupportedField](dbo)
       s_* must_== s.copy(unsupportedType = null)
       s_*.unsupportedType must_== classOf[SomeClassWithUnsupportedField].companionClass.getMethod("apply$default$3").
         invoke(classOf[SomeClassWithUnsupportedField].companionObject)
