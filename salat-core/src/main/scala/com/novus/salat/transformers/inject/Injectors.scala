@@ -532,7 +532,8 @@ package in {
               toArray(ClassManifest.classType(getClassNamed_!(t.symbol.path)(ctx)))
           }
 
-          log.info("""
+          if (ctx.debug.typeInformation) {
+            log.info("""
 
 after:
 RAW INPUTS
@@ -546,7 +547,9 @@ ARRAY
   size: %d
   %s
 
-                """, t, t.symbol.path, parentType, parentType.symbol.path, value, arr.getClass.getName, arr.size, arr.mkString("\n"))
+ """, t, t.symbol.path, parentType, parentType.symbol.path, value, arr.getClass.getName, arr.size, arr.mkString("\n"))
+
+          }
 
           Option(arr)
         }
