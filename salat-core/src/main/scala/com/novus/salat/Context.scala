@@ -19,50 +19,64 @@
  */
 package com.novus.salat
 
-import java.math.{ RoundingMode, MathContext }
-import com.novus.salat.util._
-import com.mongodb.casbah.Imports._
+import java.math.{ RoundingMode => JRoundingMode, MathContext => JMathContext }
+import scala.collection.mutable.{ ConcurrentMap }
+import scala.collection.JavaConversions.JConcurrentMapWrapper
+import scala.collection.JavaConversions.JCollectionWrapper
 
-import com.novus.salat.annotations.raw._
+import com.novus.salat.util._
+import com.novus.salat.{ Field => SField }
+import com.novus.salat.annotations._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
-import com.novus.salat.{ Field => SField }
-import scala.collection.mutable.{ ConcurrentMap, Map => MMap, HashMap }
-import scala.collection.JavaConversions.JConcurrentMapWrapper
-import java.util.concurrent.ConcurrentHashMap
+import com.mongodb.casbah.commons.MongoDBObject
+import java.util.concurrent.{ CopyOnWriteArrayList, ConcurrentHashMap }
 
 trait Context extends Logging {
+
+  /**Name of the context */
+  val name: String
+
+  /**Concurrent hashmap of classname to Grater */
   private[salat] val graters: ConcurrentMap[String, Grater[_ <: AnyRef]] = JConcurrentMapWrapper(new ConcurrentHashMap[String, Grater[_ <: AnyRef]]())
 
-  val name: Option[String]
-  // TODO: make this an MSeq and private to [salat] - what on earth could I have been thinking here?
-  implicit var classLoaders: Seq[ClassLoader] = Seq(getClass.getClassLoader)
+  /**Mutable seq of classloaders */
+  private[salat] var classLoaders: Vector[ClassLoader] = Vector(this.getClass.getClassLoader)
+
+  /**Global key remapping - for instance, always serialize "id" to "_id" */
+  private[salat] val globalKeyOverrides: ConcurrentMap[String, String] = JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
+
+  /**Per class key overrides - map key is (clazz.getName, field name) */
+  private[salat] val perClassKeyOverrides: ConcurrentMap[(String, String), String] = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
 
   val typeHintStrategy: TypeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
 
-  // sets up a default enum strategy of using toString to serialize/deserialize enums
+  /**Enum handling strategy is defined at the context-level, but can be overridden at the individual enum level */
   val defaultEnumStrategy = EnumStrategy.BY_VALUE
-  // global @Key overrides - careful with that axe, Eugene
-  private[salat] val globalKeyOverrides: MMap[String, String] = HashMap.empty
-  // per-class key overrides - map key is (clazz.getName, field name)
-  private[salat] val perClassKeyOverrides: MMap[(String, String), String] = HashMap.empty
 
-  val mathCtx = new MathContext(17, RoundingMode.HALF_UP)
+  val mathCtx = new JMathContext(17, JRoundingMode.HALF_UP)
 
+  /**Don't serialize any field whose value matches the supplied default args */
   val suppressDefaultArgs: Boolean = false
 
-  def registerClassLoader(cl: ClassLoader): Unit = {
-    // any explicitly-registered classloader is assumed to take priority over the boot time classloader
-    classLoaders = (Seq.newBuilder[ClassLoader] += cl ++= classLoaders).result
-    log.info("Context: registering classloader %d", classLoaders.size)
+  // TODO: BigDecimal handling strategy: binary vs double
+  // TODO: BigInt handling strategy: binary vs int
+
+  val diagnostics: ContextDiagnosticOptions = ContextDiagnosticOptions(logGraterCreation = true)
+
+  def registerClassLoader(cl: ClassLoader) {
+    classLoaders = cl +: classLoaders
+    log.info("registerClassLoader: ctx='%s' registering classloader='%s' (total: %d)", name, cl.toString, classLoaders.size)
   }
 
-  def determineFieldName(clazz: Class[_], field: SField): String = {
-    assume(field.name != null && field.name.nonEmpty, "determineFieldName: bad candy field=%s".format(field))
+  def determineFieldName(clazz: Class[_], field: SField): String = determineFieldName(clazz, field.name)
 
-    globalKeyOverrides.get(field.name).
-      getOrElse(perClassKeyOverrides.get((clazz.getName, field.name)).
-        getOrElse(field.name))
+  def determineFieldName(clazz: Class[_], fieldName: String): String = {
+    assume(fieldName != null && fieldName.nonEmpty, "determineFieldName: bad candy clazz='%s' field=%s".format(clazz.getName, fieldName))
+
+    globalKeyOverrides.get(fieldName).
+      getOrElse(perClassKeyOverrides.get((clazz.getName, fieldName)).
+        getOrElse(fieldName))
   }
 
   def registerPerClassKeyOverride(clazz: Class[_], remapThis: String, toThisInstead: String) {
@@ -78,12 +92,12 @@ trait Context extends Logging {
   }
 
   def registerGlobalKeyOverride(remapThis: String, toThisInstead: String) {
-    // for obvious reasons, we are not allowing a key override to be registered more than once
-    assume(!globalKeyOverrides.contains(remapThis), "registerGlobalKeyOverride: context=%s already has a global key override for key='%s' with value='%s'"
-      .format(name, remapThis, globalKeyOverrides.get(remapThis)))
     // think twice, register once
     assume(remapThis != null && remapThis.nonEmpty, "registerGlobalKeyOverride: key remapThis must be supplied!")
     assume(toThisInstead != null && toThisInstead.nonEmpty, "registerGlobalKeyOverride: value toThisInstead must be supplied!")
+    // for obvious reasons, we are not allowing a key override to be registered more than once
+    assume(!globalKeyOverrides.contains(remapThis), "registerGlobalKeyOverride: context=%s already has a global key override for key='%s' with value='%s'"
+      .format(name, remapThis, globalKeyOverrides.get(remapThis)))
     globalKeyOverrides += remapThis -> toThisInstead
     log.info("registerGlobalKeyOverride: context=%s will globally remap key='%s' to '%s'", name, remapThis, toThisInstead)
   }
@@ -92,7 +106,7 @@ trait Context extends Logging {
     if (!graters.contains(grater.clazz.getName)) {
       graters += grater.clazz.getName -> grater
       //      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
-      log.trace("accept: ctx='%s' accepted grater[%s]", name.getOrElse("<no name>"), grater.clazz.getName)
+      log.debug("accept: ctx='%s' accepted grater[%s]", name, grater.clazz.getName)
     }
   }
 
@@ -100,90 +114,44 @@ trait Context extends Logging {
   // other types (Joda Time, anyone?) that are either directly
   // interoperable with MongoDB, or are handled by Casbah's BSON
   // encoders.
-  protected def suitable_?(clazz: String): Boolean = {
-    val s = !(clazz.startsWith("scala.") ||
-      clazz.startsWith("java.") ||
-      clazz.startsWith("javax.")) ||
-      getClassNamed(clazz)(this).map(_.annotated_?[Salat]).getOrElse(false)
-    //    log.info("suitable_?: clazz=%s, suitable=%s", clazz, s)
-    s
+  protected[salat] def suitable_?(clazz: String) = clazz match {
+    case c if clazz.startsWith("scala.") => false
+    case c if clazz.startsWith("java.")  => false
+    case c if clazz.startsWith("javax.") => false
+    //    case c if getClassNamed(c).map(_.getEnclosingClass != null).getOrElse(false) => false
+    case _                               => true
   }
 
-  protected def suitable_?(clazz: Class[_]): Boolean = suitable_?(clazz.getName)
-
-  protected def generate_?(c: String): Option[Grater[_ <: AnyRef]] = {
+  private[salat] def lookup_?[X <: AnyRef](c: String): Option[Grater[_ <: AnyRef]] = graters.get(c) orElse {
     if (suitable_?(c)) {
-      val cc = getCaseClass(c)(this)
-      //      log.info("generate_?: c=%s, case class=%s", c, cc.getOrElse("[NOT FOUND]"))
-      cc match {
-        case Some(clazz) if (clazz.isInterface) => {
-          Some((new ProxyGrater(clazz)(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
-        }
-        case Some(clazz) if Modifier.isAbstract(clazz.getModifiers()) => {
-          Some((new ProxyGrater(clazz)(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
-        }
-        case Some(clazz) => {
-          //          log.info("generate_?: creating Grater[CaseClass] for clazz=%s", clazz)
-          Some({ new ConcreteGrater[CaseClass](clazz)(this) {} }.asInstanceOf[Grater[CaseClass]])
-        }
-        case unknown => {
-          //          log.warning("generate_?: no idea what to do with cc=%s", unknown)
-          None
-        }
+      resolveClass(c, classLoaders) match {
+        case IsCaseClass(clazz) => Some((new ConcreteGrater[CaseClass](clazz)(this) {}).
+          asInstanceOf[Grater[_ <: AnyRef]])
+        case Some(clazz) if Modifier.isAbstract(clazz.getModifiers) => Some((
+          new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).
+          asInstanceOf[Grater[_ <: AnyRef]])
+        case Some(clazz) if clazz.isInterface => Some((
+          new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
+        case _ => None
       }
     }
     else None
   }
 
-  protected def generate(clazz: String): Grater[_ <: AnyRef] = try {
-    // if this blows up, we'll catch and rethrow with additional information
-    val caseClass = getCaseClass(clazz)(this).map(_.asInstanceOf[Class[CaseClass]]).get
-    val grater = new ConcreteGrater[CaseClass](caseClass)(this) {}
-    grater.asInstanceOf[Grater[CaseClass]]
-  }
-  catch {
-    case e => {
-      log.error(e, "generate: failed on clazz='%s'".format(clazz))
-      throw GraterGlitch(clazz)(this)
-    }
-  }
+  def lookup(c: String): Grater[_ <: AnyRef] = lookup_?(c).getOrElse(throw GraterGlitch(c)(this))
 
-  def lookup(clazz: String): Option[Grater[_ <: AnyRef]] = graters.get(clazz) orElse generate_?(clazz)
+  def lookup[A <: CaseClass: Manifest]: Grater[A] = lookup(manifest[A].erasure.getName).asInstanceOf[Grater[A]]
 
-  def lookup_!(clazz: String): Grater[_ <: AnyRef] = lookup(clazz).getOrElse(generate(clazz))
+  def lookup(c: String, clazz: CaseClass): Grater[_ <: AnyRef] = lookup_?(c).getOrElse(lookup(clazz.getClass.getName))
 
-  def lookup_![X <: CaseClass: Manifest]: Grater[X] =
-    lookup_!(manifest[X].erasure.getName).asInstanceOf[Grater[X]]
+  def lookup_?(c: String, dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] =
+    lookup_?(c) orElse extractTypeHint(dbo).flatMap(lookup_?(_))
 
-  def extractTypeHint(dbo: MongoDBObject): Option[String] =
-    if (dbo.underlying.isInstanceOf[BasicDBObject]) dbo.get(typeHintStrategy.typeHint) match {
-      case Some(hint) => Some(typeHintStrategy.decode(hint))
-      case _          => None
-    }
-    else None
+  def lookup(dbo: MongoDBObject): Grater[_ <: AnyRef] = extractTypeHint(dbo).map(lookup(_)).getOrElse(throw MissingTypeHint(dbo)(this))
 
-  def lookup(x: CaseClass): Option[Grater[_ <: AnyRef]] = lookup(x.getClass.getName)
-
-  def lookup(clazz: String, x: CaseClass): Option[Grater[_ <: AnyRef]] =
-    lookup(clazz) orElse lookup(x)
-
-  def lookup_!(clazz: String, x: CaseClass): Grater[_ <: AnyRef] =
-    lookup(clazz, x).getOrElse(generate(x.getClass.getName))
-
-  def lookup(clazz: String, dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] =
-    lookup(clazz) orElse lookup(dbo)
-
-  def lookup(dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] =
-    extractTypeHint(dbo) match {
-      case Some(hint: String) => graters.get(hint) match {
-        case Some(g) => Some(g)
-        case None    => generate_?(hint)
-      }
-      case _ => None
-    }
-
-  def lookup_!(dbo: MongoDBObject): Grater[_ <: AnyRef] = {
-    lookup(dbo).getOrElse(generate(extractTypeHint(dbo).getOrElse(throw MissingTypeHint(dbo)(this))))
+  def extractTypeHint(dbo: MongoDBObject): Option[String] = {
+    dbo.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_))
   }
 }
 
+case class ContextDiagnosticOptions(logGraterCreation: Boolean = false)

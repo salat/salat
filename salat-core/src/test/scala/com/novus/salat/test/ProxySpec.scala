@@ -12,7 +12,7 @@ class ProxySpec extends SalatSpec with PendingUntilFixed {
       val i1 = SomeTraitImpl1("foo")
       val i2 = SomeTraitImpl2(5)
 
-      val proxy = new ProxyGrater[SomeTrait](classOf[SomeTrait])
+      val proxy = new ProxyGrater(classOf[SomeTrait])
 
       val dbo1: MongoDBObject = proxy.asDBObject(i1)
       val dbo2: MongoDBObject = proxy.asDBObject(i2)

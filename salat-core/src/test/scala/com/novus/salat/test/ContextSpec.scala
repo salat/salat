@@ -22,133 +22,176 @@ package com.novus.salat.test
 import com.novus.salat.test.model._
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
-import com.novus.salat.util.MapPrettyPrinter
+import com.novus.salat.util.GraterGlitch
+import java.lang.reflect.Modifier
 
 class ContextSpec extends SalatSpec {
 
-  val j = James("Draino", true)
+  "The context classloader handling" should {
+    "provide a classloader collection populated with its own classloader" in new testContext {
+      ctx.classLoaders must contain(ctx.getClass.getClassLoader).only
+    }
+    "accept additional classloaders" in new testContext {
+      ctx.classLoaders must have size (1)
+      val cl = new ClassLoader() {}
+      ctx.registerClassLoader(cl)
+      ctx.classLoaders must have size (2)
+      //      ctx.classLoaders must contain(cl, ctx.getClass.getClassLoader).only
+    }
+  }
 
-  "A context that uses type hints only when necessary" should {
-    import com.novus.salat.test.when_necessary._
+  "Global field name overrides feature in the context" should {
+    val remapThis = "id"
+    val toThisInstead = "_id"
+    "support registering a global key override" in new testContext {
+      ctx.globalKeyOverrides must beEmpty
+      ctx.registerGlobalKeyOverride(remapThis, toThisInstead)
+      ctx.globalKeyOverrides.get(remapThis) must beSome(toThisInstead)
+      ctx.globalKeyOverrides must have size (1)
+    }
+    "prevent registering a duplicate global override" in new testContext {
+      ctx.globalKeyOverrides must beEmpty
+      ctx.registerGlobalKeyOverride(remapThis, toThisInstead)
+      ctx.registerGlobalKeyOverride(remapThis, toThisInstead) must throwA[java.lang.AssertionError]
+    }
+    "prevent registering a null or empty global override key" in new testContext {
+      ctx.registerGlobalKeyOverride("", toThisInstead) must throwA[java.lang.AssertionError]
+      ctx.registerGlobalKeyOverride(null, toThisInstead) must throwA[java.lang.AssertionError]
+    }
+    "prevent registering a null or empty global override value" in new testContext {
+      ctx.registerGlobalKeyOverride(remapThis, "") must throwA[java.lang.AssertionError]
+      ctx.registerGlobalKeyOverride(remapThis, null) must throwA[java.lang.AssertionError]
+    }
+  }
 
-    "lookup_! graters" in {
+  "Per-class field name overrides in the context" should {
+    val clazz = classOf[James]
+    val remapThis = "id"
+    val toThisInstead = "_id"
+    "support registering a per-class key override" in new testContext {
+      ctx.perClassKeyOverrides must beEmpty
+      ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead)
+      ctx.perClassKeyOverrides.get(clazz.getName, remapThis) must beSome(toThisInstead)
+      ctx.perClassKeyOverrides must have size (1)
+    }
+    "prevent registering a duplicate per-class override" in new testContext {
+      ctx.perClassKeyOverrides must beEmpty
+      ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead)
+      ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead) must throwA[java.lang.AssertionError]
+    }
+    "prevent registering a null or empty per-class override key" in new testContext {
+      ctx.registerPerClassKeyOverride(clazz, "", toThisInstead) must throwA[java.lang.AssertionError]
+      ctx.registerPerClassKeyOverride(clazz, null, toThisInstead) must throwA[java.lang.AssertionError]
+    }
+    "prevent registering a null or empty per-class override value" in new testContext {
+      ctx.registerPerClassKeyOverride(clazz, remapThis, "") must throwA[java.lang.AssertionError]
+      ctx.registerPerClassKeyOverride(clazz, remapThis, null) must throwA[java.lang.AssertionError]
+    }
+  }
 
-      "by name of case class" in {
-        ctx.lookup(James.getClass.getName) must beSome(grater[James])
+  "Using the context to determine field names" should {
+    val clazz = classOf[James]
+    val lye = "lye"
+    val byMistake = "byMistake"
+    val toThisInstead = "NaOH"
+    "support global key overrides" in new testContext {
+      ctx.determineFieldName(clazz, lye) must_== lye
+      ctx.registerGlobalKeyOverride(lye, toThisInstead)
+      ctx.determineFieldName(clazz, lye) must_== toThisInstead
+    }
+    "support per-class key overrides" in new testContext {
+      ctx.determineFieldName(clazz, lye) must_== lye
+      ctx.registerPerClassKeyOverride(clazz, lye, toThisInstead)
+      ctx.determineFieldName(clazz, lye) must_== toThisInstead
+    }
+    "return field name unaffected when the context has no overrides for this field name" in new testContext {
+      ctx.globalKeyOverrides must beEmpty
+      ctx.perClassKeyOverrides must beEmpty
+      ctx.determineFieldName(clazz, lye) must_== lye
+      ctx.determineFieldName(clazz, byMistake) must_== byMistake
+    }
+  }
+
+  "The context" should {
+    "judge whether a class is suitable" in new testContext {
+      "reject scala and java core classes" in {
+        ctx.suitable_?("scala.X") must beFalse
+        ctx.suitable_?("java.X") must beFalse
+        ctx.suitable_?("javax.X") must beFalse
       }
-
-      "by instance of case class" in {
-        ctx.lookup(j) must beSome(grater[James])
-        ctx.lookup(James.getClass.getName, j) must beSome(grater[James])
+      "allow concrete case classes" in {
+        ctx.suitable_?(classOf[James].getName) must beTrue
       }
-
-      "by type" in {
-        ctx.lookup_![James] must_== grater[James]
+      "allow abstract classes, deferring actual check until concrete instance is provided" in {
+        ctx.suitable_?((new MaudAgain {
+          val swept = "swept"
+          val out = "out"
+        }).getClass.getName) must beTrue
+      }
+      "accept traits, deferring actual check until concrete instance is provided" in {
+        ctx.suitable_?(new JamesLike {
+          val lye = "lye"
+        }.getClass.getName) must beTrue
       }
     }
   }
 
-  "A context that never uses type hints" should {
-    import com.novus.salat.test.never._
-
-    "lookup_! graters" in {
-
-      "by name of case class" in {
-        ctx.lookup(James.getClass.getName) must beSome(grater[James])
+  "Using the context to lookup graters" should {
+    //    "blow up when an unsuitable class is provided" in new testContext {
+    //      ctx.lookup("some.nonexistent.clazz") must throwA[GraterGlitch]
+    //    }
+    "provide a lookup method that lazily generates and returns graters" in {
+      "by class name" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(classOf[James].getName)
+        //        g_* must beAnInstanceOf[Grater[_]]
+        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
       }
-
-      "by instance of case class" in {
-        ctx.lookup(j) must beSome(grater[James])
-        ctx.lookup(James.getClass.getName, j) must beSome(grater[James])
+      "by case class manifest" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup[James]
+        g_* must beAnInstanceOf[Grater[James]]
+        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
       }
-
-      "by type" in {
-        ctx.lookup_![James] must_== grater[James]
+      "by class name or instance of class" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(classOf[James].getName, James("Red Devil"))
+        //        g_* must beAnInstanceOf[Grater[_]]
+        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
       }
+      "by dbo with type hint" in new testContext {
+        val dbo = MongoDBObject(TypeHint -> classOf[James].getName)
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(dbo)
+        //        g_* must beAnInstanceOf[Grater[_]]
+        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+    }
+
+    "succeed for a case class" in new testContext {
+      //      classOf[James] must beAnInstanceOf[CaseClass]
+      ctx.lookup[James] must beAnInstanceOf[ConcreteGrater[James]]
+    }
+    "succeed for an abstract superclass" in new testContext {
+      Modifier.isAbstract(classOf[Vertebrate].getModifiers) must beTrue
+      val g = ctx.lookup(classOf[Vertebrate].getName)
+      g.clazz.getName must_== classOf[Vertebrate].getName
+      //      ctx.lookup(classOf[Vertebrate].getName) must haveSuperclass[Grater[_ <: AnyRef]]
+      //      ctx.lookup(classOf[Vertebrate].getName) must haveClass[ProxyGrater[Vertebrate]]
     }
   }
 
-  "A context that always uses type hints" should {
-
-    "lookup_! graters" in {
-
-      import com.novus.salat.test.always._
-      val dbo = grater[James].asDBObject(j)
-
-      "by MongoDBObject" in {
-        val dbo = grater[James].asDBObject(j)
-        ctx.lookup(dbo) must beSome(grater[James])
-        ctx.lookup(James.getClass.getName, dbo) must beSome(grater[James])
-      }
-
-      "by name of case class" in {
-        ctx.lookup(James.getClass.getName) must beSome(grater[James])
-      }
-
-      "by instance of case class" in {
-        ctx.lookup(j) must beSome(grater[James])
-        ctx.lookup(James.getClass.getName, j) must beSome(grater[James])
-      }
-
-      "by type" in {
-        ctx.lookup_![James] must_== grater[James]
-      }
-    }
-
-    "extract type hints" in {
-      import com.novus.salat.test.always._
-      "from dbo" in {
-        val dbo = grater[James].asDBObject(j)
-        ctx.extractTypeHint(dbo) must beSome("com.novus.salat.test.model.James")
-      }
-    }
-
-    "allow the use of implicits to do clever things" in {
-      import com.novus.salat.test.always_with_implicits._
-
-      "implicitly convert case class <-> dbo" in {
-        val coll = MongoConnection()(SalatSpecDb)("context_test_1")
-        val wr = coll += j // implicit conversion from case class James to DBObject
-        //        log.info("WR: %s", wr)
-        val j_* : James = coll.findOne().get // implicit conversion from DBObject to case class James
-        j_* must_== j
-      }
-    }
-  }
-
-  "A context that uses a custom key for type hints" should {
-    "lookup_! graters" in {
-
-      import com.novus.salat.test.custom_type_hint._
-      val dbo = grater[James].asDBObject(j)
-
-      "by MongoDBObject" in {
-        val dbo = grater[James].asDBObject(j)
-        ctx.lookup(dbo) must beSome(grater[James])
-        ctx.lookup(James.getClass.getName, dbo) must beSome(grater[James])
-      }
-
-      "by name of case class" in {
-        ctx.lookup(James.getClass.getName) must beSome(grater[James])
-      }
-
-      "by instance of case class" in {
-        ctx.lookup(j) must beSome(grater[James])
-        ctx.lookup(James.getClass.getName, j) must beSome(grater[James])
-      }
-
-      "by type" in {
-        ctx.lookup_![James] must_== grater[James]
-      }
-    }
-
-    "extract type hints" in {
-      import com.novus.salat.test.custom_type_hint._
-      "from dbo" in {
-        val dbo: MongoDBObject = grater[James].asDBObject(j)
-        dbo must havePair("_t", "com.novus.salat.test.model.James") // custom context uses "_t" as typeHint
-        ctx.extractTypeHint(dbo) must beSome("com.novus.salat.test.model.James")
-      }
+  "The context" should {
+    "accept a new grater" in new testContext {
+      ctx.graters must beEmpty
+      val grater = new ConcreteGrater[James](classOf[James])(ctx) {}
+      ctx.accept(grater)
+      ctx.graters.size must_== 1
+      ctx.graters.get(James.getClass.getName.replace("$", "")) must beSome(grater)
     }
   }
 }

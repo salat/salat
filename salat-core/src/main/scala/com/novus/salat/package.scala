@@ -19,12 +19,7 @@
  */
 package com.novus.salat
 
-import com.mongodb.casbah.Imports._
-
-import java.math.BigInteger
-import com.novus.salat.{ Grater, Context }
 import com.novus.salat.util._
-import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
 object `package` extends Logging {
 
@@ -44,7 +39,7 @@ object `package` extends Logging {
       val path = if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName)
       getClassNamed(path).getOrElse {
         throw new Error("Could not resolve clazz='%s' in any of the %d classpaths in ctx='%s'".
-          format(path, ctx.classLoaders.size, ctx.name.getOrElse("N/A")))
+          format(path, ctx.classLoaders.size, ctx.name))
       }
     }
 
@@ -57,11 +52,11 @@ object `package` extends Logging {
     val Never, WhenNecessary, Always = Value
   }
 
-  def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup_![X](m)
+  def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup[X](m)
 
   protected[salat] def getClassNamed_!(c: String)(implicit ctx: Context): Class[_] = getClassNamed(c)(ctx).getOrElse {
     throw new Error("getClassNamed: path='%s' does not resolve in any of %d classloaders registered with context='%s'".
-      format(c, ctx.classLoaders.size, ctx.name.getOrElse("N/A")))
+      format(c, ctx.classLoaders.size, ctx.name))
   }
 
   protected[salat] def getClassNamed(c: String)(implicit ctx: Context): Option[Class[_]] = {
@@ -69,6 +64,12 @@ object `package` extends Logging {
   }
 
   protected[salat] def getCaseClass(c: String)(implicit ctx: Context): Option[Class[CaseClass]] =
-    getClassNamed(c).filter(_.getInterfaces.contains(classOf[Product])).map(_.asInstanceOf[Class[CaseClass]])
+    getClassNamed(c).filter(_.getInterfaces.contains(classOf[Product])).
+      map(_.asInstanceOf[Class[CaseClass]])
 
+  object IsCaseClass {
+    def unapply(clazz: Option[Class[_]]) = clazz.
+      filter(_.getInterfaces.contains(classOf[Product])).
+      map(_.asInstanceOf[Class[CaseClass]])
+  }
 }

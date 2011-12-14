@@ -20,17 +20,20 @@
 package com.novus.salat
 
 package object global {
-  implicit val ctx = new Context { val name = Some("global") }
+
+  implicit val ctx = new Context {
+    val name = "global"
+  }
 
   // example of a context that never uses type hints
   val WhenNecessary = new Context {
-    val name = Some("global-when-necessary")
+    val name = "global-when-necessary"
     override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
   }
 
   // example of a context that never uses type hints
   val NoTypeHints = new Context {
-    val name = Some("global-no-type-hints")
+    val name = "global-no-type-hints"
     override val typeHintStrategy = NeverTypeHint
   }
 }
