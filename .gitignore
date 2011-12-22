@@ -1,5 +1,6 @@
 out/
 .idea/
+.idea_modules/
 target/
 reports/
 lib_managed/
@@ -11,4 +12,3 @@ java_pid*.hprof
 tags
 .ensime
 *.iml
-salat-proto/src/test/java/com/novus/salat/proto/Test.java

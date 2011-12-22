@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import ScalariformPlugin.{ format, formatPreferences }
 
 object SalatBuild extends Build {
 
@@ -8,7 +7,7 @@ object SalatBuild extends Build {
   import BuildSettings._
 
   val utilDeps = Seq(specs2, slf4jApi, slf4jSimple)
-  val coreDeps = Seq(mongoJava, casbah_core, commonsLang, specs2)
+  val coreDeps = Seq(mongoJava, casbah_core, lift_json, commonsLang, specs2)
 
   lazy val salat = Project(
     id = "salat",
@@ -58,16 +57,20 @@ object BuildSettings {
 }
 
 object Format {
-  lazy val settings = ScalariformPlugin.settings ++ Seq(
-    formatPreferences in Compile := formattingPreferences,
-    formatPreferences in Test    := formattingPreferences
+
+  import com.typesafe.sbtscalariform.ScalariformPlugin
+  import ScalariformPlugin._
+
+  lazy val settings = scalariformSettings ++ Seq(
+    ScalariformKeys.preferences := formattingPreferences
   )
 
-  private def formattingPreferences = {
+  lazy val formattingPreferences = {
     import scalariform.formatter.preferences._
-    FormattingPreferences().setPreference(AlignParameters, true).
+    FormattingPreferences().
+      setPreference(AlignParameters, true).
       setPreference(AlignSingleLineCaseStatements, true).
-      setPreference(CompactControlReadability, true). // waiting for CCR patch to go mainstream, patiently patiently
+      setPreference(CompactControlReadability, true).
       setPreference(CompactStringConcatenation, true).
       setPreference(DoubleIndentClassDeclaration, true).
       setPreference(FormatXml, true).
@@ -103,6 +106,7 @@ object Dependencies {
   val slf4jSimple = "org.slf4j" % "slf4j-simple" % "1.6.4" % "test"
   val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5.0"
+  val lift_json = "net.liftweb" %% "lift-json" % "2.4-M4"
 }
 
 object Repos {
