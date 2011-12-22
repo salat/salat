@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import ScalariformPlugin.{ format, formatPreferences }
 
 object SalatBuild extends Build {
 
@@ -58,16 +57,20 @@ object BuildSettings {
 }
 
 object Format {
-  lazy val settings = ScalariformPlugin.settings ++ Seq(
-    formatPreferences in Compile := formattingPreferences,
-    formatPreferences in Test    := formattingPreferences
+
+  import com.typesafe.sbtscalariform.ScalariformPlugin
+  import ScalariformPlugin._
+
+  lazy val settings = scalariformSettings ++ Seq(
+    ScalariformKeys.preferences := formattingPreferences
   )
 
-  private def formattingPreferences = {
+  lazy val formattingPreferences = {
     import scalariform.formatter.preferences._
-    FormattingPreferences().setPreference(AlignParameters, true).
+    FormattingPreferences().
+      setPreference(AlignParameters, true).
       setPreference(AlignSingleLineCaseStatements, true).
-      setPreference(CompactControlReadability, true). // waiting for CCR patch to go mainstream, patiently patiently
+      setPreference(CompactControlReadability, true).
       setPreference(CompactStringConcatenation, true).
       setPreference(DoubleIndentClassDeclaration, true).
       setPreference(FormatXml, true).
