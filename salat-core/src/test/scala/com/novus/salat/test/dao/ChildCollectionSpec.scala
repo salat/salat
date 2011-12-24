@@ -43,11 +43,11 @@ class ChildCollectionSpec extends SalatSpec {
     }
 
     "support finding children by parent id with key includes" in new parentChildContext {
-      ParentDAO.children.findByParentId(parentId = parent1.id, query = MongoDBObject(), keys = MongoDBObject("parentId" -> 1, "y" -> 1)).toList must contain(
+      ParentDAO.children.findByParentId(parentId = parent1.id, query = MongoDBObject.empty, keys = MongoDBObject("parentId" -> 1, "y" -> 1)).toList must contain(
         child1Parent1.copy(x = "", childInfo = ChildInfo()),
         child2Parent1.copy(x = "", childInfo = ChildInfo()),
         child3Parent1.copy(x = "", childInfo = ChildInfo())).only
-      ParentDAO.children.findByParentId(parentId = parent2.id, query = MongoDBObject(), keys = MongoDBObject("parentId" -> 1, "y" -> 1)).toList must contain(
+      ParentDAO.children.findByParentId(parentId = parent2.id, query = MongoDBObject.empty, keys = MongoDBObject("parentId" -> 1, "y" -> 1)).toList must contain(
         child1Parent2.copy(x = "", childInfo = ChildInfo()),
         child2Parent2.copy(x = "", childInfo = ChildInfo())).only
       ParentDAO.children.findByParentId(parent3.id).toList must beEmpty

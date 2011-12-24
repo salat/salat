@@ -23,7 +23,8 @@ import com.novus.salat.util.Logging
 import org.specs2.execute.PendingUntilFixed
 import com.mongodb.casbah.Imports._
 import org.specs2.mutable._
-import org.specs2.specification.Step
+import org.specs2.specification.{ Scope, Step }
+import com.novus.salat.Context
 
 trait SalatSpec extends Specification with Logging {
 
@@ -49,4 +50,9 @@ trait SalatSpec extends Specification with Logging {
     actual must not beEmpty // i feel so hollow.  maybe i should just return success and have done with it?
   }
 
+  trait testContext extends Scope {
+    implicit val ctx = new Context {
+      val name = "textCtx_%s".format(System.currentTimeMillis())
+    }
+  }
 }

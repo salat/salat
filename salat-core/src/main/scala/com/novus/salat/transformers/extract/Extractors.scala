@@ -29,6 +29,7 @@ import com.novus.salat.impls._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
 import com.novus.salat.transformers.out._
+import com.novus.salat.annotations.util._
 
 package object out {
   def select(t: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
@@ -50,14 +51,14 @@ package object out {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with OptionExtractor with EnumStringifier
         }
 
-        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionExtractor
@@ -80,14 +81,14 @@ package object out {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with TraversableExtractor
         }
 
-        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject with TraversableExtractor {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with TraversableExtractor {
-            val grater = ctx.lookup(t.symbol.path)
+            val grater = ctx.lookup_?(t.symbol.path)
           }
 
         case TypeRefType(_, symbol, _) =>
@@ -110,14 +111,14 @@ package object out {
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined =>
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with MapExtractor
 
-        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapExtractor
@@ -140,14 +141,14 @@ package object out {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier
         }
 
-        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) {}
@@ -196,7 +197,7 @@ package out {
   trait InContextToDBObject extends Transformer with InContextTransformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case cc: CaseClass => ctx.lookup_!(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc)
+      case cc: CaseClass => ctx.lookup(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc)
       case _             => MongoDBObject("failed-to-convert" -> value.toString)
     }
   }
@@ -229,7 +230,7 @@ package out {
     override def transform(value: Any)(implicit ctx: Context): Any = value
 
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
-      case map: scala.collection.Map[String, _] => {
+      case map: scala.collection.Map[_, _] => {
         val builder = MongoDBObject.newBuilder
         map.foreach {
           case (k, el) =>
@@ -247,10 +248,8 @@ package out {
   trait EnumStringifier extends Transformer {
     self: Transformer =>
 
-    val strategy = getClassNamed_!(path).getAnnotation(classOf[EnumAs]) match {
-      case specific: EnumAs => specific.strategy
-      case _                => ctx.defaultEnumStrategy
-    }
+    val strategy = getClassNamed_!(path).annotation[com.novus.salat.annotations.raw.EnumAs].
+      map(_.strategy()).getOrElse(ctx.defaultEnumStrategy)
 
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
       case ev: Enumeration#Value if strategy == EnumStrategy.BY_VALUE => ev.toString

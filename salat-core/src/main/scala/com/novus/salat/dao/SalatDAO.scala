@@ -66,7 +66,10 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
   def remove[A <% DBObject](q: A)
   def remove[A <% DBObject](q: A, wc: WriteConcern)
 
-  def count(q: DBObject = MongoDBObject(), fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long
+  def removeById(id: ID, wc: WriteConcern = collection.writeConcern)
+  def removeByIds(ids: List[ID], wc: WriteConcern = collection.writeConcern)
+
+  def count(q: DBObject = MongoDBObject.empty, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long
 
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P]
 
@@ -125,23 +128,23 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       MongoDBObject(parentIdField -> MongoDBObject("$in" -> parentIds))
     }
 
-    def countByParentId(parentId: ID, query: DBObject = MongoDBObject(), fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
+    def countByParentId(parentId: ID, query: DBObject = MongoDBObject.empty, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
       childDao.count(parentIdQuery(parentId) ++ query, fieldsThatMustExist, fieldsThatMustNotExist)
     }
 
-    def idsForParentId(parentId: ID, query: DBObject = MongoDBObject()): List[ChildId] = {
+    def idsForParentId(parentId: ID, query: DBObject = MongoDBObject.empty): List[ChildId] = {
       childDao.collection.find(parentIdQuery(parentId) ++ query, MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(mcid).get).toList
     }
 
-    def idsForParentIds(parentIds: List[ID], query: DBObject = MongoDBObject()): List[ChildId] = {
+    def idsForParentIds(parentIds: List[ID], query: DBObject = MongoDBObject.empty): List[ChildId] = {
       childDao.collection.find(parentIdsQuery(parentIds) ++ query, MongoDBObject("_id" -> 1)).map(_.expand[ChildId]("_id")(mcid).get).toList
     }
 
-    def findByParentId(parentId: ID, query: DBObject = MongoDBObject()): SalatMongoCursor[ChildType] = {
+    def findByParentId(parentId: ID, query: DBObject = MongoDBObject.empty): SalatMongoCursor[ChildType] = {
       childDao.find(parentIdQuery(parentId) ++ query)
     }
 
-    def findByParentIds(parentIds: List[ID], query: DBObject = MongoDBObject()): SalatMongoCursor[ChildType] = {
+    def findByParentIds(parentIds: List[ID], query: DBObject = MongoDBObject.empty): SalatMongoCursor[ChildType] = {
       childDao.find(parentIdsQuery(parentIds) ++ query)
     }
 
@@ -169,19 +172,19 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       childDao.remove(parentIdsQuery(parentIds), wc)
     }
 
-    def projectionsByParentId[R <: CaseClass](parentId: ID, field: String, query: DBObject = MongoDBObject())(implicit mr: Manifest[R], ctx: Context): List[R] = {
+    def projectionsByParentId[R <: CaseClass](parentId: ID, field: String, query: DBObject = MongoDBObject.empty)(implicit mr: Manifest[R], ctx: Context): List[R] = {
       childDao.projections(parentIdQuery(parentId) ++ query, field)(mr, ctx)
     }
 
-    def projectionsByParentIds[R <: CaseClass](parentIds: List[ID], field: String, query: DBObject = MongoDBObject())(implicit mr: Manifest[R], ctx: Context): List[R] = {
+    def projectionsByParentIds[R <: CaseClass](parentIds: List[ID], field: String, query: DBObject = MongoDBObject.empty)(implicit mr: Manifest[R], ctx: Context): List[R] = {
       childDao.projections(parentIdsQuery(parentIds) ++ query, field)(mr, ctx)
     }
 
-    def primitiveProjectionsByParentId[R <: Any](parentId: ID, field: String, query: DBObject = MongoDBObject())(implicit mr: Manifest[R], ctx: Context): List[R] = {
+    def primitiveProjectionsByParentId[R <: Any](parentId: ID, field: String, query: DBObject = MongoDBObject.empty)(implicit mr: Manifest[R], ctx: Context): List[R] = {
       childDao.primitiveProjections(parentIdQuery(parentId) ++ query, field)(mr, ctx)
     }
 
-    def primitiveProjectionsByParentIds[R <: Any](parentIds: List[ID], field: String, query: DBObject = MongoDBObject())(implicit mr: Manifest[R], ctx: Context): List[R] = {
+    def primitiveProjectionsByParentIds[R <: Any](parentIds: List[ID], field: String, query: DBObject = MongoDBObject.empty)(implicit mr: Manifest[R], ctx: Context): List[R] = {
       childDao.primitiveProjections(parentIdsQuery(parentIds) ++ query, field)(mr, ctx)
     }
   }
@@ -195,7 +198,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def insert(t: ObjectType, wc: WriteConcern) = {
     val _id = try {
       val dbo = _grater.asDBObject(t)
-      collection.db.requestStart()
       val wr = collection.insert(dbo, wc)
       if (wr.getLastError(wc).ok()) {
         dbo.getAs[ID]("_id")
@@ -204,9 +206,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
         throw SalatInsertError(description, collection, wc, wr, List(dbo))
       }
     }
-    finally {
-      collection.db.requestDone()
-    }
 
     _id
   }
@@ -214,7 +213,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def insert(docs: ObjectType*)(implicit wc: WriteConcern = collection.writeConcern) = if (docs.nonEmpty) {
     val _ids = try {
       val dbos = docs.map(t => _grater.asDBObject(t))
-      collection.db.requestStart()
       val wr = collection.insert(dbos, wc)
       if (wr.getLastError(wc).ok()) {
         val builder = List.newBuilder[Option[ID]]
@@ -231,10 +229,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       else {
         throw SalatInsertError(description, collection, wc, wr, dbos.toList)
       }
-    }
-    finally {
-      //      log.trace("insert: collection=%s request done", collection.getName())
-      collection.db.requestDone()
     }
 
     _ids
@@ -255,16 +249,12 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def remove(t: ObjectType, wc: WriteConcern) {
     try {
-      collection.db.requestStart()
       val dbo = _grater.asDBObject(t)
       val wr = collection.remove(dbo, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
         throw SalatRemoveError(description, collection, wc, wr, List(dbo))
       }
-    }
-    finally {
-      collection.db.requestDone()
     }
   }
 
@@ -274,16 +264,20 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def remove[A <% DBObject](q: A, wc: WriteConcern) {
     try {
-      collection.db.requestStart()
       val wr = collection.remove(q, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
         throw SalatRemoveQueryError(description, collection, q, wc, wr)
       }
     }
-    finally {
-      collection.db.requestDone()
-    }
+  }
+
+  def removeById(id: ID, wc: WriteConcern = collection.writeConcern) {
+    remove(MongoDBObject("_id" -> id), wc)
+  }
+
+  def removeByIds(ids: List[ID], wc: WriteConcern) {
+    remove(MongoDBObject("_id" -> MongoDBObject("$in" -> MongoDBList(ids: _*))), wc)
   }
 
   def save(t: ObjectType) {
@@ -292,7 +286,6 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
 
   def save(t: ObjectType, wc: WriteConcern) {
     try {
-      collection.db.requestStart()
       val dbo = _grater.asDBObject(t)
       val wr = collection.save(dbo, wc)
       val cr = wr.getLastError(wc)
@@ -300,22 +293,15 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
         throw SalatSaveError(description, collection, wc, wr, List(dbo))
       }
     }
-    finally {
-      collection.db.requestDone()
-    }
   }
 
   def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = collection.writeConcern) {
     try {
-      collection.db.requestStart()
       val wr = collection.update(q, o, upsert, multi, wc)
       val cr = wr.getLastError(wc)
       if (!cr.ok()) {
         throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
       }
-    }
-    finally {
-      collection.db.requestDone()
     }
   }
 
@@ -326,7 +312,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = SalatMongoCursor[ObjectType](_grater,
     collection.find(ref, keys).asInstanceOf[MongoCursorBase].underlying)
 
-  def find[A <% DBObject](ref: A) = find(ref.asInstanceOf[DBObject], MongoDBObject())
+  def find[A <% DBObject](ref: A) = find(ref.asInstanceOf[DBObject], MongoDBObject.empty)
 
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
     collection.findOne(query, MongoDBObject(field -> 1)).map {
@@ -375,7 +361,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
    *  @fieldsThatMustExist list of field names to append to the query with "fieldName" -> { "$exists" -> true }
    *  @fieldsThatMustNotExist list of field names to append to the query with "fieldName" -> { "$exists" -> false }
    */
-  def count(q: DBObject = MongoDBObject(), fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
+  def count(q: DBObject = MongoDBObject.empty, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
     // convenience method - don't personally enjoy writing these queries
     val query = {
       val builder = MongoDBObject.newBuilder

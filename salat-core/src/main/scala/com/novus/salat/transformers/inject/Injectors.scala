@@ -24,6 +24,7 @@ import scala.collection.immutable.{ List => IList, Map => IMap }
 import scala.collection.mutable.{ Map => MMap }
 import scala.tools.scalap.scalax.rules.scalasig._
 import scala.math.{ BigDecimal => ScalaBigDecimal }
+import com.novus.salat.annotations.util._
 
 import com.novus.salat._
 import com.novus.salat.impls._
@@ -33,6 +34,7 @@ import com.novus.salat.util.Logging
 import org.scala_tools.time.Imports._
 
 package object in {
+
   def select(pt: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     pt match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
@@ -58,14 +60,14 @@ package object in {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with OptionInjector with EnumInflater
         }
 
-        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionInjector
@@ -108,21 +110,21 @@ package object in {
           }
         }
 
-        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with TraversableInjector {
             val parentType = pt
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with TraversableInjector {
             val parentType = pt
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with TraversableInjector {
           val parentType = pt
-          val grater = ctx.lookup(symbol.path)
+          val grater = ctx.lookup_?(symbol.path)
         }
       }
 
@@ -130,37 +132,37 @@ package object in {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with MapInjector {
             val parentType = pt
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with LongToInt with MapInjector {
             val parentType = pt
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with ByteArrayToBigInt with MapInjector {
             val parentType = pt
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with StringToChar with MapInjector {
             val parentType = pt
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToFloat with MapInjector {
             val parentType = pt
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DateToJodaDateTime with MapInjector {
             val parentType = pt
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
@@ -169,21 +171,21 @@ package object in {
           }
         }
 
-        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector {
             val parentType = pt
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector {
             val parentType = pt
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapInjector {
           val parentType = pt
-          val grater = ctx.lookup(symbol.path)
+          val grater = ctx.lookup_?(symbol.path)
         }
       }
 
@@ -210,14 +212,14 @@ package object in {
           new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumInflater
         }
 
-        case TypeRefType(_, symbol, _) if hint || ctx.lookup(symbol.path).isDefined =>
+        case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext {
-            val grater = ctx.lookup(symbol.path)
+            val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, pt)(ctx) {}
@@ -313,7 +315,7 @@ package in {
       case _                   => None
     }
 
-    private def transform0(dbo: MongoDBObject)(implicit ctx: Context) = (grater orElse ctx.lookup(path, dbo)) match {
+    private def transform0(dbo: MongoDBObject)(implicit ctx: Context) = (grater orElse ctx.lookup_?(path, dbo)) match {
       case Some(grater) => grater.asObject(dbo).asInstanceOf[CaseClass]
       case None         => throw GraterFromDboGlitch(path, dbo)(ctx)
     }
@@ -345,7 +347,7 @@ package in {
     }
 
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
-      case traversable: Traversable[Any] => Some(traversableImpl(parentType, traversable.map {
+      case traversable: Traversable[_] => Some(traversableImpl(parentType, traversable.map {
         el => super.transform(el)
       }))
       case _ => None
@@ -385,7 +387,7 @@ package in {
 
     val clazz = getClassNamed(path).getOrElse(throw new Error(
       "Could not resolve enum='%s' in any of the %d classpaths in ctx='%s'".
-        format(path, ctx.classLoaders.size, ctx.name.getOrElse("N/A"))))
+        format(path, ctx.classLoaders.size, ctx.name)))
     val companion: Any = clazz.companionObject
 
     val withName: Method = {
@@ -410,10 +412,8 @@ package in {
     }
 
     override def transform(value: Any)(implicit ctx: Context): Any = {
-      val strategy = clazz.getAnnotation(classOf[EnumAs]) match {
-        case specific: EnumAs => specific.strategy
-        case _                => ctx.defaultEnumStrategy
-      }
+      val strategy = getClassNamed_!(path).annotation[com.novus.salat.annotations.raw.EnumAs].
+        map(_.strategy()).getOrElse(ctx.defaultEnumStrategy)
 
       (strategy, value) match {
         case (EnumStrategy.BY_VALUE, name: String) => withName.invoke(companion, name)
