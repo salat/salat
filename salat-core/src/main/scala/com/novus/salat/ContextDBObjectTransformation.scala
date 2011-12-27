@@ -128,10 +128,10 @@ trait ContextDBObjectTransformation {
       catch {
         // when something bad happens feeding args into constructor, catch these exceptions and
         // wrap them in a custom exception that will provide detailed information about what's happening.
-        case e: InstantiationException    => throw ToObjectGlitch(g, g.sym, g.constructor, args, e)
-        case e: IllegalAccessException    => throw ToObjectGlitch(g, g.sym, g.constructor, args, e)
-        case e: IllegalArgumentException  => throw ToObjectGlitch(g, g.sym, g.constructor, args, e)
-        case e: InvocationTargetException => throw ToObjectGlitch(g, g.sym, g.constructor, args, e)
+        case e: InstantiationException    => throw ToObjectGlitch(g, g.sym, args, e)
+        case e: IllegalAccessException    => throw ToObjectGlitch(g, g.sym, args, e)
+        case e: IllegalArgumentException  => throw ToObjectGlitch(g, g.sym, args, e)
+        case e: InvocationTargetException => throw ToObjectGlitch(g, g.sym, args, e)
         case e                            => throw e
       }
     }

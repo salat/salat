@@ -25,7 +25,10 @@ import java.lang.reflect.Constructor
 import com.mongodb.casbah.commons.TypeImports._
 import com.novus.salat.util.MissingGraterExplanation._
 
-case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
+case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X],
+                                                    sym: SymbolInfoSymbol,
+                                                    args: Seq[AnyRef],
+                                                    cause: Throwable) extends Error(
   """
 
   %s
