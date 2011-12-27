@@ -221,7 +221,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   protected lazy val companionClass = clazz.companionClass
   protected lazy val companionObject = clazz.companionObject
 
-  protected lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
+  protected[salat] lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
 
   protected def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
     case PolyType(tr @ TypeRefType(_, _, _), _)       => tr
@@ -302,11 +302,11 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     }
   }
 
-  protected def safeDefault(field: SField) = {
+  protected[salat] def safeDefault(field: SField) = {
     defaultArg(field).safeValue
   }
 
-  lazy val betterDefaults = {
+  protected[salat] lazy val betterDefaults = {
     val builder = Map.newBuilder[SField, DefaultArg]
     for (field <- indexedFields) {
       val defaultMethod = try {
