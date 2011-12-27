@@ -25,18 +25,21 @@ import java.lang.reflect.Constructor
 import com.mongodb.casbah.commons.TypeImports._
 import com.novus.salat.util.MissingGraterExplanation._
 
-case class ToObjectGlitch[X <: AnyRef with Product](grater: Grater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
+case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
   """
 
   %s
 
   %s toObject failed on:
   SYM: %s
-  CONSTRUCTOR: %s
-  ARGS:
   %s
 
-  """.format(cause.getMessage, grater.toString, sym.path, constructor, ArgsPrettyPrinter(args)), cause)
+  """.format(
+    cause.getMessage,
+    grater.toString,
+    sym.path,
+    ConstructorInputPrettyPrinter(grater, args)),
+  cause)
 
 case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
 case class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
