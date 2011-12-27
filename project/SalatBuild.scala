@@ -96,7 +96,8 @@ object Publish {
           if (version.trim().toString.endsWith("-SNAPSHOT")) "snapshots" else "releases"
         )) as (System.getProperty("user.name"))
         Some(r)
-    }
+    },
+    publishArtifact in (Compile, packageDoc) := false
   )
 }
 
