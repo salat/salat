@@ -108,7 +108,7 @@ object Dependencies {
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
   val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
-  val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5.0"
+  val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5-1"
 }
 
 object Repos {
