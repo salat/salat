@@ -8,7 +8,7 @@ object SalatBuild extends Build {
 
   val testDeps = Seq(specs2, logbackCore, logbackClassic)
   val utilDeps = Seq(slf4jApi) ++ testDeps
-  val coreDeps = Seq(mongoJava, casbah_core, lift_json, commonsLang) ++ testDeps
+  val coreDeps = Seq(mongoJava, casbah_core, commonsLang) ++ testDeps
 
   lazy val salat = Project(
     id = "salat",
@@ -109,7 +109,6 @@ object Dependencies {
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
   val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5-1"
-  val lift_json = "net.liftweb" %% "lift-json" % "2.4-M4"
 }
 
 object Repos {
