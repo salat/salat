@@ -196,7 +196,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     val _id = try {
       val dbo = ctx.toDBObject(t)
       val wr = collection.insert(dbo, wc)
-      if (wr.getLastError(wc).ok()) {
+      if (wr.getCachedLastError == null) {
         dbo.getAs[ID]("_id")
       }
       else {
@@ -211,7 +211,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     val _ids = try {
       val dbos = docs.map(t => ctx.toDBObject(t))
       val wr = collection.insert(dbos, wc)
-      if (wr.getLastError(wc).ok()) {
+      if (wr.getCachedLastError == null) {
         val builder = List.newBuilder[Option[ID]]
         for (dbo <- dbos) {
           builder += dbo.getAs[ID]("_id") orElse {
@@ -248,8 +248,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     try {
       val dbo = ctx.toDBObject(t)
       val wr = collection.remove(dbo, wc)
-      val cr = wr.getLastError(wc)
-      if (!cr.ok()) {
+      if (wr.getCachedLastError != null) {
         throw SalatRemoveError(description, collection, wc, wr, List(dbo))
       }
     }
@@ -262,8 +261,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def remove[A <% DBObject](q: A, wc: WriteConcern) {
     try {
       val wr = collection.remove(q, wc)
-      val cr = wr.getLastError(wc)
-      if (!cr.ok()) {
+      if (wr.getCachedLastError != null) {
         throw SalatRemoveQueryError(description, collection, q, wc, wr)
       }
     }
@@ -285,8 +283,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     try {
       val dbo = ctx.toDBObject(t)
       val wr = collection.save(dbo, wc)
-      val cr = wr.getLastError(wc)
-      if (!cr.ok()) {
+      if (wr.getCachedLastError != null) {
         throw SalatSaveError(description, collection, wc, wr, List(dbo))
       }
     }
@@ -295,8 +292,7 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = collection.writeConcern) {
     try {
       val wr = collection.update(q, o, upsert, multi, wc)
-      val cr = wr.getLastError(wc)
-      if (!cr.ok()) {
+      if (wr.getCachedLastError != null) {
         throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
       }
     }

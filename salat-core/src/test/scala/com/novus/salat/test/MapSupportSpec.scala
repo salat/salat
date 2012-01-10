@@ -65,7 +65,7 @@ class MapSupportSpec extends SalatSpec {
       val coll = MongoConnection()(SalatSpecDb)("map_support_test_1")
       val wr = coll.insert(dbo)
       //      log.info("WR: %s", wr)
-      wr.getLastError.getErrorMessage must beNull
+      wr.getCachedLastError must beNull
 
       val ao_* = grater[AttributeObject].asObject(coll.findOne().get)
       ao_* must_== ao
