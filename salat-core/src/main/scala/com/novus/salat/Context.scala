@@ -149,6 +149,14 @@ trait Context extends Logging {
 
   def lookup(dbo: MongoDBObject): Grater[_ <: AnyRef] = extractTypeHint(dbo).map(lookup(_)).getOrElse(throw MissingTypeHint(dbo)(this))
 
+  @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(dbo: MongoDBObject): Grater[_ <: AnyRef] = lookup(dbo)
+
+  @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(clazz: String, x: CaseClass): Grater[_ <: AnyRef] = lookup(clazz, x)
+
+  @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_![X <: CaseClass: Manifest]: Grater[X] = lookup[X]
+
+  @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(clazz: String): Grater[_ <: AnyRef] = lookup(clazz)
+
   def extractTypeHint(dbo: MongoDBObject): Option[String] = {
     dbo.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_))
   }

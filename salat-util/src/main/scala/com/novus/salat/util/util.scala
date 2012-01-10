@@ -19,22 +19,23 @@
  */
 package com.novus.salat.util
 
-import java.math.BigInteger
-
 object `package` {
 
   val NonePlaceholder = "[None]"
+  val MissingPlaceholder = "[!!! MISSING - NOT OPTIONAL !!!]"
+  val OptionalMissingPlaceholder = "[Missing - Optional]"
   val NullPlaceholder = "[Null]"
   val EmptyPlaceholder = "[Empty]"
+  val QuestionPlaceholder = "[???]"
 
   val SalatThreads = new ThreadGroup("Salat")
   val DefaultSalatStackSize = 1024L * 1024
 
-  def truncate(a: AnyRef, l: Int = 100) = if (a == null) {
+  def truncate(a: AnyRef, l: Int = 100): String = if (a != null) {
     val s = a.toString
     if (s != null && s.length > l) s.substring(0, l)+"..." else s
   }
-  else a
+  else NullPlaceholder
 
   def asyncSalat[T](f: => T): T = asyncSalat[T](DefaultSalatStackSize)(f)
 

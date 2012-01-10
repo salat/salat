@@ -275,3 +275,11 @@ case class Titus2(@Ignore ignoreMe: String = null, dontIgnoreMe: Int)
 case class SomeClassWithUnsupportedField(@Key("_id") val id: ObjectId = new ObjectId,
                                          text: Option[String] = None,
                                          @Ignore unsupportedType: java.io.File = null)
+
+// Issue #24
+case class MetadataRecord(
+  validOutputFormats: List[String] = List.empty[String], // valid formats this records can be mapped to
+  transferIdx: Option[Int] = None, // 0-based index for the transfer order
+  deleted: Boolean = false // if the record has been deleted
+  )
+
