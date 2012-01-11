@@ -118,7 +118,6 @@ trait Context extends Logging {
     case c if clazz.startsWith("scala.") => false
     case c if clazz.startsWith("java.")  => false
     case c if clazz.startsWith("javax.") => false
-    case c if clazz.endsWith("$")        => false
     //    case c if getClassNamed(c).map(_.getEnclosingClass != null).getOrElse(false) => false
     case _                               => true
   }

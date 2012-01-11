@@ -72,9 +72,6 @@ class ContextSpec extends SalatSpec {
   }
 
   "Per-class field name overrides in the context" should {
-    //    implicit val ctx = new Context {
-    //      val name = "test_context_%s".format(System.currentTimeMillis())
-    //    }
     val clazz = classOf[James]
     val remapThis = "id"
     val toThisInstead = "_id"
@@ -100,24 +97,21 @@ class ContextSpec extends SalatSpec {
   }
 
   "Using the context to determine field names" should {
-    implicit val ctx = new Context {
-      val name = "test_context_%s".format(System.currentTimeMillis())
-    }
     val clazz = classOf[James]
     val lye = "lye"
     val byMistake = "byMistake"
     val toThisInstead = "NaOH"
-    "support global key overrides" in {
+    "support global key overrides" in new testContext {
       ctx.determineFieldName(clazz, lye) must_== lye
       ctx.registerGlobalKeyOverride(lye, toThisInstead)
       ctx.determineFieldName(clazz, lye) must_== toThisInstead
     }
-    "support per-class key overrides" in {
+    "support per-class key overrides" in new testContext {
       ctx.determineFieldName(clazz, lye) must_== lye
       ctx.registerPerClassKeyOverride(clazz, lye, toThisInstead)
       ctx.determineFieldName(clazz, lye) must_== toThisInstead
     }
-    "return field name unaffected when the context has no overrides for this field name" in {
+    "return field name unaffected when the context has no overrides for this field name" in new testContext {
       ctx.globalKeyOverrides must beEmpty
       ctx.perClassKeyOverrides must beEmpty
       ctx.determineFieldName(clazz, lye) must_== lye
@@ -135,8 +129,8 @@ class ContextSpec extends SalatSpec {
         ctx.suitable_?("java.X") must beFalse
         ctx.suitable_?("javax.X") must beFalse
       }
-      "reject case objects" in {
-        ctx.suitable_?(caseObjectClazz.getName) must beFalse
+      "allow case objects" in {
+        ctx.suitable_?(caseObjectClazz.getName) must beTrue
       }
       "allow concrete case classes" in {
         ctx.suitable_?(caseClazz.getName) must beTrue
@@ -174,8 +168,8 @@ class ContextSpec extends SalatSpec {
       "must return Some for a case class" in {
         ctx.lookup_?(caseClazz.getName) must beSome[Grater[_]]
       }
-      "must return None for a case class" in {
-        ctx.lookup_?(caseObjectClazz.getName) must beNone
+      "must return None for a case object" in {
+        ctx.lookup_?(caseObjectClazz.getName) must beSome[Grater[_]]
       }
       "must return Some for an abstract class annotated with @Salat" in {
         ctx.lookup_?(annotatedAbstractClazz.getName) must beSome[Grater[_]]
@@ -219,9 +213,16 @@ class ContextSpec extends SalatSpec {
     "provide a lookup method that lazily generates and returns graters" in {
       "by class name for a case class" in new testContext {
         ctx.graters must beEmpty
-        val g_* = ctx.lookup(classOf[James].getName)
-        //        g_* must beAnInstanceOf[Grater[_]]
-        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        val g_* = ctx.lookup(caseClazz.getName)
+        g_*.clazz.getName must_== (new ConcreteGrater[James](caseClazz)(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+      "by class name for a case object" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(caseObjectClazz.getName)
+        log.debug(g_*.toString)
+        // TODO: can't get type for com.novus.salat.test.model.Zoot$
+        //        g_*.clazz.getName must_== (new ProxyGrater[Zoot](caseObjectClazz)(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by class name for an abstract class annotated with @Salat" in new testContext {

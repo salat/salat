@@ -65,5 +65,6 @@ object `package` extends Logging {
 
   protected[salat] def isCaseClass(clazz: Class[_]) = clazz.getInterfaces.contains(classOf[Product])
 
-  protected[salat] def isCaseObject(clazz: Class[_]): Boolean = clazz.getName.endsWith("$")
+  protected[salat] def isCaseObject(clazz: Class[_]): Boolean = clazz.getInterfaces.contains(classOf[Product]) &&
+    clazz.getInterfaces.contains(classOf[ScalaObject]) && clazz.getName.endsWith("$")
 }
