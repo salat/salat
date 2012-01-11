@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier
 class ContextSpec extends SalatSpec {
 
   val caseClazz = classOf[James]
+  val caseObjectClazz = Class.forName("com.novus.salat.test.model.Zoot$")
   val annotatedAbstractClazz = Class.forName("com.novus.salat.test.model.AbstractMaud")
   val abstractClazz = Class.forName("com.novus.salat.test.model.UnannotatedAbstractMaud")
   val annotatedTraitClazz = Class.forName("com.novus.salat.test.model.AnnotatedMaud")
@@ -71,28 +72,28 @@ class ContextSpec extends SalatSpec {
   }
 
   "Per-class field name overrides in the context" should {
-    implicit val ctx = new Context {
-      val name = "test_context_%s".format(System.currentTimeMillis())
-    }
+    //    implicit val ctx = new Context {
+    //      val name = "test_context_%s".format(System.currentTimeMillis())
+    //    }
     val clazz = classOf[James]
     val remapThis = "id"
     val toThisInstead = "_id"
-    "support registering a per-class key override" in {
+    "support registering a per-class key override" in new testContext {
       ctx.perClassKeyOverrides must beEmpty
       ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead)
       ctx.perClassKeyOverrides.get(clazz.getName, remapThis) must beSome(toThisInstead)
       ctx.perClassKeyOverrides must have size (1)
     }
-    "prevent registering a duplicate per-class override" in {
+    "prevent registering a duplicate per-class override" in new testContext {
       ctx.perClassKeyOverrides must beEmpty
       ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead)
       ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead) must throwA[java.lang.AssertionError]
     }
-    "prevent registering a null or empty per-class override key" in {
+    "prevent registering a null or empty per-class override key" in new testContext {
       ctx.registerPerClassKeyOverride(clazz, "", toThisInstead) must throwA[java.lang.AssertionError]
       ctx.registerPerClassKeyOverride(clazz, null, toThisInstead) must throwA[java.lang.AssertionError]
     }
-    "prevent registering a null or empty per-class override value" in {
+    "prevent registering a null or empty per-class override value" in new testContext {
       ctx.registerPerClassKeyOverride(clazz, remapThis, "") must throwA[java.lang.AssertionError]
       ctx.registerPerClassKeyOverride(clazz, remapThis, null) must throwA[java.lang.AssertionError]
     }
@@ -134,6 +135,9 @@ class ContextSpec extends SalatSpec {
         ctx.suitable_?("java.X") must beFalse
         ctx.suitable_?("javax.X") must beFalse
       }
+      "reject case objects" in {
+        ctx.suitable_?(caseObjectClazz.getName) must beFalse
+      }
       "allow concrete case classes" in {
         ctx.suitable_?(caseClazz.getName) must beTrue
       }
@@ -149,6 +153,9 @@ class ContextSpec extends SalatSpec {
     "judge whether a class requires a proxy grater" in {
       "a case class does not require a proxy grater" in {
         ctx.needsProxyGrater(caseClazz) must beFalse
+      }
+      "a case object does not require a proxy grater" in {
+        ctx.needsProxyGrater(caseObjectClazz) must beFalse
       }
       "an abstract class annotated with @Salat requires a proxy grater" in {
         ctx.needsProxyGrater(annotatedAbstractClazz) must beTrue
@@ -167,6 +174,9 @@ class ContextSpec extends SalatSpec {
       "must return Some for a case class" in {
         ctx.lookup_?(caseClazz.getName) must beSome[Grater[_]]
       }
+      "must return None for a case class" in {
+        ctx.lookup_?(caseObjectClazz.getName) must beNone
+      }
       "must return Some for an abstract class annotated with @Salat" in {
         ctx.lookup_?(annotatedAbstractClazz.getName) must beSome[Grater[_]]
       }
@@ -178,6 +188,26 @@ class ContextSpec extends SalatSpec {
       }
       "must return Some for a trait without @Salat annotation" in {
         ctx.lookup_?(traitClazz.getName) must beSome[Grater[_]]
+      }
+    }
+    "extract type hints intelligently" in {
+      "allow case class type hint" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> caseClazz.getName)) must beSome(caseClazz.getName)
+      }
+      "allow case object type hint" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> caseObjectClazz.getName)) must beSome(caseObjectClazz.getName)
+      }
+      "filter out abstract class annotated with @Salat" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> annotatedAbstractClazz.getName)) must beNone
+      }
+      "filter out abstract class without @Salat annotation" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> abstractClazz.getName)) must beNone
+      }
+      "filter out trait annotated with @Salat" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> annotatedTraitClazz.getName)) must beNone
+      }
+      "filter out trait without @Salat annotation" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> traitClazz.getName)) must beNone
       }
     }
   }

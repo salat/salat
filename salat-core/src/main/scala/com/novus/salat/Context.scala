@@ -118,6 +118,7 @@ trait Context extends Logging {
     case c if clazz.startsWith("scala.") => false
     case c if clazz.startsWith("java.")  => false
     case c if clazz.startsWith("javax.") => false
+    case c if clazz.endsWith("$")        => false
     //    case c if getClassNamed(c).map(_.getEnclosingClass != null).getOrElse(false) => false
     case _                               => true
   }
@@ -177,7 +178,27 @@ needsProxyGrater: clazz='%s'
   @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(clazz: String): Grater[_ <: AnyRef] = lookup(clazz)
 
   def extractTypeHint(dbo: MongoDBObject): Option[String] = {
-    dbo.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_))
+    dbo.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_)).filter {
+      str =>
+        resolveClass(str, classLoaders) match {
+          case Some(clazz) if isCaseClass(clazz)  => true
+          case Some(clazz) if isCaseObject(clazz) => true
+          case Some(clazz) => {
+            log.warning("""
+
+extractTypeHint: '%s' -> '%s'
+  UNSUITABLE TYPE HINT!  Type hint must be a case class or a case object.
+
+DBO
+%s
+
+            """, typeHintStrategy.typeHint, str, dbo)
+            false
+          }
+          case _ => false
+        }
+
+    }
   }
 }
 
