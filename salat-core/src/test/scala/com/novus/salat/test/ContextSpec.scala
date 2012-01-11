@@ -27,6 +27,13 @@ import java.lang.reflect.Modifier
 
 class ContextSpec extends SalatSpec {
 
+  val caseClazz = classOf[James]
+  val caseObjectClazz = Class.forName("com.novus.salat.test.model.Zoot$")
+  val annotatedAbstractClazz = Class.forName("com.novus.salat.test.model.AbstractMaud")
+  val abstractClazz = Class.forName("com.novus.salat.test.model.UnannotatedAbstractMaud")
+  val annotatedTraitClazz = Class.forName("com.novus.salat.test.model.AnnotatedMaud")
+  val traitClazz = Class.forName("com.novus.salat.test.model.UnannotatedMaud")
+
   "The context classloader handling" should {
     "provide a classloader collection populated with its own classloader" in new testContext {
       ctx.classLoaders must contain(ctx.getClass.getClassLoader).only
@@ -113,25 +120,88 @@ class ContextSpec extends SalatSpec {
   }
 
   "The context" should {
-    "judge whether a class is suitable" in new testContext {
+    implicit val ctx = new Context {
+      val name = "test_context_%s".format(System.currentTimeMillis())
+    }
+    "judge whether a class is suitable" in {
       "reject scala and java core classes" in {
         ctx.suitable_?("scala.X") must beFalse
         ctx.suitable_?("java.X") must beFalse
         ctx.suitable_?("javax.X") must beFalse
       }
+      "allow case objects" in {
+        ctx.suitable_?(caseObjectClazz.getName) must beTrue
+      }
       "allow concrete case classes" in {
-        ctx.suitable_?(classOf[James].getName) must beTrue
+        ctx.suitable_?(caseClazz.getName) must beTrue
       }
       "allow abstract classes, deferring actual check until concrete instance is provided" in {
-        ctx.suitable_?((new MaudAgain {
-          val swept = "swept"
-          val out = "out"
-        }).getClass.getName) must beTrue
+        ctx.suitable_?(annotatedAbstractClazz.getName) must beTrue
+        ctx.suitable_?(abstractClazz.getName) must beTrue
       }
-      "accept traits, deferring actual check until concrete instance is provided" in {
-        ctx.suitable_?(new JamesLike {
-          val lye = "lye"
-        }.getClass.getName) must beTrue
+      "allow traits, deferring actual check until concrete instance is provided" in {
+        ctx.suitable_?(annotatedTraitClazz.getName) must beTrue
+        ctx.suitable_?(traitClazz.getName) must beTrue
+      }
+    }
+    "judge whether a class requires a proxy grater" in {
+      "a case class does not require a proxy grater" in {
+        ctx.needsProxyGrater(caseClazz) must beFalse
+      }
+      "a case object does not require a proxy grater" in {
+        ctx.needsProxyGrater(caseObjectClazz) must beFalse
+      }
+      "an abstract class annotated with @Salat requires a proxy grater" in {
+        ctx.needsProxyGrater(annotatedAbstractClazz) must beTrue
+      }
+      "an abstract class without @Salat annotation requires a proxy grater" in {
+        ctx.needsProxyGrater(abstractClazz) must beTrue
+      }
+      "a trait annotated with @Salat requires a proxy grater" in {
+        ctx.needsProxyGrater(annotatedTraitClazz) must beTrue
+      }
+      "a trait that is not annotated with @Salat requires a proxy grater" in {
+        ctx.needsProxyGrater(traitClazz) must beTrue
+      }
+    }
+    "offer a feasibility lookup method for graters" in {
+      "must return Some for a case class" in {
+        ctx.lookup_?(caseClazz.getName) must beSome[Grater[_]]
+      }
+      "must return None for a case object" in {
+        ctx.lookup_?(caseObjectClazz.getName) must beSome[Grater[_]]
+      }
+      "must return Some for an abstract class annotated with @Salat" in {
+        ctx.lookup_?(annotatedAbstractClazz.getName) must beSome[Grater[_]]
+      }
+      "must return Some for an abstract class without @Salat annotation" in {
+        ctx.lookup_?(abstractClazz.getName) must beSome[Grater[_]]
+      }
+      "must return Some for a trait annotated with @Salat" in {
+        ctx.lookup_?(annotatedTraitClazz.getName) must beSome[Grater[_]]
+      }
+      "must return Some for a trait without @Salat annotation" in {
+        ctx.lookup_?(traitClazz.getName) must beSome[Grater[_]]
+      }
+    }
+    "extract type hints intelligently" in {
+      "allow case class type hint" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> caseClazz.getName)) must beSome(caseClazz.getName)
+      }
+      "allow case object type hint" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> caseObjectClazz.getName)) must beSome(caseObjectClazz.getName)
+      }
+      "filter out abstract class annotated with @Salat" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> annotatedAbstractClazz.getName)) must beNone
+      }
+      "filter out abstract class without @Salat annotation" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> abstractClazz.getName)) must beNone
+      }
+      "filter out trait annotated with @Salat" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> annotatedTraitClazz.getName)) must beNone
+      }
+      "filter out trait without @Salat annotation" in {
+        ctx.extractTypeHint(MongoDBObject(TypeHint -> traitClazz.getName)) must beNone
       }
     }
   }
@@ -141,11 +211,46 @@ class ContextSpec extends SalatSpec {
     //      ctx.lookup("some.nonexistent.clazz") must throwA[GraterGlitch]
     //    }
     "provide a lookup method that lazily generates and returns graters" in {
-      "by class name" in new testContext {
+      "by class name for a case class" in new testContext {
         ctx.graters must beEmpty
-        val g_* = ctx.lookup(classOf[James].getName)
-        //        g_* must beAnInstanceOf[Grater[_]]
-        g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        val g_* = ctx.lookup(caseClazz.getName)
+        g_*.clazz.getName must_== (new ConcreteGrater[James](caseClazz)(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+      "by class name for a case object" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(caseObjectClazz.getName)
+        log.debug(g_*.toString)
+        // TODO: can't get type for com.novus.salat.test.model.Zoot$
+        //        g_*.clazz.getName must_== (new ProxyGrater[Zoot](caseObjectClazz)(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+      "by class name for an abstract class annotated with @Salat" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(annotatedAbstractClazz.getName)
+        g_*.clazz.getName must_== (new ProxyGrater[AbstractMaud](
+          annotatedAbstractClazz.asInstanceOf[Class[AbstractMaud]])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+      "by class name for an abstract class without @Salat annotation" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(abstractClazz.getName)
+        g_*.clazz.getName must_== (new ProxyGrater[UnannotatedAbstractMaud](
+          abstractClazz.asInstanceOf[Class[UnannotatedAbstractMaud]])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+      "by class name for a trait annotated with @Salat" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(annotatedTraitClazz.getName)
+        g_*.clazz.getName must_== (new ProxyGrater[AnnotatedMaud](
+          annotatedTraitClazz.asInstanceOf[Class[AnnotatedMaud]])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+      "by class name for a trait without @Salat annotation" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(traitClazz.getName)
+        g_*.clazz.getName must_== (new ProxyGrater[UnannotatedMaud](
+          traitClazz.asInstanceOf[Class[UnannotatedMaud]])(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by case class manifest" in new testContext {
@@ -155,7 +260,7 @@ class ContextSpec extends SalatSpec {
         g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
-      "by class name or instance of class" in new testContext {
+      "by class name for instance of a case class" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(classOf[James].getName, James("Red Devil"))
         //        g_* must beAnInstanceOf[Grater[_]]
@@ -176,13 +281,13 @@ class ContextSpec extends SalatSpec {
       //      classOf[James] must beAnInstanceOf[CaseClass]
       ctx.lookup[James] must beAnInstanceOf[ConcreteGrater[James]]
     }
-    "succeed for an abstract superclass" in new testContext {
-      Modifier.isAbstract(classOf[Vertebrate].getModifiers) must beTrue
-      val g = ctx.lookup(classOf[Vertebrate].getName)
-      g.clazz.getName must_== classOf[Vertebrate].getName
-      //      ctx.lookup(classOf[Vertebrate].getName) must haveSuperclass[Grater[_ <: AnyRef]]
-      //      ctx.lookup(classOf[Vertebrate].getName) must haveClass[ProxyGrater[Vertebrate]]
-    }
+    //    "succeed for an abstract superclass" in new testContext {
+    //      Modifier.isAbstract(classOf[Vertebrate].getModifiers) must beTrue
+    //      val g = ctx.lookup(classOf[Vertebrate].getName)
+    //      g.clazz.getName must_== classOf[Vertebrate].getName
+    //      //      ctx.lookup(classOf[Vertebrate].getName) must haveSuperclass[Grater[_ <: AnyRef]]
+    //      //      ctx.lookup(classOf[Vertebrate].getName) must haveClass[ProxyGrater[Vertebrate]]
+    //    }
   }
 
   "The context" should {

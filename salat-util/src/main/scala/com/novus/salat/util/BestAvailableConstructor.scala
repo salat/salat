@@ -19,7 +19,7 @@
  */
 package com.novus.salat.util
 
-import java.lang.reflect.Constructor
+import java.lang.reflect.{ Modifier, Constructor }
 
 object BestAvailableConstructor extends Logging {
   def apply[X <: AnyRef with Product](clazz: Class[X]): Constructor[X] = {

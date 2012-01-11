@@ -63,13 +63,8 @@ object `package` extends Logging {
     resolveClass(c, ctx.classLoaders)
   }
 
-  protected[salat] def getCaseClass(c: String)(implicit ctx: Context): Option[Class[CaseClass]] =
-    getClassNamed(c).filter(_.getInterfaces.contains(classOf[Product])).
-      map(_.asInstanceOf[Class[CaseClass]])
+  protected[salat] def isCaseClass(clazz: Class[_]) = clazz.getInterfaces.contains(classOf[Product])
 
-  object IsCaseClass {
-    def unapply(clazz: Option[Class[_]]) = clazz.
-      filter(_.getInterfaces.contains(classOf[Product])).
-      map(_.asInstanceOf[Class[CaseClass]])
-  }
+  protected[salat] def isCaseObject(clazz: Class[_]): Boolean = clazz.getInterfaces.contains(classOf[Product]) &&
+    clazz.getInterfaces.contains(classOf[ScalaObject]) && clazz.getName.endsWith("$")
 }
