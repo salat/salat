@@ -199,7 +199,8 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     val _id = try {
       val dbo = _grater.asDBObject(t)
       val wr = collection.insert(dbo, wc)
-      if (wr.getCachedLastError == null) {
+      val error = wr.getCachedLastError
+      if (error == null || (error != null && error.ok())) {
         dbo.getAs[ID]("_id")
       }
       else {
@@ -214,7 +215,8 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     val _ids = try {
       val dbos = docs.map(t => _grater.asDBObject(t))
       val wr = collection.insert(dbos, wc)
-      if (wr.getCachedLastError == null) {
+      val lastError = wr.getCachedLastError
+      if (lastError == null || (lastError != null && lastError.ok())) {
         val builder = List.newBuilder[Option[ID]]
         for (dbo <- dbos) {
           builder += dbo.getAs[ID]("_id") orElse {
@@ -251,7 +253,8 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     try {
       val dbo = _grater.asDBObject(t)
       val wr = collection.remove(dbo, wc)
-      if (wr.getCachedLastError != null) {
+      val lastError = wr.getCachedLastError
+      if (lastError != null && !lastError.ok()) {
         throw SalatRemoveError(description, collection, wc, wr, List(dbo))
       }
     }
@@ -264,7 +267,8 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def remove[A <% DBObject](q: A, wc: WriteConcern) {
     try {
       val wr = collection.remove(q, wc)
-      if (wr.getCachedLastError != null) {
+      val lastError = wr.getCachedLastError
+      if (lastError != null && !lastError.ok()) {
         throw SalatRemoveQueryError(description, collection, q, wc, wr)
       }
     }
@@ -286,7 +290,8 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
     try {
       val dbo = _grater.asDBObject(t)
       val wr = collection.save(dbo, wc)
-      if (wr.getCachedLastError != null) {
+      val lastError = wr.getCachedLastError
+      if (lastError != null && !lastError.ok()) {
         throw SalatSaveError(description, collection, wc, wr, List(dbo))
       }
     }
@@ -295,7 +300,8 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = collection.writeConcern) {
     try {
       val wr = collection.update(q, o, upsert, multi, wc)
-      if (wr.getCachedLastError != null) {
+      val lastError = wr.getCachedLastError
+      if (lastError != null && !lastError.ok()) {
         throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
       }
     }
