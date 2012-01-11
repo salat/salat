@@ -152,6 +152,16 @@ case class Maud11(swept: String, out: String) extends MaudAgain {
   @Persist val toSea = "%s %s".format(out.reverse, swept.reverse)
 }
 
+@Salat
+trait AnnotatedMaud
+
+trait UnannotatedMaud
+
+@Salat
+abstract class AbstractMaud()
+
+abstract class UnannotatedAbstractMaud()
+
 case class Neville(ennui: Boolean = true, asOf: DateTime = new DateTime)
 
 case class Olive(awl: java.util.UUID)

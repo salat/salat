@@ -122,16 +122,35 @@ trait Context extends Logging {
     case _                               => true
   }
 
-  private[salat] def lookup_?[X <: AnyRef](c: String): Option[Grater[_ <: AnyRef]] = graters.get(c) orElse {
+  protected[salat] def needsProxyGrater(clazz: Class[_]) = {
+    val usedSalatAnnotation = clazz.annotated_?[com.novus.salat.annotations.raw.Salat]
+    val isTrait = clazz.isInterface
+    val isAbstractClazz = Modifier.isAbstract(clazz.getModifiers)
+    val outcome = usedSalatAnnotation || isTrait || isAbstractClazz
+    if (outcome) {
+      log.trace("""
+
+needsProxyGrater: clazz='%s'
+  usedSalatAnnotation: %s
+  isTrait: %s
+  isAbstractClazz: %s
+   OUTCOME: %s
+
+    """, clazz.getName, usedSalatAnnotation, isTrait, isAbstractClazz, (outcome))
+    }
+    outcome
+  }
+
+  protected[salat] def lookup_?[X <: AnyRef](c: String): Option[Grater[_ <: AnyRef]] = graters.get(c) orElse {
     if (suitable_?(c)) {
       resolveClass(c, classLoaders) match {
-        case IsCaseClass(clazz) => Some((new ConcreteGrater[CaseClass](clazz)(this) {}).
-          asInstanceOf[Grater[_ <: AnyRef]])
-        case Some(clazz) if Modifier.isAbstract(clazz.getModifiers) => Some((
-          new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).
-          asInstanceOf[Grater[_ <: AnyRef]])
-        case Some(clazz) if clazz.isInterface => Some((
-          new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
+        case Some(clazz) if needsProxyGrater(clazz) => {
+          log.debug("lookup_?: creating proxy grater for clazz='%s'", clazz.getName)
+          Some((new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
+        }
+        case Some(clazz) if isCaseClass(clazz) => {
+          Some((new ConcreteGrater[CaseClass](clazz.asInstanceOf[Class[CaseClass]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
+        }
         case _ => None
       }
     }

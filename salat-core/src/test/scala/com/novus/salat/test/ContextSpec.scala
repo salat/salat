@@ -27,6 +27,12 @@ import java.lang.reflect.Modifier
 
 class ContextSpec extends SalatSpec {
 
+  val caseClazz = classOf[James]
+  val annotatedAbstractClazz = Class.forName("com.novus.salat.test.model.AbstractMaud")
+  val abstractClazz = Class.forName("com.novus.salat.test.model.UnannotatedAbstractMaud")
+  val annotatedTraitClazz = Class.forName("com.novus.salat.test.model.AnnotatedMaud")
+  val traitClazz = Class.forName("com.novus.salat.test.model.UnannotatedMaud")
+
   "The context classloader handling" should {
     "provide a classloader collection populated with its own classloader" in new testContext {
       ctx.classLoaders must contain(ctx.getClass.getClassLoader).only
@@ -65,46 +71,52 @@ class ContextSpec extends SalatSpec {
   }
 
   "Per-class field name overrides in the context" should {
+    implicit val ctx = new Context {
+      val name = "test_context_%s".format(System.currentTimeMillis())
+    }
     val clazz = classOf[James]
     val remapThis = "id"
     val toThisInstead = "_id"
-    "support registering a per-class key override" in new testContext {
+    "support registering a per-class key override" in {
       ctx.perClassKeyOverrides must beEmpty
       ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead)
       ctx.perClassKeyOverrides.get(clazz.getName, remapThis) must beSome(toThisInstead)
       ctx.perClassKeyOverrides must have size (1)
     }
-    "prevent registering a duplicate per-class override" in new testContext {
+    "prevent registering a duplicate per-class override" in {
       ctx.perClassKeyOverrides must beEmpty
       ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead)
       ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead) must throwA[java.lang.AssertionError]
     }
-    "prevent registering a null or empty per-class override key" in new testContext {
+    "prevent registering a null or empty per-class override key" in {
       ctx.registerPerClassKeyOverride(clazz, "", toThisInstead) must throwA[java.lang.AssertionError]
       ctx.registerPerClassKeyOverride(clazz, null, toThisInstead) must throwA[java.lang.AssertionError]
     }
-    "prevent registering a null or empty per-class override value" in new testContext {
+    "prevent registering a null or empty per-class override value" in {
       ctx.registerPerClassKeyOverride(clazz, remapThis, "") must throwA[java.lang.AssertionError]
       ctx.registerPerClassKeyOverride(clazz, remapThis, null) must throwA[java.lang.AssertionError]
     }
   }
 
   "Using the context to determine field names" should {
+    implicit val ctx = new Context {
+      val name = "test_context_%s".format(System.currentTimeMillis())
+    }
     val clazz = classOf[James]
     val lye = "lye"
     val byMistake = "byMistake"
     val toThisInstead = "NaOH"
-    "support global key overrides" in new testContext {
+    "support global key overrides" in {
       ctx.determineFieldName(clazz, lye) must_== lye
       ctx.registerGlobalKeyOverride(lye, toThisInstead)
       ctx.determineFieldName(clazz, lye) must_== toThisInstead
     }
-    "support per-class key overrides" in new testContext {
+    "support per-class key overrides" in {
       ctx.determineFieldName(clazz, lye) must_== lye
       ctx.registerPerClassKeyOverride(clazz, lye, toThisInstead)
       ctx.determineFieldName(clazz, lye) must_== toThisInstead
     }
-    "return field name unaffected when the context has no overrides for this field name" in new testContext {
+    "return field name unaffected when the context has no overrides for this field name" in {
       ctx.globalKeyOverrides must beEmpty
       ctx.perClassKeyOverrides must beEmpty
       ctx.determineFieldName(clazz, lye) must_== lye
@@ -113,25 +125,59 @@ class ContextSpec extends SalatSpec {
   }
 
   "The context" should {
-    "judge whether a class is suitable" in new testContext {
+    implicit val ctx = new Context {
+      val name = "test_context_%s".format(System.currentTimeMillis())
+    }
+    "judge whether a class is suitable" in {
       "reject scala and java core classes" in {
         ctx.suitable_?("scala.X") must beFalse
         ctx.suitable_?("java.X") must beFalse
         ctx.suitable_?("javax.X") must beFalse
       }
       "allow concrete case classes" in {
-        ctx.suitable_?(classOf[James].getName) must beTrue
+        ctx.suitable_?(caseClazz.getName) must beTrue
       }
       "allow abstract classes, deferring actual check until concrete instance is provided" in {
-        ctx.suitable_?((new MaudAgain {
-          val swept = "swept"
-          val out = "out"
-        }).getClass.getName) must beTrue
+        ctx.suitable_?(annotatedAbstractClazz.getName) must beTrue
+        ctx.suitable_?(abstractClazz.getName) must beTrue
       }
-      "accept traits, deferring actual check until concrete instance is provided" in {
-        ctx.suitable_?(new JamesLike {
-          val lye = "lye"
-        }.getClass.getName) must beTrue
+      "allow traits, deferring actual check until concrete instance is provided" in {
+        ctx.suitable_?(annotatedTraitClazz.getName) must beTrue
+        ctx.suitable_?(traitClazz.getName) must beTrue
+      }
+    }
+    "judge whether a class requires a proxy grater" in {
+      "a case class does not require a proxy grater" in {
+        ctx.needsProxyGrater(caseClazz) must beFalse
+      }
+      "an abstract class annotated with @Salat requires a proxy grater" in {
+        ctx.needsProxyGrater(annotatedAbstractClazz) must beTrue
+      }
+      "an abstract class without @Salat annotation requires a proxy grater" in {
+        ctx.needsProxyGrater(abstractClazz) must beTrue
+      }
+      "a trait annotated with @Salat requires a proxy grater" in {
+        ctx.needsProxyGrater(annotatedTraitClazz) must beTrue
+      }
+      "a trait that is not annotated with @Salat requires a proxy grater" in {
+        ctx.needsProxyGrater(traitClazz) must beTrue
+      }
+    }
+    "offer a feasibility lookup method for graters" in {
+      "must return Some for a case class" in {
+        ctx.lookup_?(caseClazz.getName) must beSome[Grater[_]]
+      }
+      "must return Some for an abstract class annotated with @Salat" in {
+        ctx.lookup_?(annotatedAbstractClazz.getName) must beSome[Grater[_]]
+      }
+      "must return Some for an abstract class without @Salat annotation" in {
+        ctx.lookup_?(abstractClazz.getName) must beSome[Grater[_]]
+      }
+      "must return Some for a trait annotated with @Salat" in {
+        ctx.lookup_?(annotatedTraitClazz.getName) must beSome[Grater[_]]
+      }
+      "must return Some for a trait without @Salat annotation" in {
+        ctx.lookup_?(traitClazz.getName) must beSome[Grater[_]]
       }
     }
   }
@@ -141,11 +187,39 @@ class ContextSpec extends SalatSpec {
     //      ctx.lookup("some.nonexistent.clazz") must throwA[GraterGlitch]
     //    }
     "provide a lookup method that lazily generates and returns graters" in {
-      "by class name" in new testContext {
+      "by class name for a case class" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(classOf[James].getName)
         //        g_* must beAnInstanceOf[Grater[_]]
         g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+      "by class name for an abstract class annotated with @Salat" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(annotatedAbstractClazz.getName)
+        g_*.clazz.getName must_== (new ProxyGrater[AbstractMaud](
+          annotatedAbstractClazz.asInstanceOf[Class[AbstractMaud]])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+      "by class name for an abstract class without @Salat annotation" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(abstractClazz.getName)
+        g_*.clazz.getName must_== (new ProxyGrater[UnannotatedAbstractMaud](
+          abstractClazz.asInstanceOf[Class[UnannotatedAbstractMaud]])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+      "by class name for a trait annotated with @Salat" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(annotatedTraitClazz.getName)
+        g_*.clazz.getName must_== (new ProxyGrater[AnnotatedMaud](
+          annotatedTraitClazz.asInstanceOf[Class[AnnotatedMaud]])(ctx) {}).clazz.getName
+        ctx.graters must have size (1)
+      }
+      "by class name for a trait without @Salat annotation" in new testContext {
+        ctx.graters must beEmpty
+        val g_* = ctx.lookup(traitClazz.getName)
+        g_*.clazz.getName must_== (new ProxyGrater[UnannotatedMaud](
+          traitClazz.asInstanceOf[Class[UnannotatedMaud]])(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by case class manifest" in new testContext {
@@ -155,7 +229,7 @@ class ContextSpec extends SalatSpec {
         g_*.clazz.getName must_== (new ConcreteGrater[James](classOf[James])(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
-      "by class name or instance of class" in new testContext {
+      "by class name for instance of a case class" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(classOf[James].getName, James("Red Devil"))
         //        g_* must beAnInstanceOf[Grater[_]]
@@ -176,13 +250,13 @@ class ContextSpec extends SalatSpec {
       //      classOf[James] must beAnInstanceOf[CaseClass]
       ctx.lookup[James] must beAnInstanceOf[ConcreteGrater[James]]
     }
-    "succeed for an abstract superclass" in new testContext {
-      Modifier.isAbstract(classOf[Vertebrate].getModifiers) must beTrue
-      val g = ctx.lookup(classOf[Vertebrate].getName)
-      g.clazz.getName must_== classOf[Vertebrate].getName
-      //      ctx.lookup(classOf[Vertebrate].getName) must haveSuperclass[Grater[_ <: AnyRef]]
-      //      ctx.lookup(classOf[Vertebrate].getName) must haveClass[ProxyGrater[Vertebrate]]
-    }
+    //    "succeed for an abstract superclass" in new testContext {
+    //      Modifier.isAbstract(classOf[Vertebrate].getModifiers) must beTrue
+    //      val g = ctx.lookup(classOf[Vertebrate].getName)
+    //      g.clazz.getName must_== classOf[Vertebrate].getName
+    //      //      ctx.lookup(classOf[Vertebrate].getName) must haveSuperclass[Grater[_ <: AnyRef]]
+    //      //      ctx.lookup(classOf[Vertebrate].getName) must haveClass[ProxyGrater[Vertebrate]]
+    //    }
   }
 
   "The context" should {
