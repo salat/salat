@@ -20,7 +20,6 @@
 package com.novus.salat.test
 
 import com.novus.salat.util.Logging
-import org.specs2.execute.PendingUntilFixed
 import com.mongodb.casbah.Imports._
 import org.specs2.mutable._
 import org.specs2.specification.{ Scope, Step }

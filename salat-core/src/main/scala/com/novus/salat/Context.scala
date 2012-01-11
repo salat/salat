@@ -105,8 +105,7 @@ trait Context extends Logging {
   def accept(grater: Grater[_ <: AnyRef]) {
     if (!graters.contains(grater.clazz.getName)) {
       graters += grater.clazz.getName -> grater
-      //      log.info("Context(%s) accepted %s", name.getOrElse("<no name>"), grater)
-      log.debug("accept: ctx='%s' accepted grater[%s]", name, grater.clazz.getName)
+      log.trace("accept: ctx='%s' accepted grater[%s]", name, grater.clazz.getName)
     }
   }
 
@@ -145,7 +144,7 @@ needsProxyGrater: clazz='%s'
     if (suitable_?(c)) {
       resolveClass(c, classLoaders) match {
         case Some(clazz) if needsProxyGrater(clazz) => {
-          log.debug("lookup_?: creating proxy grater for clazz='%s'", clazz.getName)
+          log.trace("lookup_?: creating proxy grater for clazz='%s'", clazz.getName)
           Some((new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
         }
         case Some(clazz) if isCaseClass(clazz) => {
