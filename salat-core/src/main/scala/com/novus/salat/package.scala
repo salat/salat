@@ -52,7 +52,7 @@ object `package` extends Logging {
     val Never, WhenNecessary, Always = Value
   }
 
-  def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup[X](m)
+  def grater[Y <: AnyRef](implicit ctx: Context, m: Manifest[Y]): Grater[Y] = ctx.lookup(m.erasure.getName).asInstanceOf[Grater[Y]]
 
   protected[salat] def getClassNamed_!(c: String)(implicit ctx: Context): Class[_] = getClassNamed(c)(ctx).getOrElse {
     throw new Error("getClassNamed: path='%s' does not resolve in any of %d classloaders registered with context='%s'".

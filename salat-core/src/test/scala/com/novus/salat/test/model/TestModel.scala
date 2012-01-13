@@ -190,6 +190,9 @@ case class Susan(how: String = SuppressDefaults.HowDefault,
 
 case class Susan2(how: String = "who", perished: Boolean = true, fits: List[Fit])
 
+sealed trait Una
+case object SlippedDownADrain extends Una
+
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
 case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])
