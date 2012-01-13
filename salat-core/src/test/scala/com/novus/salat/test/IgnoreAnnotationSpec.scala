@@ -53,6 +53,32 @@ class IgnoreAnnotationSpec extends SalatSpec {
       s_*.unsupportedType must_== classOf[SomeClassWithUnsupportedField].companionClass.getMethod("apply$default$3").
         invoke(classOf[SomeClassWithUnsupportedField].companionObject)
     }
+
+    "ignore a field with an unsupported collection annotated with @Ignore" in {
+      val _id = new ObjectId
+      val now = DateTime.now
+      val s = SomeClassWithUnsupportedField2(id = _id,
+        email = "nobody@something.org",
+        status = Borked,
+        cascade = Map(1 -> Set(1, 2, 3)),
+        thingy = Some(9),
+        created = now,
+        updated = now)
+      val dbo: MongoDBObject = grater[SomeClassWithUnsupportedField2].asDBObject(s)
+      println(MapPrettyPrinter(dbo))
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.SomeClassWithUnsupportedField2")
+      dbo must havePair("_id" -> _id)
+      dbo must havePair("email" -> "nobody@something.org")
+      dbo must havePair("status" -> MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Borked$"))
+      dbo.getAs[Map[Int, Set[Int]]]("cascade") must beNone // serialization of cascade has been suppressed, as expected
+      dbo must havePair("thingy" -> 9)
+      dbo must havePair("created" -> now)
+      dbo must havePair("updated" -> now)
+      val s_* = grater[SomeClassWithUnsupportedField2].asObject(dbo)
+      s_* must_== s.copy(cascade = Map.empty)
+      s_*.cascade must_== classOf[SomeClassWithUnsupportedField2].companionClass.getMethod("apply$default$4").invoke(classOf[SomeClassWithUnsupportedField2].companionObject)
+    }
+
   }
 
 }

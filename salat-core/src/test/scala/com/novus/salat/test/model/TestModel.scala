@@ -190,6 +190,9 @@ case class Susan(how: String = SuppressDefaults.HowDefault,
 
 case class Susan2(how: String = "who", perished: Boolean = true, fits: List[Fit])
 
+sealed trait Una
+case object SlippedDownADrain extends Una
+
 case class Employee(name: String, age: Option[Int], annual_salary: Option[ScalaBigDecimal])
 case class Department(name: String, head_honcho: Option[Employee], cya_factor: ScalaBigDecimal, minions: List[Employee])
 case class Company(name: String, year_of_inception: Int, departments: Map[String, Department])
@@ -285,6 +288,18 @@ case class Titus2(@Ignore ignoreMe: String = null, dontIgnoreMe: Int)
 case class SomeClassWithUnsupportedField(@Key("_id") val id: ObjectId = new ObjectId,
                                          text: Option[String] = None,
                                          @Ignore unsupportedType: java.io.File = null)
+
+@Salat
+sealed trait SomeStatus
+case object Borked extends SomeStatus
+
+case class SomeClassWithUnsupportedField2(@Key("_id") val id: ObjectId = new ObjectId,
+                                          email: String,
+                                          status: SomeStatus,
+                                          @Ignore cascade: Map[Int, Set[Int]] = Map.empty,
+                                          thingy: Option[Int] = None,
+                                          created: DateTime = DateTime.now,
+                                          updated: DateTime = DateTime.now)
 
 // Issue #24
 case class MetadataRecord(

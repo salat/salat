@@ -23,6 +23,7 @@ import com.novus.salat._
 import com.novus.salat.test.always._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
+import com.novus.salat.util.MapPrettyPrinter
 
 class CaseObjectSupport extends SalatSpec {
   "a grater" should {
@@ -51,6 +52,16 @@ class CaseObjectSupport extends SalatSpec {
         val dbo = grater[Wardrobe].asDBObject(mine)
         val mine_* = grater[Wardrobe].asObject(dbo)
         mine must_== mine_*
+      }
+
+      // TODO: list of case objects
+
+      "handle case objects whose top-level trait is not annotated with @Salat" in {
+        val u = SlippedDownADrain
+        val dbo: MongoDBObject = grater[Una].asDBObject(u)
+        dbo must havePair("_typeHint" -> "com.novus.salat.test.model.SlippedDownADrain$")
+        val u_* = grater[Una].asObject(dbo)
+        u must_== u
       }
     }
   }
