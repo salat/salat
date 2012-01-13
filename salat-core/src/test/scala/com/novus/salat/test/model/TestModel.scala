@@ -286,6 +286,18 @@ case class SomeClassWithUnsupportedField(@Key("_id") val id: ObjectId = new Obje
                                          text: Option[String] = None,
                                          @Ignore unsupportedType: java.io.File = null)
 
+@Salat
+sealed trait SomeStatus
+case object Borked extends SomeStatus
+
+case class SomeClassWithUnsupportedField2(@Key("_id") val id: ObjectId = new ObjectId,
+                                          email: String,
+                                          status: SomeStatus,
+                                          @Ignore cascade: Map[Int, Set[Int]] = Map.empty,
+                                          thingy: Option[Int] = None,
+                                          created: DateTime = DateTime.now,
+                                          updated: DateTime = DateTime.now)
+
 // Issue #24
 case class MetadataRecord(
   validOutputFormats: List[String] = List.empty[String], // valid formats this records can be mapped to
