@@ -29,8 +29,11 @@ import com.novus.salat.{ Field => SField }
 import com.novus.salat.annotations._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
-import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.casbah.Imports._
 import java.util.concurrent.{ CopyOnWriteArrayList, ConcurrentHashMap }
+import net.liftweb.json._
+import org.joda.time.DateTimeZone
+import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
 
 trait Context extends Logging {
 
@@ -62,7 +65,7 @@ trait Context extends Logging {
   // TODO: BigDecimal handling strategy: binary vs double
   // TODO: BigInt handling strategy: binary vs int
 
-  val diagnostics: ContextDiagnosticOptions = ContextDiagnosticOptions(logGraterCreation = true)
+  val jsonConfig: JSONConfig = JSONConfig()
 
   def registerClassLoader(cl: ClassLoader) {
     classLoaders = cl +: classLoaders
@@ -175,6 +178,8 @@ needsProxyGrater: clazz='%s'
 
   @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(clazz: String): Grater[_ <: AnyRef] = lookup(clazz)
 
+  def lookup(j: JObject): Grater[_ <: AnyRef] = extractTypeHint(j).map(lookup(_)).getOrElse(throw MissingTypeHint(wrapDBObj(map2MongoDBObject(j.values)))(this))
+
   def extractTypeHint(dbo: MongoDBObject): Option[String] = {
     dbo.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_)).filter {
       str =>
@@ -198,6 +203,15 @@ DBO
 
     }
   }
+
+  def extractTypeHint(j: JObject): Option[String] = {
+    // TODO: probably not the most idiomatic way to do this
+    j.values.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_))
+  }
 }
 
-case class ContextDiagnosticOptions(logGraterCreation: Boolean = false)
+object JSONConfig {
+  val DefaultDateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC)
+}
+
+case class JSONConfig(dateFormatter: DateTimeFormatter = JSONConfig.DefaultDateTimeFormatter)
