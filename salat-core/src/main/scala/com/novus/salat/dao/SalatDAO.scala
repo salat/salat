@@ -29,7 +29,7 @@ import com.mongodb.{ WriteConcern, DBObject, CommandResult }
  *  @type ObjectType case class type
  *  @type ID _id type
  */
-trait DAO[ObjectType <: CaseClass, ID <: Any] {
+trait DAO[ObjectType <: AnyRef, ID <: Any] {
 
   val collection: MongoCollection
 
@@ -80,8 +80,8 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
   def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P]
 }
 
-abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
-                                                                                             mid: Manifest[ID], ctx: Context)
+abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
+                                                                                          mid: Manifest[ID], ctx: Context)
     extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
 
   dao =>
@@ -109,9 +109,9 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
    *
    *  }
    */
-  abstract class ChildCollection[ChildType <: CaseClass, ChildId <: Any](override val collection: MongoCollection,
-                                                                         val parentIdField: String)(implicit mct: Manifest[ChildType],
-                                                                                                    mcid: Manifest[ChildId], ctx: Context)
+  abstract class ChildCollection[ChildType <: AnyRef, ChildId <: Any](override val collection: MongoCollection,
+                                                                      val parentIdField: String)(implicit mct: Manifest[ChildType],
+                                                                                                 mcid: Manifest[ChildId], ctx: Context)
       extends SalatDAO[ChildType, ChildId](collection) {
 
     childDao =>

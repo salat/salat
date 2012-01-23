@@ -72,7 +72,7 @@ class JsonSpec extends Specification with Logging {
         val b2 = Bertil(ints = ints.map(_ * 2), strings = strings.map(_.capitalize))
         val c = Caesar(l = List(b1, b2))
         val rendered = grater[Caesar].toPrettyJSON(c)
-//        log.debug(rendered)
+        //        log.debug(rendered)
         //        09:50:47.309 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
         //          "l":[{
         //            "ints":[1,2,3],

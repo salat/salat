@@ -288,7 +288,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
     iterateOut(o) {
       case (key, value) => {
-//        log.debug("ADDING: k='%s', v='%s'", key, value)
+        //        log.debug("ADDING: k='%s', v='%s'", key, value)
         builder += JField(key, jsonTranform(value))
       }
     }.toList

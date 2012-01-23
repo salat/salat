@@ -28,6 +28,7 @@ import org.scala_tools.time.Imports._
 import com.novus.salat.dao.SalatDAO
 import org.joda.time.DateMidnight
 import org.joda.time.DateTimeConstants._
+import com.mongodb.casbah.Imports
 
 @Salat
 trait Beta {
@@ -74,3 +75,38 @@ object ParentDAO extends SalatDAO[Parent, ObjectId](collection = MongoConnection
     parentIdField = "parentId") {}
 
 }
+
+case class User(_id: ObjectId = new ObjectId, name: String, roles: List[Role])
+
+sealed trait Role {
+  val _id: ObjectId
+  val userId: ObjectId
+}
+case class Guest(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
+case class Author(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
+case class Editor(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
+case class Admin(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
+
+object UserDAO extends SalatDAO[User, ObjectId](collection = MongoConnection()(SalatSpecDb)(UserColl)) {
+  val roles = new ChildCollection[Role, ObjectId](collection = MongoConnection()(SalatSpecDb)(RoleColl),
+    parentIdField = "userId") {}
+
+  // demonstration of how you might break apart an object graph when saving to MongoDB
+  override def insert(u: User) = {
+    u.roles.foreach {
+      role =>
+        roles.insert(role)
+    }
+    super.insert(u.copy(roles = Nil))
+  }
+
+  // and reassemble the object graph when retrieving from MongoDB
+  override def findOneByID(id: ObjectId) = {
+    super.findOneByID(id).map {
+      user =>
+        user.copy(roles = roles.findByParentId(user._id).toList)
+    }
+  }
+}
+
+object RoleDAO extends SalatDAO[Role, ObjectId](collection = MongoConnection()(SalatSpecDb)(RoleColl))
