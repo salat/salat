@@ -32,6 +32,10 @@ import com.novus.salat.util._
 
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
+import net.liftweb.json._
+import java.util.Date
+import org.joda.time.{ DateTimeZone, DateTime }
+import org.joda.time.format.DateTimeFormat
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -43,6 +47,24 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
   def asDBObject(o: X): DBObject
 
   def asObject[A <% MongoDBObject](dbo: A): X
+
+  def toJSON(o: X): JObject
+
+  //  def fromJSON(j: JObject): X
+
+  def toPrettyJSON(o: X): String = pretty(render(toJSON(o)))
+
+  def toCompactJSON(o: X): String = compact(render(toJSON(o)))
+
+  //  def fromJSON(s: String): X = JsonParser.parse(s) match {
+  //    case j: JObject => fromJSON(j)
+  //    case x => error("""
+  //fromJSON: input string parses to unsupported type '%s' !
+  //
+  //%s
+  //
+  //    """.format(x.getClass.getName, s))
+  //  }
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T]
 
@@ -236,6 +258,47 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
   }
 
+  protected[salat] def jsonTranform(o: Any): JValue = o.asInstanceOf[AnyRef] match {
+    case t: BasicDBList => JArray(t.map(jsonTranform(_)).toList)
+    case dbo: DBObject  => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, jsonTranform(v._2))))
+    case m: Map[_, _]   => JObject(m.toList.map(v => JField(v._1.toString, jsonTranform(v._2))))
+    case x              => jsonTranform0(x)
+  }
+
+  protected[salat] def jsonTranform0(o: Any) = o match {
+    case s: String       => JString(s)
+    case d: Double       => JDouble(d)
+    case i: Int          => JInt(i)
+    case b: Boolean      => JBool(b)
+    case d: DateTime     => JString(ctx.jsonConfig.dateFormatter.print(d))
+    case d: Date         => JString(ctx.jsonConfig.dateFormatter.print(d.getTime))
+    case u: java.net.URL => JString(u.toString) // might as well
+    case x: AnyRef       => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x.getClass))
+  }
+
+  def toJSON(o: X) = {
+    val builder = List.newBuilder[JField]
+    if (ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
+      (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && requiresTypeHint)) {
+      val field: JValue = if (ctx.typeHintStrategy == StringTypeHintStrategy) {
+        JString(clazz.getName)
+      }
+      else error("toJSON: unsupported type hint strategy '%s'".format(ctx.typeHintStrategy))
+      builder += JField(ctx.typeHintStrategy.typeHint, field)
+    }
+
+    iterateOut(o) {
+      case (key, value) => {
+        //        log.debug("ADDING: k='%s', v='%s'", key, value)
+        builder += JField(key, jsonTranform(value))
+      }
+    }.toList
+
+    JObject(builder.result())
+  }
+
+  def fromJSON(j: JObject) = error("TODO: implement me")
+
   def asDBObject(o: X): DBObject = {
     val builder = MongoDBObject.newBuilder
 
@@ -249,7 +312,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       case (key, value) => builder += key -> value
     }.toList
 
-    builder.result
+    builder.result()
   }
 
   def asObject[A <% MongoDBObject](dbo: A): X =
