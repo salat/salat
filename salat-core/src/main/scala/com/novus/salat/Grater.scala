@@ -265,14 +265,16 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 
   protected[salat] def jsonTranform0(o: Any) = o match {
-    case s: String       => JString(s)
-    case d: Double       => JDouble(d)
-    case i: Int          => JInt(i)
-    case b: Boolean      => JBool(b)
-    case d: DateTime     => JString(ctx.jsonConfig.dateFormatter.print(d))
-    case d: Date         => JString(ctx.jsonConfig.dateFormatter.print(d.getTime))
+    case s: String => JString(s)
+    case d: Double => JDouble(d)
+    case i: Int => JInt(i)
+    case b: Boolean => JBool(b)
+    case d: Date => ctx.jsonConfig.dateStrategy.out(d)
+    case d: DateTime => ctx.jsonConfig.dateStrategy.out(d)
+    case o: ObjectId => JObject(List(JField("$oid", JString(o.toString))))
     case u: java.net.URL => JString(u.toString) // might as well
-    case x: AnyRef       => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x.getClass))
+    case n if n == null && ctx.jsonConfig.outputNullValues => JNull
+    case x: AnyRef => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x.getClass))
   }
 
   def toJSON(o: X) = {

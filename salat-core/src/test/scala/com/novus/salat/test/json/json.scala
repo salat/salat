@@ -20,14 +20,22 @@
 package com.novus.salat.test.json
 
 import com.novus.salat._
-import org.joda.time.DateTime
 import org.joda.time.DateTimeConstants._
+import com.novus.salat.json.{ StringDateStrategy, JSONConfig }
+import org.joda.time.{ DateTimeZone, DateTime }
+import org.joda.time.format.DateTimeFormat
 
 object `package` {
+
+  val TestDateFormatter = DateTimeFormat.forPattern("MM/dd/yyyy").withZone(DateTimeZone.forID("US/Eastern"))
+
+  val TestTypeHint = "_t"
+
   implicit val ctx = new Context {
     val name = "json-test-context"
     override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary,
-      typeHint = "_t")
+      typeHint = TestTypeHint)
+    override val jsonConfig = JSONConfig(dateStrategy = StringDateStrategy(dateFormatter = TestDateFormatter))
   }
 
   val testDate = new DateTime(2011, DECEMBER, 28, 14, 37, 56, 8)

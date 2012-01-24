@@ -24,31 +24,24 @@ import com.novus.salat.util._
 import org.specs2.mutable.Specification
 import net.liftweb.json._
 import scala.util.parsing.json.{ JSONObject, JSONArray }
+import org.bson.types.ObjectId
 
 class JsonSpec extends Specification with Logging {
 
   "JSON support" should {
     "handle simple types" in {
-      val a = Adam(a = "string", b = 99, c = 3.14, d = false, e = testDate, u = testURL)
+      val o = new ObjectId
+      val a = Adam(a = "string", b = 99, c = 3.14, d = false, e = testDate, u = testURL, o = o)
       val rendered = grater[Adam].toPrettyJSON(a)
-      //      log.debug(rendered)
-
-      //      18:28:57.661 [specs2.DefaultExecutionStrategy3] DEBUG c.novus.salat.test.json.JsonSpec - {
-      //        "a":"string",
-      //        "b":99,
-      //        "c":3.14,
-      //        "d":false,
-      //        "e":"2011-12-28T11:37:56Z",
-      //        "u":"http://www.typesafe.com"
-      //      }
-      //
+//      log.debug(rendered)
 
       rendered must /("a" -> "string")
       rendered must /("b" -> 99)
       rendered must /("c" -> 3.14)
       rendered must /("d" -> false)
-      rendered must /("e" -> ctx.jsonConfig.dateFormatter.print(testDate))
+      rendered must /("e" -> TestDateFormatter.print(testDate))
       rendered must /("u" -> testURL.toString)
+      rendered must /("o") / ("$oid" -> o.toString)
     }
     "handle lists" in {
       "lists with simple types" in {

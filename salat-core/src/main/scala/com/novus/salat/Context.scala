@@ -34,6 +34,7 @@ import java.util.concurrent.{ CopyOnWriteArrayList, ConcurrentHashMap }
 import net.liftweb.json._
 import org.joda.time.DateTimeZone
 import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
+import com.novus.salat.json.JSONConfig
 
 trait Context extends Logging {
 
@@ -209,9 +210,3 @@ DBO
     j.values.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_))
   }
 }
-
-object JSONConfig {
-  val DefaultDateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC)
-}
-
-case class JSONConfig(dateFormatter: DateTimeFormatter = JSONConfig.DefaultDateTimeFormatter)

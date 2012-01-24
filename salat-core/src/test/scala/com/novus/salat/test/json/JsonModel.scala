@@ -20,6 +20,7 @@
 package com.novus.salat.test.json
 
 import org.joda.time.DateTime
+import org.bson.types.ObjectId
 
 //  A	Adam
 //  B	Bertil
@@ -56,7 +57,8 @@ case class Adam(a: String,
                 c: Double,
                 d: Boolean,
                 e: DateTime,
-                u: java.net.URL)
+                u: java.net.URL,
+                o: ObjectId)
 
 case class Bertil(ints: List[Int], strings: List[String])
 case class Caesar(l: List[Bertil])
