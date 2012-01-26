@@ -254,7 +254,8 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   protected[salat] lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
 
   protected def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
-    case PolyType(tr @ TypeRefType(_, _, _), _) => tr
+    case PolyType(tr @ TypeRefType(_, _, _), _)       => tr
+    case NullaryMethodType(tr @ TypeRefType(_, _, _)) => tr
   }
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
