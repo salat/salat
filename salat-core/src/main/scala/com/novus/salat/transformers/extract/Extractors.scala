@@ -248,8 +248,11 @@ package out {
   trait EnumStringifier extends Transformer {
     self: Transformer =>
 
-    val strategy = getClassNamed_!(path).annotation[com.novus.salat.annotations.raw.EnumAs].
-      map(_.strategy()).getOrElse(ctx.defaultEnumStrategy)
+    val strategy = {
+      val s = getClassNamed_!(path).annotation[com.novus.salat.annotations.raw.EnumAs].
+        map(_.strategy())
+      if (s.isDefined) s.get else ctx.defaultEnumStrategy
+    }
 
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
       case ev: Enumeration#Value if strategy == EnumStrategy.BY_VALUE => ev.toString

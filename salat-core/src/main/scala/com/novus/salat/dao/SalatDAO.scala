@@ -317,17 +317,17 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
   def find[A <% DBObject](ref: A) = find(ref.asInstanceOf[DBObject], MongoDBObject.empty)
 
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
-    collection.findOne(query, MongoDBObject(field -> 1)).map {
+    collection.findOne(query, MongoDBObject(field -> 1)).flatMap {
       dbo =>
         dbo.expand[DBObject](field).map(grater[P].asObject(_))
-    }.getOrElse(None)
+    }
   }
 
   def primitiveProjection[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
-    collection.findOne(query, MongoDBObject(field -> 1)).map {
+    collection.findOne(query, MongoDBObject(field -> 1)).flatMap {
       dbo =>
         dbo.expand[P](field)
-    }.getOrElse(None)
+    }
   }
 
   def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P] = {

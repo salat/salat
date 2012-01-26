@@ -21,8 +21,6 @@ package com.novus.salat
 
 import scala.tools.scalap.scalax.rules.scalasig._
 import com.novus.salat.{ Field => SField }
-import scala.reflect.generic.ByteCodecs
-import scala.reflect.ScalaSignature
 
 import java.lang.reflect.{ InvocationTargetException, Constructor, Method }
 
@@ -34,8 +32,7 @@ import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
 import net.liftweb.json._
 import java.util.Date
-import org.joda.time.{ DateTimeZone, DateTime }
-import org.joda.time.format.DateTimeFormat
+import org.joda.time.DateTime
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -77,11 +74,19 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
 abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
 
-  protected def findSym[A](clazz: Class[A]) = {
-    ScalaSigUtil.parseScalaSig0(clazz, ctx.classLoaders).
-      map(x => x.topLevelClasses.headOption.
-        getOrElse(x.topLevelObjects.headOption.
-          getOrElse(throw MissingExpectedType(clazz)))).getOrElse(throw MissingPickledSig(clazz))
+  protected def findSym[A](clazz: Class[A]): SymbolInfoSymbol = {
+    val _sig = ScalaSigUtil.parseScalaSig0(clazz, ctx.classLoaders)
+    if (_sig.isDefined) {
+      val sig = _sig.get
+      if (sig.topLevelClasses.nonEmpty) {
+        sig.topLevelClasses.head
+      }
+      else if (sig.topLevelObjects.nonEmpty) {
+        sig.topLevelObjects.head
+      }
+      else throw MissingExpectedType(clazz)
+    }
+    else throw MissingPickledSig(clazz)
   }
 
   protected lazy val sym = findSym(clazz)
@@ -123,12 +128,6 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   // for use when you just want to find something and whether it was declared in clazz, some trait clazz extends, or clazz' own superclass
   // is not a concern
   protected lazy val allTheChildren: Seq[Symbol] = sym.children ++ interestingInterfaces.map(_._2.children).flatten ++ interestingSuperclass.map(_._2.children).flatten
-
-  lazy val fieldNames = {
-    val builder = Map.newBuilder[SField, String]
-
-    builder.result()
-  }
 
   protected def outField: OutHandler = {
     case (_, field) if field.ignore => None
@@ -177,7 +176,10 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       .map {
         case (ms, idx) => {
           //        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
-          SField(idx, keyOverridesFromAbove.get(ms).getOrElse(ms.name), typeRefType(ms), clazz.getMethod(ms.name))
+          SField(idx = idx,
+            name = if (keyOverridesFromAbove.contains(ms)) keyOverridesFromAbove(ms) else ms.name,
+            t = typeRefType(ms),
+            method = clazz.getMethod(ms.name))
         }
 
       }
@@ -268,7 +270,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       field -> ctx.determineFieldName(clazz, field.name)
   }.toMap
 
-  def cachedFieldName(field: SField) = fieldNameMap.getOrElse(field, field.name)
+  def cachedFieldName(field: SField) = if (fieldNameMap.contains(field)) fieldNameMap(field) else field.name
 
   protected[salat] def jsonTranform(o: Any): JValue = o.asInstanceOf[AnyRef] match {
     case t: BasicDBList => JArray(t.map(jsonTranform(_)).toList)
@@ -388,12 +390,14 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     val builder = Map.newBuilder[SField, DefaultArg]
     for (field <- indexedFields) {
       val defaultMethod = try {
-        Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
+        // Some(null) is actually "desirable" here because it allows using null as a default value for an ignored field
+        Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)).invoke(companionObject))
       }
       catch {
         case _ => None // indicates no default value was supplied
       }
-      builder += field -> DefaultArg(clazz, field, defaultMethod.map(m => Some(m.invoke(companionObject))).getOrElse(None))
+
+      builder += field -> DefaultArg(clazz, field, defaultMethod)
     }
     // pad out with extra fields to persist
     extraFieldsToPersist.foreach(f => builder += f._2 -> DefaultArg(clazz, f._2, None))
@@ -404,14 +408,14 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(implicit val ctx: Context) {
 
   def suppress(serialized: Any) = if (ctx.suppressDefaultArgs && field.name != "_id") {
-    value.map {
+    value.exists {
       v =>
         serialized match {
           case serialized: BasicDBList if serialized.isEmpty && isEmptyTraversable => true
           case serialized: BasicDBObject if serialized.isEmpty && isEmptyMap => true
           case serialized => serialized == v
         }
-    }.getOrElse(false)
+    }
   }
   else false
 

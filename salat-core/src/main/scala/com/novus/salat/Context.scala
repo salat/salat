@@ -164,16 +164,27 @@ needsProxyGrater: clazz='%s'
     else None
   }
 
-  def lookup(c: String): Grater[_ <: AnyRef] = lookup_?(c).getOrElse(throw GraterGlitch(c)(this))
+  def lookup(c: String): Grater[_ <: AnyRef] = {
+    val g = lookup_?(c)
+    if (g.isDefined) g.get else throw GraterGlitch(c)(this)
+  }
 
   def lookup[A <: CaseClass: Manifest]: Grater[A] = lookup(manifest[A].erasure.getName).asInstanceOf[Grater[A]]
 
-  def lookup(c: String, clazz: CaseClass): Grater[_ <: AnyRef] = lookup_?(c).getOrElse(lookup(clazz.getClass.getName))
+  def lookup(c: String, clazz: CaseClass): Grater[_ <: AnyRef] = {
+    val g = lookup_?(c)
+    if (g.isDefined) g.get else lookup(clazz.getClass.getName)
+  }
 
-  def lookup_?(c: String, dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] =
-    lookup_?(c) orElse extractTypeHint(dbo).flatMap(lookup_?(_))
+  def lookup_?(c: String, dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] = {
+    val g = lookup_?(c)
+    if (g.isDefined) g else extractTypeHint(dbo).flatMap(lookup_?(_))
+  }
 
-  def lookup(dbo: MongoDBObject): Grater[_ <: AnyRef] = extractTypeHint(dbo).map(lookup(_)).getOrElse(throw MissingTypeHint(dbo)(this))
+  def lookup(dbo: MongoDBObject): Grater[_ <: AnyRef] = {
+    val g = extractTypeHint(dbo).map(lookup(_))
+    if (g.isDefined) g.get else throw MissingTypeHint(dbo)(this)
+  }
 
   @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(dbo: MongoDBObject): Grater[_ <: AnyRef] = lookup(dbo)
 
@@ -183,7 +194,10 @@ needsProxyGrater: clazz='%s'
 
   @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(clazz: String): Grater[_ <: AnyRef] = lookup(clazz)
 
-  def lookup(j: JObject): Grater[_ <: AnyRef] = extractTypeHint(j).map(lookup(_)).getOrElse(throw MissingTypeHint(wrapDBObj(map2MongoDBObject(j.values)))(this))
+  def lookup(j: JObject): Grater[_ <: AnyRef] = {
+    val g = extractTypeHint(j).map(lookup(_))
+    if (g.isDefined) g.get else throw MissingTypeHint(wrapDBObj(map2MongoDBObject(j.values)))(this)
+  }
 
   def extractTypeHint(dbo: MongoDBObject): Option[String] = {
     dbo.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_)).filter {
