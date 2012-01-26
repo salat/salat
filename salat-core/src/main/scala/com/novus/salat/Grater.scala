@@ -124,6 +124,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   // is not a concern
   protected lazy val allTheChildren: Seq[Symbol] = sym.children ++ interestingInterfaces.map(_._2.children).flatten ++ interestingSuperclass.map(_._2.children).flatten
 
+  lazy val fieldNames = {
+    val builder = Map.newBuilder[SField, String]
+
+    builder.result()
+  }
+
   protected def outField: OutHandler = {
     case (_, field) if field.ignore => None
     case (null, _)                  => None
@@ -148,7 +154,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
           serialized match {
             case serialized if ctx.suppressDefaultArgs && defaultArg(field).suppress(serialized) => None
             case serialized => {
-              val key = ctx.determineFieldName(clazz, field)
+              val key = cachedFieldName(field)
               val value = serialized match {
                 case Some(unwrapped) => unwrapped
                 case _               => serialized
@@ -257,6 +263,13 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
   }
 
+  lazy val fieldNameMap = (indexedFields ++ extraFieldsToPersist.map(_._2)).map {
+    field =>
+      field -> ctx.determineFieldName(clazz, field.name)
+  }.toMap
+
+  def cachedFieldName(field: SField) = fieldNameMap.getOrElse(field, field.name)
+
   protected[salat] def jsonTranform(o: Any): JValue = o.asInstanceOf[AnyRef] match {
     case t: BasicDBList => JArray(t.map(jsonTranform(_)).toList)
     case dbo: DBObject  => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, jsonTranform(v._2))))
@@ -324,7 +337,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       val args = indexedFields.map {
         case field if field.ignore => safeDefault(field)
         case field => {
-          dbo.get(ctx.determineFieldName(clazz, field)) match {
+          dbo.get(cachedFieldName(field)) match {
             case Some(value) => {
               field.in_!(value)
             }

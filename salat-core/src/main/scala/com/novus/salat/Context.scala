@@ -78,9 +78,13 @@ trait Context extends Logging {
   def determineFieldName(clazz: Class[_], fieldName: String): String = {
     assume(fieldName != null && fieldName.nonEmpty, "determineFieldName: bad candy clazz='%s' field=%s".format(clazz.getName, fieldName))
 
-    globalKeyOverrides.get(fieldName).
-      getOrElse(perClassKeyOverrides.get((clazz.getName, fieldName)).
-        getOrElse(fieldName))
+    if (globalKeyOverrides.contains(fieldName)) {
+      globalKeyOverrides(fieldName)
+    }
+    else if (perClassKeyOverrides.contains(clazz.getName, fieldName)) {
+      perClassKeyOverrides(clazz.getName, fieldName)
+    }
+    else fieldName
   }
 
   def registerPerClassKeyOverride(clazz: Class[_], remapThis: String, toThisInstead: String) {
