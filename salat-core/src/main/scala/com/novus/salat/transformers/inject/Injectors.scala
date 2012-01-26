@@ -392,8 +392,10 @@ package in {
     val applyInt: Method = clazz.getDeclaredMethods.filter(_.getName == "apply").head
 
     override def transform(value: Any)(implicit ctx: Context): Any = {
-      val strategy = getClassNamed_!(path).annotation[com.novus.salat.annotations.raw.EnumAs].
-        map(_.strategy()).getOrElse(ctx.defaultEnumStrategy)
+      val strategy = {
+        val s = getClassNamed_!(path).annotation[com.novus.salat.annotations.raw.EnumAs].map(_.strategy())
+        if (s.isDefined) s.get else ctx.defaultEnumStrategy
+      }
 
       (strategy, value) match {
         case (EnumStrategy.BY_VALUE, name: String) => withName.invoke(companion, name)

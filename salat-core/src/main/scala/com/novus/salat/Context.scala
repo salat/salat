@@ -148,20 +148,26 @@ needsProxyGrater: clazz='%s'
     outcome
   }
 
-  protected[salat] def lookup_?[X <: AnyRef](c: String): Option[Grater[_ <: AnyRef]] = graters.get(c) orElse {
-    if (suitable_?(c)) {
-      resolveClass(c, classLoaders) match {
-        case Some(clazz) if needsProxyGrater(clazz) => {
-          log.trace("lookup_?: creating proxy grater for clazz='%s'", clazz.getName)
-          Some((new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
-        }
-        case Some(clazz) if isCaseClass(clazz) => {
-          Some((new ConcreteGrater[CaseClass](clazz.asInstanceOf[Class[CaseClass]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
-        }
-        case _ => None
-      }
+  protected[salat] def lookup_?[X <: AnyRef](c: String): Option[Grater[_ <: AnyRef]] = {
+    val g = graters.get(c)
+    if (g.isDefined) {
+      g
     }
-    else None
+    else {
+      if (suitable_?(c)) {
+        resolveClass(c, classLoaders) match {
+          case Some(clazz) if needsProxyGrater(clazz) => {
+            log.trace("lookup_?: creating proxy grater for clazz='%s'", clazz.getName)
+            Some((new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
+          }
+          case Some(clazz) if isCaseClass(clazz) => {
+            Some((new ConcreteGrater[CaseClass](clazz.asInstanceOf[Class[CaseClass]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
+          }
+          case _ => None
+        }
+      }
+      else None
+    }
   }
 
   def lookup(c: String): Grater[_ <: AnyRef] = {
