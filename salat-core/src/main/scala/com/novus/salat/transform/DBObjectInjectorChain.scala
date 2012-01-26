@@ -72,10 +72,16 @@ object DBObjectInjectorChain extends TransformerChain {
       //
       //      """, path, t, ClassPrettyPrinter(value.asInstanceOf[AnyRef]), value)
 
-      val grater = (ctx.extractTypeHint(dbo) match {
-        case Some(typeHint) => ctx.lookup_?(typeHint)
-        case None           => ctx.lookup_?(symbol.path) orElse ctx.lookup_?(path)
-      }).getOrElse(throw GraterFromDboGlitch(symbol.path, dbo)(ctx))
+      val grater = {
+        val g = (ctx.extractTypeHint(dbo) match {
+          case Some(typeHint) => ctx.lookup_?(typeHint)
+          case None => {
+            val g = ctx.lookup_?(symbol.path)
+            if (g.isDefined) g else ctx.lookup_?(path)
+          }
+        })
+        if (g.isDefined) g.get else throw GraterFromDboGlitch(symbol.path, dbo)(ctx)
+      }
       val xformed = grater.asObject(dbo)
       log.info(TransformPrettyPrinter("caseClassTransformer", dbo, t, xformed.asInstanceOf[AnyRef]))
       xformed

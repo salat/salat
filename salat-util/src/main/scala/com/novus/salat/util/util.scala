@@ -90,8 +90,9 @@ object `package` {
   //    def asObjectId = new ObjectId((new BigInteger(oid, 36)).toString(16))
   //  }
 
-  protected[salat] def resolveClass_!(c: String, classLoaders: Seq[ClassLoader]): Class[_] = resolveClass(c, classLoaders).getOrElse {
-    throw new Error("resolveClass: path='%s' does not resolve in any of %d available classloaders".format(c, classLoaders.size))
+  protected[salat] def resolveClass_!(c: String, classLoaders: Seq[ClassLoader]): Class[_] = {
+    val clazz = resolveClass(c, classLoaders)
+    if (clazz.isDefined) clazz.get else error("resolveClass: path='%s' does not resolve in any of %d available classloaders".format(c, classLoaders.size))
   }
 
   protected[salat] def toUsableClassName(clazz: String) = if (clazz.endsWith("$")) clazz.substring(0, clazz.size - 1) else clazz

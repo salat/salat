@@ -29,7 +29,7 @@ import com.mongodb.{ WriteConcern, DBObject, CommandResult }
  *  @type ObjectType case class type
  *  @type ID _id type
  */
-trait DAO[ObjectType <: CaseClass, ID <: Any] {
+trait DAO[ObjectType <: AnyRef, ID <: Any] {
 
   val collection: MongoCollection
 
@@ -80,8 +80,8 @@ trait DAO[ObjectType <: CaseClass, ID <: Any] {
   def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P]
 }
 
-abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
-                                                                                             mid: Manifest[ID], ctx: Context)
+abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
+                                                                                          mid: Manifest[ID], ctx: Context)
     extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
 
   dao =>
@@ -109,9 +109,9 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
    *
    *  }
    */
-  abstract class ChildCollection[ChildType <: CaseClass, ChildId <: Any](override val collection: MongoCollection,
-                                                                         val parentIdField: String)(implicit mct: Manifest[ChildType],
-                                                                                                    mcid: Manifest[ChildId], ctx: Context)
+  abstract class ChildCollection[ChildType <: AnyRef, ChildId <: Any](override val collection: MongoCollection,
+                                                                      val parentIdField: String)(implicit mct: Manifest[ChildType],
+                                                                                                 mcid: Manifest[ChildId], ctx: Context)
       extends SalatDAO[ChildType, ChildId](collection) {
 
     childDao =>
@@ -219,10 +219,16 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
       if (lastError == null || (lastError != null && lastError.ok())) {
         val builder = List.newBuilder[Option[ID]]
         for (dbo <- dbos) {
-          builder += dbo.getAs[ID]("_id") orElse {
-            collection.findOne(dbo) match {
-              case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
-              case _                   => None
+          builder += {
+            val _id = dbo.getAs[ID]("_id")
+            if (_id.isDefined) {
+              _id
+            }
+            else {
+              collection.findOne(dbo) match {
+                case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
+                case _                   => None
+              }
             }
           }
         }
@@ -317,17 +323,17 @@ abstract class SalatDAO[ObjectType <: CaseClass, ID <: Any](val collection: Mong
   def find[A <% DBObject](ref: A) = find(ref.asInstanceOf[DBObject], MongoDBObject.empty)
 
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
-    collection.findOne(query, MongoDBObject(field -> 1)).map {
+    collection.findOne(query, MongoDBObject(field -> 1)).flatMap {
       dbo =>
         dbo.expand[DBObject](field).map(grater[P].asObject(_))
-    }.getOrElse(None)
+    }
   }
 
   def primitiveProjection[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
-    collection.findOne(query, MongoDBObject(field -> 1)).map {
+    collection.findOne(query, MongoDBObject(field -> 1)).flatMap {
       dbo =>
         dbo.expand[P](field)
-    }.getOrElse(None)
+    }
   }
 
   def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P] = {

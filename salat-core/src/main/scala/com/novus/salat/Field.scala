@@ -32,11 +32,20 @@ import com.novus.salat.util.Logging
 
 object Field {
   def apply(idx: Int, name: String, t: TypeRefType, method: Method)(implicit ctx: Context): Field = {
+    val _name = {
+      val n = method.annotation[Key].map(_.value)
+      if (n.isDefined) n.get else name
+    }
     val _in = in.select(t, method.annotated_?[Salat])
     val _out = out.select(t, method.annotated_?[Salat])
+    val ignore = method.annotation[Ignore].isDefined
 
-    new Field(idx, method.annotation[Key].map(_.value).getOrElse(name),
-      t, _in, _out, method.annotation[Ignore].map(_ => true).getOrElse(false)) {}
+    new Field(idx = idx,
+      name = _name,
+      typeRefType = t,
+      in = _in,
+      out = _out,
+      ignore = ignore) {}
   }
 }
 
