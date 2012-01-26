@@ -29,8 +29,12 @@ import com.novus.salat.{ Field => SField }
 import com.novus.salat.annotations._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
-import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.casbah.Imports._
 import java.util.concurrent.{ CopyOnWriteArrayList, ConcurrentHashMap }
+import net.liftweb.json._
+import org.joda.time.DateTimeZone
+import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
+import com.novus.salat.json.JSONConfig
 
 trait Context extends Logging {
 
@@ -62,7 +66,7 @@ trait Context extends Logging {
   // TODO: BigDecimal handling strategy: binary vs double
   // TODO: BigInt handling strategy: binary vs int
 
-  val diagnostics: ContextDiagnosticOptions = ContextDiagnosticOptions(logGraterCreation = true)
+  val jsonConfig: JSONConfig = JSONConfig()
 
   def registerClassLoader(cl: ClassLoader) {
     classLoaders = cl +: classLoaders
@@ -74,9 +78,13 @@ trait Context extends Logging {
   def determineFieldName(clazz: Class[_], fieldName: String): String = {
     assume(fieldName != null && fieldName.nonEmpty, "determineFieldName: bad candy clazz='%s' field=%s".format(clazz.getName, fieldName))
 
-    globalKeyOverrides.get(fieldName).
-      getOrElse(perClassKeyOverrides.get((clazz.getName, fieldName)).
-        getOrElse(fieldName))
+    if (globalKeyOverrides.contains(fieldName)) {
+      globalKeyOverrides(fieldName)
+    }
+    else if (perClassKeyOverrides.contains(clazz.getName, fieldName)) {
+      perClassKeyOverrides(clazz.getName, fieldName)
+    }
+    else fieldName
   }
 
   def registerPerClassKeyOverride(clazz: Class[_], remapThis: String, toThisInstead: String) {
@@ -140,32 +148,49 @@ needsProxyGrater: clazz='%s'
     outcome
   }
 
-  protected[salat] def lookup_?[X <: AnyRef](c: String): Option[Grater[_ <: AnyRef]] = graters.get(c) orElse {
-    if (suitable_?(c)) {
-      resolveClass(c, classLoaders) match {
-        case Some(clazz) if needsProxyGrater(clazz) => {
-          log.trace("lookup_?: creating proxy grater for clazz='%s'", clazz.getName)
-          Some((new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
-        }
-        case Some(clazz) if isCaseClass(clazz) => {
-          Some((new ConcreteGrater[CaseClass](clazz.asInstanceOf[Class[CaseClass]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
-        }
-        case _ => None
-      }
+  protected[salat] def lookup_?[X <: AnyRef](c: String): Option[Grater[_ <: AnyRef]] = {
+    val g = graters.get(c)
+    if (g.isDefined) {
+      g
     }
-    else None
+    else {
+      if (suitable_?(c)) {
+        resolveClass(c, classLoaders) match {
+          case Some(clazz) if needsProxyGrater(clazz) => {
+            log.trace("lookup_?: creating proxy grater for clazz='%s'", clazz.getName)
+            Some((new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
+          }
+          case Some(clazz) if isCaseClass(clazz) => {
+            Some((new ConcreteGrater[CaseClass](clazz.asInstanceOf[Class[CaseClass]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
+          }
+          case _ => None
+        }
+      }
+      else None
+    }
   }
 
-  def lookup(c: String): Grater[_ <: AnyRef] = lookup_?(c).getOrElse(throw GraterGlitch(c)(this))
+  def lookup(c: String): Grater[_ <: AnyRef] = {
+    val g = lookup_?(c)
+    if (g.isDefined) g.get else throw GraterGlitch(c)(this)
+  }
 
   def lookup[A <: CaseClass: Manifest]: Grater[A] = lookup(manifest[A].erasure.getName).asInstanceOf[Grater[A]]
 
-  def lookup(c: String, clazz: CaseClass): Grater[_ <: AnyRef] = lookup_?(c).getOrElse(lookup(clazz.getClass.getName))
+  def lookup(c: String, clazz: CaseClass): Grater[_ <: AnyRef] = {
+    val g = lookup_?(c)
+    if (g.isDefined) g.get else lookup(clazz.getClass.getName)
+  }
 
-  def lookup_?(c: String, dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] =
-    lookup_?(c) orElse extractTypeHint(dbo).flatMap(lookup_?(_))
+  def lookup_?(c: String, dbo: MongoDBObject): Option[Grater[_ <: AnyRef]] = {
+    val g = lookup_?(c)
+    if (g.isDefined) g else extractTypeHint(dbo).flatMap(lookup_?(_))
+  }
 
-  def lookup(dbo: MongoDBObject): Grater[_ <: AnyRef] = extractTypeHint(dbo).map(lookup(_)).getOrElse(throw MissingTypeHint(dbo)(this))
+  def lookup(dbo: MongoDBObject): Grater[_ <: AnyRef] = {
+    val g = extractTypeHint(dbo).map(lookup(_))
+    if (g.isDefined) g.get else throw MissingTypeHint(dbo)(this)
+  }
 
   @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(dbo: MongoDBObject): Grater[_ <: AnyRef] = lookup(dbo)
 
@@ -174,6 +199,11 @@ needsProxyGrater: clazz='%s'
   @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_![X <: CaseClass: Manifest]: Grater[X] = lookup[X]
 
   @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(clazz: String): Grater[_ <: AnyRef] = lookup(clazz)
+
+  def lookup(j: JObject): Grater[_ <: AnyRef] = {
+    val g = extractTypeHint(j).map(lookup(_))
+    if (g.isDefined) g.get else throw MissingTypeHint(wrapDBObj(map2MongoDBObject(j.values)))(this)
+  }
 
   def extractTypeHint(dbo: MongoDBObject): Option[String] = {
     dbo.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_)).filter {
@@ -198,6 +228,9 @@ DBO
 
     }
   }
-}
 
-case class ContextDiagnosticOptions(logGraterCreation: Boolean = false)
+  def extractTypeHint(j: JObject): Option[String] = {
+    // TODO: probably not the most idiomatic way to do this
+    j.values.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_))
+  }
+}

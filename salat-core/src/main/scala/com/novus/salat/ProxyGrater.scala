@@ -1,6 +1,7 @@
 package com.novus.salat
 
 import com.mongodb.casbah.Imports._
+import net.liftweb.json._
 
 class ProxyGrater[X <: AnyRef](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
 
@@ -14,4 +15,8 @@ class ProxyGrater[X <: AnyRef](clazz: Class[X])(implicit ctx: Context) extends G
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] =
     ctx.lookup(o.getClass.getName).asInstanceOf[Grater[X]].iterateOut(o)(f)
+
+  //  def fromJSON(j: JObject) = error("### TODO: implement me!")
+
+  def toJSON(o: X) = ctx.lookup(o.getClass.getName).asInstanceOf[Grater[X]].toJSON(o)
 }

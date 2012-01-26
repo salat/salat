@@ -315,10 +315,11 @@ package in {
       case _                   => None
     }
 
-    private def transform0(dbo: MongoDBObject)(implicit ctx: Context) = (grater orElse ctx.lookup_?(path, dbo)) match {
-      case Some(grater) => grater.asObject(dbo).asInstanceOf[CaseClass]
-      case None         => throw GraterFromDboGlitch(path, dbo)(ctx)
-    }
+    private def transform0(dbo: MongoDBObject)(implicit ctx: Context) =
+      (if (grater.isDefined) grater else ctx.lookup_?(path, dbo)) match {
+        case Some(grater) => grater.asObject(dbo).asInstanceOf[CaseClass]
+        case None         => throw GraterFromDboGlitch(path, dbo)(ctx)
+      }
 
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
       case dbo: DBObject       => transform0(dbo)
@@ -385,42 +386,28 @@ package in {
   trait EnumInflater extends Transformer with Logging {
     self: Transformer =>
 
-    val clazz = getClassNamed(path).getOrElse(throw new Error(
-      "Could not resolve enum='%s' in any of the %d classpaths in ctx='%s'".
-        format(path, ctx.classLoaders.size, ctx.name)))
+    val clazz = getClassNamed_!(path)
     val companion: Any = clazz.companionObject
-
-    val withName: Method = {
-      val ms = clazz.getDeclaredMethods
-      ms.filter(_.getName == "withName").head
-    }
-    val applyInt: Method = {
-      val ms = clazz.getDeclaredMethods
-      ms.filter(_.getName == "apply").head
-    }
-
-    object IsInt {
-      def unapply(s: String): Option[Int] = s match {
-        case s if s != null && s.nonEmpty => try {
-          Some(s.toInt)
-        }
-        catch {
-          case _: java.lang.NumberFormatException => None
-        }
-        case _ => None
-      }
-    }
+    val withName: Method = clazz.getDeclaredMethods.filter(_.getName == "withName").head
+    val applyInt: Method = clazz.getDeclaredMethods.filter(_.getName == "apply").head
 
     override def transform(value: Any)(implicit ctx: Context): Any = {
-      val strategy = getClassNamed_!(path).annotation[com.novus.salat.annotations.raw.EnumAs].
-        map(_.strategy()).getOrElse(ctx.defaultEnumStrategy)
+      val strategy = {
+        val s = getClassNamed_!(path).annotation[com.novus.salat.annotations.raw.EnumAs].map(_.strategy())
+        if (s.isDefined) s.get else ctx.defaultEnumStrategy
+      }
 
       (strategy, value) match {
         case (EnumStrategy.BY_VALUE, name: String) => withName.invoke(companion, name)
         case (EnumStrategy.BY_ID, id: Int)         => applyInt.invoke(companion, id.asInstanceOf[Integer])
         case (EnumStrategy.BY_ID, idAsString: String) => idAsString match {
-          case IsInt(id) => applyInt.invoke(companion, id.asInstanceOf[Integer])
-          case _         => throw EnumInflaterGlitch(clazz, strategy, value)
+          case s: String if s != null && s.nonEmpty => try {
+            applyInt.invoke(companion, s.toInt.asInstanceOf[Integer])
+          }
+          catch {
+            case _: java.lang.NumberFormatException => None
+          }
+          case _ => throw EnumInflaterGlitch(clazz, strategy, value)
         }
         case _ => throw EnumInflaterGlitch(clazz, strategy, value)
       }

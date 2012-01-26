@@ -37,10 +37,9 @@ object `package` extends Logging {
   implicit def class2companion(clazz: Class[_])(implicit ctx: Context) = new {
     def companionClass: Class[_] = {
       val path = if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName)
-      getClassNamed(path).getOrElse {
-        throw new Error("Could not resolve clazz='%s' in any of the %d classpaths in ctx='%s'".
-          format(path, ctx.classLoaders.size, ctx.name))
-      }
+      val c = getClassNamed(path)
+      if (c.isDefined) c.get else error(
+        "Could not resolve clazz='%s' in any of the %d classpaths in ctx='%s'".format(path, ctx.classLoaders.size, ctx.name))
     }
 
     def companionObject = companionClass.getField(ModuleFieldName).get(null)
@@ -52,10 +51,11 @@ object `package` extends Logging {
     val Never, WhenNecessary, Always = Value
   }
 
-  def grater[X <: CaseClass](implicit ctx: Context, m: Manifest[X]): Grater[X] = ctx.lookup[X](m)
+  def grater[Y <: AnyRef](implicit ctx: Context, m: Manifest[Y]): Grater[Y] = ctx.lookup(m.erasure.getName).asInstanceOf[Grater[Y]]
 
-  protected[salat] def getClassNamed_!(c: String)(implicit ctx: Context): Class[_] = getClassNamed(c)(ctx).getOrElse {
-    throw new Error("getClassNamed: path='%s' does not resolve in any of %d classloaders registered with context='%s'".
+  protected[salat] def getClassNamed_!(c: String)(implicit ctx: Context): Class[_] = {
+    val clazz = getClassNamed(c)(ctx)
+    if (clazz.isDefined) clazz.get else error("getClassNamed: path='%s' does not resolve in any of %d classloaders registered with context='%s'".
       format(c, ctx.classLoaders.size, ctx.name))
   }
 

@@ -32,7 +32,7 @@ import scala.Predef._
  *
  */
 
-trait SalatMongoCursorBase[T <: CaseClass] extends Logging {
+trait SalatMongoCursorBase[T <: AnyRef] extends Logging {
 
   import scalaj.collection.Imports._
 
@@ -142,7 +142,7 @@ trait SalatMongoCursorBase[T <: CaseClass] extends Logging {
   def copy(): SalatMongoCursorBase[T] = _newInstance(underlying.copy()) // parens for side-effects
 }
 
-case class SalatMongoCursor[T <: CaseClass: Manifest](_grater: Grater[T], underlying: DBCursor) extends SalatMongoCursorBase[T] with Iterator[T] {
+case class SalatMongoCursor[T <: AnyRef: Manifest](_grater: Grater[T], underlying: DBCursor) extends SalatMongoCursorBase[T] with Iterator[T] {
 
   def _newInstance(cursor: DBCursor) = SalatMongoCursor(_grater, cursor)
 }

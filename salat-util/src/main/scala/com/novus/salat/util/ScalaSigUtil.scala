@@ -70,8 +70,16 @@ object ScalaSigUtil extends Logging {
     //
     //     """, clazz, sigFromAnnotation.isDefined, sigFromBytes.isDefined)
 
-    parseClassFileFromByteCode(clazz).map(ScalaSigParser.parse(_)).getOrElse(None) orElse
-      parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_)) orElse
-      None
+    val fromByteCode = parseClassFileFromByteCode(clazz).flatMap(ScalaSigParser.parse(_))
+    if (fromByteCode.isDefined) {
+      fromByteCode
+    }
+    else {
+      val fromAnnotation = parseByteCodeFromAnnotation(clazz).map(ScalaSigAttributeParsers.parse(_))
+      if (fromAnnotation.isDefined) {
+        fromAnnotation
+      }
+      else None
+    }
   }
 }
