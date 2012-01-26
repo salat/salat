@@ -219,10 +219,16 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       if (lastError == null || (lastError != null && lastError.ok())) {
         val builder = List.newBuilder[Option[ID]]
         for (dbo <- dbos) {
-          builder += dbo.getAs[ID]("_id") orElse {
-            collection.findOne(dbo) match {
-              case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
-              case _                   => None
+          builder += {
+            val _id = dbo.getAs[ID]("_id")
+            if (_id.isDefined) {
+              _id
+            }
+            else {
+              collection.findOne(dbo) match {
+                case Some(dbo: DBObject) => dbo.getAs[ID]("_id")
+                case _                   => None
+              }
             }
           }
         }
