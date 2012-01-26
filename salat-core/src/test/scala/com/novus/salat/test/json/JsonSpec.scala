@@ -33,7 +33,7 @@ class JsonSpec extends Specification with Logging {
       val o = new ObjectId
       val a = Adam(a = "string", b = 99, c = 3.14, d = false, e = testDate, u = testURL, o = o)
       val rendered = grater[Adam].toPrettyJSON(a)
-//      log.debug(rendered)
+      //      log.debug(rendered)
 
       rendered must /("a" -> "string")
       rendered must /("b" -> 99)
