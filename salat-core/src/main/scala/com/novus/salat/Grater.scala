@@ -373,10 +373,11 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 
   def defaultArg(field: SField): DefaultArg = {
-    betterDefaults.get(field).getOrElse {
-      throw new Exception("Grater error: clazz='%s' field '%s' needs to register presence or absence of default values".
-        format(clazz, field.name))
+    if (betterDefaults.contains(field)) {
+      betterDefaults(field)
     }
+    else error("Grater error: clazz='%s' field '%s' needs to register presence or absence of default values".
+      format(clazz, field.name))
   }
 
   protected[salat] def safeDefault(field: SField) = {
