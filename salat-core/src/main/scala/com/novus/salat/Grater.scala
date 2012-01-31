@@ -297,7 +297,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     val builder = List.newBuilder[JField]
     if (ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
       (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && requiresTypeHint)) {
-      val field: JValue = if (ctx.typeHintStrategy == StringTypeHintStrategy) {
+      val field: JValue = if (ctx.typeHintStrategy.isInstanceOf[StringTypeHintStrategy]) {
         JString(clazz.getName)
       }
       else error("toJSON: unsupported type hint strategy '%s'".format(ctx.typeHintStrategy))
