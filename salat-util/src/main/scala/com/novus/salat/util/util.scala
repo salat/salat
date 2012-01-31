@@ -97,28 +97,32 @@ object `package` {
 
   protected[salat] def toUsableClassName(clazz: String) = if (clazz.endsWith("$")) clazz.substring(0, clazz.size - 1) else clazz
 
-  protected[salat] def resolveClass[X <: AnyRef](c: String, classLoaders: Seq[ClassLoader]): Option[Class[X]] = {
-    //    log.info("resolveClass(): looking for %s in %d classloaders", c, classLoaders.size)
-    try {
-      var clazz: Class[_] = null
-      //      var count = 0
-      val iter = classLoaders.iterator
-      while (clazz == null && iter.hasNext) {
-        try {
-          clazz = Class.forName(c, true, iter.next())
-        }
-        catch {
-          case e: ClassNotFoundException => // keep going, maybe it's in the next one
+  protected[salat] def resolveClass[X <: AnyRef](c: String, classLoaders: Seq[ClassLoader]): Option[Class[X]] = classLoaders match {
+    case Nil      => error("resolveClass: expected 1+ classloaders but received empty list")
+    case List(cl) => Some(Class.forName(c, true, cl).asInstanceOf[Class[X]])
+    case many => {
+      //    log.info("resolveClass(): looking for %s in %d classloaders", c, classLoaders.size)
+      try {
+        var clazz: Class[_] = null
+        //      var count = 0
+        val iter = many.iterator
+        while (clazz == null && iter.hasNext) {
+          try {
+            clazz = Class.forName(c, true, iter.next())
+          }
+          catch {
+            case e: ClassNotFoundException => // keep going, maybe it's in the next one
+          }
+
+          //        log.info("resolveClass: %s %s in classloader '%s' %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), ctx.name.getOrElse("N/A"), count, ctx.classloaders.size)
+          //        count += 1
         }
 
-        //        log.info("resolveClass: %s %s in classloader '%s' %d of %d", c, (if (clazz != null) "FOUND" else "NOT FOUND"), ctx.name.getOrElse("N/A"), count, ctx.classloaders.size)
-        //        count += 1
+        if (clazz != null) Some(clazz.asInstanceOf[Class[X]]) else None
       }
-
-      if (clazz != null) Some(clazz.asInstanceOf[Class[X]]) else None
-    }
-    catch {
-      case _ => None
+      catch {
+        case _ => None
+      }
     }
   }
 }
