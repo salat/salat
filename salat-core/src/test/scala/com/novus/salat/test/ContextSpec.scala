@@ -301,14 +301,6 @@ class ContextSpec extends SalatSpec {
     }
   }
 
-  case class customBigDecimalCtx(strategy: BigDecimalStrategy) extends Scope {
-    implicit val ctx = new Context {
-      val name = "customBigDecimalCtx_%s".format(System.currentTimeMillis())
-      override val bigDecimalStrategy = strategy
-    }
-    val x = BigDecimal("3.14", ctx.bigDecimalStrategy.mathCtx)
-  }
-
   "The context numeric strategy for BigDecimal" should {
     "provide BigDecimal <-> Double support" in new customBigDecimalCtx(BigDecimalToDoubleStrategy()) {
       val out = ctx.bigDecimalStrategy.out(x)
@@ -327,7 +319,7 @@ class ContextSpec extends SalatSpec {
     }
   }
 
-//  "The context numeric for BigInt" should {
-//    "provide "
-//  }
+  //  "The context numeric for BigInt" should {
+  //    "provide "
+  //  }
 }

@@ -23,7 +23,7 @@ import com.novus.salat.util.Logging
 import com.mongodb.casbah.Imports._
 import org.specs2.mutable._
 import org.specs2.specification.{ Scope, Step }
-import com.novus.salat.Context
+import com.novus.salat.{ BigDecimalStrategy, Context }
 
 trait SalatSpec extends Specification with Logging {
 
@@ -53,5 +53,13 @@ trait SalatSpec extends Specification with Logging {
     implicit val ctx = new Context {
       val name = "textCtx_%s".format(System.currentTimeMillis())
     }
+  }
+
+  case class customBigDecimalCtx(strategy: BigDecimalStrategy) extends Scope {
+    implicit val ctx = new Context {
+      val name = "customBigDecimalCtx_%s".format(System.currentTimeMillis())
+      override val bigDecimalStrategy = strategy
+    }
+    val x = BigDecimal("3.14", ctx.bigDecimalStrategy.mathCtx)
   }
 }

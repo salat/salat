@@ -37,6 +37,13 @@ object `package` extends Logging {
     r
   }
 
+  def timeAndLogNanos[T](f: => T)(l: Long => Unit): T = {
+    val t = System.nanoTime()
+    val r = f
+    l.apply(System.nanoTime() - t)
+    r
+  }
+
   implicit def class2companion(clazz: Class[_])(implicit ctx: Context) = new {
     def companionClass: Class[_] = {
       val path = if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName)

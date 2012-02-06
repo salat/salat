@@ -1,7 +1,7 @@
 package com.novus.salat
 
-import java.math.MathContext
 import com.novus.salat.util.Logging
+import java.math.{ BigInteger, MathContext }
 
 sealed trait BigDecimalStrategy extends Logging {
 
@@ -14,7 +14,7 @@ sealed trait BigDecimalStrategy extends Logging {
    *  @return BigDecimal
    */
   def in(x: Any) = {
-    log.info("in: clazz='%s'", x.asInstanceOf[AnyRef].getClass.toString)
+    //    log.info("in: clazz='%s'", x.asInstanceOf[AnyRef].getClass.toString)
     x match {
       case x: BigDecimal  => x // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
       case d: Double      => BigDecimal(d.toString, mathCtx)
@@ -64,6 +64,9 @@ case class BigDecimalToBinaryStrategy(mathCtx: MathContext = DefaultMathContext)
 
 sealed trait BigIntStrategy {
   def out(bi: BigInt): Any
+  def out(bi: java.math.BigInteger): Any
+  def out(l: Long): Any
+  def out(i: Int): Any
 
   def in(x: Any) = x match {
     case s: String                => BigInt(x = s, radix = 10)
@@ -77,8 +80,20 @@ sealed trait BigIntStrategy {
 
 case object BigIntToBinaryStrategy extends BigIntStrategy {
   def out(bi: BigInt) = bi.toByteArray
+
+  def out(bi: BigInteger) = bi.toByteArray
+
+  def out(i: Int) = BigInt(i).toByteArray
+
+  def out(l: Long) = BigInt(l).toByteArray
 }
 
 case object BigIntToLongStrategy extends BigIntStrategy {
   def out(bi: BigInt) = bi.longValue()
+
+  def out(bi: BigInteger) = bi.longValue()
+
+  def out(i: Int) = i.longValue()
+
+  def out(l: Long) = l
 }

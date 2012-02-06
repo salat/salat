@@ -22,8 +22,11 @@ package com.novus.salat
 import com.novus.salat.test.model._
 import com.novus.salat.global._
 import scala.collection.immutable.{ Map => IMap }
-import scala.collection.mutable.{ Map => MMap }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
+import org.joda.time.format.{ PeriodFormat, PeriodFormatterBuilder }
+import org.scala_tools.time.TypeImports._
+import org.joda.time.{ DateTimeZone, Period, DateTime }
+import scala.collection.mutable.{ ArrayBuffer, Map => MMap }
 
 package object test {
 
@@ -76,4 +79,3 @@ package object test {
           Employee(name = "Darl McBridge", age = Some(123), annual_salary = None),
           Employee(name = "Patent Trolls Everywhere", age = None, annual_salary = Some(ScalaBigDecimal(1000000.00022303)))))))
 }
-

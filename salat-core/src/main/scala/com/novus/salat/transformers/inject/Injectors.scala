@@ -39,13 +39,13 @@ package object in {
     pt match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToSBigDecimal
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with BigDecimalInjector
 
         case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with LongToInt
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with ByteArrayToBigInt
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with BigIntInjector
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToChar
@@ -75,7 +75,7 @@ package object in {
 
       case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with TraversableInjector {
+          new Transformer(symbol.path, t)(ctx) with BigDecimalInjector with TraversableInjector {
             val parentType = pt
           }
 
@@ -85,7 +85,7 @@ package object in {
           }
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with ByteArrayToBigInt with TraversableInjector {
+          new Transformer(symbol.path, t)(ctx) with BigIntInjector with TraversableInjector {
             val parentType = pt
           }
 
@@ -130,7 +130,7 @@ package object in {
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with DoubleToSBigDecimal with MapInjector {
+          new Transformer(symbol.path, t)(ctx) with BigDecimalInjector with MapInjector {
             val parentType = pt
             val grater = ctx.lookup_?(symbol.path)
           }
@@ -142,7 +142,7 @@ package object in {
           }
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with ByteArrayToBigInt with MapInjector {
+          new Transformer(symbol.path, t)(ctx) with BigIntInjector with MapInjector {
             val parentType = pt
             val grater = ctx.lookup_?(symbol.path)
           }
@@ -191,13 +191,13 @@ package object in {
 
       case TypeRefType(_, symbol, _) => pt match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, pt)(ctx) with DoubleToSBigDecimal
+          new Transformer(symbol.path, pt)(ctx) with BigDecimalInjector
 
         case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with LongToInt
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, pt)(ctx) with ByteArrayToBigInt
+          new Transformer(symbol.path, pt)(ctx) with BigIntInjector
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with StringToChar
@@ -250,17 +250,10 @@ package in {
     }
   }
 
-  trait DoubleToSBigDecimal extends Transformer {
+  trait BigDecimalInjector extends Transformer {
     self: Transformer =>
 
-    override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case x: ScalaBigDecimal => x // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
-      case d: Double          => ScalaBigDecimal(d.toString, ctx.bigDecimalStrategy.mathCtx)
-      case l: Long            => ScalaBigDecimal(l.toString, ctx.bigDecimalStrategy.mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
-      case i: Int             => ScalaBigDecimal(i.toString, ctx.bigDecimalStrategy.mathCtx)
-      case f: Float           => ScalaBigDecimal(f.toString, ctx.bigDecimalStrategy.mathCtx)
-      case s: Short           => ScalaBigDecimal(s.toString, ctx.bigDecimalStrategy.mathCtx)
-    }
+    override def transform(value: Any)(implicit ctx: Context): Any = ctx.bigDecimalStrategy.in(value)
   }
 
   trait DoubleToFloat extends Transformer {
@@ -291,17 +284,10 @@ package in {
     }
   }
 
-  trait ByteArrayToBigInt extends Transformer {
+  trait BigIntInjector extends Transformer {
     self: Transformer =>
 
-    override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case s: String                => BigInt(x = s, radix = 10)
-      case ba: Array[Byte]          => BigInt(ba)
-      case bi: BigInt               => bi
-      case bi: java.math.BigInteger => bi
-      case l: Long                  => BigInt(l)
-      case i: Int                   => BigInt(i)
-    }
+    override def transform(value: Any)(implicit ctx: Context): Any = ctx.bigIntStrategy.in(value)
   }
 
   trait DBObjectToInContext extends Transformer with InContextTransformer with Logging {
