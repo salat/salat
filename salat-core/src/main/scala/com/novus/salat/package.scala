@@ -20,12 +20,15 @@
 package com.novus.salat
 
 import com.novus.salat.util._
+import java.math.{ RoundingMode, MathContext }
 
 object `package` extends Logging {
 
   type CaseClass = AnyRef with Product
 
   val ModuleFieldName = "MODULE$"
+
+  val DefaultMathContext = new MathContext(17, RoundingMode.HALF_UP)
 
   def timeAndLog[T](f: => T)(l: Long => Unit): T = {
     val t = System.currentTimeMillis

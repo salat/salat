@@ -135,11 +135,12 @@ trait LongToInt extends Transformation {
 trait DoubleToSBigDecimal extends Transformation {
   def transform(path: String, t: TypeRefType, value: Any)(implicit ctx: Context) = value match {
     case x: SBigDecimal => x // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
-    case d: Double      => SBigDecimal(d.toString, ctx.mathCtx)
-    case l: Long        => SBigDecimal(l.toString, ctx.mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
-    case i: Int         => SBigDecimal(i.toString, ctx.mathCtx)
-    case f: Float       => SBigDecimal(f.toString, ctx.mathCtx)
-    case s: Short       => SBigDecimal(s.toString, ctx.mathCtx)
+    case d: Double      => SBigDecimal(d.toString, ctx.bigDecimalStrategy.mathCtx)
+    case l: Long        => SBigDecimal(l.toString, ctx.bigDecimalStrategy.mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
+    case i: Int         => SBigDecimal(i.toString, ctx.bigDecimalStrategy.mathCtx)
+    case f: Float       => SBigDecimal(f.toString, ctx.bigDecimalStrategy.mathCtx)
+    case s: Short       => SBigDecimal(s.toString, ctx.bigDecimalStrategy.mathCtx)
+    case b: Array[Char] => SBigDecimal(b, ctx.bigDecimalStrategy.mathCtx)
   }
 }
 

@@ -164,7 +164,7 @@ package out {
   trait SBigDecimalToDouble extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case sbd: ScalaBigDecimal => sbd(ctx.mathCtx).toDouble
+      case sbd: ScalaBigDecimal => sbd(ctx.bigDecimalStrategy.mathCtx).toDouble
     }
   }
 

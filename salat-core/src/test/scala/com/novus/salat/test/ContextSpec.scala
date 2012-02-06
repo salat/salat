@@ -24,6 +24,7 @@ import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.GraterGlitch
 import java.lang.reflect.Modifier
+import org.specs2.specification.Scope
 
 class ContextSpec extends SalatSpec {
 
@@ -299,4 +300,34 @@ class ContextSpec extends SalatSpec {
       ctx.graters.get(James.getClass.getName.replace("$", "")) must beSome(grater)
     }
   }
+
+  case class customBigDecimalCtx(strategy: BigDecimalStrategy) extends Scope {
+    implicit val ctx = new Context {
+      val name = "customBigDecimalCtx_%s".format(System.currentTimeMillis())
+      override val bigDecimalStrategy = strategy
+    }
+    val x = BigDecimal("3.14", ctx.bigDecimalStrategy.mathCtx)
+  }
+
+  "The context numeric strategy for BigDecimal" should {
+    "provide BigDecimal <-> Double support" in new customBigDecimalCtx(BigDecimalToDoubleStrategy()) {
+      val out = ctx.bigDecimalStrategy.out(x)
+      out must_== 3.14d
+      ctx.bigDecimalStrategy.in(out) must_== x
+    }
+    "provide BigDecimal <-> String support" in new customBigDecimalCtx(BigDecimalToStringStrategy()) {
+      val out = ctx.bigDecimalStrategy.out(x)
+      out must_== "3.14"
+      ctx.bigDecimalStrategy.in(out) must_== x
+    }
+    "provide BigDecimal <-> Binary support" in new customBigDecimalCtx(BigDecimalToBinaryStrategy()) {
+      val out = ctx.bigDecimalStrategy.out(x)
+      out must_== "3.14".toCharArray.map(_.asInstanceOf[Byte])
+      ctx.bigDecimalStrategy.in(out) must_== x
+    }
+  }
+
+//  "The context numeric for BigInt" should {
+//    "provide "
+//  }
 }

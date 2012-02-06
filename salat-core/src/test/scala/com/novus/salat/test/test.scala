@@ -57,7 +57,7 @@ package object test {
       Edward(
         a = "a %d".format(i), aa = Some("aa %d".format(i)), aaa = None,
         b = (i * i * 123 / 1000).toInt, bb = None, bbb = Some((i * i * 321 / 100).toInt),
-        c = ScalaBigDecimal((i * i).toDouble / 123d, ctx.mathCtx), cc = None, ccc = None)
+        c = ScalaBigDecimal((i * i).toDouble / 123d, ctx.bigDecimalStrategy.mathCtx), cc = None, ccc = None)
   })
 
   def evil_empire = Company(name = "Evil Empire, Inc.",

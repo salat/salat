@@ -86,7 +86,7 @@ trait InContextExtractor extends Transformation {
 
 trait SBigDecimalToDouble extends Transformation {
   def transform(path: String, t: TypeRefType, value: Any)(implicit ctx: Context) = value match {
-    case sbd: SBigDecimal => sbd(ctx.mathCtx).toDouble
+    case sbd: SBigDecimal => sbd(ctx.bigDecimalStrategy.mathCtx).toDouble
   }
 }
 

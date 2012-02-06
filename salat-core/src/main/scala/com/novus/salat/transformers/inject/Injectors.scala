@@ -255,11 +255,11 @@ package in {
 
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
       case x: ScalaBigDecimal => x // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
-      case d: Double          => ScalaBigDecimal(d.toString, ctx.mathCtx)
-      case l: Long            => ScalaBigDecimal(l.toString, ctx.mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
-      case i: Int             => ScalaBigDecimal(i.toString, ctx.mathCtx)
-      case f: Float           => ScalaBigDecimal(f.toString, ctx.mathCtx)
-      case s: Short           => ScalaBigDecimal(s.toString, ctx.mathCtx)
+      case d: Double          => ScalaBigDecimal(d.toString, ctx.bigDecimalStrategy.mathCtx)
+      case l: Long            => ScalaBigDecimal(l.toString, ctx.bigDecimalStrategy.mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
+      case i: Int             => ScalaBigDecimal(i.toString, ctx.bigDecimalStrategy.mathCtx)
+      case f: Float           => ScalaBigDecimal(f.toString, ctx.bigDecimalStrategy.mathCtx)
+      case s: Short           => ScalaBigDecimal(s.toString, ctx.bigDecimalStrategy.mathCtx)
     }
   }
 
