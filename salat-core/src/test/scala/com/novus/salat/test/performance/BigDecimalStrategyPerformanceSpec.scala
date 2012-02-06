@@ -29,29 +29,25 @@ class BigDecimalStrategyPerformanceSpec extends Specification with Logging {
     coll.count must_== 0L
 
     val generator = new Random()
-    val rangeMin = -1000000d
-    val rangeMax = 1000000d
+    //    val rangeMin = -1000000d
+    //    val rangeMax = 1000000d
     val outTimes = ArrayBuffer.empty[Long]
     val inTimes = ArrayBuffer.empty[Long]
 
     object FooDAO extends SalatDAO[Foo, ObjectId](collection = coll) {
-      override def insert(t: Foo) = timeAndLogNanos {
-        super.insert(t)
-      } {
-        ns =>
-          inTimes += ns
+      // TODO: this is a big disingenuous as some of the serialization is actually handled further down the stack by casbah or mongo-java-driver
+      // but good enough for testing big decimal
+      override def insert(t: Foo) = {
+        coll.insert(timeAndLogNanos(_grater.asDBObject(t))(ns => inTimes += ns))
+        Option(t._id)
       }
 
       def findAll(): List[Foo] = {
         val builder = List.newBuilder[Foo]
         val cursor = coll.find()
         while (cursor.hasNext) {
-          timeAndLogNanos {
-            builder += _grater.asObject(cursor.next())
-          } {
-            ns =>
-              outTimes += ns
-          }
+          val dbo = cursor.next()
+          builder += timeAndLogNanos(_grater.asObject(dbo))(ns => outTimes += ns)
         }
         builder.result()
       }
@@ -60,7 +56,8 @@ class BigDecimalStrategyPerformanceSpec extends Specification with Logging {
     def serialize(limit: Int) {
       //      log.debug("insert: %s - called with limit of %d", name, limit)
       for (i <- 0 until limit) {
-        val r = (rangeMin + (rangeMax - rangeMin) * generator.nextDouble()).toString
+        //        val r = (rangeMin + (rangeMax - rangeMin) * generator.nextGaussian()).toString
+        val r = generator.nextGaussian().toString
         //        log.debug("serialize: r=%s", r)
         FooDAO.insert(Foo(x = BigDecimal(r, strategy.mathCtx)))
         if (i > 0 && i % 1000 == 0) {
