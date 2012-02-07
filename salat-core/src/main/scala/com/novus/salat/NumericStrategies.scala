@@ -14,16 +14,18 @@ sealed trait BigDecimalStrategy extends Logging {
    *  @return BigDecimal
    */
   def in(x: Any) = {
-    //    log.info("in: clazz='%s'", x.asInstanceOf[AnyRef].getClass.toString)
+    // log.info("in: clazz='%s'", x.asInstanceOf[AnyRef].getClass.toString)
     x match {
-      case x: BigDecimal  => x // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
-      case d: Double      => BigDecimal(d.toString, mathCtx)
-      case l: Long        => BigDecimal(l.toString, mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
-      case i: Int         => BigDecimal(i.toString, mathCtx)
-      case f: Float       => BigDecimal(f.toString, mathCtx)
-      case s: Short       => BigDecimal(s.toString, mathCtx)
-      case s: String      => BigDecimal(s, mathCtx)
-      case c: Array[Char] => BigDecimal(c, mathCtx)
+      case x: java.math.BigDecimal  => x
+      case x: scala.math.BigDecimal => x // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
+      case d: java.lang.Double      => BigDecimal(d.toString, mathCtx)
+      case d: Double                => BigDecimal(d.toString, mathCtx)
+      case l: Long                  => BigDecimal(l.toString, mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
+      case i: Int                   => BigDecimal(i.toString, mathCtx)
+      case f: Float                 => BigDecimal(f.toString, mathCtx)
+      case s: Short                 => BigDecimal(s.toString, mathCtx)
+      case s: String                => BigDecimal(s, mathCtx)
+      case c: Array[Char]           => BigDecimal(c, mathCtx)
       case b: Array[Byte] => {
         var idx = 0
         val iter = b.iterator
