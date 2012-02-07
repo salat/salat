@@ -9,6 +9,20 @@ sealed trait BigDecimalStrategy extends Logging {
 
   def out(x: BigDecimal): Any
 
+  def out(value: Any): Any = value match {
+    case s: scala.math.BigDecimal => out(s)
+    case j: java.math.BigDecimal  => out(BigDecimal(j, mathCtx))
+    case d: Double                => out(BigDecimal(d.toString, mathCtx))
+    case d: java.lang.Double      => out(BigDecimal(d.toString, mathCtx))
+    case i: Int                   => out(BigDecimal(i.toString, mathCtx))
+    case l: Long                  => out(BigDecimal(l.toString, mathCtx))
+    case s: Short                 => out(BigDecimal(s.toString, mathCtx))
+    case f: Float                 => out(BigDecimal(f.toString, mathCtx))
+    case bi: BigInt               => out(BigDecimal(bi, mathCtx))
+    case arr: Array[Char]         => out(BigDecimal(arr, mathCtx))
+    case s: String                => out(BigDecimal(s, mathCtx))
+  }
+
   /** To provide backward compatibility with different serialization output, be as forgiving as possible when deserializing
    *  @param x anything that could reasonably be coerced into BigDecimal-hood
    *  @return BigDecimal
