@@ -34,11 +34,11 @@ object DBObjectInjectorChain extends TransformerChain {
     case (path, t @ TypeRefType(_, symbol, _), ctx, value) if isBigDecimal(symbol.path) => {
       val xformed = value match {
         case x: SBigDecimal => x // it doesn't seem as if this could happen, BUT IT DOES.  ugh.
-        case d: Double      => SBigDecimal(d.toString, ctx.mathCtx)
-        case l: Long        => SBigDecimal(l.toString, ctx.mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
-        case i: Int         => SBigDecimal(i.toString, ctx.mathCtx)
-        case f: Float       => SBigDecimal(f.toString, ctx.mathCtx)
-        case s: Short       => SBigDecimal(s.toString, ctx.mathCtx)
+        case d: Double      => SBigDecimal(d.toString, ctx.bigDecimalStrategy.mathCtx)
+        case l: Long        => SBigDecimal(l.toString, ctx.bigDecimalStrategy.mathCtx) // sometimes BSON handles a whole number big decimal as a Long...
+        case i: Int         => SBigDecimal(i.toString, ctx.bigDecimalStrategy.mathCtx)
+        case f: Float       => SBigDecimal(f.toString, ctx.bigDecimalStrategy.mathCtx)
+        case s: Short       => SBigDecimal(s.toString, ctx.bigDecimalStrategy.mathCtx)
       }
       //      log.info(TransformPrettyPrinter("bigDecimalTransformer", value.asInstanceOf[AnyRef], t, xformed.asInstanceOf[AnyRef]))
       xformed

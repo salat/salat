@@ -58,13 +58,16 @@ trait Context extends Logging {
   /**Enum handling strategy is defined at the context-level, but can be overridden at the individual enum level */
   val defaultEnumStrategy = EnumStrategy.BY_VALUE
 
-  val mathCtx = new JMathContext(17, JRoundingMode.HALF_UP)
-
   /**Don't serialize any field whose value matches the supplied default args */
   val suppressDefaultArgs: Boolean = false
 
-  // TODO: BigDecimal handling strategy: binary vs double
-  // TODO: BigInt handling strategy: binary vs int
+  // BigDecimal handling strategy: binary vs double vs string
+  val bigDecimalStrategy: BigDecimalStrategy = BigDecimalToDoubleStrategy()
+
+  @deprecated("Use Context bigDecimalStrategy.mathCtx instead") lazy val mathCtx = bigDecimalStrategy.mathCtx
+
+  // BigInt handling strategy: binary vs int
+  val bigIntStrategy: BigIntStrategy = BigIntToBinaryStrategy
 
   val jsonConfig: JSONConfig = JSONConfig()
 

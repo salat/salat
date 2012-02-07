@@ -20,6 +20,7 @@
 package com.novus.salat
 
 import com.novus.salat.util._
+import java.math.{ RoundingMode, MathContext }
 
 object `package` extends Logging {
 
@@ -27,10 +28,19 @@ object `package` extends Logging {
 
   val ModuleFieldName = "MODULE$"
 
+  val DefaultMathContext = new MathContext(17, RoundingMode.HALF_UP)
+
   def timeAndLog[T](f: => T)(l: Long => Unit): T = {
     val t = System.currentTimeMillis
     val r = f
     l.apply(System.currentTimeMillis - t)
+    r
+  }
+
+  def timeAndLogNanos[T](f: => T)(l: Long => Unit): T = {
+    val t = System.nanoTime()
+    val r = f
+    l.apply(System.nanoTime() - t)
     r
   }
 

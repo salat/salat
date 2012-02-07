@@ -49,7 +49,7 @@ object Helpers {
 
   val DummyPath = "shrug"
   val TestStringValue = "hi"
-  val TestBigDecimalValue = SBigDecimal("3.14", ctx.mathCtx)
+  val TestBigDecimalValue = SBigDecimal("3.14", ctx.bigDecimalStrategy.mathCtx)
   val TestBigIntValue = SBigInt(3)
   val TestSimpleCaseClass = SimpleCaseClass(a = Some("whatever"), b = 42)
   val TestSimpleCaseClassMdbo = MongoDBObject("a" -> "whatever", "b" -> 42)
@@ -91,13 +91,13 @@ class DBObjectInjectorChainTest extends Specification with Logging {
       }
       "from a Long" in {
         val input: Any = 3L
-        val expectedOutput: Any = SBigDecimal(3L, ctx.mathCtx)
+        val expectedOutput: Any = SBigDecimal(3L, ctx.bigDecimalStrategy.mathCtx)
         val actualOutput = DBObjectInjectorChain.bigDecimalTransformer(DummyPath, trt, ctx, input)
         actualOutput must_== expectedOutput
       }
       "from an Int" in {
         val input: Any = 3
-        val expectedOutput: Any = SBigDecimal(3, ctx.mathCtx)
+        val expectedOutput: Any = SBigDecimal(3, ctx.bigDecimalStrategy.mathCtx)
         val actualOutput = DBObjectInjectorChain.bigDecimalTransformer(DummyPath, trt, ctx, input)
         actualOutput must_== expectedOutput
       }
@@ -109,7 +109,7 @@ class DBObjectInjectorChainTest extends Specification with Logging {
       }
       "from a Short" in {
         val input: Any = 3.shortValue()
-        val expectedOutput: Any = SBigDecimal(3, ctx.mathCtx)
+        val expectedOutput: Any = SBigDecimal(3, ctx.bigDecimalStrategy.mathCtx)
         val actualOutput = DBObjectInjectorChain.bigDecimalTransformer(DummyPath, trt, ctx, input)
         actualOutput must_== expectedOutput
       }

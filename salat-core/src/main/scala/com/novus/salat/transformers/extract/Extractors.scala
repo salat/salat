@@ -36,10 +36,10 @@ package object out {
     t match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionExtractor with SBigDecimalToDouble
+          new Transformer(symbol.path, t)(ctx) with OptionExtractor with BigDecimalExtractor
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionExtractor with BigIntToByteArray
+          new Transformer(symbol.path, t)(ctx) with OptionExtractor with BigIntExtractor
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with CharToString
@@ -66,10 +66,10 @@ package object out {
 
       case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with TraversableExtractor
+          new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with TraversableExtractor
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with BigIntToByteArray with TraversableExtractor
+          new Transformer(symbol.path, t)(ctx) with BigIntExtractor with TraversableExtractor
 
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with FloatToDouble with TraversableExtractor
@@ -97,10 +97,10 @@ package object out {
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble with MapExtractor
+          new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with MapExtractor
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with BigIntToByteArray with MapExtractor
+          new Transformer(symbol.path, t)(ctx) with BigIntExtractor with MapExtractor
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString with MapExtractor
@@ -126,10 +126,10 @@ package object out {
 
       case TypeRefType(_, symbol, _) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with SBigDecimalToDouble
+          new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with BigIntToByteArray
+          new Transformer(symbol.path, t)(ctx) with BigIntExtractor
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString
@@ -161,20 +161,20 @@ package out {
 
   import com.novus.salat.annotations.EnumAs
 
-  trait SBigDecimalToDouble extends Transformer {
+  trait BigDecimalExtractor extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case sbd: ScalaBigDecimal => sbd(ctx.mathCtx).toDouble
+      case sbd: ScalaBigDecimal => ctx.bigDecimalStrategy.out(sbd)
     }
   }
 
-  trait BigIntToByteArray extends Transformer {
+  trait BigIntExtractor extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case bi: BigInt               => bi.toByteArray
-      case bi: java.math.BigInteger => bi.toByteArray
-      case l: Long                  => BigInt(l).toByteArray
-      case i: Int                   => BigInt(i).toByteArray
+      case bi: BigInt               => ctx.bigIntStrategy.out(bi)
+      case bi: java.math.BigInteger => ctx.bigIntStrategy.out(bi)
+      case l: Long                  => ctx.bigIntStrategy.out(l)
+      case i: Int                   => ctx.bigIntStrategy.out(i)
     }
   }
 
