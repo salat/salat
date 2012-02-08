@@ -163,9 +163,7 @@ package out {
 
   trait BigDecimalExtractor extends Transformer {
     self: Transformer =>
-    override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case sbd: ScalaBigDecimal => ctx.bigDecimalStrategy.out(sbd)
-    }
+    override def transform(value: Any)(implicit ctx: Context): Any = ctx.bigDecimalStrategy.out(value)
   }
 
   trait BigIntExtractor extends Transformer {

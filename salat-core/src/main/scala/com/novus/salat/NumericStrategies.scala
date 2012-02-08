@@ -7,7 +7,21 @@ sealed trait BigDecimalStrategy extends Logging {
 
   val mathCtx: MathContext
 
-  def out(x: BigDecimal): Any
+  protected[salat] def out0(x: BigDecimal): Any
+
+  def out(value: Any): Any = value match {
+    case s: scala.math.BigDecimal => out0(s)
+    case j: java.math.BigDecimal  => out0(BigDecimal(j, mathCtx))
+    case d: Double                => out0(BigDecimal(d.toString, mathCtx))
+    case d: java.lang.Double      => out0(BigDecimal(d.toString, mathCtx))
+    case i: Int                   => out0(BigDecimal(i.toString, mathCtx))
+    case l: Long                  => out0(BigDecimal(l.toString, mathCtx))
+    case s: Short                 => out0(BigDecimal(s.toString, mathCtx))
+    case f: Float                 => out0(BigDecimal(f.toString, mathCtx))
+    case bi: BigInt               => out0(BigDecimal(bi, mathCtx))
+    case arr: Array[Char]         => out0(BigDecimal(arr, mathCtx))
+    case s: String                => out0(BigDecimal(s, mathCtx))
+  }
 
   /** To provide backward compatibility with different serialization output, be as forgiving as possible when deserializing
    *  @param x anything that could reasonably be coerced into BigDecimal-hood
@@ -41,15 +55,15 @@ sealed trait BigDecimalStrategy extends Logging {
 }
 
 case class BigDecimalToStringStrategy(mathCtx: MathContext = DefaultMathContext) extends BigDecimalStrategy {
-  def out(x: BigDecimal) = x.toString()
+  protected[salat] def out0(x: BigDecimal) = x.toString()
 }
 
 case class BigDecimalToDoubleStrategy(mathCtx: MathContext = DefaultMathContext) extends BigDecimalStrategy {
-  def out(x: BigDecimal) = x.doubleValue()
+  protected[salat] def out0(x: BigDecimal) = x.doubleValue()
 }
 
 case class BigDecimalToBinaryStrategy(mathCtx: MathContext = DefaultMathContext) extends BigDecimalStrategy {
-  def out(x: BigDecimal) = {
+  protected[salat] def out0(x: BigDecimal) = {
     // only supports US-ASCII, since nothing else would be produced by layoutChars impl in BigDecimal
     // faster than x.toString().getBytes(Charset.defaultCharset()) -- also more efficient as default charset might repreent chars as two bytes
     val carr = x.toString().toCharArray // TODO: ??? which is more efficient, charAt on a String or toCharArray
