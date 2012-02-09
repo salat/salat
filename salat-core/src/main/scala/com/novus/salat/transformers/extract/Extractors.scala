@@ -47,16 +47,11 @@ package object out {
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with FloatToDouble
 
-        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
-          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with OptionExtractor with EnumStringifier
+        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
+          new Transformer(prefix.symbol.path, t)(ctx) with OptionExtractor with EnumStringifier
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject {
-            val grater = ctx.lookup_?(symbol.path)
-          }
-
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject {
             val grater = ctx.lookup_?(symbol.path)
           }
@@ -77,18 +72,13 @@ package object out {
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString with TraversableExtractor
 
-        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
-          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with TraversableExtractor
+        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
+          new Transformer(prefix.symbol.path, t)(ctx) with EnumStringifier with TraversableExtractor
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject with TraversableExtractor {
             val grater = ctx.lookup_?(symbol.path)
-          }
-
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
-          new Transformer(t.symbol.path, t)(ctx) with InContextToDBObject with TraversableExtractor {
-            val grater = ctx.lookup_?(t.symbol.path)
           }
 
         case TypeRefType(_, symbol, _) =>
@@ -108,15 +98,10 @@ package object out {
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with FloatToDouble with MapExtractor
 
-        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined =>
-          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier with MapExtractor
+        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" =>
+          new Transformer(prefix.symbol.path, t)(ctx) with EnumStringifier with MapExtractor
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor {
-            val grater = ctx.lookup_?(symbol.path)
-          }
-
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor {
             val grater = ctx.lookup_?(symbol.path)
           }
@@ -137,16 +122,11 @@ package object out {
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with FloatToDouble
 
-        case t @ TypeRefType(_, _, _) if IsEnum.unapply(t).isDefined => {
-          new Transformer(IsEnum.unapply(t).get.symbol.path, t)(ctx) with EnumStringifier
+        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
+          new Transformer(prefix.symbol.path, t)(ctx) with EnumStringifier
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject {
-            val grater = ctx.lookup_?(symbol.path)
-          }
-
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject {
             val grater = ctx.lookup_?(symbol.path)
           }

@@ -122,17 +122,3 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
     }
   }
 }
-
-object IsAlways {
-  def unapply(t: TypeHintStrategy): Option[String] = t.when match {
-    case TypeHintFrequency.Always => Option(t.typeHint)
-    case _                        => None
-  }
-}
-
-object IsWhenNecessary {
-  def unapply(t: TypeHintStrategy): Option[String] = t.when match {
-    case TypeHintFrequency.WhenNecessary => Some(t.typeHint)
-    case _                               => None
-  }
-}
