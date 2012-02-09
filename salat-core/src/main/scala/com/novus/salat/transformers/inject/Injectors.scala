@@ -65,11 +65,6 @@ package object in {
             val grater = ctx.lookup_?(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext {
-            val grater = ctx.lookup_?(symbol.path)
-          }
-
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionInjector
       }
 
@@ -111,12 +106,6 @@ package object in {
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with TraversableInjector {
-            val parentType = pt
-            val grater = ctx.lookup_?(symbol.path)
-          }
-
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with TraversableInjector {
             val parentType = pt
             val grater = ctx.lookup_?(symbol.path)
@@ -177,12 +166,6 @@ package object in {
             val grater = ctx.lookup_?(symbol.path)
           }
 
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector {
-            val parentType = pt
-            val grater = ctx.lookup_?(symbol.path)
-          }
-
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapInjector {
           val parentType = pt
           val grater = ctx.lookup_?(symbol.path)
@@ -213,11 +196,6 @@ package object in {
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
-          new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext {
-            val grater = ctx.lookup_?(symbol.path)
-          }
-
-        case t @ TypeRefType(_, symbol, _) if IsTraitLike.unapply(t).isDefined =>
           new Transformer(symbol.path, pt)(ctx) with DBObjectToInContext {
             val grater = ctx.lookup_?(symbol.path)
           }
