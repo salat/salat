@@ -62,25 +62,3 @@ object IsTraversable {
 object IsScalaBigDecimal {
   def unapply(t: Type): Option[Type] = TypeMatchers.matchesOneType(t, classOf[ScalaBigDecimal].getName)
 }
-
-object IsEnum extends Logging {
-  def unapply(t: TypeRefType): Option[SingleType] = {
-    t match {
-      case TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" =>
-        Some(prefix)
-      case _ => None
-    }
-  }
-}
-
-object IsInt {
-  def unapply(s: String): Option[Int] = s match {
-    case s if s != null && s.nonEmpty => try {
-      Some(s.toInt)
-    }
-    catch {
-      case _: java.lang.NumberFormatException => None
-    }
-    case _ => None
-  }
-}
