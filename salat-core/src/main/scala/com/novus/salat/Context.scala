@@ -36,7 +36,7 @@ import org.joda.time.DateTimeZone
 import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
 import com.novus.salat.json.JSONConfig
 
-trait Context extends Logging {
+trait Context extends ContextLifecycle with Logging {
 
   /**Name of the context */
   val name: String
@@ -236,4 +236,21 @@ DBO
     // TODO: probably not the most idiomatic way to do this
     j.values.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_))
   }
+}
+
+trait ContextLifecycle {
+  self: Context =>
+
+  def clearAllGraters() {
+    log.info("clearGraters: clearing...")
+    graters.clear()
+  }
+
+  def clearGrater(clazz: String): Option[Grater[_ <: AnyRef]] = {
+    val g = graters.remove(clazz)
+    log.debug("clearGrater: clazz='%s' - success=%s", clazz, g.isDefined)
+    g
+  }
+
+  // TODO: better lifecycle handling - need a cheap and easy way to detect only changed pickled signatures
 }
