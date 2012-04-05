@@ -1,0 +1,16 @@
+language: scala
+
+# Override default 'script' to avoid Travis-CI default version of Scala,
+# because each Salat branch is configured for a specific version of Scala
+script: sbt test
+
+branches:
+  only:
+    - master        # built with Scala 2.8.1
+    - 0.0.8_2.9.0-1 # built with Scala 2.9.1 (branch name is misleading)
+
+notifications:
+  # Email notifications are disabled to not annoy anybody.
+  # See http://about.travis-ci.org/docs/user/build-configuration/ to learn more
+  # about configuring notification recipients and more.
+  email: false
