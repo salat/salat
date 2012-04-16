@@ -12,28 +12,7 @@ import com.novus.salat.util.Logging
  */
 trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
 
-  //  val collection: MongoCollection
-  //
-  //  // look away, i beg you - please ignore the man behind the curtain
-  //  // ugly hack to reify types for DAO instantiation
-  //
-  //  private def typeParameter(idx: Int) = getClass.getGenericInterfaces()(0).asInstanceOf[ParameterizedType].
-  //    getActualTypeArguments()(idx)
-  //
-  //  val objectTypeParameter = typeParameter(0)
-  //  val idTypeParameter = typeParameter(1)
-  //
-  //  implicit val mot: Manifest[ObjectType] = manifest[objectTypeParameter.type].asInstanceOf[Manifest[ObjectType]]
-  //  implicit val mid: Manifest[ID] = manifest[idTypeParameter.type].asInstanceOf[Manifest[ID]]
-  //
-  //  // TODO: ugh.  find a way to delay eval - implicitly is not working out as hoped
-  //  implicit def ctx: Context
-  //
-  //  // object instance of SalatDAO
-  //  // hopefully, death to inscrutable Play ClassCastExceptions when view is reloaded
-  //  lazy val dao = new SalatDAO[ObjectType, ID](collection = collection)(mot, mid, ctx) {}
-
-  val dao: DAO[ObjectType, ID]
+  def dao: DAO[ObjectType, ID]
 
   //
   // convenient access to methods on Grater
