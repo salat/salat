@@ -26,8 +26,8 @@ import com.mongodb.casbah.commons.{ MongoDBObject, Logging }
 import com.mongodb.{ WriteConcern, DBObject, CommandResult }
 
 /** Base DAO class.
- *  @type ObjectType case class type
- *  @type ID _id type
+ *  @tparam ObjectType case class type
+ *  @tparam ID _id type
  */
 trait DAO[ObjectType <: AnyRef, ID <: Any] {
 
