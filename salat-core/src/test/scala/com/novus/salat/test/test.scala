@@ -40,6 +40,7 @@ package object test {
   val ChildColl = "child_dao_spec"
   val UserColl = "user_dao_spec"
   val RoleColl = "role_dao_spec"
+  val MyModelColl = "my_model_coll"
 
   def graph = Alice("x", Some("y"),
     Basil(Some(80), 81,

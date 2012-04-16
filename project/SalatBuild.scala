@@ -91,20 +91,20 @@ object Format {
 object Publish {
   lazy val settings = Seq(
     publishMavenStyle := true,
-//    publishTo <<= (version) {
-//      version: String =>
-//        val r = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
-//          if (version.trim().toString.endsWith("-SNAPSHOT")) "snapshots" else "releases"
-//        )) as (System.getProperty("user.name"))
-//        Some(r)
-//    },
-    publishTo <<= version { (v: String) =>
-      val nexus = "https://oss.sonatype.org/"
-      if (v.trim.endsWith("SNAPSHOT"))
-        Some("snapshots" at nexus + "content/repositories/snapshots")
-      else
-        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    publishTo <<= (version) {
+      version: String =>
+        val r = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
+          if (version.trim().toString.endsWith("-SNAPSHOT")) "snapshots" else "releases"
+        )) as (System.getProperty("user.name"))
+        Some(r)
     },
+//    publishTo <<= version { (v: String) =>
+//      val nexus = "https://oss.sonatype.org/"
+//      if (v.trim.endsWith("SNAPSHOT"))
+//        Some("snapshots" at nexus + "content/repositories/snapshots")
+//      else
+//        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+//    },
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
 //    licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
