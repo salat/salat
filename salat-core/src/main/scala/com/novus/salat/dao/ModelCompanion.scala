@@ -102,4 +102,11 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
   def update[A <% DBObject](q: A, o: ObjectType, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = dao.collection.writeConcern) {
     dao.update(q, o, upsert, multi, wc)
   }
+
+  //
+  // methods I can't see the point of personally, but which pay some distant obeisance to the Platonic DAO carried
+  // forward like pyramid blocks by my predecessors
+  //
+
+  def findAll(): Iterator[ObjectType] = dao.find(MongoDBObject.empty).toIterator
 }

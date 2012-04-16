@@ -19,6 +19,7 @@ class ModelCompanionSpec extends SalatSpec {
   "Model companion spec for case class MyModel" should {
 
     "provide convenience methods delegating to Grater[MyModel]" in {
+
       "toDBObject" in new myModelScope {
         val dbo: MongoDBObject = MyModel.toDBObject(m)
         dbo must havePair("_id", _id)
@@ -27,11 +28,13 @@ class ModelCompanionSpec extends SalatSpec {
         dbo must havePair("z", DBList(z: _*))
         dbo must havePair("d", d)
       }
+
       "toObject" in new myModelScope {
         val dbo = MyModel.toDBObject(m)
         val m_* = MyModel.toObject(dbo)
         m_* must_== m
       }
+
       "toPrettyJson" in new myModelScope {
         MyModel.toPrettyJson(m) must_== """{
   "_typeHint":"com.novus.salat.test.dao.MyModel",
@@ -44,6 +47,7 @@ class ModelCompanionSpec extends SalatSpec {
   "d":"%s"
 }""".format(_id.toString, JSONConfig.DefaultDateTimeFormatter.print(d.millis))
       }
+
       "toCompactJson" in new myModelScope {
         val expected = "{\"_typeHint\":\"com.novus.salat.test.dao.MyModel\",\"_id\":{\"$oid\":\""+
           _id.toString+
@@ -52,6 +56,7 @@ class ModelCompanionSpec extends SalatSpec {
           "\"}"
         MyModel.toCompactJson(m) must_== expected
       }
+
       "toJson (JObject)" in new myModelScope {
         val j = MyModel.toJson(m)
         j \ "_id" must_== JObject(List(JField("$oid", JString(_id.toString))))
@@ -62,17 +67,35 @@ class ModelCompanionSpec extends SalatSpec {
       }
     }
 
-    "allow inserting an instance of MyModel" in new myModelScope {
-      MyModel.insert(m) must beSome(_id)
-      MyModel.findOneByID(_id) must beSome(m)
-    }
+    "provide simple static access to CRUD ops" in {
+      "insert" in new myModelScope {
+        MyModel.insert(m) must beSome(_id)
+        MyModel.findOneByID(_id) must beSome(m)
+      }
 
-    "allow saving an instance of MyModel" in new myModelScope {
-      MyModel.insert(m) must beSome(_id)
-      val z_* = 0d :: z
-      MyModel.save(m.copy(z = z_*))
-      val m_* = MyModel.findOneByID(_id)
-      m_*.map(_.z) must beSome(z_*)
+      "save" in new myModelScope {
+        MyModel.insert(m) must beSome(_id)
+        val z_* = 0d :: z
+        MyModel.save(m.copy(z = z_*))
+        val m_* = MyModel.findOneByID(_id)
+        m_*.map(_.z) must beSome(z_*)
+      }
+
+      "update" in new myModelScope {
+        MyModel.insert(m) must beSome(_id)
+        val x_* = "cold stone lamping" // this spec is brought to you by the Jurassic 5
+        val q = MongoDBObject("_id" -> _id)
+        val o = MongoDBObject("$set" -> MongoDBObject("x" -> x_*))
+        MyModel.update(q = q, o = o, upsert = false, multi = false, wc = MyModel.dao.collection.writeConcern)
+        MyModel.findOneByID(_id) must beSome(m.copy(x = x_*))
+      }
+
+      "remove" in new myModelScope {
+        MyModel.insert(m) must beSome(_id)
+        MyModel.findOneByID(_id) must beSome(m)
+        MyModel.remove(m)
+        MyModel.findOneByID(_id) must beNone
+      }
     }
 
   }
