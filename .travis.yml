@@ -6,7 +6,6 @@ script: sbt test
 scala: 'version defined in project/SalatBuild.scala'
 branches:
   only:
-    - pr-travis-ci  # to be removed
     - master        # built with Scala 2.8.1
     - 0.0.8_2.9.0-1 # built with Scala 2.9.1 (branch name is misleading)
 
