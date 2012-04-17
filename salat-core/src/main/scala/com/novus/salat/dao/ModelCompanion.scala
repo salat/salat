@@ -33,7 +33,7 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
   // convenient access to methods on SalatDAO
   //
 
-  def count(q: DBObject, fieldsThatMustExist: List[String], fieldsThatMustNotExist: List[String]) = dao.count(q, fieldsThatMustExist, fieldsThatMustExist)
+  def count(q: DBObject, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil) = dao.count(q, fieldsThatMustExist, fieldsThatMustExist)
 
   def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = dao.find(ref, keys)
 
