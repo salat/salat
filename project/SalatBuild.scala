@@ -52,7 +52,7 @@ object BuildSettings {
     shellPrompt := ShellPrompt.buildShellPrompt,
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
-    resolvers ++= Seq(scalaToolsRepo, scalaToolsSnapRepo, novusRepo, novusSnapsRepo, typeSafeRepo),
+    resolvers ++= Seq(novusRepo, novusSnapsRepo, typeSafeRepo),
     scalacOptions ++= Seq("-deprecation", "-unchecked")
   )
 }
@@ -145,8 +145,6 @@ object Dependencies {
 }
 
 object Repos {
-  val scalaToolsRepo = "Scala Tools Release Repository" at "http://scala-tools.org/repo-releases"
-  val scalaToolsSnapRepo = "Scala Tools Snapshot Repository" at "http://scala-tools.org/repo-snapshots"
   val novusRepo = "Novus Release Repository" at "http://repo.novus.com/releases/"
   val novusSnapsRepo = "Novus Snapshots Repository" at "http://repo.novus.com/snapshots/"
   val typeSafeRepo = "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
