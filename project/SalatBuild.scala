@@ -139,7 +139,7 @@ object Dependencies {
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
-  val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
+  val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.7.3"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5-1"
   val lift_json = "net.liftweb" %% "lift-json" % "2.4"
 }
