@@ -83,15 +83,15 @@ class MapSupportSpec extends SalatSpec {
     }
 
     "support complex map" in {
-      val parameter1 = Parameter("parameter1", Some(Map("key1" -> SimpleClass())), Map("key1" -> "value1", "key2" -> 2))
+      val parameter1 = Parameter("parameter1", Some(Map("map1" -> SimpleClass())), Map("key1" -> "value1", "key2" -> 2))
       val parameter2 = Parameter("parameter2", Some(List(parameter1)), Map("key1" -> "value1", "key2" -> 2))
       val parameter3 = Parameter("parameter3", Some(SimpleClass()), Map("key1" -> "value1", "key2" -> 2, "key3" -> parameter1))
       val parameters = List(parameter1, parameter2, parameter3)
-      
+
       val data = Data("data", parameters)
-      
+
       val metadata = MetaData("metadata", parameters, List(data))
-      
+
       val id = new ObjectId().toString
 
       val view = ViewMetaData(id, metadata)
@@ -101,7 +101,7 @@ class MapSupportSpec extends SalatSpec {
 
       val coll = MongoConnection()(SalatSpecDb)("map_support_test_2")
       val wr = coll.insert(dbo)
-//      log.info("WR: %s", wr)
+      //      log.info("WR: %s", wr)
       wr.getCachedLastError must beNull
 
       val view_* = grater[ViewMetaData].asObject(coll.findOne().get)

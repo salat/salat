@@ -200,6 +200,33 @@ package out {
     }
   }
 
+  object UtilsExtractor {
+    def toDBObject(value: Any)(implicit ctx: Context): Any = value match {
+      case x: BasicDBObject                         => map2DBObject(x)
+      case x: BasicDBList                           => list2DBList(x)
+      case x: scala.collection.Map[_, AnyRef]       => map2DBObject(x)
+      case x: scala.collection.Traversable[AnyRef]  => list2DBList(x)
+      case Some(x: AnyRef)                          => Some(toDBObject(x))
+      case y: AnyRef if ctx.lookup_?(Some(y.getClass.getCanonicalName).getOrElse(y.getClass.getName)).isDefined =>
+        grater[y.type].asDBObject(y)
+      case _                                        => value
+    }
+
+    private def map2DBObject(x: scala.collection.Map[_, AnyRef])(implicit ctx: Context) = {
+      val builder = MongoDBObject.newBuilder
+      x.foreach {
+        case (k, el) =>
+          builder += k.toString -> toDBObject(el)
+      }
+
+      builder.result()
+    }
+
+    private def list2DBList(x: scala.collection.Traversable[AnyRef])(implicit cxt: Context) = {
+      MongoDBList(x.map(toDBObject(_)).toList: _*)
+    }
+  }
+
   trait BigDecimalExtractor extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = ctx.bigDecimalStrategy.out(value)
@@ -254,6 +281,11 @@ package out {
       case Some(value) => Some(super.transform(value))
       case _           => None
     }
+
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case _ if ctx.lookup_?(path).isDefined => Some(value)
+      case _                                 => Some(UtilsExtractor.toDBObject(value))
+    }
   }
 
   trait TraversableExtractor extends Transformer {
@@ -264,7 +296,7 @@ package out {
 
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case traversable: Traversable[_] =>
-        Some(MongoDBList(traversable.map(transformElem).toList: _*))
+        Some(MongoDBList(traversable.map(transformElem).map(UtilsExtractor.toDBObject).toList: _*))
       case _ => None
     }
   }
@@ -301,7 +333,7 @@ package out {
             builder += (k match {
               case s: String => s
               case x         => x.toString
-            }) -> transformElem(el)
+            }) -> UtilsExtractor.toDBObject(transformElem(el))
         }
         Some(builder.result())
       }
