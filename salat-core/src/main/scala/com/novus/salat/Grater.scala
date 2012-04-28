@@ -47,6 +47,10 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   def toJSON(o: X): JObject
 
+  def toMap(o: X): Map[String, Any]
+
+  def fromMap(m: Map[String, Any]): X
+
   //  def fromJSON(j: JObject): X
 
   def toPrettyJSON(o: X): String = pretty(render(toJSON(o)))
@@ -121,8 +125,13 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     case _ => Nil
   }
 
-  protected lazy val requiresTypeHint = {
+  protected def requiresTypeHint = {
     clazz.annotated_?[Salat] || interestingInterfaces.map(_._1.annotated_?[Salat]).contains(true) || interestingSuperclass.map(_._1.annotated_?[Salat]).contains(true)
+  }
+
+  protected lazy val useTypeHint = {
+    ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
+      (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && requiresTypeHint)
   }
 
   // for use when you just want to find something and whether it was declared in clazz, some trait clazz extends, or clazz' own superclass
@@ -229,9 +238,9 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     val persist = classOf[Persist]
     val fromClazz = findAnnotatedFields(clazz, persist)
     // not necessary to look directly on trait, is necessary to look directly on superclass
-    val fromSuperclass = interestingSuperclass.map(i => findAnnotatedFields(i._1, persist)).flatten
+    val fromSuperclass = interestingSuperclass.flatMap(i => findAnnotatedFields(i._1, persist))
 
-    fromClazz ++ fromSuperclass
+    fromClazz ::: fromSuperclass
   }
 
   protected lazy val keyOverridesFromAbove = {
@@ -265,12 +274,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
   }
 
-  lazy val fieldNameMap = (indexedFields ++ extraFieldsToPersist.map(_._2)).map {
+  lazy val fieldNameMap = (indexedFields.filterNot(_.ignore) ++ extraFieldsToPersist.map(_._2)).map {
     field =>
       field -> ctx.determineFieldName(clazz, field.name)
   }.toMap
 
-  def cachedFieldName(field: SField) = if (fieldNameMap.contains(field)) fieldNameMap(field) else field.name
+  def cachedFieldName(field: SField) = fieldNameMap.getOrElse(field, field.name)
 
   protected[salat] def jsonTranform(o: Any): JValue = o.asInstanceOf[AnyRef] match {
     case t: BasicDBList => JArray(t.map(jsonTranform(_)).toList)
@@ -294,8 +303,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   def toJSON(o: X) = {
     val builder = List.newBuilder[JField]
-    if (ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
-      (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && requiresTypeHint)) {
+    if (useTypeHint) {
       val field: JValue = if (ctx.typeHintStrategy.isInstanceOf[StringTypeHintStrategy]) {
         JString(clazz.getName)
       }
@@ -319,8 +327,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     val builder = MongoDBObject.newBuilder
 
     // handle type hinting, where necessary
-    if (ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
-      (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && requiresTypeHint)) {
+    if (useTypeHint) {
       builder += ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(clazz.getName)
     }
 
@@ -348,19 +355,53 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         }
       }.map(_.get.asInstanceOf[AnyRef]) // TODO: if raw get blows up, throw a more informative error
 
-      try {
-        constructor.newInstance(args: _*)
-      }
-      catch {
-        // when something bad happens feeding args into constructor, catch these exceptions and
-        // wrap them in a custom exception that will provide detailed information about what's happening.
-        case e: InstantiationException    => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e: IllegalAccessException    => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e: IllegalArgumentException  => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e: InvocationTargetException => throw ToObjectGlitch(this, sym, constructor, args, e)
-        case e                            => throw e
-      }
+      feedArgsToConstructor(args)
     }
+
+  def toMap(o: X): Map[String, Any] = {
+    val builder = Map.newBuilder[String, Any]
+    // handle type hinting, where necessary
+    if (useTypeHint) {
+      builder += ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(clazz.getName)
+    }
+
+    (indexedFields zip o.productIterator.toSeq).filterNot(_._1.ignore).foreach {
+      case (field, value) =>
+        builder += cachedFieldName(field) -> value
+    }
+    extraFieldsToPersist.foreach {
+      case (m, field) =>
+        builder += cachedFieldName(field) -> m.invoke(o)
+    }
+
+    builder.result()
+  }
+
+  private def feedArgsToConstructor(args: Seq[AnyRef]): X = {
+    try {
+      constructor.newInstance(args: _*)
+    }
+    catch {
+      // when something bad happens feeding args into constructor, catch these exceptions and
+      // wrap them in a custom exception that will provide detailed information about what's happening.
+      case e: InstantiationException    => throw ToObjectGlitch(this, sym, constructor, args, e)
+      case e: IllegalAccessException    => throw ToObjectGlitch(this, sym, constructor, args, e)
+      case e: IllegalArgumentException  => throw ToObjectGlitch(this, sym, constructor, args, e)
+      case e: InvocationTargetException => throw ToObjectGlitch(this, sym, constructor, args, e)
+      case e                            => throw e
+    }
+  }
+
+  def fromMap(m: Map[String, Any]): X = {
+    val args = indexedFields.map {
+      field =>
+        if (field.ignore) {
+          safeDefault(field).get.asInstanceOf[AnyRef]
+        }
+        else (m.get(cachedFieldName(field)) orElse safeDefault(field)).get.asInstanceOf[AnyRef]
+    }
+    feedArgsToConstructor(args)
+  }
 
   override def hashCode = sym.path.hashCode
 

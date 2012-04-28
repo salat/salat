@@ -22,8 +22,8 @@ package com.novus.salat.util
 object `package` {
 
   val NonePlaceholder = "[None]"
-  val MissingPlaceholder = "[!!! MISSING - NOT OPTIONAL !!!]"
-  val OptionalMissingPlaceholder = "[Missing - Optional]"
+  val MissingPlaceholder = "[!!! MISSING - VALUE INPUT TO CONSTRUCTOR WAS ALSO MISSING !!!]"
+  val OptionalMissingPlaceholder = "[Missing, but unnecessary because input value was supplied]"
   val NullPlaceholder = "[Null]"
   val EmptyPlaceholder = "[Empty]"
   val QuestionPlaceholder = "[???]"
