@@ -190,9 +190,14 @@ needsProxyGrater: clazz='%s'
     if (g.isDefined) g else extractTypeHint(dbo).flatMap(lookup_?(_))
   }
 
+  def lookup(m: Map[String, Any]): Grater[_ <: AnyRef] = {
+    val g = extractTypeHint(m).map(lookup(_))
+    if (g.isDefined) g.get else throw MissingTypeHint(m)(this)
+  }
+
   def lookup(dbo: MongoDBObject): Grater[_ <: AnyRef] = {
     val g = extractTypeHint(dbo).map(lookup(_))
-    if (g.isDefined) g.get else throw MissingTypeHint(dbo)(this)
+    if (g.isDefined) g.get else throw MissingTypeHint(dbo.toMap.asInstanceOf[Map[_, _]])(this)
   }
 
   @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(dbo: MongoDBObject): Grater[_ <: AnyRef] = lookup(dbo)
@@ -205,7 +210,31 @@ needsProxyGrater: clazz='%s'
 
   def lookup(j: JObject): Grater[_ <: AnyRef] = {
     val g = extractTypeHint(j).map(lookup(_))
-    if (g.isDefined) g.get else throw MissingTypeHint(wrapDBObj(map2MongoDBObject(j.values)))(this)
+    if (g.isDefined) g.get else throw MissingTypeHint(j.values)(this)
+  }
+
+  def extractTypeHint(m: Map[String, Any]): Option[String] = {
+    m.get(typeHintStrategy.typeHint).map(typeHintStrategy.decode(_)).filter {
+      str =>
+        resolveClass(str, classLoaders) match {
+          case Some(clazz) if isCaseClass(clazz)  => true
+          case Some(clazz) if isCaseObject(clazz) => true
+          case Some(clazz) => {
+            log.warning("""
+
+    extractTypeHint: '%s' -> '%s'
+      UNSUITABLE TYPE HINT!  Type hint must be a case class or a case object.
+
+    MAP
+    %s
+
+                """, typeHintStrategy.typeHint, str, m.mkString("\n"))
+            false
+          }
+          case _ => false
+        }
+
+    }
   }
 
   def extractTypeHint(dbo: MongoDBObject): Option[String] = {

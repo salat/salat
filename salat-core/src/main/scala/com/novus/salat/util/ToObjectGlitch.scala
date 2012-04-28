@@ -23,7 +23,6 @@ import com.novus.salat._
 import scala.tools.scalap.scalax.rules.scalasig.SymbolInfoSymbol
 import java.lang.reflect.Constructor
 import com.mongodb.casbah.commons.TypeImports._
-import com.novus.salat.util.MissingGraterExplanation._
 
 case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
   """
@@ -43,16 +42,16 @@ case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X], s
 
 case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
 case class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
-case class MissingTypeHint(dbo: MongoDBObject)(implicit ctx: Context) extends Error("""
+case class MissingTypeHint(m: Map[_, _])(implicit ctx: Context) extends Error("""
 
  NO TYPE HINT FOUND!
 
  Expected type hint key: %s
 
- DBO:
+ MAP-LIKE:
  %s
 
- """.format(ctx.typeHintStrategy.typeHint, dbo.toString()))
+ """.format(ctx.typeHintStrategy.typeHint, m.mkString("\n")))
 
 case class EnumInflaterGlitch(clazz: Class[_], strategy: EnumStrategy, value: Any) extends Error(
   "Not sure how to handle value='%s' as enum of class %s using strategy %s".format(value, clazz.getName, strategy))

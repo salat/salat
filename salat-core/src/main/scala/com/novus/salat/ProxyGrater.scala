@@ -19,4 +19,8 @@ class ProxyGrater[X <: AnyRef](clazz: Class[X])(implicit ctx: Context) extends G
   //  def fromJSON(j: JObject) = error("### TODO: implement me!")
 
   def toJSON(o: X) = ctx.lookup(o.getClass.getName).asInstanceOf[Grater[X]].toJSON(o)
+
+  def toMap(o: X) = ctx.lookup(o.getClass.getName).asInstanceOf[Grater[X]].toMap(o)
+
+  def fromMap(m: Map[String, Any]) = ctx.lookup(m).asInstanceOf[Grater[X]].fromMap(m)
 }

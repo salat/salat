@@ -52,7 +52,7 @@ object BuildSettings {
     shellPrompt := ShellPrompt.buildShellPrompt,
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
-    resolvers ++= Seq(scalaToolsRepo, scalaToolsSnapRepo, novusRepo, novusSnapsRepo, typeSafeRepo),
+    resolvers ++= Seq(novusRepo, novusSnapsRepo, typeSafeRepo),
     scalacOptions ++= Seq("-deprecation", "-unchecked")
   )
 }
@@ -139,14 +139,12 @@ object Dependencies {
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
-  val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.5.3"
+  val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.7.3"
   val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5-1"
   val lift_json = "net.liftweb" %% "lift-json" % "2.4"
 }
 
 object Repos {
-  val scalaToolsRepo = "Scala Tools Release Repository" at "http://scala-tools.org/repo-releases"
-  val scalaToolsSnapRepo = "Scala Tools Snapshot Repository" at "http://scala-tools.org/repo-snapshots"
   val novusRepo = "Novus Release Repository" at "http://repo.novus.com/releases/"
   val novusSnapsRepo = "Novus Snapshots Repository" at "http://repo.novus.com/snapshots/"
   val typeSafeRepo = "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
@@ -154,28 +152,22 @@ object Repos {
 
 // Shell prompt which show the current project, git branch and build version
 object ShellPrompt {
-
   object devnull extends ProcessLogger {
-    def info(s: => String) {}
-
-    def error(s: => String) {}
-
-    def buffer[T](f: => T): T = f
+    def info (s: => String) {}
+    def error (s: => String) { }
+    def buffer[T] (f: => T): T = f
   }
-
-  val current = """\*\s+([\w-]+)""".r
-
-  def gitBranches = ("git branch --no-color" lines_! devnull mkString)
+  def currBranch = (
+    ("git status -sb" lines_! devnull headOption)
+      getOrElse "-" stripPrefix "## "
+  )
 
   val buildShellPrompt = {
     (state: State) => {
-      val currBranch =
-        current findFirstMatchIn gitBranches map (_ group (1)) getOrElse "-"
-      val currProject = Project.extract(state).currentProject.id
-      "%s:%s:%s> ".format(
+      val currProject = Project.extract (state).currentProject.id
+      "%s:%s:%s> ".format (
         currProject, currBranch, BuildSettings.buildVersion
       )
     }
   }
 }
-

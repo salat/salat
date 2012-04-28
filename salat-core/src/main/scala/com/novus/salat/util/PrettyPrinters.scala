@@ -116,7 +116,7 @@ NAME:         %s
 TYPE:	      %s
 DEFAULT ARG   %s
 @Ignore	      %s
----------- CONSTRUCTOR INPUT WAS ---------------------------
+---------- CONSTRUCTOR INPUT ------------------------
 %s
 ------------------------------------------------------------
     """
@@ -129,6 +129,7 @@ DEFAULT ARG   %s
         FieldPrettyPrinter(param),
         safeDefault(field, defaultArgs),
         ignore(field),
+        //        (if (ClassPrettyPrinter(param) == ClassPrettyPrinter(arg)) "GOOD" else "BAD"),
         ArgPrettyPrinter(arg))
       arity += 1
     }
