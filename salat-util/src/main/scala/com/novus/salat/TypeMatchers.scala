@@ -39,6 +39,11 @@ object IsOption {
 }
 
 object IsMap {
+  /**
+   *
+   * @param t
+   * @return
+   */
   def unapply(t: Type): Option[(Type, Type)] =
     t match {
       case TypeRefType(_, symbol, k :: v :: Nil) if symbol.path.endsWith(".Map") => Some(k -> v)

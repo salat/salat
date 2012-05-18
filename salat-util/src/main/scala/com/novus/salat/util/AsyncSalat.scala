@@ -23,7 +23,10 @@
  */
 package com.novus.salat.util
 
-// one megabyte
+/** Helper class for running Salat with Android.
+ *  @param f function returning Any
+ *  @param r function that takes an Either outcome as input and does something by side effect
+ */
 class AsyncSalatRunnable(f: => Any)(r: Either[Throwable, Any] => Unit) extends Runnable {
   def run {
     try {

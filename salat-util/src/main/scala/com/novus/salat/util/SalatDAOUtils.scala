@@ -23,24 +23,35 @@
  */
 package com.novus.salat.util
 
+/**
+ * Some useful utilities for extracting a single result from a list of results.
+ */
 object SalatDAOUtils {
 
-  /** Return one or blow up.  You could just use the head method, but the value added here is an error message explaining
-   *  how what you thought was a unique selection criteria is... not.  Using head would mask this error, assuming you care.
+  /**
+   * Return one or blow up.  You could just use the head method, but the value added here is an error message explaining
+   * how what you thought was a unique selection criteria is... not.
+   * @param list a list expected to contain a single entry
+   * @tparam Z parameterized type of list
+   * @return a single result or an error
    */
   def exactlyOne[Z](list: List[Z]): Z = list match {
     case head :: Nil => head
-    case Nil         => throw new Error("exactlyOne: expected exactly one but found an empty result list!")
-    case list => throw new Error("exactlyOne: expected exactly one result but found %d items in the result list:\n%s\n".
+    case Nil => error("exactlyOne: expected exactly one but found an empty result list!")
+    case list => error("exactlyOne: expected exactly one result but found %d items in the result list:\n%s\n".
       format(list.size, list.mkString("\n"))) // how long is the list?  that depends on how badly things went wrong back in your collection....
   }
 
-  /** Guarantee one or none.
+  /**
+   * Guarantee one or none.
+   * @param list a list expected to contain a single entry or no entries
+   * @tparam Z parameterized type of list
+   * @return Some for a single entry list; None for an empty list
    */
   def oneOrNone[Z](list: List[Z]): Option[Z] = list match {
     case head :: Nil => Some(head)
-    case Nil         => None
-    case list => throw new Error("oneOrNone: expected one or none result but found %d items in the result list:\n%s\n".
+    case Nil => None
+    case list => error("oneOrNone: expected one or none result but found %d items in the result list:\n%s\n".
       format(list.size, list.mkString("\n")))
   }
 

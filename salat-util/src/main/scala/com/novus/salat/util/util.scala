@@ -37,7 +37,7 @@ object `package` {
 
   def truncate(a: AnyRef, l: Int = 100): String = if (a != null) {
     val s = a.toString
-    if (s != null && s.length > l) s.substring(0, l)+"..." else s
+    if (s != null && s.length > l) "%s...".format(s.substring(0, l)) else s
   }
   else NullPlaceholder
 
@@ -85,14 +85,6 @@ object `package` {
     }
     builder.result
   }
-
-  //  @deprecated("who's using this?") implicit def shortenOID(oid: ObjectId) = new {
-  //    def asShortString = (new BigInteger(oid.toString, 16)).toString(36)
-  //  }
-
-  //  @deprecated("who's using this?") implicit def explodeOID(oid: String) = new {
-  //    def asObjectId = new ObjectId((new BigInteger(oid, 36)).toString(16))
-  //  }
 
   protected[salat] def resolveClass_!(c: String, classLoaders: Seq[ClassLoader]): Class[_] = {
     val clazz = resolveClass(c, classLoaders)
