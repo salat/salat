@@ -31,10 +31,10 @@ class SalatDAOUtilSpec extends Specification {
   "DAO Utils" should {
     "provide a method that returns exactly one result or detonates with a useful error" in {
       SalatDAOUtils.exactlyOne(List(1)) must_== 1
-      SalatDAOUtils.exactlyOne(List(1, 2)) must throwA[Error]
+      SalatDAOUtils.exactlyOne(List(1, 2)) must throwA[RuntimeException]
 
       SalatDAOUtils.exactlyOne(List("A")) must_== "A"
-      SalatDAOUtils.exactlyOne(List[String]()) must throwA[Error]
+      SalatDAOUtils.exactlyOne(List[String]()) must throwA[RuntimeException]
     }
   }
 
