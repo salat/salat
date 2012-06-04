@@ -24,7 +24,6 @@
 
 package com.novus.salat.test.dao
 
-import com.novus.salat.global._
 import com.novus.salat.annotations._
 import com.mongodb.casbah.Imports._
 import org.scala_tools.time.Imports._

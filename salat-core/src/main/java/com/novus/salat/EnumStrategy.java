@@ -23,10 +23,19 @@
  */
 package com.novus.salat;
 
+/**
+ * Supported strategies for serializing enums.
+ */
 public enum EnumStrategy {
 
-    // Achtung!  If you reorganise your enum values, you will be sorry!
+    /**
+     * Serialize using the original value of the enum.  Reorganising the list of values could cause unexpected remapping
+     * when deserializing.
+     */
     BY_ID,
-    // Achtung!  If you relabel your enum values, you will be sorry!
+    /**
+     * Serialize using the toString of each enum value.  Renaming the values or overriding toString could cause your enum
+     * to fail to deserialize.
+     */
     BY_VALUE
 }

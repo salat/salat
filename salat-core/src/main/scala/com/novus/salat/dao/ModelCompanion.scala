@@ -31,6 +31,25 @@ import java.lang.reflect.{ Type, ParameterizedType }
 import com.novus.salat.util.Logging
 
 /** Play framework style model companion
+ * <p/>
+ * {{{
+ *   package model
+ *
+ *  import com.novus.salat.annotations._
+ *  import com.mongodb.casbah.Imports._
+ *  import com.novus.salat.dao.{ SalatDAO, ModelCompanion }
+ *
+ *  object MyModel extends ModelCompanion[MyModel, ObjectId] {
+ *    val collection = MongoConnection()("my_db")("my_model_coll")
+ *    val dao = new SalatDAO[MyModel, ObjectId](collection = collection) {}
+ *  }
+ *
+ *  case class MyModel(@Key("_id") id: ObjectId,
+ *                     x: String,
+ *                     y: Int,
+ *                     z: List[Double])
+ * }}}
+ *
  *  @tparam ObjectType type of object to be serialized
  *  @tparam ID type of object id to be serialized
  */
@@ -42,22 +61,57 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
   // convenient access to methods on Grater
   //
 
+  /**
+   *
+   * @param t object to be serialized
+   * @return object serialized as `DBObject`
+   */
   def toDBObject(t: ObjectType): DBObject = dao._grater.asDBObject(t)
 
-  // TODO: bring back view bound...  assuming it could possibly be worth the bother.
+  /**
+   *
+   * @param dbo `DBObject` to be deserialized
+   * @return `DBObject` deserialized to object
+   * TODO - bring back view bound...  assuming it could possibly be worth the bother.
+   */
   def toObject(dbo: DBObject): ObjectType = dao._grater.asObject(dbo)
 
+  /**
+   *
+   * @param t object to be serialized
+   * @return object serialized to `JObject`
+   * @see http://www.assembla.com/spaces/liftweb/wiki/JSON_Support
+   */
   def toJson(t: ObjectType): JObject = dao._grater.toJSON(t)
 
+  /**
+   *
+   * @param t object to be serialized
+   * @return object serialized as pretty JSON to a String
+   * @see http://www.assembla.com/spaces/liftweb/wiki/JSON_Support
+   */
   def toPrettyJson(t: ObjectType): String = dao._grater.toPrettyJSON(t)
 
+  /**
+     *
+     * @param t object to be serialized
+     * @return object serialized as pretty JSON to a String
+     * @see http://www.assembla.com/spaces/liftweb/wiki/JSON_Support
+     */
   def toCompactJson(t: ObjectType): String = dao._grater.toCompactJSON(t)
 
   //
   // convenient access to methods on SalatDAO
   //
 
-  def count(q: DBObject, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil) = dao.count(q, fieldsThatMustExist, fieldsThatMustExist)
+  /** Count the number of documents matching the search criteria.
+   *  @param q object for which to search
+   *  @param fieldsThatMustExist list of field keys that must exist
+   *  @param fieldsThatMustNotExist list of field keys that must not exist
+   *  @return count of documents matching the search criteria
+   */
+  def count(q: DBObject, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil) =
+    dao.count(q, fieldsThatMustExist, fieldsThatMustExist)
 
   def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = dao.find(ref, keys)
 
@@ -65,13 +119,13 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
 
   def findOne[A <% DBObject](t: A) = dao.findOne(t)
 
-  def findOneByID(id: ID) = dao.findOneByID(id)
+  def findOneByID(id: ID) = dao.findOneById(id)
+
+  def findOneById(id: ID) = dao.findOneById(id)
 
   def ids[A <% DBObject](query: A) = dao.ids(query)
 
   def insert(docs: ObjectType*)(implicit wc: WriteConcern) = dao.insert(docs: _*)(wc)
-
-  def insert(t: ObjectType) = dao.insert(t)
 
   def insert(t: ObjectType, wc: WriteConcern = dao.collection.writeConcern) = dao.insert(t, wc)
 
@@ -87,16 +141,8 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
   def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context) =
     dao.projections[P](query, field)
 
-  def remove(t: ObjectType) {
-    dao.remove(t)
-  }
-
   def remove(t: ObjectType, wc: WriteConcern = dao.collection.writeConcern) {
     dao.remove(t, wc)
-  }
-
-  def remove[A <% DBObject](q: A) {
-    dao.remove(q)
   }
 
   def remove[A <% DBObject](q: A, wc: WriteConcern) {
@@ -111,19 +157,11 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
     dao.removeByIds(ids, wc)
   }
 
-  def save(t: ObjectType) {
-    dao.save(t)
-  }
-
   def save(t: ObjectType, wc: WriteConcern = dao.collection.writeConcern) {
     dao.save(t, wc)
   }
 
-  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean, multi: Boolean, wc: WriteConcern) {
-    dao.update(q, o, upsert, multi, wc)
-  }
-
-  def update[A <% DBObject](q: A, o: ObjectType, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = dao.collection.writeConcern) {
+  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean, multi: Boolean, wc: WriteConcern = collection.writeConcern) {
     dao.update(q, o, upsert, multi, wc)
   }
 
@@ -132,5 +170,9 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
   // forward like pyramid blocks by my predecessors
   //
 
-  def findAll(): Iterator[ObjectType] = dao.find(MongoDBObject.empty).toIterator
+  /**
+   *
+   * @return (Iterator[ObjectType]) iterable result cursor of everything in the collection
+   */
+  def findAll(): SalatMongoCursor[ObjectType] = dao.find(MongoDBObject.empty)
 }
