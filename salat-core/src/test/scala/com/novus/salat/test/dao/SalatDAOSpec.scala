@@ -107,7 +107,7 @@ class SalatDAOSpec extends SalatSpec {
       _ids must contain(Some(alpha6.id))
       AlphaDAO.collection.count must_== 3L
 
-      AlphaDAO.findOneByID(id = 5) must beSome(alpha5)
+      AlphaDAO.findOneById(id = 5) must beSome(alpha5)
     }
 
     "support updating a case class" in new alphaContext {
@@ -116,7 +116,12 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.collection.count must_== 1L
 
       // need to explicitly specify upsert and multi when updating using an object instead of dbo
-      val cr = AlphaDAO.update(MongoDBObject("_id" -> 3), alpha3.copy(beta = List[Beta](Gamma("gamma3"))), false, false, new WriteConcern())
+      val cr = AlphaDAO.update(q = MongoDBObject("_id" -> 3),
+        t = alpha3.copy(beta = List[Beta](Gamma("gamma3"))),
+        upsert = false,
+        multi = false,
+        wc = new WriteConcern())
+
       AlphaDAO.collection.count must_== 1L
 
       val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(AlphaColl).findOne().get

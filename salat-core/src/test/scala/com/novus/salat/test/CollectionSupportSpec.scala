@@ -51,7 +51,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Omphalos, ObjectId](collection = MongoConnection()(SalatSpecDb)("able_coll_spec")) {}
         val _id = dao.insert(omphalos)
         _id must beSome(omphalos.id)
-        dao.findOneByID(omphalos.id) must beSome(omphalos)
+        dao.findOneById(omphalos.id) must beSome(omphalos)
       }
 
       "scala.collection.immutable.Map[String, _]" in {
@@ -68,7 +68,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Able, ObjectId](collection = MongoConnection()(SalatSpecDb)("able_coll_spec")) {}
         val _id = dao.insert(able)
         _id must beSome(able.id)
-        dao.findOneByID(able.id) must beSome(able)
+        dao.findOneById(able.id) must beSome(able)
       }
 
       "scala.collection.mutable.Map[String, _]" in {
@@ -85,7 +85,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Baker, ObjectId](collection = MongoConnection()(SalatSpecDb)("baker_coll_spec")) {}
         val _id = dao.insert(baker)
         _id must beSome(baker.id)
-        dao.findOneByID(baker.id) must beSome(baker)
+        dao.findOneById(baker.id) must beSome(baker)
       }
     }
 
@@ -105,7 +105,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Charlie, ObjectId](collection = MongoConnection()(SalatSpecDb)("charlie_coll_spec")) {}
         val _id = dao.insert(charlie)
         _id must beSome(charlie.id)
-        dao.findOneByID(charlie.id) must beSome(charlie)
+        dao.findOneById(charlie.id) must beSome(charlie)
       }
 
       "support scala.collection.immutable.Set[_]" in {
@@ -122,7 +122,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Dog, ObjectId](collection = MongoConnection()(SalatSpecDb)("dog_coll_spec")) {}
         val _id = dao.insert(dog)
         _id must beSome(dog.id)
-        dao.findOneByID(dog.id) must beSome(dog)
+        dao.findOneById(dog.id) must beSome(dog)
       }
 
       "support scala.collection.mutable.Set[_]" in {
@@ -139,7 +139,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Easy, ObjectId](collection = MongoConnection()(SalatSpecDb)("easy_coll_spec")) {}
         val _id = dao.insert(easy)
         _id must beSome(easy.id)
-        dao.findOneByID(easy.id) must beSome(easy)
+        dao.findOneById(easy.id) must beSome(easy)
       }
     }
 
@@ -157,7 +157,7 @@ class CollectionSupportSpec extends SalatSpec {
       val dao = new SalatDAO[Fox, ObjectId](collection = MongoConnection()(SalatSpecDb)("fox_coll_spec")) {}
       val _id = dao.insert(fox)
       _id must beSome(fox.id)
-      dao.findOneByID(fox.id) must beSome(fox)
+      dao.findOneById(fox.id) must beSome(fox)
     }
 
     "support Seq[_]" in {
@@ -176,7 +176,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Gee, ObjectId](collection = MongoConnection()(SalatSpecDb)("gee_coll_spec")) {}
         val _id = dao.insert(gee)
         _id must beSome(gee.id)
-        dao.findOneByID(gee.id) must beSome(gee)
+        dao.findOneById(gee.id) must beSome(gee)
       }
 
       "support scala.collection.immutable.Seq[_]" in {
@@ -193,7 +193,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[How, ObjectId](collection = MongoConnection()(SalatSpecDb)("how_coll_spec")) {}
         val _id = dao.insert(how)
         _id must beSome(how.id)
-        dao.findOneByID(how.id) must beSome(how)
+        dao.findOneById(how.id) must beSome(how)
       }
 
       "support scala.collection.mutable.Seq[_]" in {
@@ -210,7 +210,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Item, ObjectId](collection = MongoConnection()(SalatSpecDb)("item_coll_spec")) {}
         val _id = dao.insert(item)
         _id must beSome(item.id)
-        dao.findOneByID(item.id) must beSome(item)
+        dao.findOneById(item.id) must beSome(item)
       }
     }
 
@@ -230,7 +230,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Jig, ObjectId](collection = MongoConnection()(SalatSpecDb)("jig_coll_spec")) {}
         val _id = dao.insert(jig)
         _id must beSome(jig.id)
-        dao.findOneByID(jig.id) must beSome(jig)
+        dao.findOneById(jig.id) must beSome(jig)
       }
 
       "support scala.collection.mutable.ArrayBuffer[_]" in {
@@ -247,7 +247,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[King, ObjectId](collection = MongoConnection()(SalatSpecDb)("king_coll_spec")) {}
         val _id = dao.insert(king)
         _id must beSome(king.id)
-        dao.findOneByID(king.id) must beSome(king)
+        dao.findOneById(king.id) must beSome(king)
       }
     }
 
@@ -265,7 +265,7 @@ class CollectionSupportSpec extends SalatSpec {
       val dao = new SalatDAO[Mike, ObjectId](collection = MongoConnection()(SalatSpecDb)("mike_coll_spec")) {}
       val _id = dao.insert(mike)
       _id must beSome(mike.id)
-      dao.findOneByID(mike.id) must beSome(mike)
+      dao.findOneById(mike.id) must beSome(mike)
     }
 
     "support IndexedSeq[_]" in {
@@ -284,7 +284,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Nab, ObjectId](collection = MongoConnection()(SalatSpecDb)("nab_coll_spec")) {}
         val _id = dao.insert(nab)
         _id must beSome(nab.id)
-        dao.findOneByID(nab.id) must beSome(nab)
+        dao.findOneById(nab.id) must beSome(nab)
       }
 
       "support scala.collection.immutable.IndexedSeq[_]" in {
@@ -301,7 +301,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Oboe, ObjectId](collection = MongoConnection()(SalatSpecDb)("oboe_coll_spec")) {}
         val _id = dao.insert(oboe)
         _id must beSome(oboe.id)
-        dao.findOneByID(oboe.id) must beSome(oboe)
+        dao.findOneById(oboe.id) must beSome(oboe)
       }
 
       "support scala.collection.mutable.IndexedSeq[_]" in {
@@ -318,7 +318,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Prep, ObjectId](collection = MongoConnection()(SalatSpecDb)("prep_coll_spec")) {}
         val _id = dao.insert(prep)
         _id must beSome(prep.id)
-        dao.findOneByID(prep.id) must beSome(prep)
+        dao.findOneById(prep.id) must beSome(prep)
       }
     }
 
@@ -337,7 +337,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Queen, ObjectId](collection = MongoConnection()(SalatSpecDb)("queen_coll_spec")) {}
         val _id = dao.insert(queen)
         _id must beSome(queen.id)
-        dao.findOneByID(queen.id) must beSome(queen)
+        dao.findOneById(queen.id) must beSome(queen)
       }
       "DoubleLinkedList[_]" in {
         val coll = scala.collection.mutable.DoubleLinkedList(Thingy("A"), Thingy("B"))
@@ -353,7 +353,7 @@ class CollectionSupportSpec extends SalatSpec {
         val dao = new SalatDAO[Roger, ObjectId](collection = MongoConnection()(SalatSpecDb)("roger_coll_spec")) {}
         val _id = dao.insert(roger)
         _id must beSome(roger.id)
-        dao.findOneByID(roger.id) must beSome(roger)
+        dao.findOneById(roger.id) must beSome(roger)
       }
     }
 

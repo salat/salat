@@ -28,6 +28,7 @@ import com.novus.salat.annotations._
 import com.mongodb.casbah.Imports._
 import org.scala_tools.time.Imports._
 import com.novus.salat.test._
+import com.novus.salat.global._
 import com.novus.salat.dao.{ SalatDAO, ModelCompanion }
 
 object MyModel extends ModelCompanion[MyModel, ObjectId] {

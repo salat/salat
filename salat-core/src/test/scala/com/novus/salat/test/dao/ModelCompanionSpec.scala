@@ -94,14 +94,14 @@ class ModelCompanionSpec extends SalatSpec {
     "provide simple static access to CRUD ops" in {
       "insert" in new myModelScope {
         MyModel.insert(m) must beSome(_id)
-        MyModel.findOneByID(_id) must beSome(m)
+        MyModel.findOneById(_id) must beSome(m)
       }
 
       "save" in new myModelScope {
         MyModel.insert(m) must beSome(_id)
         val z_* = 0d :: z
         MyModel.save(m.copy(z = z_*))
-        val m_* = MyModel.findOneByID(_id)
+        val m_* = MyModel.findOneById(_id)
         m_*.map(_.z) must beSome(z_*)
       }
 
@@ -111,14 +111,14 @@ class ModelCompanionSpec extends SalatSpec {
         val q = MongoDBObject("_id" -> _id)
         val o = MongoDBObject("$set" -> MongoDBObject("x" -> x_*))
         MyModel.update(q = q, o = o, upsert = false, multi = false, wc = MyModel.dao.collection.writeConcern)
-        MyModel.findOneByID(_id) must beSome(m.copy(x = x_*))
+        MyModel.findOneById(_id) must beSome(m.copy(x = x_*))
       }
 
       "remove" in new myModelScope {
         MyModel.insert(m) must beSome(_id)
-        MyModel.findOneByID(_id) must beSome(m)
+        MyModel.findOneById(_id) must beSome(m)
         MyModel.remove(m)
-        MyModel.findOneByID(_id) must beNone
+        MyModel.findOneById(_id) must beNone
       }
     }
 

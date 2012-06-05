@@ -105,8 +105,8 @@ object UserDAO extends SalatDAO[User, ObjectId](collection = MongoConnection()(S
   }
 
   // and reassemble the object graph when retrieving from MongoDB
-  override def findOneByID(id: ObjectId) = {
-    super.findOneByID(id).map {
+  override def findOneById(id: ObjectId) = {
+    super.findOneById(id).map {
       user =>
         user.copy(roles = roles.findByParentId(user._id).toList)
     }
