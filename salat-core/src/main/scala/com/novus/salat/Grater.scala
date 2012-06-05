@@ -286,6 +286,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   def cachedFieldName(field: SField) = fieldNameMap.getOrElse(field, field.name)
 
   protected[salat] def jsonTranform(o: Any): JValue = o.asInstanceOf[AnyRef] match {
+    case t: MongoDBList => JArray(t.map(jsonTranform(_)).toList)
     case t: BasicDBList => JArray(t.map(jsonTranform(_)).toList)
     case dbo: DBObject  => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, jsonTranform(v._2))))
     case m: Map[_, _]   => JObject(m.toList.map(v => JField(v._1.toString, jsonTranform(v._2))))
@@ -352,15 +353,15 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         case field => {
           val name = cachedFieldName(field)
           val value = dbo.get(name)
-//          log.info(
-//            """
-//asObject: %s
-//  field: %s
-//  name: %s
-//  dbo.get("%s"): %s
-//  dbo.get("%s").flatMap(field.in_!(_)): %s
-//  safeDefault: %s
-//            """, clazz.getName, field.name, name, name, value, name, value.flatMap(field.in_!(_)), defaultArg(field).value)
+          //          log.info(
+          //            """
+          //asObject: %s
+          //  field: %s
+          //  name: %s
+          //  dbo.get("%s"): %s
+          //  dbo.get("%s").flatMap(field.in_!(_)): %s
+          //  safeDefault: %s
+          //            """, clazz.getName, field.name, name, name, value, name, value.flatMap(field.in_!(_)), defaultArg(field).value)
 
           value.flatMap(field.in_!(_)) orElse safeDefault(field)
         }
