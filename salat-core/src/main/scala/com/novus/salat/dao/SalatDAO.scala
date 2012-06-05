@@ -117,7 +117,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
      *  @return list of child ids matching parent id and search criteria
      */
     def idsForParentId(parentId: ID, query: DBObject = MongoDBObject.empty): List[ChildID] = {
-      childDao.collection.find(parentIdQuery(parentId) ++ query, MongoDBObject("_id" -> 1)).map(_.expand[ChildID]("_id")(mcid).get).toList
+      childDao.collection.find(parentIdQuery(parentId) ++ query, MongoDBObject("_id" -> 1)).map(_.expand[ChildID]("_id").get).toList
     }
 
     /** @param parentIds list of parent ids
@@ -125,7 +125,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
      *  @return list of child ids matching parent ids and search criteria
      */
     def idsForParentIds(parentIds: List[ID], query: DBObject = MongoDBObject.empty): List[ChildID] = {
-      childDao.collection.find(parentIdsQuery(parentIds) ++ query, MongoDBObject("_id" -> 1)).map(_.expand[ChildID]("_id")(mcid).get).toList
+      childDao.collection.find(parentIdsQuery(parentIds) ++ query, MongoDBObject("_id" -> 1)).map(_.expand[ChildID]("_id").get).toList
     }
 
     /** @param parentId parent id
@@ -282,7 +282,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   def insert(docs: Traversable[ObjectType], wc: WriteConcern = defaultWriteConcern) = if (docs.nonEmpty) {
     val dbos = docs.map(_grater.asDBObject(_)).toList
-    val wr = collection.insert(dbos, wc)
+    val wr = collection.insert(dbos: _*)
     val lastError = wr.getCachedLastError
     if (lastError == null || (lastError != null && lastError.ok())) {
       dbos.map {
@@ -301,7 +301,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return list of IDs
    */
   def ids[A <% DBObject](query: A): List[ID] = {
-    collection.find(query, MongoDBObject("_id" -> 1)).map(_.expand[ID]("_id")(mid).get).toList
+    collection.find(query, MongoDBObject("_id" -> 1)).map(_.expand[ID]("_id").get).toList
   }
 
   /** @param t object for which to search
@@ -461,7 +461,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     val builder = List.newBuilder[P]
     results.foreach {
       r =>
-        r.expand[P](field)(m).foreach(builder += _)
+        r.expand[P](field).foreach(builder += _)
     }
 
     builder.result()
