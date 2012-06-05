@@ -29,10 +29,11 @@ import com.novus.salat._
 import net.liftweb.json.JsonAST.JObject
 import java.lang.reflect.{ Type, ParameterizedType }
 import com.novus.salat.util.Logging
+import com.mongodb
 
 /** Play framework style model companion
- * <p/>
- * {{{
+ *  <p/>
+ *  {{{
  *   package model
  *
  *  import com.novus.salat.annotations._
@@ -48,56 +49,51 @@ import com.novus.salat.util.Logging
  *                     x: String,
  *                     y: Int,
  *                     z: List[Double])
- * }}}
+ *  }}}
  *
  *  @tparam ObjectType type of object to be serialized
  *  @tparam ID type of object id to be serialized
  */
-trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
+trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[ObjectType, ID] with Logging {
 
   def dao: DAO[ObjectType, ID]
+
+  /** In the absence of a specified write concern, supplies a default write concern.
+   *  @return default write concern to use for insert, update, save and remove operations
+   */
+  def defaultWriteConcern = dao.defaultWriteConcern
 
   //
   // convenient access to methods on Grater
   //
 
-  /**
-   *
-   * @param t object to be serialized
-   * @return object serialized as `DBObject`
+  /** @param t object to be serialized
+   *  @return object serialized as `DBObject`
    */
   def toDBObject(t: ObjectType): DBObject = dao._grater.asDBObject(t)
 
-  /**
-   *
-   * @param dbo `DBObject` to be deserialized
-   * @return `DBObject` deserialized to object
-   * TODO - bring back view bound...  assuming it could possibly be worth the bother.
+  /** @param dbo `DBObject` to be deserialized
+   *  @return `DBObject` deserialized to object
+   *  TODO - bring back view bound...  assuming it could possibly be worth the bother.
    */
   def toObject(dbo: DBObject): ObjectType = dao._grater.asObject(dbo)
 
-  /**
-   *
-   * @param t object to be serialized
-   * @return object serialized to `JObject`
-   * @see http://www.assembla.com/spaces/liftweb/wiki/JSON_Support
+  /** @param t object to be serialized
+   *  @return object serialized to `JObject`
+   *  @see http://www.assembla.com/spaces/liftweb/wiki/JSON_Support
    */
   def toJson(t: ObjectType): JObject = dao._grater.toJSON(t)
 
-  /**
-   *
-   * @param t object to be serialized
-   * @return object serialized as pretty JSON to a String
-   * @see http://www.assembla.com/spaces/liftweb/wiki/JSON_Support
+  /** @param t object to be serialized
+   *  @return object serialized as pretty JSON to a String
+   *  @see http://www.assembla.com/spaces/liftweb/wiki/JSON_Support
    */
   def toPrettyJson(t: ObjectType): String = dao._grater.toPrettyJSON(t)
 
-  /**
-     *
-     * @param t object to be serialized
-     * @return object serialized as pretty JSON to a String
-     * @see http://www.assembla.com/spaces/liftweb/wiki/JSON_Support
-     */
+  /** @param t object to be serialized
+   *  @return object serialized as pretty JSON to a String
+   *  @see http://www.assembla.com/spaces/liftweb/wiki/JSON_Support
+   */
   def toCompactJson(t: ObjectType): String = dao._grater.toCompactJSON(t)
 
   //
@@ -113,55 +109,121 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
   def count(q: DBObject, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil) =
     dao.count(q, fieldsThatMustExist, fieldsThatMustExist)
 
+  /** @param ref object for which to search
+   *  @param keys fields to return
+   *  @tparam A type view bound to DBObject
+   *  @tparam B type view bound to DBObject
+   *  @return a typed cursor to iterate over results
+   */
   def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = dao.find(ref, keys)
 
-  def find[A <% DBObject](ref: A) = dao.find(ref)
-
+  /** @param t object for which to search
+   *  @tparam A type view bound to DBObject
+   *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
+   */
   def findOne[A <% DBObject](t: A) = dao.findOne(t)
 
-  def findOneByID(id: ID) = dao.findOneById(id)
-
+  /** @param id identifier
+   *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
+   */
   def findOneById(id: ID) = dao.findOneById(id)
 
+  /** @param query query
+   *  @tparam A type view bound to DBObject
+   *  @return list of IDs
+   */
   def ids[A <% DBObject](query: A) = dao.ids(query)
 
-  def insert(docs: ObjectType*)(implicit wc: WriteConcern) = dao.insert(docs: _*)(wc)
+  /** @param docs collection of `ObjectType` instances to insert
+   *  @param wc write concern
+   *  @return list of object ids
+   *         TODO: flatten list of IDs - why on earth didn't I do that in the first place?
+   */
+  def insert(docs: Traversable[ObjectType], wc: WriteConcern) = dao.insert(docs, wc)
 
-  def insert(t: ObjectType, wc: WriteConcern = dao.collection.writeConcern) = dao.insert(t, wc)
+  /** @param t instance of ObjectType
+   *  @param wc write concern
+   *  @return if insert succeeds, ID of inserted object
+   */
+  def insert(t: ObjectType, wc: WriteConcern) = dao.insert(t, wc)
 
+  /** @param query object for which to search
+   *  @param field field to project on
+   *  @param m implicit manifest typed to `P`
+   *  @param ctx implicit [[com.novus.salat.Context]]
+   *  @tparam P type of projected field
+   *  @return (Option[P]) Some() of the object found, or <code>None</code> if no such object exists
+   */
   def primitiveProjection[P](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context) =
     dao.primitiveProjection[P](query, field)
 
+  /** @param query object for which to search
+   *  @param field field to project on
+   *  @param m implicit manifest typed to `P`
+   *  @param ctx implicit [[com.novus.salat.Context]]
+   *  @tparam P type of projected field
+   *  @return (List[P]) of the objects found
+   */
   def primitiveProjections[P](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context) =
     dao.primitiveProjections[P](query, field)
 
+  /** @param query object for which to search
+   *  @param field field to project on
+   *  @param m implicit manifest typed to `P`
+   *  @param ctx implicit [[com.novus.salat.Context]]
+   *  @tparam P type of projected field
+   *  @return (Option[P]) Some() of the object found, or <code>None</code> if no such object exists
+   */
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context) =
     dao.projection[P](query, field)
 
+  /** @param query object for which to search
+   *  @param field field to project on
+   *  @param m implicit manifest typed to `P`
+   *  @param ctx implicit [[com.novus.salat.Context]]
+   *  @tparam P type of projected field
+   *  @return (List[P]) of the objects found
+   */
   def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context) =
     dao.projections[P](query, field)
 
-  def remove(t: ObjectType, wc: WriteConcern = dao.collection.writeConcern) {
+  /** @param t object to remove from the collection
+   *  @param wc write concern
+   */
+  def remove(t: ObjectType, wc: WriteConcern = defaultWriteConcern) {
     dao.remove(t, wc)
   }
 
+  /** @param q the object that documents to be removed must match
+   *  @param wc write concern
+   *  @tparam A
+   */
   def remove[A <% DBObject](q: A, wc: WriteConcern) {
     dao.remove(q, wc)
   }
 
-  def removeById(id: ID, wc: WriteConcern = dao.collection.writeConcern) {
+  /** @param id the ID of the document to be removed
+   *  @param wc write concern
+   */
+  def removeById(id: ID, wc: WriteConcern = defaultWriteConcern) {
     dao.removeById(id, wc)
   }
 
-  def removeByIds(ids: List[ID], wc: WriteConcern = dao.collection.writeConcern) {
+  /** @param ids the list of IDs identifying the list of documents to be removed
+   *  @param wc wrote concern
+   */
+  def removeByIds(ids: List[ID], wc: WriteConcern = defaultWriteConcern) {
     dao.removeByIds(ids, wc)
   }
 
-  def save(t: ObjectType, wc: WriteConcern = dao.collection.writeConcern) {
+  /** @param t object to save
+   *  @param wc write concern
+   */
+  def save(t: ObjectType, wc: WriteConcern = defaultWriteConcern) {
     dao.save(t, wc)
   }
 
-  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean, multi: Boolean, wc: WriteConcern = collection.writeConcern) {
+  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean, multi: Boolean, wc: WriteConcern = defaultWriteConcern) {
     dao.update(q, o, upsert, multi, wc)
   }
 
@@ -170,9 +232,7 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends Logging {
   // forward like pyramid blocks by my predecessors
   //
 
-  /**
-   *
-   * @return (Iterator[ObjectType]) iterable result cursor of everything in the collection
+  /** @return (Iterator[ObjectType]) iterable result cursor of everything in the collection
    */
   def findAll(): SalatMongoCursor[ObjectType] = dao.find(MongoDBObject.empty)
 }

@@ -25,38 +25,26 @@
 package com.novus.salat.dao
 
 import com.mongodb.casbah.Imports._
-import com.mongodb.{DBObject, WriteConcern}
+import com.mongodb.{ DBObject, WriteConcern }
 import com.novus.salat._
 
-/** Base DAO class.
- *  <p/>
- *  Where `WriteConcern` is not specified as a parameter on an operation which modifies or removes documents from the
- *  collection, then the default write concern of the collection is assumed.
- *
- *  @tparam ObjectType class to be persisted
- *  @tparam ID _id type
- */
-trait DAO[ObjectType <: AnyRef, ID <: Any] {
+trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
 
-  // TODO: replace requirement for lists to traversables
-
-  /** @return MongoDB collection
+  /** In the absence of a specified write concern, supplies a default write concern.
+   *  @return default write concern to use for insert, update, save and remove operations
    */
-  def collection: MongoCollection
+  def defaultWriteConcern: WriteConcern
 
-  /** @return [[com.novus.salat.Grater]] to serialize and deserialize `ObjectType`
+  /** @param o object to transform
+   *  @return object serialized as `DBObject`
    */
-  def _grater: Grater[ObjectType]
-
-  /** @return DAO description for logging
-   */
-  def description: String = "DAO"
+  def toDBObject(o: ObjectType): DBObject
 
   /** Inserts a document into the database.
    *  @param t instance of ObjectType
    *  @return if insert succeeds, ID of inserted object
    */
-  def insert(t: ObjectType): Option[ID] = insert(t = t, wc = collection.writeConcern)
+  def insert(t: ObjectType): Option[ID] = insert(t = t, wc = defaultWriteConcern)
 
   /** Inserts a document into the database.
    *  @param t instance of ObjectType
@@ -67,12 +55,19 @@ trait DAO[ObjectType <: AnyRef, ID <: Any] {
 
   /** Inserts a group of documents into the database.
    *  @param docs variable length argument of ObjectType instances
-   *  @param wc write concern
    *  @return if write concern succeeds, a list of object IDs
+   *  TODO: this implicit: dumbest design decision on the face of the planet?
    *  TODO: replace vararg with traversable
    *  TODO: flatten list of IDs - why on earth didn't I do that in the first place?
    */
-  def insert(docs: ObjectType*)(implicit wc: WriteConcern = collection.writeConcern): List[Option[ID]]
+  def insert(docs: ObjectType*)(implicit wc: WriteConcern): List[Option[ID]] = insert(docs = docs.toSeq, wc = wc)
+
+  /** @param docs collection of `ObjectType` instances to insert
+   *  @param wc write concern
+   *  @return list of object ids
+   *  TODO: flatten list of IDs - why on earth didn't I do that in the first place?
+   */
+  def insert(docs: Traversable[ObjectType], wc: WriteConcern): List[Option[ID]]
 
   /** Queries for a list of identifiers.
    *  @param query query
@@ -127,7 +122,7 @@ trait DAO[ObjectType <: AnyRef, ID <: Any] {
    *  @param t object to save
    */
   def save(t: ObjectType) {
-    save(t = t, wc = collection.writeConcern)
+    save(t = t, wc = defaultWriteConcern)
   }
 
   /** Performs an update operation.
@@ -150,14 +145,14 @@ trait DAO[ObjectType <: AnyRef, ID <: Any] {
    *  @tparam A type view bound to DBObject
    */
   def update[A <% DBObject](q: A, o: ObjectType, upsert: Boolean, multi: Boolean, wc: WriteConcern) {
-    update(q, _grater.asDBObject(o), upsert, multi, wc)
+    update(q, toDBObject(o), upsert, multi, wc)
   }
 
   /** Remove a matching object from the collection
    *  @param t object to remove from the collection
    */
   def remove(t: ObjectType) {
-    remove(t = t, wc = collection.writeConcern)
+    remove(t = t, wc = defaultWriteConcern)
   }
 
   /** Remove a matching object from the collection
@@ -170,7 +165,7 @@ trait DAO[ObjectType <: AnyRef, ID <: Any] {
    *  @param q the object that documents to be removed must match
    */
   def remove[A <% DBObject](q: A) {
-    remove(q = q, wc = collection.writeConcern)
+    remove(q = q, wc = defaultWriteConcern)
   }
 
   /** Removes objects from the database collection.
@@ -183,13 +178,13 @@ trait DAO[ObjectType <: AnyRef, ID <: Any] {
    *  @param id the ID of the document to be removed
    *  @param wc write concern
    */
-  def removeById(id: ID, wc: WriteConcern = collection.writeConcern)
+  def removeById(id: ID, wc: WriteConcern = defaultWriteConcern)
 
   /** Remove documents matching any of the supplied list of IDs.
    *  @param ids the list of IDs identifying the list of documents to be removed
    *  @param wc wrote concern
    */
-  def removeByIds(ids: List[ID], wc: WriteConcern = collection.writeConcern)
+  def removeByIds(ids: List[ID], wc: WriteConcern = defaultWriteConcern)
 
   /** Count the number of documents matching the search criteria.
    *  @param q object for which to search
@@ -238,4 +233,34 @@ trait DAO[ObjectType <: AnyRef, ID <: Any] {
    *  @return (List[P]) of the objects found
    */
   def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P]
+
+}
+
+/** Base DAO class.
+ *  <p/>
+ *  Where `WriteConcern` is not specified as a parameter on an operation which modifies or removes documents from the
+ *  collection, then the default write concern of the collection is assumed.
+ *
+ *  @tparam ObjectType class to be persisted
+ *  @tparam ID _id type
+ */
+trait DAO[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[ObjectType, ID] {
+
+  // TODO: replace requirement for lists to traversables
+
+  /** @return MongoDB collection
+   */
+  def collection: MongoCollection
+
+  /** @return [[com.novus.salat.Grater]] to serialize and deserialize `ObjectType`
+   */
+  def _grater: Grater[ObjectType]
+
+  /** @return DAO description for logging
+   */
+  def description: String = "DAO"
+
+  def defaultWriteConcern = collection.writeConcern
+
+  def toDBObject(o: ObjectType) = _grater.asDBObject(o)
 }

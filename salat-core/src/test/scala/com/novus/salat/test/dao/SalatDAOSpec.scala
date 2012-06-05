@@ -39,6 +39,8 @@ class SalatDAOSpec extends SalatSpec {
   // namely, the MongoDB collection referenced by the AlphaDAO
   override def is = args(sequential = true) ^ super.is
 
+  implicit val wc = AlphaDAO.defaultWriteConcern
+
   val alpha1 = Alpha(id = 1, beta = List[Beta](Gamma("gamma3"), Delta("delta3", "sampi3")))
   val alpha2 = Alpha(id = 2, beta = List[Beta](Gamma("gamma2"), Delta("delta2", "sampi2"), Delta("digamma2", "san2")))
   val alpha3 = Alpha(id = 3, beta = List[Beta](Gamma("gamma3"), Delta("delta3", "sampi3")))
