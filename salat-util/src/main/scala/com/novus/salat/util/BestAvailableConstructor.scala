@@ -23,9 +23,16 @@
  */
 package com.novus.salat.util
 
-import java.lang.reflect.{ Modifier, Constructor }
+import java.lang.reflect.Constructor
 
+/** Given multiple contructors, attempt to determine the best available constructor for instantiating the class.
+ */
 object BestAvailableConstructor extends Logging {
+
+  /** @param clazz parameterized class instance
+   *  @tparam X type param for AnyRef with Product
+   *  @return parameterized constructor instance
+   */
   def apply[X <: AnyRef with Product](clazz: Class[X]): Constructor[X] = {
     val cl = clazz.getConstructors.toList.asInstanceOf[List[Constructor[X]]]
     //    log.info("constructor: found %d:\n%s", cl.size, cl.mkString("\n"))

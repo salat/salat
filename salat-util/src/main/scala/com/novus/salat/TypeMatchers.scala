@@ -23,47 +23,54 @@
  */
 package com.novus.salat
 
-import scala.math.{ BigDecimal => ScalaBigDecimal }
-import com.novus.salat.util.Logging
-import scala.tools.scalap.scalax.rules.scalasig.{ SingleType, TypeRefType, Type }
+import scala.math.{ BigDecimal => SBigDecimal }
+import scala.tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
 
-private object TypeMatchers {
+protected[salat] object Types {
+  val SBigDecimal = classOf[SBigDecimal].getName
+  val Option = "scala.Option"
+  val Map = ".Map"
+  val Traversables = Set(".Seq", ".List", ".Vector", ".Set", ".Buffer", ".ArrayBuffer", ".IndexedSeq", ".LinkedList", ".DoubleLinkedList")
+
+  def isOption(sym: Symbol) = sym.path == Option
+
+  def isMap(symbol: Symbol) = symbol.path.endsWith(Map)
+
+  def isTraversable(symbol: Symbol) = Traversables.exists(symbol.path.endsWith(_))
+
+  def isBigDecimal(symbol: Symbol) = symbol.path == SBigDecimal
+}
+
+protected[salat] object TypeMatchers {
+
   def matchesOneType(t: Type, name: String): Option[Type] = t match {
     case TypeRefType(_, symbol, List(arg)) if symbol.path == name => Some(arg)
     case _ => None
   }
+
+  def matchesMap(t: Type) = t match {
+    case TypeRefType(_, symbol, k :: v :: Nil) if Types.isMap(symbol) => Some(k -> v)
+    case _ => None
+  }
+
+  def matchesTraversable(t: Type) = t match {
+    case TypeRefType(_, symbol, List(arg)) if Types.isTraversable(symbol) => Some(arg)
+    case _ => None
+  }
 }
 
-object IsOption {
-  def unapply(t: Type): Option[Type] = TypeMatchers.matchesOneType(t, "scala.Option")
+protected[salat] object IsOption {
+  def unapply(t: Type): Option[Type] = TypeMatchers.matchesOneType(t, Types.Option)
 }
 
-object IsMap {
-  def unapply(t: Type): Option[(Type, Type)] =
-    t match {
-      case TypeRefType(_, symbol, k :: v :: Nil) if symbol.path.endsWith(".Map") => Some(k -> v)
-      case _ => None
-    }
+protected[salat] object IsMap {
+  def unapply(t: Type): Option[(Type, Type)] = TypeMatchers.matchesMap(t)
 }
 
-object IsTraversable {
-  def unapply(t: Type): Option[Type] =
-    t match {
-      case TypeRefType(_, symbol, List(e)) =>
-        if (symbol.path.endsWith(".Seq")) Some(e)
-        else if (symbol.path.endsWith(".List")) Some(e)
-        else if (symbol.path.endsWith(".Set")) Some(e)
-        else if (symbol.path.endsWith(".Buffer")) Some(e)
-        else if (symbol.path.endsWith(".ArrayBuffer")) Some(e)
-        else if (symbol.path.endsWith(".Vector")) Some(e)
-        else if (symbol.path.endsWith(".IndexedSeq")) Some(e)
-        else if (symbol.path.endsWith(".LinkedList")) Some(e)
-        else if (symbol.path.endsWith(".DoubleLinkedList")) Some(e)
-        else None
-      case _ => None
-    }
+protected[salat] object IsTraversable {
+  def unapply(t: Type): Option[Type] = TypeMatchers.matchesTraversable(t)
 }
 
-object IsScalaBigDecimal {
-  def unapply(t: Type): Option[Type] = TypeMatchers.matchesOneType(t, classOf[ScalaBigDecimal].getName)
+protected[salat] object IsScalaBigDecimal {
+  def unapply(t: Type): Option[Type] = TypeMatchers.matchesOneType(t, Types.SBigDecimal)
 }

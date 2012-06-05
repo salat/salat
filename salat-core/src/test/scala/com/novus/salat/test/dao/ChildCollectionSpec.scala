@@ -39,6 +39,8 @@ class ChildCollectionSpec extends SalatSpec {
   // force spec to run sequentially
   override def is = args(sequential = true) ^ super.is
 
+  implicit val wc = ParentDAO.defaultWriteConcern
+
   "SalatDAO's child collection trait" should {
     "support finding children by typed parent id" in new parentChildContext {
       ParentDAO.children.findByParentId(parent1.id).toList must contain(child1Parent1, child2Parent1, child3Parent1).only

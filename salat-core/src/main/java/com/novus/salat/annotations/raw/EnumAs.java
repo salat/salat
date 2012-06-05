@@ -30,8 +30,34 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Override context enum handling defaults on an ad hoc basis for an individual enum.
+ * <p/>
+ * To force an individual enum to be serialized using its ordinal values:
+ * {@code
+ *     import com.novus.salat.annotations._
+ *
+ *     @EnumAs(strategy = EnumStrategy.BY_ID)
+ *     object BabyAnimalsById extends Enumeration {
+ *       val Kitten, Puppy, Bunny, Cub, Fawn, Duckling, Calf = Value
+ *     }
+ * }
+ * <p/>
+ * To force an individual enum to be serialized using the toString representation of each value:
+  * {@code
+  *     import com.novus.salat.annotations._
+  *
+  *     @EnumAs(strategy = EnumStrategy.BY_VALUE)
+  *     object BabyAnimalsByValue extends Enumeration {
+  *       val Kitten, Puppy, Bunny, Cub, Fawn, Duckling, Calf = Value
+  *     }
+  * }
+ */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EnumAs {
+    /**
+     * @return enum serialization strategy (default handling is by value)
+     */
     EnumStrategy strategy() default EnumStrategy.BY_VALUE;
 }

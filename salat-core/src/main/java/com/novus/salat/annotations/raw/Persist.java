@@ -28,6 +28,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Serializes a field outside the case class constructor.
+ * <p/>
+ * In the example below, when Foo is serialized, field "goodbye" will appear in the serialized output.
+ * {@code
+ *  import com.novus.salat.annotations._
+ *
+ *  case class Foo(hello: String) {
+ *      @Persist val goodbye = hello.reverse
+ *  }
+ * }
+ */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Persist {}

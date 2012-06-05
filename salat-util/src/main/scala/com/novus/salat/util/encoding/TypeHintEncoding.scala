@@ -25,6 +25,8 @@ package com.novus.salat.util.encoding
 
 import com.novus.salat.util.Logging
 
+/**
+ */
 protected[salat] object Digits {
   // TODO: couldn't find a less cumbersome way to do this - curious!
   val ZeroToNine = Range(0, 10).toList.map(_.toString.charAt(0))

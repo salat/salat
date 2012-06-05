@@ -70,13 +70,13 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
   "Salat DAO" should {
     "support a top-level polymorphic collection" in new roleContext {
       RoleDAO.insert(guest) must beSome(guestId)
-      RoleDAO.findOneByID(guestId) must beSome(guest)
+      RoleDAO.findOneById(guestId) must beSome(guest)
       RoleDAO.find(MongoDBObject("userId" -> user1Id)).toList must contain(guest).only
 
-      RoleDAO.insert(editor, author, admin).flatten must contain(editorId, authorId, adminId).only
-      RoleDAO.findOneByID(authorId) must beSome(author)
-      RoleDAO.findOneByID(editorId) must beSome(editor)
-      RoleDAO.findOneByID(adminId) must beSome(admin)
+      RoleDAO.insert(editor, author, admin)(RoleDAO.defaultWriteConcern).flatten must contain(editorId, authorId, adminId).only
+      RoleDAO.findOneById(authorId) must beSome(author)
+      RoleDAO.findOneById(editorId) must beSome(editor)
+      RoleDAO.findOneById(adminId) must beSome(admin)
       RoleDAO.find(MongoDBObject("userId" -> user2Id)).toList must contain(editor).only
       RoleDAO.find(MongoDBObject("userId" -> user3Id)).toList must contain(author, admin).only
     }
@@ -85,7 +85,7 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
       UserDAO.collection.count must_== 1L
       RoleDAO.collection.count must_== 2L
 
-      val user_* = UserDAO.findOneByID(userId)
+      val user_* = UserDAO.findOneById(userId)
       user_* must beSome(user)
 
       val roles_* = UserDAO.roles.findByParentId(userId).toList

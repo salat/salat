@@ -28,6 +28,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Ignore annotated field when serializing model objects.  This annotation must be used in conjunction with a
+ * default argument.
+ *
+ * Good:
+ * {@code
+ *    import com.novus.salat.annotations._
+ *    
+ *    case class Foo(@Ignore ignoreMe: String = "bar", dontIgnoreMe: Int)
+ * }
+ *
+ * Bad:
+ * {@code
+ *     import com.novus.salat.annotations._
+ *     
+ *     case class Foo(@Ignore ignoreMe: String, dontIgnoreMe: Int)
+ * }
+ *
+ */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Ignore {}

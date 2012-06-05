@@ -28,6 +28,21 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Optimises deserialization for class hierarchies.  Although <i>not necessary</i> for deserializing, by giving Salat a
+ * hint that the class is typed to a trait or an abstract superclass, it removes the need for Salat to try to figure this
+ * out via class introspection.
+ * <p/>
+ * {@code
+ *  import com.novus.salat.annotations._
+ *
+ *  @Salat
+ *  trait BabyAnimal
+ *  case class Kitten() extends BabyAnimal
+ *  case class Bunny() extends BabyAnimal
+ *  case class Duckling() extends BabyAnimal
+ * }
+ */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Salat {}

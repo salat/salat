@@ -28,8 +28,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Overrides the name of a field in the model object with the value specified in Key.
+ * <p/>
+ * In this example, when Foo is serialized, the "bar" field will be called "baz".
+ * {@code
+ *  import com.novus.salat.annotations._
+ *
+ *  case class Foo(@Key("baz") bar: String)
+ * }
+ */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Key {
+    /** The serialized representation of the model object will use this value for the field instead of the field name */
     String value();
 }

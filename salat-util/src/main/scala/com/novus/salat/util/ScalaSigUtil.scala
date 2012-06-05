@@ -28,8 +28,8 @@ import reflect.ScalaSignature
 import reflect.generic.ByteCodecs
 import scala.tools.scalap.scalax.rules.scalasig._
 
-object ScalaSigUtil extends Logging {
-  private[salat] def parseClassFileFromByteCode(clazz: Class[_]): Option[ClassFile] = try {
+protected[salat] object ScalaSigUtil extends Logging {
+  def parseClassFileFromByteCode(clazz: Class[_]): Option[ClassFile] = try {
     // taken from ScalaSigParser parse method with the explicit purpose of walking away from NPE
     val byteCode = ByteCode.forClass(clazz)
     Option(ClassFileParser.parse(byteCode))
@@ -38,7 +38,7 @@ object ScalaSigUtil extends Logging {
     case e: NullPointerException => None // yes, this is the exception, but it is totally unhelpful to the end user
   }
 
-  private[salat] def parseByteCodeFromAnnotation(clazz: Class[_]): Option[ByteCode] = {
+  def parseByteCodeFromAnnotation(clazz: Class[_]): Option[ByteCode] = {
     clazz.annotation[ScalaSignature] match {
       case Some(sig) if sig != null => {
         val bytes = sig.bytes.getBytes("UTF-8")
@@ -49,7 +49,7 @@ object ScalaSigUtil extends Logging {
     }
   }
 
-  private[salat] def parseScalaSig0(_clazz: Class[_], classloaders: Seq[ClassLoader] = Seq.empty): Option[ScalaSig] = {
+  def parseScalaSig0(_clazz: Class[_], classloaders: Seq[ClassLoader] = Seq.empty): Option[ScalaSig] = {
 
     // support case objects by selectively re-jiggering the class that has been passed in
     val clazz = if (_clazz.getName.endsWith("$")) {
