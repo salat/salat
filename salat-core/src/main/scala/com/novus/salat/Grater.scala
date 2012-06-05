@@ -350,12 +350,19 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       val args = indexedFields.map {
         case field if field.ignore => safeDefault(field)
         case field => {
-          dbo.get(cachedFieldName(field)) match {
-            case Some(value) => {
-              field.in_!(value)
-            }
-            case _ => safeDefault(field)
-          }
+          val name = cachedFieldName(field)
+          val value = dbo.get(name)
+//          log.info(
+//            """
+//asObject: %s
+//  field: %s
+//  name: %s
+//  dbo.get("%s"): %s
+//  dbo.get("%s").flatMap(field.in_!(_)): %s
+//  safeDefault: %s
+//            """, clazz.getName, field.name, name, name, value, name, value.flatMap(field.in_!(_)), defaultArg(field).value)
+
+          value.flatMap(field.in_!(_)) orElse safeDefault(field)
         }
       }.map(_.get.asInstanceOf[AnyRef]) // TODO: if raw get blows up, throw a more informative error
 
