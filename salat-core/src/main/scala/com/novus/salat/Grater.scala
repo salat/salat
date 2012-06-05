@@ -464,6 +464,7 @@ case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(imp
     value.exists {
       v =>
         serialized match {
+          case serialized: MongoDBList if serialized.isEmpty && isEmptyTraversable => true
           case serialized: BasicDBList if serialized.isEmpty && isEmptyTraversable => true
           case serialized: BasicDBObject if serialized.isEmpty && isEmptyMap => true
           case serialized => serialized == v
