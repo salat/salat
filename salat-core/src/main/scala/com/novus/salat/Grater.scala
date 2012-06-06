@@ -63,7 +63,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   //  def fromJSON(s: String): X = JsonParser.parse(s) match {
   //    case j: JObject => fromJSON(j)
-  //    case x => error("""
+  //    case x => sys.error("""
   //fromJSON: input string parses to unsupported type '%s' !
   //
   //%s
@@ -303,7 +303,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     case o: ObjectId => JObject(List(JField("$oid", JString(o.toString))))
     case u: java.net.URL => JString(u.toString) // might as well
     case n if n == null && ctx.jsonConfig.outputNullValues => JNull
-    case x: AnyRef => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x.getClass))
+    case x: AnyRef => sys.error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x.getClass))
   }
 
   def toJSON(o: X) = {
@@ -312,7 +312,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       val field: JValue = if (ctx.typeHintStrategy.isInstanceOf[StringTypeHintStrategy]) {
         JString(clazz.getName)
       }
-      else error("toJSON: unsupported type hint strategy '%s'".format(ctx.typeHintStrategy))
+      else sys.error("toJSON: unsupported type hint strategy '%s'".format(ctx.typeHintStrategy))
       builder += JField(ctx.typeHintStrategy.typeHint, field)
     }
 
@@ -326,7 +326,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     JObject(builder.result())
   }
 
-  def fromJSON(j: JObject) = error("TODO: implement me")
+  def fromJSON(j: JObject) = sys.error("TODO: implement me")
 
   def asDBObject(o: X): DBObject = {
     val builder = MongoDBObject.newBuilder
@@ -424,7 +424,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     if (betterDefaults.contains(field)) {
       betterDefaults(field)
     }
-    else error("Grater error: clazz='%s' field '%s' needs to register presence or absence of default values".
+    else sys.error("Grater error: clazz='%s' field '%s' needs to register presence or absence of default values".
       format(clazz, field.name))
   }
 
