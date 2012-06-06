@@ -102,9 +102,8 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
   /** Find an object by its ID.
    *  @param id identifier
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
-   *  @deprecated since 0.0.8
    */
-  @deprecated("Use findOneById instead") def findOneByID(id: ID): Option[ObjectType] = findOneById(id)
+  @deprecated("Use findOneById instead", "0.0.8") def findOneByID(id: ID): Option[ObjectType] = findOneById(id)
 
   /** Find an object by its ID.
    *  @param id identifier
