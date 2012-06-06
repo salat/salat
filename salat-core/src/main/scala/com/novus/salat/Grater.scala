@@ -431,16 +431,16 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         val name = cachedFieldName(field)
         val rawValue = values.get(name)
         val value = fromJsonTransform(rawValue, field)
-//        log.info(
-//          """
-//fromJSON: %s
-//  field: %s
-//  name: %s
-//  values.get("%s"): %s
-//  fromJsonTransform(rawValue, field): %s
-//  fromJsonTransform(rawValue, field).flatMap(field.in_!(_)): %s
-//  safeDefault: %s
-//                      """, clazz.getName, field.name, name, name, rawValue, value, value.flatMap(field.in_!(_)), defaultArg(field).value)
+        //        log.info(
+        //          """
+        //fromJSON: %s
+        //  field: %s
+        //  name: %s
+        //  values.get("%s"): %s
+        //  fromJsonTransform(rawValue, field): %s
+        //  fromJsonTransform(rawValue, field).flatMap(field.in_!(_)): %s
+        //  safeDefault: %s
+        //                      """, clazz.getName, field.name, name, name, rawValue, value, value.flatMap(field.in_!(_)), defaultArg(field).value)
 
         value.flatMap(field.in_!(_)) orElse safeDefault(field)
       }
