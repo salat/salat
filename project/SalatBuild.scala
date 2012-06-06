@@ -120,8 +120,7 @@ object Publish {
           <name>Rose Toomey</name>
           <url>http://github.com/rktoomey</url>
         </developer>
-      </developers>),
-    publishArtifact in (Compile, packageDoc) := false
+      </developers>)
   )
 }
 
