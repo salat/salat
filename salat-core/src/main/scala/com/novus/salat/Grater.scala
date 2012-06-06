@@ -37,6 +37,7 @@ import com.novus.salat.util.Logging
 import net.liftweb.json._
 import java.util.Date
 import org.joda.time.DateTime
+import java.net.URL
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -55,21 +56,21 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   def fromMap(m: Map[String, Any]): X
 
-  //  def fromJSON(j: JObject): X
-
   def toPrettyJSON(o: X): String = pretty(render(toJSON(o)))
 
   def toCompactJSON(o: X): String = compact(render(toJSON(o)))
 
-  //  def fromJSON(s: String): X = JsonParser.parse(s) match {
-  //    case j: JObject => fromJSON(j)
-  //    case x => sys.error("""
-  //fromJSON: input string parses to unsupported type '%s' !
-  //
-  //%s
-  //
-  //    """.format(x.getClass.getName, s))
-  //  }
+  def fromJSON(j: JObject): X
+
+  def fromJSON(s: String): X = JsonParser.parse(s) match {
+    case j: JObject => fromJSON(j)
+    case x => error("""
+  fromJSON: input string parses to unsupported type '%s' !
+
+  %s
+
+                     """.format(x.getClass.getName, s))
+  }
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T]
 
@@ -286,11 +287,32 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   def cachedFieldName(field: SField) = fieldNameMap.getOrElse(field, field.name)
 
+  protected[salat] def fromJsonTransform(j: Option[JValue], field: SField): Option[AnyRef] = j.map {
+    case j: JArray                 => j.arr.map(fromJsonTranform0(_, field))
+    case o: JObject if field.isMap => o.obj.map(v => (v.name, fromJsonTranform0(v.value, field))).toMap
+    case x                         => fromJsonTranform0(x, field)
+  }
+
   protected[salat] def jsonTranform(o: Any): JValue = o.asInstanceOf[AnyRef] match {
     case t: BasicDBList => JArray(t.map(jsonTranform(_)).toList)
     case dbo: DBObject  => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, jsonTranform(v._2))))
     case m: Map[_, _]   => JObject(m.toList.map(v => JField(v._1.toString, jsonTranform(v._2))))
     case x              => jsonTranform0(x)
+  }
+
+  protected[salat] def fromJsonTranform0(j: JValue, field: SField): AnyRef = j match {
+    case v if field.isDateTime => ctx.jsonConfig.dateStrategy.toDateTime(v)
+    case v if field.isDate => ctx.jsonConfig.dateStrategy.toDate(v)
+    case s: JString if TypeMatchers.matches(field.typeRefType, "java.net.URL") => new URL(s.values)
+    case s: JString => s.values
+    case d: JDouble => d.values.asInstanceOf[AnyRef]
+    case i: JInt => i.values.intValue().asInstanceOf[AnyRef]
+    case b: JBool => b.values.asInstanceOf[AnyRef]
+    case o: JObject if field.isOid => new ObjectId(o.values.getOrElse("$oid",
+      error("fromJsonTranform0: unexpected OID input class='%s', value='%s'".format(o.getClass.getName, o.values))).
+      toString)
+    case JsonAST.JNull => null
+    case x: AnyRef     => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
   }
 
   protected[salat] def jsonTranform0(o: Any) = o match {
@@ -303,7 +325,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     case o: ObjectId => JObject(List(JField("$oid", JString(o.toString))))
     case u: java.net.URL => JString(u.toString) // might as well
     case n if n == null && ctx.jsonConfig.outputNullValues => JNull
-    case x: AnyRef => sys.error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x.getClass))
+    case x: AnyRef => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x.getClass))
   }
 
   def toJSON(o: X) = {
@@ -325,8 +347,6 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
     JObject(builder.result())
   }
-
-  def fromJSON(j: JObject) = sys.error("TODO: implement me")
 
   def asDBObject(o: X): DBObject = {
     val builder = MongoDBObject.newBuilder
@@ -351,12 +371,19 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       val args = indexedFields.map {
         case field if field.ignore => safeDefault(field)
         case field => {
-          dbo.get(cachedFieldName(field)) match {
-            case Some(value) => {
-              field.in_!(value)
-            }
-            case _ => safeDefault(field)
-          }
+          val name = cachedFieldName(field)
+          val value = dbo.get(name)
+          //          log.info(
+          //            """
+          //asObject: %s
+          //  field: %s
+          //  name: %s
+          //  dbo.get("%s"): %s
+          //  dbo.get("%s").flatMap(field.in_!(_)): %s
+          //  safeDefault: %s
+          //            """, clazz.getName, field.name, name, name, value, name, value.flatMap(field.in_!(_)), defaultArg(field).value)
+
+          value.flatMap(field.in_!(_)) orElse safeDefault(field)
         }
       }.map(_.get.asInstanceOf[AnyRef]) // TODO: if raw get blows up, throw a more informative error
 
@@ -397,11 +424,36 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     }
   }
 
+  def fromJSON(j: JObject) = {
+    val values = j.obj.map(v => (v.name, v.value)).toMap
+    val args = indexedFields.map {
+      case field if field.ignore => safeDefault(field)
+      case field => {
+        val name = cachedFieldName(field)
+        val rawValue = values.get(name)
+        val value = fromJsonTransform(rawValue, field)
+        //        log.info(
+        //          """
+        //fromJSON: %s
+        //  field: %s
+        //  name: %s
+        //  values.get("%s"): %s
+        //  fromJsonTransform(rawValue, field): %s
+        //  fromJsonTransform(rawValue, field).flatMap(field.in_!(_)): %s
+        //  safeDefault: %s
+        //                      """, clazz.getName, field.name, name, name, rawValue, value, value.flatMap(field.in_!(_)), defaultArg(field).value)
+
+        value.flatMap(field.in_!(_)) orElse safeDefault(field)
+      }
+    }
+    feedArgsToConstructor(args.flatten.asInstanceOf[Seq[AnyRef]])
+  }
+
   def fromMap(m: Map[String, Any]): X = {
     val args = indexedFields.map {
       field =>
         if (field.ignore) {
-          safeDefault(field).get.asInstanceOf[AnyRef]
+          safeDefault(field).get
         }
         else (m.get(cachedFieldName(field)) orElse safeDefault(field)).get.asInstanceOf[AnyRef]
     }

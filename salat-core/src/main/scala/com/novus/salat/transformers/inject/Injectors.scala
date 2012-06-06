@@ -214,6 +214,7 @@ package in {
 
   import java.lang.Integer
   import com.novus.salat.annotations.EnumAs
+  import net.liftweb.json.JsonAST.JArray
 
   trait LongToInt extends Transformer {
     self: Transformer =>
@@ -312,7 +313,9 @@ package in {
         val list: MongoDBList = dbl
         Some(list.toList)
       }
-      case _ => None
+      case j: JArray  => Some(j.arr)
+      case l: List[_] => Some(l)
+      case _          => None
     }
 
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
@@ -334,7 +337,8 @@ package in {
         val mdbo: MongoDBObject = dbo
         Some(mdbo)
       }
-      case _ => None
+      case m: Map[_, _] => Some(m)
+      case _            => None
     }
 
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
@@ -345,7 +349,8 @@ package in {
         }
         Some(mapImpl(parentType, builder.result))
       }
-      case _ => None
+      case m: Map[_, _] => Some(mapImpl(parentType, m))
+      case _            => None
     }
 
     val parentType: TypeRefType
