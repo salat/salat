@@ -121,7 +121,7 @@ object Publish {
           <url>http://github.com/rktoomey</url>
         </developer>
       </developers>),
-    publishArtifact in (Compile, packageDoc) := false
+    publishArtifact in (Compile, packageDoc) := false   // https://issues.scala-lang.org/browse/SI-4284
   )
 }
 
