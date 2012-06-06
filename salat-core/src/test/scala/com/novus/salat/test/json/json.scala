@@ -31,7 +31,7 @@ import org.joda.time.format.DateTimeFormat
 
 object `package` {
 
-  val TestDateFormatter = DateTimeFormat.forPattern("MM/dd/yyyy").withZone(DateTimeZone.forID("US/Eastern"))
+  val TestDateFormatter = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss.SSS").withZone(DateTimeZone.forID("US/Eastern"))
 
   val TestTypeHint = "_t"
 

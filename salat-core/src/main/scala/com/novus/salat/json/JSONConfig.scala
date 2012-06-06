@@ -41,18 +41,30 @@ case class JSONConfig(dateStrategy: JSONDateStrategy = StringDateStrategy(),
 trait JSONDateStrategy {
   def out(d: DateTime): JValue
   def out(d: Date): JValue
+  def toDateTime(j: JValue): DateTime
+  def toDate(j: JValue) = toDateTime(j).toDate
 }
 
 case class StringDateStrategy(dateFormatter: DateTimeFormatter = JSONConfig.DefaultDateTimeFormatter) extends JSONDateStrategy {
   def out(d: Date) = JString(dateFormatter.print(d.getTime))
 
   def out(d: DateTime) = JString(dateFormatter.print(d))
+
+  def toDateTime(j: JValue) = j match {
+    case s: JString => dateFormatter.parseDateTime(s.values)
+    case x          => error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+  }
 }
 
 object StrictJSONDateStrategy extends JSONDateStrategy {
   def out(d: Date) = JField("$date", JInt(d.getTime))
 
   def out(d: DateTime) = JField("$date", JInt(d.getMillis))
+
+  def toDateTime(j: JValue) = j match {
+    case o: JField => new DateTime(o.values._2)
+    case x         => error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+  }
 }
 
 // or roll your own date strategy....  O the excitement.

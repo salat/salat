@@ -27,6 +27,9 @@ import scala.math.{ BigDecimal => SBigDecimal }
 import scala.tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
 
 protected[salat] object Types {
+  val Date = "java.util.Date"
+  val DateTime = Set("org.joda.time.DateTime", "org.scala_tools.time.TypeImports.DateTime")
+  val Oid = "org.bson.types.ObjectId"
   val SBigDecimal = classOf[SBigDecimal].getName
   val Option = "scala.Option"
   val Map = ".Map"
@@ -47,6 +50,10 @@ protected[salat] object TypeMatchers {
     case TypeRefType(_, symbol, List(arg)) if symbol.path == name => Some(arg)
     case _ => None
   }
+
+  def matches(t: TypeRefType, name: String) = t.symbol.path == name
+
+  def matches(t: TypeRefType, names: Traversable[String]) = names.exists(t.symbol.path == _)
 
   def matchesMap(t: Type) = t match {
     case TypeRefType(_, symbol, k :: v :: Nil) if Types.isMap(symbol) => Some(k -> v)

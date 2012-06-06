@@ -78,7 +78,7 @@ package object impls {
     case x                     => throw new IllegalArgumentException("failed to find proper Map[_,_] impl for %s".format(x))
   }
 
-  def mapImpl(t: Type, real: collection.Map[String, _]): scala.collection.Map[_, _] =
+  def mapImpl(t: Type, real: collection.Map[_, _]): scala.collection.Map[_, _] =
     t match {
       case TypeRefType(_, symbol, _) => symbol.path match {
         case "scala.Predef.Map" => mapImpl(ImplClasses.IMapClass, real)

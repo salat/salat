@@ -24,9 +24,9 @@
 package com.novus.salat
 
 import scala.tools.scalap.scalax.rules.scalasig._
-import com.novus.salat.{Field => SField}
+import com.novus.salat.{ Field => SField }
 
-import java.lang.reflect.{InvocationTargetException, Constructor, Method}
+import java.lang.reflect.{ InvocationTargetException, Constructor, Method }
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
@@ -37,6 +37,7 @@ import com.novus.salat.util.Logging
 import net.liftweb.json._
 import java.util.Date
 import org.joda.time.DateTime
+import java.net.URL
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -63,7 +64,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   def fromJSON(s: String): X = JsonParser.parse(s) match {
     case j: JObject => fromJSON(j)
-    case x => error( """
+    case x => error("""
   fromJSON: input string parses to unsupported type '%s' !
 
   %s
@@ -144,7 +145,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   protected def outField: OutHandler = {
     case (_, field) if field.ignore => None
-    case (null, _) => None
+    case (null, _)                  => None
     case (element, field) => {
       field.out_!(element) match {
         case Some(None) => None
@@ -169,7 +170,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
               val key = cachedFieldName(field)
               val value = serialized match {
                 case Some(unwrapped) => unwrapped
-                case _ => serialized
+                case _               => serialized
               }
               Some(key -> value)
             }
@@ -187,15 +188,15 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       .map(_.asInstanceOf[MethodSymbol])
       .zipWithIndex
       .map {
-      case (ms, idx) => {
-        //        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
-        SField(idx = idx,
-          name = if (keyOverridesFromAbove.contains(ms)) keyOverridesFromAbove(ms) else ms.name,
-          t = typeRefType(ms),
-          method = clazz.getMethod(ms.name))
-      }
+        case (ms, idx) => {
+          //        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
+          SField(idx = idx,
+            name = if (keyOverridesFromAbove.contains(ms)) keyOverridesFromAbove(ms) else ms.name,
+            t = typeRefType(ms),
+            method = clazz.getMethod(ms.name))
+        }
 
-    }
+      }
   }
 
   protected def findAnnotatedMethodSymbol[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
@@ -204,18 +205,18 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       .filter(_.isAnnotationPresent(annotation))
       .filterNot(m => m.annotated_?[Ignore])
       .map {
-      case m: Method => m -> {
-        log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
-        // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
-        allTheChildren
-          .filter(f => f.name == m.getName && f.isAccessor)
-          .map(_.asInstanceOf[MethodSymbol])
-          .headOption match {
-          case Some(ms) => ms
-          case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+        case m: Method => m -> {
+          log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
+          // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
+          allTheChildren
+            .filter(f => f.name == m.getName && f.isAccessor)
+            .map(_.asInstanceOf[MethodSymbol])
+            .headOption match {
+              case Some(ms) => ms
+              case None     => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+            }
         }
       }
-    }
   }
 
   protected def findAnnotatedFields[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
@@ -224,18 +225,18 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       .filter(_.isAnnotationPresent(annotation))
       .filterNot(m => m.annotated_?[Ignore])
       .map {
-      case m: Method => m -> {
-        log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
-        // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
-        allTheChildren
-          .filter(f => f.name == m.getName && f.isAccessor)
-          .map(_.asInstanceOf[MethodSymbol])
-          .headOption match {
-          case Some(ms) => SField(-1, ms.name, typeRefType(ms), m) // TODO: -1 magic number for idx which is required but not used
-          case None => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+        case m: Method => m -> {
+          log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
+          // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
+          allTheChildren
+            .filter(f => f.name == m.getName && f.isAccessor)
+            .map(_.asInstanceOf[MethodSymbol])
+            .headOption match {
+              case Some(ms) => SField(-1, ms.name, typeRefType(ms), m) // TODO: -1 magic number for idx which is required but not used
+              case None     => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+            }
         }
       }
-    }
   }
 
   protected lazy val extraFieldsToPersist = {
@@ -255,7 +256,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     for ((method, ms) <- annotated) {
       method.annotation[Key].map(_.value) match {
         case Some(key) => builder += ms -> key
-        case None =>
+        case None      =>
       }
     }
     builder.result
@@ -267,7 +268,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   protected[salat] lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
 
   protected def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
-    case PolyType(tr@TypeRefType(_, _, _), _) => tr
+    case PolyType(tr @ TypeRefType(_, _, _), _) => tr
   }
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
@@ -285,11 +286,32 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   def cachedFieldName(field: SField) = fieldNameMap.getOrElse(field, field.name)
 
+  protected[salat] def fromJsonTransform(j: Option[JValue], field: SField): Option[AnyRef] = j.map {
+    case j: JArray                 => j.arr.map(fromJsonTranform0(_, field))
+    case o: JObject if field.isMap => o.obj.map(v => (v.name, fromJsonTranform0(v.value, field))).toMap
+    case x                         => fromJsonTranform0(x, field)
+  }
+
   protected[salat] def jsonTranform(o: Any): JValue = o.asInstanceOf[AnyRef] match {
     case t: BasicDBList => JArray(t.map(jsonTranform(_)).toList)
-    case dbo: DBObject => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, jsonTranform(v._2))))
-    case m: Map[_, _] => JObject(m.toList.map(v => JField(v._1.toString, jsonTranform(v._2))))
-    case x => jsonTranform0(x)
+    case dbo: DBObject  => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, jsonTranform(v._2))))
+    case m: Map[_, _]   => JObject(m.toList.map(v => JField(v._1.toString, jsonTranform(v._2))))
+    case x              => jsonTranform0(x)
+  }
+
+  protected[salat] def fromJsonTranform0(j: JValue, field: SField): AnyRef = j match {
+    case v if field.isDateTime => ctx.jsonConfig.dateStrategy.toDateTime(v)
+    case v if field.isDate => ctx.jsonConfig.dateStrategy.toDate(v)
+    case s: JString if TypeMatchers.matches(field.typeRefType, "java.net.URL") => new URL(s.values)
+    case s: JString => s.values
+    case d: JDouble => d.values.asInstanceOf[AnyRef]
+    case i: JInt => i.values.intValue().asInstanceOf[AnyRef]
+    case b: JBool => b.values.asInstanceOf[AnyRef]
+    case o: JObject if field.isOid => new ObjectId(o.values.getOrElse("$oid",
+      error("fromJsonTranform0: unexpected OID input class='%s', value='%s'".format(o.getClass.getName, o.values))).
+      toString)
+    case JsonAST.JNull => null
+    case x: AnyRef     => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
   }
 
   protected[salat] def jsonTranform0(o: Any) = o match {
@@ -302,7 +324,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     case o: ObjectId => JObject(List(JField("$oid", JString(o.toString))))
     case u: java.net.URL => JString(u.toString) // might as well
     case n if n == null && ctx.jsonConfig.outputNullValues => JNull
-    case x: AnyRef => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x.getClass))
+    case x: AnyRef => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
   }
 
   def toJSON(o: X) = {
@@ -348,12 +370,19 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       val args = indexedFields.map {
         case field if field.ignore => safeDefault(field)
         case field => {
-          dbo.get(cachedFieldName(field)) match {
-            case Some(value) => {
-              field.in_!(value)
-            }
-            case _ => safeDefault(field)
-          }
+          val name = cachedFieldName(field)
+          val value = dbo.get(name)
+          //          log.info(
+          //            """
+          //asObject: %s
+          //  field: %s
+          //  name: %s
+          //  dbo.get("%s"): %s
+          //  dbo.get("%s").flatMap(field.in_!(_)): %s
+          //  safeDefault: %s
+          //            """, clazz.getName, field.name, name, name, value, name, value.flatMap(field.in_!(_)), defaultArg(field).value)
+
+          value.flatMap(field.in_!(_)) orElse safeDefault(field)
         }
       }.map(_.get.asInstanceOf[AnyRef]) // TODO: if raw get blows up, throw a more informative error
 
@@ -386,25 +415,37 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     catch {
       // when something bad happens feeding args into constructor, catch these exceptions and
       // wrap them in a custom exception that will provide detailed information about what's happening.
-      case e: InstantiationException => throw ToObjectGlitch(this, sym, constructor, args, e)
-      case e: IllegalAccessException => throw ToObjectGlitch(this, sym, constructor, args, e)
-      case e: IllegalArgumentException => throw ToObjectGlitch(this, sym, constructor, args, e)
+      case e: InstantiationException    => throw ToObjectGlitch(this, sym, constructor, args, e)
+      case e: IllegalAccessException    => throw ToObjectGlitch(this, sym, constructor, args, e)
+      case e: IllegalArgumentException  => throw ToObjectGlitch(this, sym, constructor, args, e)
       case e: InvocationTargetException => throw ToObjectGlitch(this, sym, constructor, args, e)
-      case e => throw e
+      case e                            => throw e
     }
   }
 
-
   def fromJSON(j: JObject) = {
-    val values = j.values
+    val values = j.obj.map(v => (v.name, v.value)).toMap
     val args = indexedFields.map {
-      field =>
-        if (field.ignore) {
-          safeDefault(field).get
-        }
-        else (values.get(cachedFieldName(field)) orElse safeDefault(field)).get.asInstanceOf[AnyRef]
+      case field if field.ignore => safeDefault(field)
+      case field => {
+        val name = cachedFieldName(field)
+        val rawValue = values.get(name)
+        val value = fromJsonTransform(rawValue, field)
+//        log.info(
+//          """
+//fromJSON: %s
+//  field: %s
+//  name: %s
+//  values.get("%s"): %s
+//  fromJsonTransform(rawValue, field): %s
+//  fromJsonTransform(rawValue, field).flatMap(field.in_!(_)): %s
+//  safeDefault: %s
+//                      """, clazz.getName, field.name, name, name, rawValue, value, value.flatMap(field.in_!(_)), defaultArg(field).value)
+
+        value.flatMap(field.in_!(_)) orElse safeDefault(field)
+      }
     }
-    feedArgsToConstructor(args)
+    feedArgsToConstructor(args.flatten.asInstanceOf[Seq[AnyRef]])
   }
 
   def fromMap(m: Map[String, Any]): X = {
@@ -476,10 +517,10 @@ case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(imp
   else false
 
   lazy val safeValue: Some[AnyRef] = value match {
-    case v@Some(_) => v
+    case v @ Some(_) => v
     case _ => field.typeRefType match {
       case IsOption(_) => Some(None)
-      case _ => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
+      case _           => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
     }
   }
 
