@@ -66,3 +66,6 @@ case class Adam(a: String,
 
 case class Bertil(ints: List[Int], strings: List[String])
 case class Caesar(l: List[Bertil])
+case class David(m: Map[String, Int])
+case class Erik(e: String)
+case class Filip(m: Map[String, Erik])

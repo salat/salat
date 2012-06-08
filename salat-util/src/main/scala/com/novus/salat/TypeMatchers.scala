@@ -23,7 +23,7 @@
  */
 package com.novus.salat
 
-import scala.math.{ BigDecimal => SBigDecimal }
+import scala.math.{ BigDecimal => SBigDecimal, BigInt }
 import scala.tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
 
 protected[salat] object Types {
@@ -31,6 +31,7 @@ protected[salat] object Types {
   val DateTime = Set("org.joda.time.DateTime", "org.scala_tools.time.TypeImports.DateTime")
   val Oid = "org.bson.types.ObjectId"
   val SBigDecimal = classOf[SBigDecimal].getName
+  val BigInt = classOf[BigInt].getName
   val Option = "scala.Option"
   val Map = ".Map"
   val Traversables = Set(".Seq", ".List", ".Vector", ".Set", ".Buffer", ".ArrayBuffer", ".IndexedSeq", ".LinkedList", ".DoubleLinkedList")
@@ -42,6 +43,26 @@ protected[salat] object Types {
   def isTraversable(symbol: Symbol) = Traversables.exists(symbol.path.endsWith(_))
 
   def isBigDecimal(symbol: Symbol) = symbol.path == SBigDecimal
+
+  def isBigInt(symbol: Symbol) = symbol.path == BigInt
+}
+
+protected[salat] case class TypeFinder(t: TypeRefType) {
+  lazy val isMap = Types.isMap(t.symbol)
+  lazy val isTraversable = Types.isTraversable(t.symbol)
+
+  lazy val isDate = TypeMatchers.matches(t, Types.Date)
+  lazy val isDateTime = TypeMatchers.matches(t, Types.DateTime)
+
+  lazy val isChar = TypeMatchers.matches(t, classOf[Char].getName)
+  lazy val isFloat = TypeMatchers.matches(t, classOf[Float].getName)
+  lazy val isShort = TypeMatchers.matches(t, classOf[Short].getName)
+  lazy val isBigDecimal = Types.isBigDecimal(t.symbol)
+  lazy val isBigInt = Types.isBigInt(t.symbol)
+  lazy val isLong = TypeMatchers.matches(t, classOf[Long].getName)
+
+  lazy val isOid = TypeMatchers.matches(t, Types.Oid)
+  lazy val isURL = TypeMatchers.matches(t, classOf[java.net.URL].getName)
 }
 
 protected[salat] object TypeMatchers {

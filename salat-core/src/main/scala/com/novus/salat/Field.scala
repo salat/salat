@@ -63,11 +63,7 @@ sealed abstract class Field(val idx: Int,
   def in_!(value: Any) = in.transform_!(value)
   def out_!(value: Any) = out.transform_!(value)
 
-  lazy val isMap = Types.isMap(typeRefType.symbol)
-  lazy val isTraversable = Types.isTraversable(typeRefType.symbol)
-  lazy val isDate = TypeMatchers.matches(typeRefType, Types.Date)
-  lazy val isDateTime = TypeMatchers.matches(typeRefType, Types.DateTime)
-  lazy val isOid = TypeMatchers.matches(typeRefType, Types.Oid)
+  lazy val tf = TypeFinder(typeRefType)
 
   //  override def toString = "Field[%d/%s]".format(idx, name)
   override def toString = """

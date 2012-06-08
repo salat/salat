@@ -29,30 +29,41 @@ import org.specs2.mutable.Specification
 import net.liftweb.json._
 import scala.util.parsing.json.{ JSONObject, JSONArray }
 import org.bson.types.ObjectId
+import net.liftweb.json.JsonParser.ParseException
 
 class JsonSpec extends Specification with Logging {
+
+  val o = new ObjectId("4fd0bead4ceab231e6f3220b")
+  val a = Adam(a = "string", b = 99, c = 3.14, d = false, e = testDate, u = testURL, o = o)
+  val ints = List(1, 2, 3)
+  val strings = List("a", "b", "c")
+  val b = Bertil(ints = ints, strings = strings)
 
   "JSON support" should {
     "handle converting model objects to JObject" in {
       "simple types" in {
-        val o = new ObjectId
-        val a = Adam(a = "string", b = 99, c = 3.14, d = false, e = testDate, u = testURL, o = o)
         val rendered = grater[Adam].toPrettyJSON(a)
-        //      log.debug(rendered)
-
+        //        00:15:46.298 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
+        //          "a":"string",
+        //          "b":99,
+        //          "c":3.14,
+        //          "d":false,
+        //          "e":"2011-12-28T14:37:56.008-05:00",
+        //          "u":"http://www.typesafe.com",
+        //          "o":{
+        //            "$oid":"4fd0bead4ceab231e6f3220b"
+        //          }
+        //        }
         rendered must /("a" -> "string")
         rendered must /("b" -> 99)
         rendered must /("c" -> 3.14)
         rendered must /("d" -> false)
         rendered must /("e" -> TestDateFormatter.print(testDate))
         rendered must /("u" -> testURL.toString)
-        rendered must /("o") / ("$oid" -> o.toString)
+        rendered must /("o") / ("$oid" -> "4fd0bead4ceab231e6f3220b")
       }
       "lists" in {
         "of simple types" in {
-          val ints = List(1, 2, 3)
-          val strings = List("a", "b", "c")
-          val b = Bertil(ints = ints, strings = strings)
           val rendered = grater[Bertil].toPrettyJSON(b)
           //        log.debug(rendered)
           //        09:47:43.440 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
@@ -85,17 +96,91 @@ class JsonSpec extends Specification with Logging {
             JSONObject(Map("ints" -> JSONArray(ints.map(_ * 2)), "strings" -> JSONArray(strings.map(_.capitalize)))))))
         }
       }
+      "maps" in {
+        "of simple types" in {
+          val d = David(m = Map("a" -> 1, "b" -> 2, "c" -> 3))
+          val rendered = grater[David].toPrettyJSON(d)
+          //          log.debug(rendered)
+          //          11:12:38.127 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
+          //            "m":{
+          //              "a":1,
+          //              "b":2,
+          //              "c":3
+          //            }
+          //          }
+          rendered must /("m") / ("a" -> 1.0) // by default, specs2 parses numbers in JSON as doubles
+          rendered must /("m") / ("b" -> 2.0)
+          rendered must /("m") / ("c" -> 3.0)
+        }
+      }
+      "of case classes" in {
+        val e1 = Erik(e = "Erik")
+        val e2 = Erik(e = "Another Erik")
+        val f = Filip(m = Map("e1" -> e1, "e2" -> e2))
+        val rendered = grater[Filip].toPrettyJSON(f)
+        //          "m":{
+        //            "e1":{
+        //              "e":"Erik"
+        //            },
+        //            "e2":{
+        //              "e":"Another Erik"
+        //            }
+        //          }
+        //        }
+        rendered must /("m") / ("e1") / ("e" -> "Erik")
+        rendered must /("m") / ("e2") / ("e" -> "Another Erik")
+      }
     }
     "handle converting JSON to model objects" in {
-      "a JObject containing simple types" in {
-        val o = new ObjectId
-        val a = Adam(a = "string", b = 99, c = 3.14, d = false, e = testDate, u = testURL, o = o)
-        val j = grater[Adam].toJSON(a)
-        println("\n\n\n%s\n\n\n", grater[Adam].toCompactJSON(a))
-        val a_* = grater[Adam].fromJSON(j)
-        a must_== a_*
+      "JObjects" in {
+        "containing simple types" in {
+          val j = JObject(
+            JField("a", JString("string")) ::
+              JField("b", JInt(99)) ::
+              JField("c", JDouble(3.14)) ::
+              JField("d", JBool(false)) ::
+              JField("e", JString(TestDateFormatter.print(testDate))) ::
+              JField("u", JString(testURL.toString)) ::
+              JField("o", JObject(JField("$oid", JString("4fd0bead4ceab231e6f3220b")) :: Nil)) ::
+              Nil)
+          grater[Adam].fromJSON(j) must_== a
+        }
+        "containing lists" in {
+          "of simple types" in {
+            val j = JObject(
+              JField("ints", JArray(ints.map(JInt(_)))) ::
+                JField("strings", JArray(strings.map(JString(_)))) ::
+                Nil)
+            grater[Bertil].fromJSON(j) must_== b
+          }
+          "of case classes" in {
+            val j = JObject(JField("l",
+              JArray(
+                JObject(JField("ints", JArray(ints.map(JInt(_)))) :: JField("strings", JArray(strings.map(JString(_)))) :: Nil) ::
+                  JObject(JField("ints", JArray(ints.map(i => JInt(i * 2)))) :: JField("strings", JArray(strings.map(s => JString(s.capitalize)))) :: Nil) ::
+                  Nil))
+              :: Nil)
+            val c = Caesar(l = List(
+              Bertil(ints = ints, strings = strings), Bertil(ints = ints.map(_ * 2),
+                strings = strings.map(_.capitalize))))
+            grater[Caesar].fromJSON(j) must_== c
+          }
+        }
       }
-      // {"a":"string","b":99,"c":3.14,"d":false,"e":"12/28/2011","u":"http://www.typesafe.com","o":{"$oid":"4fcf9ab8c89c8c8e1df5115f"}})
+      "strings" in {
+        "a string that can be parsed to JSON" in {
+          val adam = """{"a":"string","b":99,"c":3.14,"d":false,"e":"2011-12-28T14:37:56.008-05:00","u":"http://www.typesafe.com","o":{"$oid":"4fd0bead4ceab231e6f3220b"}}"""
+          grater[Adam].fromJSON(adam) must_== a
+          grater[Bertil].fromJSON("""{"ints":[1,2,3],"strings":["a","b","c"]}""") must_== b
+        }
+        "throw an exception when string cannot be parsed to valid JSON" in {
+          val invalid = """?"""
+          grater[Adam].fromJSON(invalid) must throwA[ParseException]
+        }
+        "throw an exception when string parses to valid but unexpected JSON" in {
+          grater[Adam].fromJSON("""["a","b","c"]""") must throwA[RuntimeException]
+        }
+      }
     }
 
   }

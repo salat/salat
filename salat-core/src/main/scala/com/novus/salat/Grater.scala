@@ -38,6 +38,7 @@ import net.liftweb.json._
 import java.util.Date
 import org.joda.time.DateTime
 import java.net.URL
+import com.novus.salat.json.{ FromJValue, ToJField, ToJValue }
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -286,64 +287,14 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   def cachedFieldName(field: SField) = fieldNameMap.getOrElse(field, field.name)
 
-  protected[salat] def fromJsonTransform(j: Option[JValue], field: SField): Option[AnyRef] = j.map {
-    case j: JArray                 => j.arr.map(fromJsonTranform0(_, field))
-    case o: JObject if field.isMap => o.obj.map(v => (v.name, fromJsonTranform0(v.value, field))).toMap
-    case x                         => fromJsonTranform0(x, field)
-  }
-
-  protected[salat] def jsonTranform(o: Any): JValue = o.asInstanceOf[AnyRef] match {
-    case t: BasicDBList => JArray(t.map(jsonTranform(_)).toList)
-    case dbo: DBObject  => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, jsonTranform(v._2))))
-    case m: Map[_, _]   => JObject(m.toList.map(v => JField(v._1.toString, jsonTranform(v._2))))
-    case x              => jsonTranform0(x)
-  }
-
-  protected[salat] def fromJsonTranform0(j: JValue, field: SField): AnyRef = j match {
-    case v if field.isDateTime => ctx.jsonConfig.dateStrategy.toDateTime(v)
-    case v if field.isDate => ctx.jsonConfig.dateStrategy.toDate(v)
-    case s: JString if TypeMatchers.matches(field.typeRefType, "java.net.URL") => new URL(s.values)
-    case s: JString => s.values
-    case d: JDouble => d.values.asInstanceOf[AnyRef]
-    case i: JInt => i.values.intValue().asInstanceOf[AnyRef]
-    case b: JBool => b.values.asInstanceOf[AnyRef]
-    case o: JObject if field.isOid => new ObjectId(o.values.getOrElse("$oid",
-      error("fromJsonTranform0: unexpected OID input class='%s', value='%s'".format(o.getClass.getName, o.values))).
-      toString)
-    case JsonAST.JNull => null
-    case x: AnyRef     => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
-  }
-
-  protected[salat] def jsonTranform0(o: Any) = o match {
-    case s: String => JString(s)
-    case d: Double => JDouble(d)
-    case i: Int => JInt(i)
-    case b: Boolean => JBool(b)
-    case d: Date => ctx.jsonConfig.dateStrategy.out(d)
-    case d: DateTime => ctx.jsonConfig.dateStrategy.out(d)
-    case o: ObjectId => JObject(List(JField("$oid", JString(o.toString))))
-    case u: java.net.URL => JString(u.toString) // might as well
-    case n if n == null && ctx.jsonConfig.outputNullValues => JNull
-    case x: AnyRef => error("Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
-  }
-
   def toJSON(o: X) = {
     val builder = List.newBuilder[JField]
-    if (useTypeHint) {
-      val field: JValue = if (ctx.typeHintStrategy.isInstanceOf[StringTypeHintStrategy]) {
-        JString(clazz.getName)
-      }
-      else error("toJSON: unsupported type hint strategy '%s'".format(ctx.typeHintStrategy))
-      builder += JField(ctx.typeHintStrategy.typeHint, field)
-    }
-
+    builder ++= ToJField.typeHint(clazz, useTypeHint)
     iterateOut(o) {
       case (key, value) => {
-        //        log.debug("ADDING: k='%s', v='%s'", key, value)
-        builder += JField(key, jsonTranform(value))
+        builder += ToJField(key, value)
       }
     }.toList
-
     JObject(builder.result())
   }
 
@@ -430,7 +381,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       case field => {
         val name = cachedFieldName(field)
         val rawValue = values.get(name)
-        val value = fromJsonTransform(rawValue, field)
+        val value = FromJValue(rawValue, field)
         //        log.info(
         //          """
         //fromJSON: %s
