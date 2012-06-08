@@ -26,12 +26,12 @@ package com.novus.salat.test.json
 import com.novus.salat._
 import org.joda.time.DateTimeConstants._
 import com.novus.salat.json.{ StringDateStrategy, JSONConfig }
-import org.joda.time.{ DateTimeZone, DateTime }
-import org.joda.time.format.DateTimeFormat
+import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 
 object `package` {
 
-  val TestDateFormatter = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss.SSS").withZone(DateTimeZone.forID("US/Eastern"))
+  val TestDateFormatter = ISODateTimeFormat.dateTime
 
   val TestTypeHint = "_t"
 

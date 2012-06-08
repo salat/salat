@@ -214,7 +214,7 @@ package in {
 
   import java.lang.Integer
   import com.novus.salat.annotations.EnumAs
-  import net.liftweb.json.JsonAST.JArray
+  import net.liftweb.json.JsonAST.{ JObject, JArray }
 
   trait LongToInt extends Transformer {
     self: Transformer =>
@@ -293,6 +293,7 @@ package in {
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
       case dbo: DBObject       => transform0(dbo)
       case mdbo: MongoDBObject => transform0(mdbo)
+      case x                   => x
     }
   }
 
