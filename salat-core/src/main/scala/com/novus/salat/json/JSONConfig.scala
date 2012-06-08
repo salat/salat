@@ -52,7 +52,7 @@ case class StringDateStrategy(dateFormatter: DateTimeFormatter = JSONConfig.Defa
 
   def toDateTime(j: JValue) = j match {
     case s: JString => dateFormatter.parseDateTime(s.values)
-    case x          => error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+    case x          => sys.error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
 }
 
@@ -63,7 +63,7 @@ object StrictJSONDateStrategy extends JSONDateStrategy {
 
   def toDateTime(j: JValue) = j match {
     case o: JField => new DateTime(o.values._2)
-    case x         => error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+    case x         => sys.error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
 }
 

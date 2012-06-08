@@ -65,7 +65,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   def fromJSON(s: String): X = JsonParser.parse(s) match {
     case j: JObject => fromJSON(j)
-    case x => error("""
+    case x => sys.error("""
   fromJSON: input string parses to unsupported type '%s' !
 
   %s
