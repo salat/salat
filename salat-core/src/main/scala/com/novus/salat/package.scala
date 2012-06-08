@@ -77,7 +77,10 @@ object `package` extends Logging {
     resolveClass(c, ctx.classLoaders)
   }
 
-  protected[salat] def isCaseClass(clazz: Class[_]) = clazz.getInterfaces.contains(classOf[Product])
+  protected[salat] def isCaseClass(clazz: Class[_]) = {
+    //log.debug("isCaseClass: clazz='%s'\nInterfaces:\n%s", clazz.getName, clazz.getInterfaces.map(_.getName).mkString("\n"))
+    clazz.getInterfaces.contains(classOf[Product])
+  }
 
   protected[salat] def isCaseObject(clazz: Class[_]): Boolean = clazz.getInterfaces.contains(classOf[Product]) &&
     clazz.getInterfaces.contains(classOf[ScalaObject]) && clazz.getName.endsWith("$")
