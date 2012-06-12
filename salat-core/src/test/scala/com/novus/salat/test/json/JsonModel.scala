@@ -25,6 +25,7 @@ package com.novus.salat.test.json
 
 import org.joda.time.DateTime
 import org.bson.types.ObjectId
+import com.novus.salat.annotations._
 
 //  A	Adam
 //  B	Bertil
@@ -70,11 +71,13 @@ case class David(m: Map[String, Int])
 case class Erik(e: String)
 case class Filip(m: Map[String, Erik])
 case class Gustav(o: Option[String] = None)
+@Salat
 trait Helge {
   val s: String
 }
 case class Ivar(s: String) extends Helge
 case class Johan(s: String, d: Double) extends Helge
+@Salat
 abstract class Kalle(s: String)
 case class Ludvig(s: String) extends Kalle(s)
 case class Martin(s: String, d: Double) extends Kalle(s)
