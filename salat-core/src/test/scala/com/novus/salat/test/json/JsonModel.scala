@@ -69,3 +69,12 @@ case class Caesar(l: List[Bertil])
 case class David(m: Map[String, Int])
 case class Erik(e: String)
 case class Filip(m: Map[String, Erik])
+case class Gustav(o: Option[String] = None)
+trait Helge {
+  val s: String
+}
+case class Ivar(s: String) extends Helge
+case class Johan(s: String, d: Double) extends Helge
+abstract class Kalle(s: String)
+case class Ludvig(s: String) extends Kalle(s)
+case class Martin(s: String, d: Double) extends Kalle(s)

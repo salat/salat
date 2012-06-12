@@ -33,6 +33,11 @@ import net.liftweb.json.JsonParser.ParseException
 
 class JsonSpec extends Specification with Logging {
 
+  // TODO: traits and abstract superclasses
+  // TODO: @Key
+  // TODO: @Ignore
+  // TODO: @Persist
+
   val o = new ObjectId("4fd0bead4ceab231e6f3220b")
   val a = Adam(a = "string", b = 99, c = 3.14, d = false, e = testDate, u = testURL, o = o)
   val ints = List(1, 2, 3)
@@ -112,23 +117,54 @@ class JsonSpec extends Specification with Logging {
           rendered must /("m") / ("b" -> 2.0)
           rendered must /("m") / ("c" -> 3.0)
         }
+        "of case classes" in {
+          val f = Filip(m = Map("e1" -> Erik(e = "Erik"), "e2" -> Erik(e = "Another Erik")))
+          val rendered = grater[Filip].toPrettyJSON(f)
+          //          "m":{
+          //            "e1":{
+          //              "e":"Erik"
+          //            },
+          //            "e2":{
+          //              "e":"Another Erik"
+          //            }
+          //          }
+          //        }
+          rendered must /("m") / ("e1") / ("e" -> "Erik")
+          rendered must /("m") / ("e2") / ("e" -> "Another Erik")
+        }
       }
-      "of case classes" in {
-        val e1 = Erik(e = "Erik")
-        val e2 = Erik(e = "Another Erik")
-        val f = Filip(m = Map("e1" -> e1, "e2" -> e2))
-        val rendered = grater[Filip].toPrettyJSON(f)
-        //          "m":{
-        //            "e1":{
-        //              "e":"Erik"
-        //            },
-        //            "e2":{
-        //              "e":"Another Erik"
-        //            }
-        //          }
-        //        }
-        rendered must /("m") / ("e1") / ("e" -> "Erik")
-        rendered must /("m") / ("e2") / ("e" -> "Another Erik")
+      "Options" in {
+        "Some[A]" in {
+          grater[Gustav].toPrettyJSON(Gustav(o = Some("OG"))) must /("o" -> "OG")
+        }
+        "None" in {
+          grater[Gustav].toCompactJSON(Gustav(o = None)) must_== "{}"
+        }
+      }
+      "class hierarchies" in {
+        "with a top-level trait" in {
+          val i = Ivar(s = "Hello")
+          val i_* = grater[Helge].toPrettyJSON(i)
+          println(i_*)
+          //          i_* must /("_t" -> "com.novus.salat.test.json.Ivar")
+          i_* must /("s" -> "Hello")
+          val j = Johan(s = "Hello", d = 3.14)
+          val j_* = grater[Helge].toPrettyJSON(j)
+          //          j_* must /("_t" -> "com.novus.salat.test.json.Johan")
+          j_* must /("s" -> "Hello")
+          j_* must /("d" -> 3.14)
+        }
+        "with an abstract superclass" in {
+          val l = Ludvig(s = "Hello")
+          val l_* = grater[Kalle].toPrettyJSON(l)
+          //          l_* must /("_t" -> "com.novus.salat.test.json.Ludvig")
+          l_* must /("s" -> "Hello")
+          val m = Martin(s = "Hello", d = 3.14)
+          val m_* = grater[Kalle].toPrettyJSON(m)
+          //          m_* must /("_t" -> "com.novus.salat.test.json.Martin")
+          m_* must /("s" -> "Hello")
+          m_* must /("d" -> 3.14)
+        }
       }
     }
     "handle converting JSON to model objects" in {
@@ -166,6 +202,35 @@ class JsonSpec extends Specification with Logging {
             grater[Caesar].fromJSON(j) must_== c
           }
         }
+        "containing maps" in {
+          "of simple types" in {
+            val j = JObject(
+              JField("m", JObject(
+                JField("a", JInt(1)) ::
+                  JField("b", JInt(2)) ::
+                  JField("c", JInt(3)) ::
+                  Nil)) ::
+                Nil)
+            grater[David].fromJSON(j) must_== David(m = Map("a" -> 1, "b" -> 2, "c" -> 3))
+          }
+          "of case classes" in {
+            val j = JObject(
+              JField("m", JObject(
+                JField("e1", JObject(JField("e", JString("Erik")) :: Nil)) ::
+                  JField("e2", JObject(JField("e", JString("Another Erik")) :: Nil)) ::
+                  Nil)) ::
+                Nil)
+            grater[Filip].fromJSON(j) must_== Filip(m = Map("e1" -> Erik(e = "Erik"), "e2" -> Erik(e = "Another Erik")))
+          }
+        }
+        "where the model object contains Option fields" in {
+          "Some[A]" in {
+            grater[Gustav].fromJSON(JObject(JField("o", JString("OG")) :: Nil)) must_== Gustav(o = Some("OG"))
+          }
+          "None" in {
+            grater[Gustav].fromJSON(JObject(Nil)) must_== Gustav(o = None)
+          }
+        }
       }
       "strings" in {
         "a string that can be parsed to JSON" in {
@@ -182,7 +247,6 @@ class JsonSpec extends Specification with Logging {
         }
       }
     }
-
   }
 
 }

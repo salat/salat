@@ -35,14 +35,18 @@ import com.novus.salat.StringTypeHintStrategy
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
 object ToJField extends Logging {
-  def typeHint[X](clazz: Class[X], useTypeHint: Boolean)(implicit ctx: Context) = if (useTypeHint) {
-    val field = ctx.typeHintStrategy match {
-      case s: StringTypeHintStrategy => JString(clazz.getName)
-      case x                         => error("typeHint: unsupported type hint strategy '%s'".format(x))
+  def typeHint[X](clazz: Class[X], useTypeHint: Boolean)(implicit ctx: Context) = {
+    val th = if (useTypeHint) {
+      val field = ctx.typeHintStrategy match {
+        case s: StringTypeHintStrategy => JString(clazz.getName)
+        case x                         => error("typeHint: unsupported type hint strategy '%s'".format(x))
+      }
+      JField(ctx.typeHintStrategy.typeHint, field) :: Nil
     }
-    JField(ctx.typeHintStrategy.typeHint, field) :: Nil
+    else Nil
+    log.trace("typeHint: clazz='%s', useTypeHint=%s, th=%s", clazz.getName, useTypeHint, th.mkString("[", ",", "]"))
+    th
   }
-  else Nil
 
   def apply(key: String, value: Any)(implicit ctx: Context): JField = {
     JField(key, ToJValue(value))
@@ -97,7 +101,7 @@ object FromJValue extends Logging {
       case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
       case notTraversable                        => error("FromJValue: expected types for Traversable but instead got:\n%s".format(notTraversable))
     }
-    case o: JObject if field.tf.isMap => field.typeRefType match {
+    case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
       case IsMap(_, childType: TypeRefType) => {
         //        val builder = Map.newBuilder[String, Any]
         //        o.obj.foreach {
