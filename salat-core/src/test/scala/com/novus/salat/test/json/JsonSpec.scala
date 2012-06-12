@@ -142,26 +142,26 @@ class JsonSpec extends Specification with Logging {
         }
       }
       "class hierarchies" in {
+        // TODO: sort out type hinting when concrete grater is accessed via proxy grater without @Salat annotation
         "with a top-level trait" in {
           val i = Ivar(s = "Hello")
           val i_* = grater[Helge].toPrettyJSON(i)
-          println(i_*)
-          //          i_* must /("_t" -> "com.novus.salat.test.json.Ivar")
+          i_* must /("_t" -> "com.novus.salat.test.json.Ivar")
           i_* must /("s" -> "Hello")
           val j = Johan(s = "Hello", d = 3.14)
           val j_* = grater[Helge].toPrettyJSON(j)
-          //          j_* must /("_t" -> "com.novus.salat.test.json.Johan")
+          j_* must /("_t" -> "com.novus.salat.test.json.Johan")
           j_* must /("s" -> "Hello")
           j_* must /("d" -> 3.14)
         }
         "with an abstract superclass" in {
           val l = Ludvig(s = "Hello")
           val l_* = grater[Kalle].toPrettyJSON(l)
-          //          l_* must /("_t" -> "com.novus.salat.test.json.Ludvig")
+          l_* must /("_t" -> "com.novus.salat.test.json.Ludvig")
           l_* must /("s" -> "Hello")
           val m = Martin(s = "Hello", d = 3.14)
           val m_* = grater[Kalle].toPrettyJSON(m)
-          //          m_* must /("_t" -> "com.novus.salat.test.json.Martin")
+          m_* must /("_t" -> "com.novus.salat.test.json.Martin")
           m_* must /("s" -> "Hello")
           m_* must /("d" -> 3.14)
         }
@@ -175,7 +175,7 @@ class JsonSpec extends Specification with Logging {
               JField("b", JInt(99)) ::
               JField("c", JDouble(3.14)) ::
               JField("d", JBool(false)) ::
-              JField("e", JString(TestDateFormatter.print(testDate))) ::
+              JField("e", JString("2011-12-28T19:37:56.008Z")) ::
               JField("u", JString(testURL.toString)) ::
               JField("o", JObject(JField("$oid", JString("4fd0bead4ceab231e6f3220b")) :: Nil)) ::
               Nil)
@@ -234,7 +234,7 @@ class JsonSpec extends Specification with Logging {
       }
       "strings" in {
         "a string that can be parsed to JSON" in {
-          val adam = """{"a":"string","b":99,"c":3.14,"d":false,"e":"2011-12-28T14:37:56.008-05:00","u":"http://www.typesafe.com","o":{"$oid":"4fd0bead4ceab231e6f3220b"}}"""
+          val adam = """{"a":"string","b":99,"c":3.14,"d":false,"e":"2011-12-28T19:37:56.008Z","u":"http://www.typesafe.com","o":{"$oid":"4fd0bead4ceab231e6f3220b"}}"""
           grater[Adam].fromJSON(adam) must_== a
           grater[Bertil].fromJSON("""{"ints":[1,2,3],"strings":["a","b","c"]}""") must_== b
         }
