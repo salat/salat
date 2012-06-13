@@ -42,6 +42,6 @@ object `package` {
     override val jsonConfig = JSONConfig(dateStrategy = StringDateStrategy(dateFormatter = TestDateFormatter))
   }
 
-  val testDate = (new DateTime(2011, DECEMBER, 28, 14, 37, 56, 8)).withZone(DateTimeZone.UTC)
+  val testDate = new DateTime(2011, DECEMBER, 28, 14, 37, 56, 8, DateTimeZone.UTC)
   val testURL = new java.net.URL("http://www.typesafe.com")
 }
