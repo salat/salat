@@ -63,7 +63,7 @@ class JsonSpec extends Specification with Logging {
         rendered must /("b" -> 99)
         rendered must /("c" -> 3.14)
         rendered must /("d" -> false)
-        rendered must /("e" -> "2011-12-28T19:37:56.008Z")
+        rendered must /("e" -> "2011-12-28T14:37:56.008Z")
         rendered must /("u" -> testURL.toString)
         rendered must /("o") / ("$oid" -> "4fd0bead4ceab231e6f3220b")
       }
@@ -175,7 +175,7 @@ class JsonSpec extends Specification with Logging {
               JField("b", JInt(99)) ::
               JField("c", JDouble(3.14)) ::
               JField("d", JBool(false)) ::
-              JField("e", JString("2011-12-28T19:37:56.008Z")) ::
+              JField("e", JString("2011-12-28T14:37:56.008Z")) ::
               JField("u", JString(testURL.toString)) ::
               JField("o", JObject(JField("$oid", JString("4fd0bead4ceab231e6f3220b")) :: Nil)) ::
               Nil)
@@ -234,7 +234,7 @@ class JsonSpec extends Specification with Logging {
       }
       "strings" in {
         "a string that can be parsed to JSON" in {
-          val adam = """{"a":"string","b":99,"c":3.14,"d":false,"e":"2011-12-28T19:37:56.008Z","u":"http://www.typesafe.com","o":{"$oid":"4fd0bead4ceab231e6f3220b"}}"""
+          val adam = """{"a":"string","b":99,"c":3.14,"d":false,"e":"2011-12-28T14:37:56.008Z","u":"http://www.typesafe.com","o":{"$oid":"4fd0bead4ceab231e6f3220b"}}"""
           grater[Adam].fromJSON(adam) must_== a
           grater[Bertil].fromJSON("""{"ints":[1,2,3],"strings":["a","b","c"]}""") must_== b
         }
