@@ -96,6 +96,14 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
    */
   def toCompactJson(t: ObjectType): String = dao._grater.toCompactJSON(t)
 
+  def fromJSON(j: JObject): ObjectType = dao._grater.fromJSON(j)
+
+  def fromJSON(s: String): ObjectType = dao._grater.fromJSON(s)
+
+  def toMap(t: ObjectType): Map[String, Any] = dao._grater.toMap(t)
+
+  def fromMap(m: Map[String, Any]): ObjectType = dao._grater.fromMap(m)
+
   //
   // convenient access to methods on SalatDAO
   //

@@ -29,7 +29,7 @@ import scala.tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
 protected[salat] object Types {
   val Date = "java.util.Date"
   val DateTime = Set("org.joda.time.DateTime", "org.scala_tools.time.TypeImports.DateTime")
-  val Oid = "org.bson.types.ObjectId"
+  val Oid = Set("org.bson.types.ObjectId", "com.mongodb.casbah.commons.TypeImports.ObjectId")
   val SBigDecimal = classOf[SBigDecimal].getName
   val BigInt = classOf[BigInt].getName
   val Option = "scala.Option"
