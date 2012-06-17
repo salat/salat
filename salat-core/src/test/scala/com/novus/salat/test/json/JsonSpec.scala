@@ -231,6 +231,30 @@ class JsonSpec extends Specification with Logging {
             grater[Gustav].fromJSON(JObject(Nil)) must_== Gustav(o = None)
           }
         }
+        "class hierarchies" in {
+          "with a top-level trait" in {
+            grater[Helge].fromJSON(JObject(
+              JField("_t", JString("com.novus.salat.test.json.Ivar")) ::
+                JField("s", JString("Hello")) ::
+                Nil)) must_== Ivar(s = "Hello")
+            grater[Helge].fromJSON(JObject(
+              JField("_t", JString("com.novus.salat.test.json.Johan")) ::
+                JField("s", JString("Hello")) ::
+                JField("d", JDouble(3.14)) ::
+                Nil)) must_== Johan(s = "Hello", d = 3.14)
+          }
+          "with an abstract superclass" in {
+            grater[Kalle].fromJSON(JObject(
+              JField("_t", JString("com.novus.salat.test.json.Ludvig")) ::
+                JField("s", JString("Hello")) ::
+                Nil)) must_== Ludvig(s = "Hello")
+            grater[Kalle].fromJSON(JObject(
+              JField("_t", JString("com.novus.salat.test.json.Martin")) ::
+                JField("s", JString("Hello")) ::
+                JField("d", JDouble(3.14)) ::
+                Nil)) must_== Martin(s = "Hello", d = 3.14)
+          }
+        }
       }
       "strings" in {
         "a string that can be parsed to JSON" in {
