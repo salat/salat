@@ -32,7 +32,7 @@ import org.scala_tools.time.Imports
 import net.liftweb.json.JsonAST._
 
 object JSONConfig {
-  val DefaultDateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC)
+  val ISO8601 = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC)
 }
 
 case class JSONConfig(dateStrategy: JSONDateStrategy = StringDateStrategy(),
@@ -40,30 +40,44 @@ case class JSONConfig(dateStrategy: JSONDateStrategy = StringDateStrategy(),
 
 trait JSONDateStrategy {
   def out(d: DateTime): JValue
+
   def out(d: Date): JValue
+
   def toDateTime(j: JValue): DateTime
+
   def toDate(j: JValue) = toDateTime(j).toDate
 }
 
-case class StringDateStrategy(dateFormatter: DateTimeFormatter = JSONConfig.DefaultDateTimeFormatter) extends JSONDateStrategy {
+case class StringDateStrategy(dateFormatter: DateTimeFormatter = JSONConfig.ISO8601) extends JSONDateStrategy {
   def out(d: Date) = JString(dateFormatter.print(d.getTime))
 
   def out(d: DateTime) = JString(dateFormatter.print(d))
 
   def toDateTime(j: JValue) = j match {
-    case s: JString => dateFormatter.parseDateTime(s.values)
-    case x          => sys.error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+    case JString(s) => dateFormatter.parseDateTime(s)
+    case x          => error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
 }
 
-object StrictJSONDateStrategy extends JSONDateStrategy {
-  def out(d: Date) = JField("$date", JInt(d.getTime))
+case class TimestampDateStrategy(zone: DateTimeZone = DateTimeZone.UTC) extends JSONDateStrategy {
+  def out(d: Date) = JInt(d.getTime)
 
-  def out(d: DateTime) = JField("$date", JInt(d.getMillis))
+  def out(d: DateTime) = JInt(d.getMillis)
 
   def toDateTime(j: JValue) = j match {
-    case o: JField => new DateTime(o.values._2)
-    case x         => sys.error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+    case JInt(v) => new DateTime(v.toLong, zone)
+    case x       => error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+  }
+}
+
+case class StrictJSONDateStrategy(zone: DateTimeZone = DateTimeZone.UTC) extends JSONDateStrategy {
+  def out(d: Date) = JObject(JField("$date", JInt(d.getTime)) :: Nil)
+
+  def out(d: DateTime) = JObject(JField("$date", JInt(d.getMillis)) :: Nil)
+
+  def toDateTime(j: JValue) = j match {
+    case JObject(JField(_, JInt(v)) :: Nil) => new DateTime(v.toLong, zone)
+    case x                                  => error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
 }
 

@@ -69,14 +69,14 @@ class ModelCompanionSpec extends SalatSpec {
   "y":99,
   "z":[1.0,2.0,3.0],
   "d":"%s"
-}""".format(_id.toString, JSONConfig.DefaultDateTimeFormatter.print(d.millis))
+}""".format(_id.toString, JSONConfig.ISO8601.print(d.millis))
       }
 
       "toCompactJson" in new myModelScope {
         val expected = "{\"_typeHint\":\"com.novus.salat.test.dao.MyModel\",\"_id\":{\"$oid\":\""+
           _id.toString+
           "\"},\"x\":\"Test\",\"y\":99,\"z\":[1.0,2.0,3.0],\"d\":\""+
-          JSONConfig.DefaultDateTimeFormatter.print(d.millis)+
+          JSONConfig.ISO8601.print(d.millis)+
           "\"}"
         MyModel.toCompactJson(m) must_== expected
       }
