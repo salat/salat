@@ -30,6 +30,9 @@ import net.liftweb.json.JsonAST.JObject
 import java.lang.reflect.{ Type, ParameterizedType }
 import com.novus.salat.util.Logging
 import com.mongodb
+import net.liftweb.json._
+import com.novus.salat.dao.SalatMongoCursor
+import net.liftweb.json.JsonAST.JObject
 
 /** Play framework style model companion
  *  <p/>
@@ -96,22 +99,49 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
    */
   def toCompactJson(t: ObjectType): String = dao._grater.toCompactJSON(t)
 
-  /**
-   *
-   * @param j `JObject` to be deserialized
-   * @return `JObject` deserialized to a model object
+  /** @param t collection to be serialized
+   *  @return collection of model objects serialized as a JSON array of `JObject`
+   */
+  def toJSONArray(t: Traversable[ObjectType]) = dao._grater.toJSONArray(t)
+
+  /** @param t collection to be serialized
+   *  @return collection of model objects serialized to a JSON array and rendered as pretty JSON
+   */
+  def toPrettyJSONArray(t: Traversable[ObjectType]) = dao._grater.toPrettyJSONArray(t)
+
+  /** @param t collection to be serialized
+   *  @return collection of model objects serialized to a JSON array and rendered as compact JSON
+   */
+  def toCompactJSONArray(t: Traversable[ObjectType]) = dao._grater.toCompactJSONArray(t)
+
+  /** @param j `JObject` to be deserialized
+   *  @return `JObject` deserialized to a model object
    */
   def fromJSON(j: JObject): ObjectType = dao._grater.fromJSON(j)
 
-  /**
-   *
-   * @param s string representing a valid JSON object
-   * @return JSON deserialized to a model object
+  /** @param s string representing a valid JSON object
+   *  @return JSON deserialized to a model object
    */
   def fromJSON(s: String): ObjectType = dao._grater.fromJSON(s)
 
+  /** @param j JSON array of valid `JObject`s
+   *  @return deserialized list of model objects
+   */
+  def fromJSONArray(j: JArray) = dao._grater.fromJSONArray(j)
+
+  /** @param s string representing a JSON array of valid `JObject`s
+   *  @return deserialized list of model objects
+   */
+  def fromJSONArray(s: String) = dao._grater.fromJSONArray(s)
+
+  /** @param t model object instance
+   *  @return a map populated with the field names and values of the model object
+   */
   def toMap(t: ObjectType): Map[String, Any] = dao._grater.toMap(t)
 
+  /** @param m a map populated with the field names and values of the model object
+   *  @return model object instance
+   */
   def fromMap(m: Map[String, Any]): ObjectType = dao._grater.fromMap(m)
 
   //
