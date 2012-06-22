@@ -167,6 +167,27 @@ class JsonSpec extends Specification with Logging {
         }
       }
     }
+    "handle converting a list of model objects to a JArray" in {
+      val jarr = grater[Kalle].toJSONArray(List(Martin("one", 1.1), Martin("two", 2.2), Martin("three", 3.3)))
+      //        [{
+      //          "_t":"com.novus.salat.test.json.Martin",
+      //          "s":"one",
+      //          "d":1.1
+      //        },{
+      //          "_t":"com.novus.salat.test.json.Martin",
+      //          "s":"two",
+      //          "d":2.2
+      //        },{
+      //          "_t":"com.novus.salat.test.json.Martin",
+      //          "s":"three",
+      //          "d":3.3
+      //        }]
+      jarr.arr must have size (3)
+      jarr.arr must contain(
+        JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("one")) :: JField("d", JDouble(1.1)) :: Nil).asInstanceOf[JValue],
+        JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("two")) :: JField("d", JDouble(2.2)) :: Nil).asInstanceOf[JValue],
+        JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("three")) :: JField("d", JDouble(3.3)) :: Nil).asInstanceOf[JValue]).only.inOrder
+    }
     "handle converting JSON to model objects" in {
       "JObjects" in {
         "containing simple types" in {
@@ -257,10 +278,14 @@ class JsonSpec extends Specification with Logging {
         }
       }
       "strings" in {
-        "a string that can be parsed to JSON" in {
+        "a string that can be parsed to JSON object" in {
           val adam = """{"a":"string","b":99,"c":3.14,"d":false,"e":"2011-12-28T14:37:56.008Z","u":"http://www.typesafe.com","o":{"$oid":"4fd0bead4ceab231e6f3220b"}}"""
           grater[Adam].fromJSON(adam) must_== a
           grater[Bertil].fromJSON("""{"ints":[1,2,3],"strings":["a","b","c"]}""") must_== b
+        }
+        "a string that can be parsed to a JSON array" in {
+          val arr = """[{"_t":"com.novus.salat.test.json.Martin","s":"one","d":1.1},{"_t":"com.novus.salat.test.json.Martin","s":"two","d":2.2},{"_t":"com.novus.salat.test.json.Martin","s":"three","d":3.3}]"""
+          grater[Kalle].fromJSONArray(arr) must_== List(Martin("one", 1.1), Martin("two", 2.2), Martin("three", 3.3))
         }
         "throw an exception when string cannot be parsed to valid JSON" in {
           val invalid = """?"""
@@ -269,6 +294,14 @@ class JsonSpec extends Specification with Logging {
         "throw an exception when string parses to valid but unexpected JSON" in {
           grater[Adam].fromJSON("""["a","b","c"]""") must throwA[RuntimeException]
         }
+      }
+      "JArray" in {
+        val j = JArray(
+          JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("one")) :: JField("d", JDouble(1.1)) :: Nil) ::
+            JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("two")) :: JField("d", JDouble(2.2)) :: Nil) ::
+            JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("three")) :: JField("d", JDouble(3.3)) :: Nil) ::
+            Nil)
+        grater[Kalle].fromJSONArray(j) must_== List(Martin("one", 1.1), Martin("two", 2.2), Martin("three", 3.3))
       }
     }
   }

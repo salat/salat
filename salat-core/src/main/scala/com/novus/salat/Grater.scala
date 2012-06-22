@@ -51,24 +51,47 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   def asObject[A <% MongoDBObject](dbo: A): X
 
-  def toJSON(o: X): JObject
-
   def toMap(o: X): Map[String, Any]
 
   def fromMap(m: Map[String, Any]): X
+
+  def toJSON(o: X): JObject
 
   def toPrettyJSON(o: X): String = pretty(render(toJSON(o)))
 
   def toCompactJSON(o: X): String = compact(render(toJSON(o)))
 
+  def toJSONArray(t: Traversable[X]): JArray = JArray(t.map(toJSON(_)).toList)
+
+  def toPrettyJSONArray(t: Traversable[X]): String = pretty(render(toJSONArray(t)))
+
+  def toCompactJSONArray(t: Traversable[X]): String = compact(render(toJSONArray(t)))
+
   def fromJSON(j: JObject): X
 
   def fromJSON(s: String): X = JsonParser.parse(s) match {
-    case j: JObject => fromJSON(j)
-    case x => sys.error("""
+    case j: JObject  => fromJSON(j)
+    case arr: JArray => error("fromJSON: requires a JSON object, but you have input an array - use fromJSONArray instead!")
+    case x => error("""
   fromJSON: input string parses to unsupported type '%s' !
 
   %s
+
+                     """.format(x.getClass.getName, s))
+  }
+
+  def fromJSONArray(j: JArray): List[X] = j.arr.map {
+    case o: JObject => fromJSON(o)
+    case x: JValue  => error("fromJSONArray: unexpected element type '%s'\n%s\n".format(x, compact(render(x))))
+  }
+
+  def fromJSONArray(s: String): List[X] = JsonParser.parse(s) match {
+    case j: JArray  => fromJSONArray(j)
+    case o: JObject => List(fromJSON(o))
+    case x => error("""
+    fromJSON: input string parses to unsupported type '%s' !
+
+    %s
 
                      """.format(x.getClass.getName, s))
   }
