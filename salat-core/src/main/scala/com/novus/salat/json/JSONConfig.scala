@@ -55,7 +55,7 @@ case class StringDateStrategy(dateFormatter: DateTimeFormatter = JSONConfig.ISO8
 
   def toDateTime(j: JValue) = j match {
     case JString(s) => dateFormatter.parseDateTime(s)
-    case x          => error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+    case x          => sys.error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
 }
 
@@ -66,7 +66,7 @@ case class TimestampDateStrategy(zone: DateTimeZone = DateTimeZone.UTC) extends 
 
   def toDateTime(j: JValue) = j match {
     case JInt(v) => new DateTime(v.toLong, zone)
-    case x       => error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+    case x       => sys.error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
 }
 
@@ -77,7 +77,7 @@ case class StrictJSONDateStrategy(zone: DateTimeZone = DateTimeZone.UTC) extends
 
   def toDateTime(j: JValue) = j match {
     case JObject(JField(_, JInt(v)) :: Nil) => new DateTime(v.toLong, zone)
-    case x                                  => error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+    case x                                  => sys.error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
 }
 

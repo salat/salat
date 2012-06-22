@@ -39,7 +39,7 @@ object ToJField extends Logging {
     val th = if (useTypeHint) {
       val field = ctx.typeHintStrategy match {
         case s: StringTypeHintStrategy => JString(clazz.getName)
-        case x                         => error("typeHint: unsupported type hint strategy '%s'".format(x))
+        case x                         => sys.error("typeHint: unsupported type hint strategy '%s'".format(x))
       }
       JField(ctx.typeHintStrategy.typeHint, field) :: Nil
     }
@@ -140,7 +140,7 @@ object FromJValue extends Logging {
       case i: JInt                       => i.values.intValue()
       case b: JBool                      => b.values
       case o: JObject if tf.isOid => new ObjectId(o.values.getOrElse("$oid",
-        error("deserialize: unexpected OID input class='%s', value='%s'".format(o.getClass.getName, o.values))).
+        sys.error("deserialize: unexpected OID input class='%s', value='%s'".format(o.getClass.getName, o.values))).
         toString)
       case JsonAST.JNull => null
       case x: AnyRef     => sys.error("deserialize: unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))

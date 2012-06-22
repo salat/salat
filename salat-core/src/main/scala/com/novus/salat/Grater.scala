@@ -71,8 +71,8 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   def fromJSON(s: String): X = JsonParser.parse(s) match {
     case j: JObject  => fromJSON(j)
-    case arr: JArray => error("fromJSON: requires a JSON object, but you have input an array - use fromJSONArray instead!")
-    case x => error("""
+    case arr: JArray => sys.error("fromJSON: requires a JSON object, but you have input an array - use fromJSONArray instead!")
+    case x => sys.error("""
   fromJSON: input string parses to unsupported type '%s' !
 
   %s
@@ -82,13 +82,13 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   def fromJSONArray(j: JArray): List[X] = j.arr.map {
     case o: JObject => fromJSON(o)
-    case x: JValue  => error("fromJSONArray: unexpected element type '%s'\n%s\n".format(x, compact(render(x))))
+    case x: JValue  => sys.error("fromJSONArray: unexpected element type '%s'\n%s\n".format(x, compact(render(x))))
   }
 
   def fromJSONArray(s: String): List[X] = JsonParser.parse(s) match {
     case j: JArray  => fromJSONArray(j)
     case o: JObject => List(fromJSON(o))
-    case x => error("""
+    case x => sys.error("""
     fromJSON: input string parses to unsupported type '%s' !
 
     %s
