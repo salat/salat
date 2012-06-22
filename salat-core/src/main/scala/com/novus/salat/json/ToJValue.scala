@@ -76,7 +76,7 @@ object ToJValue extends Logging {
       case b: Boolean => JBool(b)
       case d: java.util.Date => ctx.jsonConfig.dateStrategy.out(d)
       case d: DateTime => ctx.jsonConfig.dateStrategy.out(d)
-      case o: ObjectId => JObject(List(JField("$oid", JString(o.toString))))
+      case o: ObjectId => ctx.jsonConfig.objectIdStrategy.out(o)
       case u: java.net.URL => JString(u.toString) // might as well
       case n if n == null && ctx.jsonConfig.outputNullValues => JNull
       case x: AnyRef => error("serialize: Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
