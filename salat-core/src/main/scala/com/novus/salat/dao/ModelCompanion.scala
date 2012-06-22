@@ -96,8 +96,18 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
    */
   def toCompactJson(t: ObjectType): String = dao._grater.toCompactJSON(t)
 
+  /**
+   *
+   * @param j `JObject` to be deserialized
+   * @return `JObject` deserialized to a model object
+   */
   def fromJSON(j: JObject): ObjectType = dao._grater.fromJSON(j)
 
+  /**
+   *
+   * @param s string representing a valid JSON object
+   * @return JSON deserialized to a model object
+   */
   def fromJSON(s: String): ObjectType = dao._grater.fromJSON(s)
 
   def toMap(t: ObjectType): Map[String, Any] = dao._grater.toMap(t)
