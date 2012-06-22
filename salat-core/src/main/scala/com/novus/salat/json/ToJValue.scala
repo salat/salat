@@ -76,7 +76,7 @@ object ToJValue extends Logging {
       case b: Boolean => JBool(b)
       case d: java.util.Date => ctx.jsonConfig.dateStrategy.out(d)
       case d: DateTime => ctx.jsonConfig.dateStrategy.out(d)
-      case o: ObjectId => JObject(List(JField("$oid", JString(o.toString))))
+      case o: ObjectId => ctx.jsonConfig.objectIdStrategy.out(o)
       case u: java.net.URL => JString(u.toString) // might as well
       case n if n == null && ctx.jsonConfig.outputNullValues => JNull
       case x: AnyRef => sys.error("serialize: Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
@@ -128,6 +128,7 @@ object FromJValue extends Logging {
     val v = j match {
       case v if tf.isDateTime            => ctx.jsonConfig.dateStrategy.toDateTime(v)
       case v if tf.isDate                => ctx.jsonConfig.dateStrategy.toDate(v)
+      case v if tf.isOid                 => ctx.jsonConfig.objectIdStrategy.in(v)
       case s: JString if tf.isChar       => s.values.charAt(0)
       case s: JString if tf.isURL        => new URL(s.values)
       case s: JString                    => s.values
@@ -139,11 +140,8 @@ object FromJValue extends Logging {
       case i: JInt if tf.isLong          => i.values.toLong
       case i: JInt                       => i.values.intValue()
       case b: JBool                      => b.values
-      case o: JObject if tf.isOid => new ObjectId(o.values.getOrElse("$oid",
-        sys.error("deserialize: unexpected OID input class='%s', value='%s'".format(o.getClass.getName, o.values))).
-        toString)
-      case JsonAST.JNull => null
-      case x: AnyRef     => sys.error("deserialize: unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
+      case JsonAST.JNull                 => null
+      case x: AnyRef                     => sys.error("deserialize: unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
     }
     //    log.debug(
     //      """

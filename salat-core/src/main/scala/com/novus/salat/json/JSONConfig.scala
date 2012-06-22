@@ -30,13 +30,44 @@ import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
 import java.util.Date
 import org.scala_tools.time.Imports
 import net.liftweb.json.JsonAST._
+import org.bson.types.ObjectId
 
 object JSONConfig {
   val ISO8601 = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC)
 }
 
 case class JSONConfig(dateStrategy: JSONDateStrategy = StringDateStrategy(),
+                      objectIdStrategy: JSONObjectIdStrategy = StrictJSONObjectIdStrategy,
                       outputNullValues: Boolean = false)
+
+trait JSONObjectIdStrategy {
+  def in(j: JValue): ObjectId
+
+  def out(o: ObjectId): JValue
+
+  protected def unexpectedInput(x: JValue) =
+    sys.error("in: unexpected OID input class='%s', value='%s'".format(x.getClass.getName, x.values))
+}
+
+object StrictJSONObjectIdStrategy extends JSONObjectIdStrategy {
+
+  def in(j: JValue) = j match {
+    case JObject(JField("$oid", JString(oid)) :: Nil) => new ObjectId(oid)
+    case x => unexpectedInput(x)
+  }
+
+  def out(o: ObjectId) = JObject(List(JField("$oid", JString(o.toString))))
+}
+
+object StringObjectIdStrategy extends JSONObjectIdStrategy {
+
+  def in(j: JValue) = j match {
+    case JString(oid) => new ObjectId(oid)
+    case x            => unexpectedInput(x)
+  }
+
+  def out(o: ObjectId) = JString(o.toString)
+}
 
 trait JSONDateStrategy {
   def out(d: DateTime): JValue
