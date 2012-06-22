@@ -128,6 +128,7 @@ object FromJValue extends Logging {
     val v = j match {
       case v if tf.isDateTime            => ctx.jsonConfig.dateStrategy.toDateTime(v)
       case v if tf.isDate                => ctx.jsonConfig.dateStrategy.toDate(v)
+      case v if tf.isOid                 => ctx.jsonConfig.objectIdStrategy.in(v)
       case s: JString if tf.isChar       => s.values.charAt(0)
       case s: JString if tf.isURL        => new URL(s.values)
       case s: JString                    => s.values
@@ -139,11 +140,8 @@ object FromJValue extends Logging {
       case i: JInt if tf.isLong          => i.values.toLong
       case i: JInt                       => i.values.intValue()
       case b: JBool                      => b.values
-      case o: JObject if tf.isOid => new ObjectId(o.values.getOrElse("$oid",
-        error("deserialize: unexpected OID input class='%s', value='%s'".format(o.getClass.getName, o.values))).
-        toString)
-      case JsonAST.JNull => null
-      case x: AnyRef     => error("deserialize: unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
+      case JsonAST.JNull                 => null
+      case x: AnyRef                     => error("deserialize: unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
     }
     //    log.debug(
     //      """
