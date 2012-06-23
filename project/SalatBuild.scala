@@ -42,7 +42,7 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "0.0.8-SNAPSHOT"
+  val buildVersion = "0.0.8"
   val buildScalaVersion = "2.9.2"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
@@ -121,27 +121,20 @@ object Publish {
           <name>Rose Toomey</name>
           <url>http://github.com/rktoomey</url>
         </developer>
-      </developers>)
+      </developers>),
+    publishArtifact in (Compile, packageDoc) := false   // https://issues.scala-lang.org/browse/SI-4284
   )
 }
 
 object Dependencies {
-  val specs2 = "org.specs2" %% "specs2" % "1.9" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "1.5" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
   val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.7.3"
-  // TODO: these dependencies are not yet available for 2.9.2
-  // causes complaining:
-//  Setting version to 2.9.2
-//  [info] Set current project to salat (in build file:/home/rose/workspace/salat/)
-//  [warn] Potentially incompatible versions of dependencies of {file:/home/rose/workspace/salat/}salat-core:
-//  [warn]    org.scala-lang: 2.9.2, 2.9.1
-//  [warn] Potentially incompatible versions of dependencies of {file:/home/rose/workspace/salat/}salat:
-//  [warn]    org.scala-lang: 2.9.2, 2.9.1
-  val casbah_core = "com.mongodb.casbah" % "casbah-core_2.9.1" % "2.1.5-1"
-  val lift_json = "net.liftweb" % "lift-json_2.9.1" % "2.4"
+  val casbah_core = "com.mongodb.casbah" %% "casbah-core" % "2.1.5-1"
+  val lift_json = "net.liftweb" %% "lift-json" % "2.4"
 }
 
 object Repos {
