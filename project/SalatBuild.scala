@@ -92,13 +92,6 @@ object Format {
 object Publish {
   lazy val settings = Seq(
     publishMavenStyle := true,
-//    publishTo <<= (version) {
-//      version: String =>
-//        val r = Resolver.sftp("repo.novus.com", "repo.novus.com", "/nv/repo/%s".format(
-//          if (version.trim().toString.endsWith("-SNAPSHOT")) "snapshots" else "releases"
-//        )) as (System.getProperty("user.name"))
-//        Some(r)
-//    },
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
       if (v.trim.endsWith("SNAPSHOT"))
