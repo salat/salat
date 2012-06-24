@@ -1,5 +1,12 @@
 Features new in Salat 0.0.8 include:
 
-- cross-built for Scala 2.8.0 and 2.9.0-1
-- collection support has been expanded to everything traversable courtest of Oliver Dodd
-- added Float support
+- supports Scala 2.8.1, 2.9.1 and 2.9.2
+- now on OSS Sonatype (goodbye to repo.novus.com)
+- support for Play 2 framework, including helpful model companion trait
+- JSON support using lift-json
+- expanded collection support
+- grater now supports typing to traits/abstract superclasses
+- improved SalatDAO, including support for typing to traits/abstract superclasses
+- more informative exceptions when deserialization fails
+
+

@@ -1,40 +1,23 @@
-*Salat* is a simple Scala serialization library that makes it easy to:
+Salat is a simple serialization library for case classes.
 
-* serialize a Scala case class to a MongoDB `DBObject`
+Salat currently supports bidirectional serialization for:
 
-* deserialize a MongoDB `DBObject` back into an instance of the original case class
+- MongoDB's `DBObject` (using [casbah][casbah])
+- JSON (using [lift-json][lift-json])
+- maps
 
-Documentation is [available on the wiki][wiki].
+Find us online:
 
-Feature highlights:
+- Source code: [https://github.com/novus/salat][source]
+- Wiki: [https://github.com/novus/salat/wiki][wiki]
+- CI: [http://travis-ci.org/#!/novus/salat][ci]
+- Mailing List: [http://groups.google.com/group/scala-salat][group]
 
-* Built to leverage 10gen's *Casbah* and its full suite of BSON
-  encoders. Primitive values of types ranging from `Double` and
-  `Float` to Joda Time's `DateTime` are supported seamlessly out of
-  the box.
+Salat is an Open Source project under the Apache License v2.
 
-* Works with nested case class instances of arbitrary depth. Support
-  is provided for nested `Seq`-s and `Map`-s, whose values may be
-  primitives or embedded case classes which will also be
-  (de)serialized.
-
-* Supports Scala idioms such as `Option`-s and default argument values.
-
-* Only minimal use is made of Java reflection. Where feasible, Salat leverages Scala class signatures.
-
-*Salat* is [free software][github-link]. Its availability is governed
-by the Apache 2 license. See [LICENSE.md][license] at source root for
-more information. Please make use of the [GitHub project][github-link]
-to report issues or contact the author.
-
-- Source code: <https://github.com/novus/salat>
-- Wiki: <https://github.com/novus/salat/wiki>
-- Group: <http://groups.google.com/group/scala-salat>
-- Repository: <http://repo.novus.com/releases/> and <http://repo.novus.com/snapshots/>
-
-Development supported by [Novus Partners, Inc][novus].
-
-[novus]: https://www.novus.com/
-[github-link]: https://github.com/novus/salat
-[license]: https://github.com/novus/salat/blob/master/README.md
+[casbah]: https://github.com/mongodb/casbah/
+[lift-json]: https://github.com/lift/lift/tree/master/framework/lift-base/lift-json/
+[source]: https://github.com/novus/salat
 [wiki]: https://github.com/novus/salat/wiki
+[ci]: http://travis-ci.org/#!/novus/salat
+[group]: http://groups.google.com/group/scala-salat
