@@ -127,7 +127,7 @@ case class TypeHintEncoding(chars: List[Char]) extends Logging {
     while (iter.hasNext) {
       val num = iter.next()
       // TODO: better error message
-      val char = n2c.get(num).getOrElse(error("Num '%s' has no corresponding char in n2c".format(num)))
+      val char = n2c.get(num).getOrElse(sys.error("Num '%s' has no corresponding char in n2c".format(num)))
       //      log.info("format[%d]: '%s' ---> '%s'", counter, num, char)
       sb += char
       counter += 1

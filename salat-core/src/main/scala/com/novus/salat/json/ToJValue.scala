@@ -39,7 +39,7 @@ object ToJField extends Logging {
     val th = if (useTypeHint) {
       val field = ctx.typeHintStrategy match {
         case s: StringTypeHintStrategy => JString(clazz.getName)
-        case x                         => error("typeHint: unsupported type hint strategy '%s'".format(x))
+        case x                         => sys.error("typeHint: unsupported type hint strategy '%s'".format(x))
       }
       JField(ctx.typeHintStrategy.typeHint, field) :: Nil
     }
@@ -79,7 +79,7 @@ object ToJValue extends Logging {
       case o: ObjectId => ctx.jsonConfig.objectIdStrategy.out(o)
       case u: java.net.URL => JString(u.toString) // might as well
       case n if n == null && ctx.jsonConfig.outputNullValues => JNull
-      case x: AnyRef => error("serialize: Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
+      case x: AnyRef => sys.error("serialize: Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
     }
 
     //    log.debug(
@@ -99,7 +99,7 @@ object FromJValue extends Logging {
   def apply(j: Option[JValue], field: SField, childType: Option[TypeRefType] = None)(implicit ctx: Context): Option[Any] = j.map {
     case j: JArray => field.typeRefType match {
       case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
-      case notTraversable                        => error("FromJValue: expected types for Traversable but instead got:\n%s".format(notTraversable))
+      case notTraversable                        => sys.error("FromJValue: expected types for Traversable but instead got:\n%s".format(notTraversable))
     }
     case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
       case IsMap(_, childType: TypeRefType) => {
@@ -116,7 +116,7 @@ object FromJValue extends Logging {
           case (key, Some(value)) => key -> value
         }.toMap
       }
-      case notMap => error("FromJValue: expected types for Map but instead got:\n%s".format(notMap))
+      case notMap => sys.error("FromJValue: expected types for Map but instead got:\n%s".format(notMap))
     }
     case o: JObject if field.tf.isOid => deserialize(o, field.tf)
     case o: JObject if field.tf.isDate || field.tf.isDateTime => deserialize(o, field.tf)
@@ -141,7 +141,7 @@ object FromJValue extends Logging {
       case i: JInt                       => i.values.intValue()
       case b: JBool                      => b.values
       case JsonAST.JNull                 => null
-      case x: AnyRef                     => error("deserialize: unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
+      case x: AnyRef                     => sys.error("deserialize: unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
     }
     //    log.debug(
     //      """
