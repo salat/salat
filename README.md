@@ -66,3 +66,4 @@ Details are thin on the ground, but here's where we got started:
 [group]: http://groups.google.com/group/scala-salat
 [play]: https://github.com/novus/salat/wiki/SalatWithPlay2
 [play-salat-plugin]: https://github.com/leon/play-salat
+[sid10]: http://www.scala-lang.org/sid/10
