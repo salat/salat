@@ -271,7 +271,7 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
     dao.save(t, wc)
   }
 
-  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean, multi: Boolean, wc: WriteConcern = defaultWriteConcern) {
+  def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern = defaultWriteConcern) {
     dao.update(q, o, upsert, multi, wc)
   }
 

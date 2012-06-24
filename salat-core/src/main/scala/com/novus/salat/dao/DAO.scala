@@ -130,10 +130,8 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
    *  @param upsert if the database should create the element if it does not exist
    *  @param multi if the update should be applied to all objects matching
    *  @param wc write concern
-   *  @tparam A type view bound to DBObject
-   *  @tparam B type view bound to DBObject
    */
-  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean, multi: Boolean, wc: WriteConcern)
+  def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern)
 
   /** Performs an update operation.
    *  @param q search query for old object to update
@@ -141,10 +139,9 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
    *  @param upsert if the database should create the element if it does not exist
    *  @param multi if the update should be applied to all objects matching
    *  @param wc write concern
-   *  @tparam A type view bound to DBObject
    */
-  def update[A <% DBObject](q: A, t: ObjectType, upsert: Boolean, multi: Boolean, wc: WriteConcern) {
-    update(q, toDBObject(t), upsert, multi, wc)
+  def update(q: DBObject, t: ObjectType, upsert: Boolean, multi: Boolean, wc: WriteConcern) {
+    update(q = q, o = toDBObject(t), upsert = upsert, multi = multi, wc = wc)
   }
 
   /** Remove a matching object from the collection

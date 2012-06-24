@@ -375,10 +375,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @param upsert if the database should create the element if it does not exist
    *  @param multi if the update should be applied to all objects matching
    *  @param wc write concern
-   *  @tparam A type view bound to DBObject
-   *  @tparam B type view bound to DBObject
    */
-  def update[A <% DBObject, B <% DBObject](q: A, o: B, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = defaultWriteConcern) {
+  def update(q: DBObject, o: DBObject, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = defaultWriteConcern) {
     try {
       val wr = collection.update(q, o, upsert, multi, wc)
       val lastError = wr.getCachedLastError
