@@ -52,7 +52,7 @@ object BuildSettings {
     shellPrompt := ShellPrompt.buildShellPrompt,
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
-    resolvers ++= Seq(novusRepo, novusSnapsRepo, typeSafeRepo),
+    resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo),
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
     crossScalaVersions := Seq("2.9.1", "2.9.2")
   )
@@ -137,9 +137,8 @@ object Dependencies {
 }
 
 object Repos {
-  val novusRepo = "Novus Release Repository" at "http://repo.novus.com/releases/"
-  val novusSnapsRepo = "Novus Snapshots Repository" at "http://repo.novus.com/snapshots/"
   val typeSafeRepo = "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+  val typeSafeSnapsRepo = "Typesafe Snaps Repo" at "http://repo.typesafe.com/typesafe/snapshots/"
 }
 
 // Shell prompt which show the current project, git branch and build version
