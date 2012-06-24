@@ -131,8 +131,8 @@ class CollectionSupportSpec extends SalatSpec {
         val dbo: MongoDBObject = grater[Easy].asDBObject(easy)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
-          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
           builder.result()
         })
 

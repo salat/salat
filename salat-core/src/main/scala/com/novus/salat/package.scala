@@ -52,7 +52,7 @@ object `package` extends Logging {
     def companionClass: Class[_] = {
       val path = if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName)
       val c = getClassNamed(path)
-      if (c.isDefined) c.get else error(
+      if (c.isDefined) c.get else sys.error(
         "Could not resolve clazz='%s' in any of the %d classpaths in ctx='%s'".format(path, ctx.classLoaders.size, ctx.name))
     }
 
@@ -69,7 +69,7 @@ object `package` extends Logging {
 
   protected[salat] def getClassNamed_!(c: String)(implicit ctx: Context): Class[_] = {
     val clazz = getClassNamed(c)(ctx)
-    if (clazz.isDefined) clazz.get else error("getClassNamed: path='%s' does not resolve in any of %d classloaders registered with context='%s'".
+    if (clazz.isDefined) clazz.get else sys.error("getClassNamed: path='%s' does not resolve in any of %d classloaders registered with context='%s'".
       format(c, ctx.classLoaders.size, ctx.name))
   }
 
@@ -77,7 +77,10 @@ object `package` extends Logging {
     resolveClass(c, ctx.classLoaders)
   }
 
-  protected[salat] def isCaseClass(clazz: Class[_]) = clazz.getInterfaces.contains(classOf[Product])
+  protected[salat] def isCaseClass(clazz: Class[_]) = {
+    //log.debug("isCaseClass: clazz='%s'\nInterfaces:\n%s", clazz.getName, clazz.getInterfaces.map(_.getName).mkString("\n"))
+    clazz.getInterfaces.contains(classOf[Product])
+  }
 
   protected[salat] def isCaseObject(clazz: Class[_]): Boolean = clazz.getInterfaces.contains(classOf[Product]) &&
     clazz.getInterfaces.contains(classOf[ScalaObject]) && clazz.getName.endsWith("$")

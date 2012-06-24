@@ -68,7 +68,7 @@ trait Context extends ContextLifecycle with Logging {
   // BigDecimal handling strategy: binary vs double vs string
   val bigDecimalStrategy: BigDecimalStrategy = BigDecimalToDoubleStrategy()
 
-  @deprecated("Use Context bigDecimalStrategy.mathCtx instead") lazy val mathCtx = bigDecimalStrategy.mathCtx
+  @deprecated("Use Context bigDecimalStrategy.mathCtx instead", "0.0.8") lazy val mathCtx = bigDecimalStrategy.mathCtx
 
   // BigInt handling strategy: binary vs int
   val bigIntStrategy: BigIntStrategy = BigIntToBinaryStrategy
@@ -204,13 +204,13 @@ needsProxyGrater: clazz='%s'
     if (g.isDefined) g.get else throw MissingTypeHint(dbo.toMap.asInstanceOf[Map[_, _]])(this)
   }
 
-  @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(dbo: MongoDBObject): Grater[_ <: AnyRef] = lookup(dbo)
+  @deprecated("Use lookup instead - will be removed for 0.0.9 release", "0.0.8") def lookup_!(dbo: MongoDBObject): Grater[_ <: AnyRef] = lookup(dbo)
 
-  @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(clazz: String, x: CaseClass): Grater[_ <: AnyRef] = lookup(clazz, x)
+  @deprecated("Use lookup instead - will be removed for 0.0.9 release", "0.0.8") def lookup_!(clazz: String, x: CaseClass): Grater[_ <: AnyRef] = lookup(clazz, x)
 
-  @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_![X <: CaseClass: Manifest]: Grater[X] = lookup[X]
+  @deprecated("Use lookup instead - will be removed for 0.0.9 release", "0.0.8") def lookup_![X <: CaseClass: Manifest]: Grater[X] = lookup[X]
 
-  @deprecated("Use lookup instead - will be removed for 0.0.9 release") def lookup_!(clazz: String): Grater[_ <: AnyRef] = lookup(clazz)
+  @deprecated("Use lookup instead - will be removed for 0.0.9 release", "0.0.8") def lookup_!(clazz: String): Grater[_ <: AnyRef] = lookup(clazz)
 
   def lookup(j: JObject): Grater[_ <: AnyRef] = {
     val g = extractTypeHint(j).map(lookup(_))
