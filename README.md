@@ -1,144 +1,68 @@
 # Salat
 
-[Salat in four minutes... or less][lightning-talk]
+Salat is a simple serialization library for case classes.
 
-Salat is a bi-directional Scala case class serialization library that leverages
-MongoDB's `DBObject` (which uses BSON underneath) as its target format.
+Salat currently supports bidirectional serialization for:
 
-The Salat project focuses on **speed** and **simplicity** of serializing case classes to and from target formats.
-
-Salat is not a fully-fledged ORM and does not attempt to match the flexibility, compability or functionality of an ORM
-that would let you define relationships between classes, provide a query language, or serialize/deserialize every collection
-type known to Java or Scala.
-
-- Documentation available on our [wiki][wiki].
-- Salat-related discussion and questions belong on the [mailing list][mailing-list].
-- Follow [Rose][rktoomey] on Twitter - [@prasinous][rkt-twitter]
-
-# How to get Salat
-
-Add these repos to your SBT or Maven project:
-
-    val novusRels = "repo.novus rels" at "http://repo.novus.com/releases/"
-    val novusSnaps = "repo.novus snaps" at "http://repo.novus.com/snapshots/"
-
-The main dependency is `salat-core`.
-
-### Latest release
-
-Salat `0.0.7` release is available for Scala `2.8.1`.
-
-    val salat = "com.novus" % "salat-core" % "0.0.7"
-
-### Latest snapshot
-
-Salat `0.0.8-SNAPSHOT` is available for both Scala `2.8.1` and `2.9.1`.
-
-    val salat = "com.novus" %% "salat-core" % "0.0.8-SNAPSHOT"
+- MongoDB's `DBObject` (using [casbah][casbah])
+- JSON (using [lift-json][lift-json])
+- maps
 
 # Goals
 
-1. Convert an instance of *any* Scala case class to a `DBObject`
-suitable for insertion into a MongoDB database.
+Simplicity.  Flexibility.  Consistency.
 
-2. Given a `DBObject` (which may have come from MongoDB, or
-elsewhere), instantiate an instance of the corresponding case class.
+Your model there and back again should just work.
 
-3. Achieve goals **1** and **2** without sacrificing performance. This rules out use of reflection.
+# Get Salat
 
-4. Achieve goals **1**, **2**, and **3** as functionally as possible.
+Salat publishes snapshots and releases to OSS Sontatype.
 
-## What are you giving up?
+Please remove all references to `repo.novus.com` from your build files.  After 0.0.8, Salat will be hosted exclusively by Sonatype.
 
-In developing Salat, we have made a key decision to make these particular sacrifices and not look back.
+## Stable Release
 
-### No support for anything but case classes
+    "com.novus" %% "salat" % "0.0.8"
 
-Scala case classes have key features that Salat uses to improve and speed up object serialization, including:
+## Snapshot
 
-- A single accessible constructor. Can be retrieved either by reflecting on the class itself, or through generated companion
-  object.
+    "com.novus" %% "salat" % "1.9-SNAPSHOT"
 
-- The `productIterator` method provided by the `Product` interface: a non-reflective way to retrieve
-  programmatically values of the case class' data members.
+## Play 2 plugin
 
-- Data members can have default values; information missing in
-  `DBObject` instance during re-inflation can be subbed in using
-  default args defined at compile time.
+Are you using Play framework?  Make sure to see our [Play support][play-salat] wiki page, and check out Leon Radley's plugin at [leon/play-salat][play-salat-plugin].
 
-### Requires ScalaSig
+# Documentation
 
-So the first big improvement Salat offers for serialization is in being able to use case classes as products to get a
-list of indexed fields and their default arguments.
+See the [wiki][wiki] and the [mailing list][group].
 
-Well begun, but only half done.  The other half is getting as much type information about the case class as possible, and
-then keeping that information on tap instead of having to derive it over and over again.
+# What does Salat support?
 
-With these two pieces in hand, fast, reliable serialization without having to resort to runtime reflection is easy.
+See [Supported Types][types].
 
-So thank you to [EFPL][efpl] for their wonderfully undocumented `ScalaSig`, which Salat uses to memoize **hi-fi type
-information** about each field in the case class.
+# What doesn't Salat support?
 
-Details about pickled Scala sigs are thin on the ground.  Here's where we got started:
+We don't have the resources to support everything.  Here are some things Salat doesn't do:
+
+- Java compatibility
+- non-case classes
+- type aliases
+- nested inner classes
+- relationship management like a traditional ORM
+
+# How does Salat work?
+
+Salat uses the `Product` trait implemented by case classes with the hi-fi type information found in pickled Scala signatures.
+
+Details are thin on the ground, but here's where we got started:
 
 - the source code for `scala.tools.scalap.scalax.rules.scalasig.ScalaSigParser`
 - SID # 10 (draft) - [Storage of pickled Scala signatures in class files][sid10]
 
-#### Java support has been ruled out
-
-Requiring `Product` and a single constructor rules out using anything but a case class.  Technically, in the distant future,
-we may be able to flex on the case class requirement enough to only require something very, very case class like.
-
-However, Salat will never support classes defined in pure Java because they do not supply the requisite pickled Scala sig.
-
-#### You can't freestyle in the REPL either
-
-*NB*: it turns out that ScalaSig is incapable of "parsing" classes defined in the REPL.  See [SI-4567](https://issues.scala-lang.org/browse/SI-4567)
-for the gory details.
-
- **None of this code will work with classes that have no corresponding `.class` file or `ScalaSig` annotation.**
-
-Our ticket has been accepted as an improvement, but until this is fixed, if you want to experiment with serialization
-in the REPL:
-
- - define your model classes
- - run `sbt console`
-
-### Flexibility can wait
-
-Salat is and will always be primarily focused on serializing and deserializing what's in the case class constructor.
-
-There are some annotations that can be used to customize serialization at the case class level:
-
-- Support for typing concrete case class instances to a trait or abstract superclass using `@Salat`
-- Use `@Key` to change a key name
-- Use `@Persist` to persist a value not in case class constructor
-- Use `@Ignore` to ignore a field in the case class constructor (requires default value)
-- Use `@EnumAs` to choose whether to handle enums by id or by value
-
-In addition, you can customize your persistence context with regards to:
-
- - type hinting strategy
- - type hinting key name
- - global key overrides
- - global enum handling strategy
- - default math context for BigDecimals
-
-However, a lot of Salat's internal workings are not easily exposed or overriden right now.  We are working to make Salat
-a more general-use serialization tool with future releases.
-
-
-## What's up with the name?
-
-"*Salat*" is a transliteration of the Russian word "салат", for
-"salad".
-
-Salat is light and doesn't slow you down through use of runtime reflection.
-
+[types]: https://github.com/novus/salat/wiki/SupportedTypes
 [wiki]: https://github.com/novus/salat/wiki
-[mailing-list]: http://groups.google.com/group/scala-salat
-[lightning-talk]: http://repo.novus.com/salat-presentation
-[rkt-twitter]: http://twitter.com/prasinous
-[rktoomey]: https://github.com/rktoomey
-[efpl]: http://www.epfl.ch/
-[sid10]: http://www.scala-lang.org/sid/10
+[casbah]: https://github.com/mongodb/casbah/
+[lift-json]: https://github.com/lift/lift/tree/master/framework/lift-base/lift-json/
+[group]: http://groups.google.com/group/scala-salat
+[play]: https://github.com/novus/salat/wiki/SalatWithPlay2
+[play-salat-plugin]: https://github.com/leon/play-salat
