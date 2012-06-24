@@ -8,7 +8,7 @@ object SalatBuild extends Build {
 
   val testDeps = Seq(specs2, logbackCore, logbackClassic)
   val utilDeps = Seq(slf4jApi) ++ testDeps
-  val coreDeps = Seq(mongoJava, casbah_core, lift_json, commonsLang) ++ testDeps
+  val coreDeps = Seq(casbah, lift_json, commonsLang) ++ testDeps
 
   lazy val salat = Project(
     id = "salat",
@@ -124,16 +124,15 @@ object Dependencies {
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
-  val mongoJava = "org.mongodb" % "mongo-java-driver" % "2.7.3"
+  val casbah = "org.mongodb" %% "casbah" % "2.3.0"
   // TODO: these dependencies are not yet available for 2.9.2
   // causes complaining:
-//  Setting version to 2.9.2
-//  [info] Set current project to salat (in build file:/home/rose/workspace/salat/)
-//  [warn] Potentially incompatible versions of dependencies of {file:/home/rose/workspace/salat/}salat-core:
-//  [warn]    org.scala-lang: 2.9.2, 2.9.1
-//  [warn] Potentially incompatible versions of dependencies of {file:/home/rose/workspace/salat/}salat:
-//  [warn]    org.scala-lang: 2.9.2, 2.9.1
-  val casbah_core = "com.mongodb.casbah" % "casbah-core_2.9.1" % "2.1.5-1"
+  //  Setting version to 2.9.2
+  //  [info] Set current project to salat (in build file:/home/rose/workspace/salat/)
+  //  [warn] Potentially incompatible versions of dependencies of {file:/home/rose/workspace/salat/}salat-core:
+  //  [warn]    org.scala-lang: 2.9.2, 2.9.1
+  //  [warn] Potentially incompatible versions of dependencies of {file:/home/rose/workspace/salat/}salat:
+  //  [warn]    org.scala-lang: 2.9.2, 2.9.1
   val lift_json = "net.liftweb" % "lift-json_2.9.1" % "2.4"
 }
 

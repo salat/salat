@@ -28,6 +28,8 @@ Please remove all references to `repo.novus.com` from your build files.  After 0
 
     "com.novus" %% "salat" % "1.9-SNAPSHOT"
 
+- Casbah support has been upgraded to [2.3.0](http://notes.implicit.ly/post/25727213706/casbah-2-3-0)
+
 ## Play 2 plugin
 
 Are you using Play framework?  Make sure to see our [Play support][play-salat] wiki page, and check out Leon Radley's plugin at [leon/play-salat][play-salat-plugin].
