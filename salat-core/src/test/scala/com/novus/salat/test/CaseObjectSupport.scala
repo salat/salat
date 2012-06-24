@@ -38,8 +38,8 @@ class CaseObjectSupport extends SalatSpec {
         log.info("mine: %s", mine)
         val dbo: MongoDBObject = grater[Wardrobe].asDBObject(mine)
         log.info("dbo : %s", dbo)
-        val suits = dbo.expand[BasicDBList]("suits")
-        suits must beSome[BasicDBList]
+        val suits = dbo.expand[MongoDBList]("suits")
+        suits must beSome[MongoDBList]
         suits.getOrElse(throw new Exception("argh, someone stole my wardrobe")) // TODO: where did which go?
         suits match {
           case Some(suits) => {
