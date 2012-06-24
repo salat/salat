@@ -305,12 +305,14 @@ package in {
     }
   }
 
-  trait TraversableInjector extends Transformer {
+  trait TraversableInjector extends Transformer with Logging {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value
 
     override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case mdl: MongoDBList => Some(mdl.toList) // casbah_core 2.3.0_RC1 onwards
       case dbl: BasicDBList => {
+        // previous to casbah_core 2.3.0
         val list: MongoDBList = dbl
         Some(list.toList)
       }
