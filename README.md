@@ -66,6 +66,6 @@ Details are thin on the ground, but here's where we got started:
 [casbah]: https://github.com/mongodb/casbah/
 [lift-json]: https://github.com/lift/lift/tree/master/framework/lift-base/lift-json/
 [group]: http://groups.google.com/group/scala-salat
-[play]: https://github.com/novus/salat/wiki/SalatWithPlay2
+[play-salat]: https://github.com/novus/salat/wiki/SalatWithPlay2
 [play-salat-plugin]: https://github.com/leon/play-salat
 [sid10]: http://www.scala-lang.org/sid/10
