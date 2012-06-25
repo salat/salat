@@ -197,7 +197,7 @@ needsProxyGrater: clazz='%s'
 
   def lookup(dbo: MongoDBObject): Grater[_ <: AnyRef] = {
     val g = extractTypeHint(dbo).map(lookup(_))
-    if (g.isDefined) g.get else throw MissingTypeHint(dbo.toMap.asInstanceOf[Map[_, _]])(this)
+    if (g.isDefined) g.get else throw MissingTypeHint(dbo.iterator.toMap)(this)
   }
 
   @deprecated("Use lookup instead - will be removed for 0.0.9 release", "0.0.8") def lookup_!(dbo: MongoDBObject): Grater[_ <: AnyRef] = lookup(dbo)

@@ -46,7 +46,7 @@ case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X], s
 
 case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
 case class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
-case class MissingTypeHint(m: Map[_, _])(implicit ctx: Context) extends Error("""
+case class MissingTypeHint[A, B](m: Map[A, B])(implicit ctx: Context) extends Error("""
 
  NO TYPE HINT FOUND!
 
