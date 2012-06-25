@@ -28,9 +28,7 @@ Available for Scala 2.8.1, 2.9.1 and 2.9.2.
 
 ## Snapshot
 
-[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)
-
-Available for Scala 2.9.1 and 2.9.2.
+[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.9.1 and 2.9.2.
 
     "com.novus" %% "salat" % "1.9-SNAPSHOT"
 
