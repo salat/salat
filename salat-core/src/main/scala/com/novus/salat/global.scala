@@ -29,14 +29,14 @@ package object global {
     val name = "global"
   }
 
-  // example of a context that never uses type hints
-  val WhenNecessary = new Context {
+  // example of a context that uses type hints when necessary
+  @deprecated("Please create your own custom context", "1.9-SNAPSHOT") val WhenNecessary = new Context {
     val name = "global-when-necessary"
     override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
   }
 
   // example of a context that never uses type hints
-  val NoTypeHints = new Context {
+  @deprecated("Please create your own custom context", "1.9-SNAPSHOT") val NoTypeHints = new Context {
     val name = "global-no-type-hints"
     override val typeHintStrategy = NeverTypeHint
   }

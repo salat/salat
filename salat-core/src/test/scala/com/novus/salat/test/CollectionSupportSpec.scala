@@ -24,7 +24,7 @@
 package com.novus.salat.test
 
 import com.novus.salat._
-import com.novus.salat.global._
+import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.MongoDBObject
 import com.novus.salat.util.MapPrettyPrinter

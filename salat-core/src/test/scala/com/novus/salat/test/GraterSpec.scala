@@ -27,7 +27,7 @@ package com.novus.salat.test
 import com.novus.salat.test.model._
 import com.novus.salat.test.model.useful._
 import com.novus.salat._
-import com.novus.salat.global._
+import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
 
 class GraterSpec extends SalatSpec {

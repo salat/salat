@@ -56,7 +56,7 @@ class EnumSupportSpec extends SalatSpec {
     val h = Hector(thug = ThugLevel.Three, doneIn = DoneIn.OhDear)
 
     "provide a default enum handling strategy of toString" in {
-      import com.novus.salat.global._
+      import com.novus.salat.test.global._
 
       ctx.defaultEnumStrategy must_== EnumStrategy.BY_VALUE
 
@@ -87,7 +87,7 @@ class EnumSupportSpec extends SalatSpec {
 
     "allow an individual enum annotated with EnumAs to override default enum handling strategy" in {
 
-      import com.novus.salat.global._
+      import com.novus.salat.test.global._
 
       ctx.defaultEnumStrategy must_== EnumStrategy.BY_VALUE
       DoneInById.getClass.getAnnotation(classOf[EnumAs]).asInstanceOf[EnumAs].strategy must_== EnumStrategy.BY_ID

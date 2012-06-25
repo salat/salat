@@ -24,20 +24,16 @@
 package com.novus.salat
 
 import java.math.{ RoundingMode => JRoundingMode, MathContext => JMathContext }
-import scala.collection.mutable.{ ConcurrentMap }
+import scala.collection.mutable.ConcurrentMap
 import scala.collection.JavaConversions.JConcurrentMapWrapper
-import scala.collection.JavaConversions.JCollectionWrapper
 
 import com.novus.salat.util._
 import com.novus.salat.{ Field => SField }
-import com.novus.salat.annotations._
 import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
 import com.mongodb.casbah.Imports._
-import java.util.concurrent.{ CopyOnWriteArrayList, ConcurrentHashMap }
+import java.util.concurrent.ConcurrentHashMap
 import net.liftweb.json._
-import org.joda.time.DateTimeZone
-import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
 import com.novus.salat.json.JSONConfig
 
 trait Context extends ContextLifecycle with Logging {
@@ -57,7 +53,7 @@ trait Context extends ContextLifecycle with Logging {
   /**Per class key overrides - map key is (clazz.getName, field name) */
   private[salat] val perClassKeyOverrides: ConcurrentMap[(String, String), String] = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
 
-  val typeHintStrategy: TypeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
+  val typeHintStrategy: TypeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
 
   /**Enum handling strategy is defined at the context-level, but can be overridden at the individual enum level */
   val defaultEnumStrategy = EnumStrategy.BY_VALUE

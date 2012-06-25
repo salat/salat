@@ -24,7 +24,7 @@
 package com.novus.salat
 
 import com.novus.salat.test.model._
-import com.novus.salat.global._
+import com.novus.salat.test.global._
 import scala.collection.immutable.{ Map => IMap }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
 import org.joda.time.format.{ PeriodFormat, PeriodFormatterBuilder }

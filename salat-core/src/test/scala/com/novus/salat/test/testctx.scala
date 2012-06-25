@@ -36,6 +36,7 @@ package object always {
 
   implicit val ctx = new Context {
     val name = ContextName
+    override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
   }
 }
 
@@ -111,6 +112,7 @@ package object always_binary_type_hint_encoding {
 package object suppress_default_args {
   implicit val ctx = new Context {
     val name = "SuppressDefaultValues"
+    override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
     override val suppressDefaultArgs = true
   }
 }
@@ -118,6 +120,7 @@ package object suppress_default_args {
 package object dont_suppress_default_args {
   implicit val ctx = new Context {
     val name = "DontSuppressDefaultValues"
+    override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.Always, typeHint = TypeHint)
     override val suppressDefaultArgs = false
   }
 }
