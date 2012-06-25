@@ -26,12 +26,8 @@ package com.novus.salat.dao
 
 import com.mongodb.casbah.Imports._
 import com.novus.salat._
-import net.liftweb.json.JsonAST.JObject
-import java.lang.reflect.{ Type, ParameterizedType }
 import com.novus.salat.util.Logging
-import com.mongodb
 import net.liftweb.json._
-import com.novus.salat.dao.SalatMongoCursor
 import net.liftweb.json.JsonAST.JObject
 
 /** Play framework style model companion
