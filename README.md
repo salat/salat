@@ -26,14 +26,15 @@ Available for Scala 2.8.1, 2.9.1 and 2.9.2.
 
     "com.novus" %% "salat" % "0.0.8"
 
+[Release Notes](http://notes.implicit.ly/post/25793638048/salat-0-0-8)
+
 ## Snapshot
 
 [![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.9.1 and 2.9.2.
 
     "com.novus" %% "salat" % "1.9-SNAPSHOT"
 
-- Casbah support has been upgraded to [2.3.0](http://notes.implicit.ly/post/25727213706/casbah-2-3-0)
-- global `Context` now defaults to When Necessary [type hinting][typehint] using a type hint field of `_typeHint` (see How to create a [custom Salat context][custom-context] for more information.)
+[Release Notes](https://github.com/novus/salat/blob/master/notes/1.9.0.markdown)
 
 ## Play 2 plugin
 
@@ -75,4 +76,3 @@ Details are thin on the ground, but here's where we got started:
 [play-salat-plugin]: https://github.com/leon/play-salat
 [sid10]: http://www.scala-lang.org/sid/10
 [typehint]: https://github.com/novus/salat/wiki/TypeHints
-[custom-context]: https://github.com/novus/salat/wiki/CustomContext
