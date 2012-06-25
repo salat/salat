@@ -170,6 +170,7 @@ object Ls {
   lazy val settings = _root_.ls.Plugin.lsSettings ++ Seq(
     (description in lsync) := "A simple serialization library for case classes.",
     licenses in lsync <<= licenses,
-    (tags in lsync) := Seq("mongo", "casbah", "json", "serialization", "object document mapping", "ODM", "mapper", "play")
+    (tags in lsync) := Seq("mongo", "casbah", "json", "serialization", "object document mapping", "ODM", "mapper", "play", "salat"),
+    (docsUrl in lsync) := Some(new URL("https://github.com/novus/salat/wiki"))
   )
 }

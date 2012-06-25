@@ -5,8 +5,8 @@
  "version":"1.9-SNAPSHOT",
  "description":"A simple serialization library for case classes.",
  "site":"https://github.com/novus/salat",
- "tags":["mongo","casbah","json","serialization","object document mapping","ODM","mapper","play"],
- "docs":"",
+ "tags":["mongo","casbah","json","serialization","object document mapping","ODM","mapper","play","salat"],
+ "docs":"https://github.com/novus/salat/wiki",
  "licenses": [{
    "name": "Apache 2.0",
    "url": "http://www.apache.org/licenses/LICENSE-2.0"
