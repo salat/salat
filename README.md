@@ -56,6 +56,9 @@ We don't have the resources to support everything.  Here are some things Salat d
 - non-case classes
 - type aliases
 - nested inner classes
+- varags
+- arrays
+- `Option` containing a collection (see [collection support][collections] for workarounds)
 - relationship management like a traditional ORM
 
 # How does Salat work?
@@ -76,3 +79,4 @@ Details are thin on the ground, but here's where we got started:
 [play-salat-plugin]: https://github.com/leon/play-salat
 [sid10]: http://www.scala-lang.org/sid/10
 [typehint]: https://github.com/novus/salat/wiki/TypeHints
+[collections]: https://github.com/novus/salat/wiki/Collections
