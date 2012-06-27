@@ -29,16 +29,16 @@ import net.liftweb.json._
 
 class ProxyGrater[X <: AnyRef](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
 
-  def asDBObject(o: X): DBObject =
-    ctx.lookup(o.getClass.getName).asInstanceOf[Grater[X]].asDBObject(o)
+  def asDBObject(o: X, resolveKey: Boolean = true): DBObject =
+    ctx.lookup(o.getClass.getName).asInstanceOf[Grater[X]].asDBObject(o, resolveKey)
 
   def asObject[A <% MongoDBObject](dbo: A): X = {
     log.trace("ProxyGrater.asObject: typeHint='%s'".format(ctx.extractTypeHint(dbo).getOrElse("")))
     ctx.lookup(dbo).asInstanceOf[Grater[X]].asObject(dbo)
   }
 
-  def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] =
-    ctx.lookup(o.getClass.getName).asInstanceOf[Grater[X]].iterateOut(o)(f)
+  def iterateOut[T](o: X, resolveKey: Boolean = true)(f: ((String, Any)) => T): Iterator[T] =
+    ctx.lookup(o.getClass.getName).asInstanceOf[Grater[X]].iterateOut(o, resolveKey)(f)
 
   def fromJSON(j: JObject) = ctx.lookup(j).asInstanceOf[Grater[X]].fromJSON(j)
 

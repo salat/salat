@@ -36,7 +36,7 @@ import com.novus.salat.transformers.out._
 import com.novus.salat.annotations.util._
 
 package object out {
-  def select(t: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
+  def select(t: TypeRefType, hint: Boolean, resolveKey: Boolean = true)(implicit ctx: Context): Transformer = {
     t match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
@@ -56,11 +56,11 @@ package object out {
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with OptionExtractor with InContextToDBObject {
+          new Transformer(symbol.path, t, resolveKey)(ctx) with OptionExtractor with InContextToDBObject {
             val grater = ctx.lookup_?(symbol.path)
           }
 
-        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionExtractor
+        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t, resolveKey)(ctx) with OptionExtractor
       }
 
       case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
@@ -81,12 +81,12 @@ package object out {
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with TraversableExtractor {
+          new Transformer(symbol.path, t, resolveKey)(ctx) with InContextToDBObject with TraversableExtractor {
             val grater = ctx.lookup_?(symbol.path)
           }
 
         case TypeRefType(_, symbol, _) =>
-          new Transformer(symbol.path, t)(ctx) with TraversableExtractor
+          new Transformer(symbol.path, t, resolveKey)(ctx) with TraversableExtractor
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
@@ -106,11 +106,11 @@ package object out {
           new Transformer(prefix.symbol.path, t)(ctx) with EnumStringifier with MapExtractor
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject with MapExtractor {
+          new Transformer(symbol.path, t, resolveKey)(ctx) with InContextToDBObject with MapExtractor {
             val grater = ctx.lookup_?(symbol.path)
           }
 
-        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapExtractor
+        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t, resolveKey)(ctx) with MapExtractor
       }
 
       case TypeRefType(_, symbol, _) => t match {
@@ -131,11 +131,11 @@ package object out {
         }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
-          new Transformer(symbol.path, t)(ctx) with InContextToDBObject {
+          new Transformer(symbol.path, t, resolveKey)(ctx) with InContextToDBObject {
             val grater = ctx.lookup_?(symbol.path)
           }
 
-        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) {}
+        case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t, resolveKey)(ctx) {}
       }
     }
   }
@@ -179,7 +179,7 @@ package out {
   trait InContextToDBObject extends Transformer with InContextTransformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case cc: CaseClass => ctx.lookup(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc)
+      case cc: CaseClass => ctx.lookup(path, cc).asInstanceOf[Grater[CaseClass]].asDBObject(cc, this.resolveKey)
       case _             => MongoDBObject("failed-to-convert" -> value.toString)
     }
   }

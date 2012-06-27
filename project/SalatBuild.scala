@@ -52,7 +52,7 @@ object BuildSettings {
     shellPrompt := ShellPrompt.buildShellPrompt,
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
-    resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo),
+    resolvers ++= Seq(typeSafeRepo, typeSafeIDERepo, typeSafeSnapsRepo),
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
     crossScalaVersions := Seq("2.9.1", "2.9.2")
   )
@@ -138,6 +138,7 @@ object Dependencies {
 
 object Repos {
   val typeSafeRepo = "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+  val typeSafeIDERepo = "Typesafe Repo" at "http://repo.typesafe.com/typesafe/ide-2.9/"
   val typeSafeSnapsRepo = "Typesafe Snaps Repo" at "http://repo.typesafe.com/typesafe/snapshots/"
 }
 

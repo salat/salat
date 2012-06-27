@@ -68,7 +68,7 @@ object `package` {
   }
 }
 
-abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) {
+abstract class Transformer(val path: String, val t: TypeRefType, val resolveKey: Boolean = true)(implicit val ctx: Context) {
   def transform(value: Any)(implicit ctx: Context): Any = value
   def before(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
   def after(value: Any)(implicit ctx: Context): Option[Any] = Some(value)

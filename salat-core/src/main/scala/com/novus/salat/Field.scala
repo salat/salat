@@ -42,26 +42,32 @@ object Field {
     }
     val _in = in.select(t, method.annotated_?[Salat])
     val _out = out.select(t, method.annotated_?[Salat])
+    val _outNoResolve = out.select(t, method.annotated_?[Salat], false)
     val ignore = method.annotation[Ignore].isDefined
 
     new Field(idx = idx,
       name = _name,
+      nameNoResolve = name,
       typeRefType = t,
       in = _in,
       out = _out,
+      outNoResolve = _outNoResolve,
       ignore = ignore) {}
   }
 }
 
 sealed abstract class Field(val idx: Int,
                             val name: String,
+                            val nameNoResolve: String,
                             val typeRefType: TypeRefType,
                             val in: Transformer,
                             val out: Transformer,
+                            val outNoResolve: Transformer,
                             val ignore: Boolean)(implicit val ctx: Context) extends Logging {
 
   def in_!(value: Any) = in.transform_!(value)
   def out_!(value: Any) = out.transform_!(value)
+  def outNoResolve_!(value: Any) = outNoResolve.transform_!(value)
 
   lazy val tf = TypeFinder(typeRefType)
 

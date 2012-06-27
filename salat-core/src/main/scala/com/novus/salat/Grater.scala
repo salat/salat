@@ -47,7 +47,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   ctx.accept(this)
 
-  def asDBObject(o: X): DBObject
+  def asDBObject(o: X, resolveKey: Boolean = true): DBObject
 
   def asObject[A <% MongoDBObject](dbo: A): X
 
@@ -96,7 +96,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
                      """.format(x.getClass.getName, s))
   }
 
-  def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T]
+  def iterateOut[T](o: X, resolveKey: Boolean)(f: ((String, Any)) => T): Iterator[T]
 
   type OutHandler = PartialFunction[(Any, SField), Option[(String, Any)]]
 
@@ -167,11 +167,11 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   // is not a concern
   protected lazy val allTheChildren: Seq[Symbol] = sym.children ++ interestingInterfaces.map(_._2.children).flatten ++ interestingSuperclass.map(_._2.children).flatten
 
-  protected def outField: OutHandler = {
+  protected def outField(resolveKey: Boolean): OutHandler = {
     case (_, field) if field.ignore => None
     case (null, _)                  => None
     case (element, field) => {
-      field.out_!(element) match {
+      { if (resolveKey) field.out_!(element) else field.outNoResolve_!(element) } match {
         case Some(None) => None
         case Some(serialized) => {
           //          log.info("""
@@ -191,7 +191,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
           serialized match {
             case serialized if ctx.suppressDefaultArgs && defaultArg(field).suppress(serialized) => None
             case serialized => {
-              val key = cachedFieldName(field)
+              val key = cachedFieldName(field, resolveKey)
               val value = serialized match {
                 case Some(unwrapped) => unwrapped
                 case _               => serialized
@@ -296,12 +296,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     case NullaryMethodType(tr @ TypeRefType(_, _, _)) => tr
   }
 
-  def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
+  def iterateOut[T](o: X, resolveKey: Boolean = true)(f: ((String, Any)) => T): Iterator[T] = {
     val fromConstructor = o.productIterator.zip(indexedFields.iterator)
     val withPersist = extraFieldsToPersist.iterator.map {
       case (m, field) => m.invoke(o) -> field
     }
-    (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
+    (fromConstructor ++ withPersist).map(outField(resolveKey)).filter(_.isDefined).map(_.get).map(f)
   }
 
   lazy val fieldNameMap = (indexedFields.filterNot(_.ignore) ++ extraFieldsToPersist.map(_._2)).map {
@@ -309,12 +309,14 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       field -> ctx.determineFieldName(clazz, field.name)
   }.toMap
 
-  def cachedFieldName(field: SField) = fieldNameMap.getOrElse(field, field.name)
+  def cachedFieldName(field: SField, resolveKey: Boolean = true) =
+    if (resolveKey) fieldNameMap.getOrElse(field, field.name)
+    else field.nameNoResolve
 
   def toJSON(o: X) = {
     val builder = List.newBuilder[JField]
     builder ++= ToJField.typeHint(clazz, useTypeHint)
-    iterateOut(o) {
+    iterateOut(o, false) {
       case (key, value) => {
         builder += ToJField(key, value)
       }
@@ -322,7 +324,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     JObject(builder.result())
   }
 
-  def asDBObject(o: X): DBObject = {
+  def asDBObject(o: X, resolveKey: Boolean = true): DBObject = {
     val builder = MongoDBObject.newBuilder
 
     // handle type hinting, where necessary
@@ -330,7 +332,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       builder += ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(clazz.getName)
     }
 
-    iterateOut(o) {
+    iterateOut(o, resolveKey) {
       case (key, value) => builder += key -> value
     }.toList
 
@@ -403,7 +405,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     val args = indexedFields.map {
       case field if field.ignore => safeDefault(field)
       case field => {
-        val name = cachedFieldName(field)
+        val name = cachedFieldName(field, false)
         val rawValue = values.get(name)
         val value = FromJValue(rawValue, field)
         //        log.info(
