@@ -5,3 +5,4 @@ Features new in Salat 1.9.0 include:
  create a [custom Salat context](https://github.com/novus/salat/wiki/CustomContext).)
 - fixed fromJSON bug deserializing `Option` typed to a case class
 
+[typehint]: https://github.com/novus/salat/wiki/TypeHints
