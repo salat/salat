@@ -3,4 +3,5 @@ Features new in Salat 1.9.0 include:
 - Casbah support has been upgraded to [2.3.0](http://notes.implicit.ly/post/25727213706/casbah-2-3-0)
 - global `Context` now defaults to When Necessary [type hinting][typehint] using a key of `_typeHint` (To change this default,
  create a [custom Salat context](https://github.com/novus/salat/wiki/CustomContext).)
+- fixed fromJSON bug deserializing `Option` typed to a case class
 

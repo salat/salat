@@ -61,6 +61,7 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
   lazy val isBigInt = Types.isBigInt(t.symbol)
   lazy val isLong = TypeMatchers.matches(t, classOf[Long].getName)
 
+  lazy val isOption = TypeMatchers.matches(t, Types.Option)
   lazy val isOid = TypeMatchers.matches(t, Types.Oid)
   lazy val isURL = TypeMatchers.matches(t, classOf[java.net.URL].getName)
 }

@@ -33,7 +33,6 @@ import net.liftweb.json.JsonParser.ParseException
 
 class JsonSpec extends Specification with Logging {
 
-  // TODO: traits and abstract superclasses
   // TODO: @Key
   // TODO: @Ignore
   // TODO: @Persist
@@ -43,6 +42,8 @@ class JsonSpec extends Specification with Logging {
   val ints = List(1, 2, 3)
   val strings = List("a", "b", "c")
   val b = Bertil(ints = ints, strings = strings)
+  val g = Gustav(o = Some("OG"))
+  val n = Niklas(Some(g))
 
   "JSON support" should {
     "handle converting model objects to JObject" in {
@@ -135,7 +136,12 @@ class JsonSpec extends Specification with Logging {
       }
       "Options" in {
         "Some[A]" in {
-          grater[Gustav].toPrettyJSON(Gustav(o = Some("OG"))) must /("o" -> "OG")
+          "simple type" in {
+            grater[Gustav].toPrettyJSON(g) must /("o" -> "OG")
+          }
+          "case class" in {
+            grater[Niklas].toPrettyJSON(n) must /("g") */ ("o" -> "OG")
+          }
         }
         "None" in {
           grater[Gustav].toCompactJSON(Gustav(o = None)) must_== "{}"
@@ -246,7 +252,13 @@ class JsonSpec extends Specification with Logging {
         }
         "where the model object contains Option fields" in {
           "Some[A]" in {
-            grater[Gustav].fromJSON(JObject(JField("o", JString("OG")) :: Nil)) must_== Gustav(o = Some("OG"))
+            "simple type" in {
+              grater[Gustav].fromJSON(JObject(JField("o", JString("OG")) :: Nil)) must_== g
+            }
+            "case class" in {
+              grater[Niklas].fromJSON(JObject(
+                JField("g", JObject(JField("o", JString("OG")) :: Nil)) :: Nil)) must_== n
+            }
           }
           "None" in {
             grater[Gustav].fromJSON(JObject(Nil)) must_== Gustav(o = None)
@@ -282,6 +294,7 @@ class JsonSpec extends Specification with Logging {
           val adam = """{"a":"string","b":99,"c":3.14,"d":false,"e":"2011-12-28T14:37:56.008Z","u":"http://www.typesafe.com","o":{"$oid":"4fd0bead4ceab231e6f3220b"}}"""
           grater[Adam].fromJSON(adam) must_== a
           grater[Bertil].fromJSON("""{"ints":[1,2,3],"strings":["a","b","c"]}""") must_== b
+          grater[Niklas].fromJSON("""{"g":{"o":"OG"}}""") must_== n
         }
         "a string that can be parsed to a JSON array" in {
           val arr = """[{"_t":"com.novus.salat.test.json.Martin","s":"one","d":1.1},{"_t":"com.novus.salat.test.json.Martin","s":"two","d":2.2},{"_t":"com.novus.salat.test.json.Martin","s":"three","d":3.3}]"""

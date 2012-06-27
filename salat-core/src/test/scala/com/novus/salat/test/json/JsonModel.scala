@@ -81,3 +81,4 @@ case class Johan(s: String, d: Double) extends Helge
 abstract class Kalle(s: String)
 case class Ludvig(s: String) extends Kalle(s)
 case class Martin(s: String, d: Double) extends Kalle(s)
+case class Niklas(g: Option[Gustav])

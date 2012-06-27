@@ -118,6 +118,10 @@ object FromJValue extends Logging {
       }
       case notMap => sys.error("FromJValue: expected types for Map but instead got:\n%s".format(notMap))
     }
+    case o: JObject if field.tf.isOption && childType.isEmpty => field.typeRefType.typeArgs match {
+      case List(childType: TypeRefType) => apply(j, field, Some(childType))
+      case notOption                    => sys.error("FromJValue: expected type for Option but instead got:\n%s".format(notOption))
+    }
     case o: JObject if field.tf.isOid => deserialize(o, field.tf)
     case o: JObject if field.tf.isDate || field.tf.isDateTime => deserialize(o, field.tf)
     case o: JObject => ctx.lookup(if (childType.isDefined) childType.get.symbol.path else field.typeRefType.symbol.path).fromJSON(o)

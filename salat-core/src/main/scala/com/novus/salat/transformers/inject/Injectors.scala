@@ -281,6 +281,7 @@ package in {
         Some(mdbo)
       }
       case mdbo: MongoDBObject => Some(mdbo)
+      case cc: CaseClass       => Some(cc)
       case _                   => None
     }
 
@@ -300,8 +301,9 @@ package in {
   trait OptionInjector extends Transformer {
     self: Transformer =>
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
-      case value if value != null => Some(Some(value))
-      case _                      => Some(None)
+      case value @ Some(x) if x != null => Some(value)
+      case value if value != null       => Some(Some(value))
+      case _                            => Some(None)
     }
   }
 
