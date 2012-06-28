@@ -52,7 +52,7 @@ object BuildSettings {
     shellPrompt := ShellPrompt.buildShellPrompt,
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
-    resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo),
+    resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
     crossScalaVersions := Seq("2.9.1", "2.9.2")
   )
@@ -124,13 +124,15 @@ object Dependencies {
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
-  val casbah = "org.mongodb" %% "casbah" % "2.3.0"
+  val casbah = "org.mongodb" %% "casbah" % "2.4.0"
   val lift_json = "net.liftweb" %% "lift-json" % "2.5-SNAPSHOT"
 }
 
 object Repos {
   val typeSafeRepo = "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
   val typeSafeSnapsRepo = "Typesafe Snaps Repo" at "http://repo.typesafe.com/typesafe/snapshots/"
+  val oss = "OSS Sonatype" at "http://oss.sonatype.org/content/repositories/releases/"
+  val ossSnaps = "OSS Sonatype Snaps" at "http://oss.sonatype.org/content/repositories/snapshots/"
 }
 
 // Shell prompt which show the current project, git branch and build version
