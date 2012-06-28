@@ -3,7 +3,7 @@
  *
  * Module:        salat-util
  * Class:         glitch.scala
- * Last modified: 2012-04-28 20:34:21 EDT
+ * Last modified: 2012-06-27 23:42:09 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

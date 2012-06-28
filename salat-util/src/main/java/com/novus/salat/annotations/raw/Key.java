@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
  *
- * Module:        salat-core
- * Class:         Key
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Module:        salat-util
+ * Class:         Key.java
+ * Last modified: 2012-06-27 23:42:09 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
