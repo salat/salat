@@ -1,4 +1,4 @@
-Copyright (c) 2010 - $today.year Novus Partners, Inc. <http://novus.com>
+Copyright (c) 2010 - $today.year Novus Partners, Inc. (http://www.novus.com)
 
 Module:        $module.name
 Class:         $file.fileName
