@@ -107,65 +107,12 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
 abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
 
-  protected def findSym[A](clazz: Class[A]): SymbolInfoSymbol = {
-    val _sig = ScalaSigUtil.parseScalaSig0(clazz, ctx.classLoaders)
-    if (_sig.isDefined) {
-      val sig = _sig.get
-      if (sig.topLevelClasses.nonEmpty) {
-        sig.topLevelClasses.head
-      }
-      else if (sig.topLevelObjects.nonEmpty) {
-        sig.topLevelObjects.head
-      }
-      else throw MissingExpectedType(clazz)
-    }
-    else throw MissingPickledSig(clazz)
-  }
-
-  protected lazy val sym = findSym(clazz)
-
-  // annotations on a getter don't actually inherit from a trait or an abstract superclass,
-  // but dragging them down manually allows for much nicer behaviour - this way you can specify @Persist or @Key
-  // on a trait and have it work all the way down
-  protected def interestingClass(clazz: Class[_]) = clazz match {
-    case clazz if clazz == null => false // inconceivably, this happens!
-    case clazz if clazz.getName.startsWith("java.") => false
-    case clazz if clazz.getName.startsWith("javax.") => false
-    case clazz if clazz.getName.startsWith("scala.") => false
-    case clazz if clazz.getEnclosingClass != null => false // filter out nested traits and superclasses
-    case _ => true
-  }
-
-  protected lazy val interestingInterfaces: List[(Class[_], SymbolInfoSymbol)] = {
-    val interfaces = clazz.getInterfaces // this should return an empty array, but...  sometimes returns null!
-    if (interfaces != null && interfaces.nonEmpty) {
-      val builder = List.newBuilder[(Class[_], SymbolInfoSymbol)]
-      for (interface <- interfaces) {
-        if (interestingClass(interface)) {
-          builder += ((interface, findSym(interface)))
-        }
-      }
-      builder.result()
-    }
-    else Nil
-  }
-  protected lazy val interestingSuperclass: List[(Class[_], SymbolInfoSymbol)] = clazz.getSuperclass match {
-    case superClazz if interestingClass(superClazz) => List((superClazz, findSym(superClazz)))
-    case _ => Nil
-  }
-
-  protected def requiresTypeHint = {
-    clazz.annotated_?[Salat] || interestingInterfaces.map(_._1.annotated_?[Salat]).contains(true) || interestingSuperclass.map(_._1.annotated_?[Salat]).contains(true)
-  }
+  lazy val ca = ClassAnalyzer(clazz, ctx.classLoaders)
 
   protected lazy val useTypeHint = {
     ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
-      (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && requiresTypeHint)
+      (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && ca.requiresTypeHint)
   }
-
-  // for use when you just want to find something and whether it was declared in clazz, some trait clazz extends, or clazz' own superclass
-  // is not a concern
-  protected lazy val allTheChildren: Seq[Symbol] = sym.children ++ interestingInterfaces.map(_._2.children).flatten ++ interestingSuperclass.map(_._2.children).flatten
 
   protected def outField: OutHandler = {
     case (_, field) if field.ignore => None
@@ -207,7 +154,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   protected[salat] lazy val indexedFields = {
     // don't use allTheChildren here!  this is the indexed fields for clazz and clazz alone
-    sym.children
+    ca.sym.children
       .filter(c => c.isCaseAccessor && !c.isPrivate)
       .map(_.asInstanceOf[MethodSymbol])
       .zipWithIndex
@@ -215,31 +162,11 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         case (ms, idx) => {
           //        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
           SField(idx = idx,
-            name = if (keyOverridesFromAbove.contains(ms)) keyOverridesFromAbove(ms) else ms.name,
-            t = typeRefType(ms),
+            name = if (ca.keyOverridesFromAbove.contains(ms)) ca.keyOverridesFromAbove(ms) else ms.name,
+            t = ClassAnalyzer.typeRefType(ms),
             method = clazz.getMethod(ms.name))
         }
 
-      }
-  }
-
-  protected def findAnnotatedMethodSymbol[A](clazz: Class[A], annotation: Class[_ <: java.lang.annotation.Annotation]) = {
-    clazz
-      .getDeclaredMethods.toList
-      .filter(_.isAnnotationPresent(annotation))
-      .filterNot(m => m.annotated_?[Ignore])
-      .map {
-        case m: Method => m -> {
-          log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
-          // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
-          allTheChildren
-            .filter(f => f.name == m.getName && f.isAccessor)
-            .map(_.asInstanceOf[MethodSymbol])
-            .headOption match {
-              case Some(ms) => ms
-              case None     => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
-            }
-        }
       }
   }
 
@@ -252,12 +179,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         case m: Method => m -> {
           log.trace("findAnnotatedFields: clazz=%s, m=%s", clazz, m.getName)
           // do use allTheChildren here: we want to pull down annotations from traits and/or superclass
-          allTheChildren
+          ca.allTheChildren
             .filter(f => f.name == m.getName && f.isAccessor)
             .map(_.asInstanceOf[MethodSymbol])
             .headOption match {
-              case Some(ms) => SField(-1, ms.name, typeRefType(ms), m) // TODO: -1 magic number for idx which is required but not used
-              case None     => throw new RuntimeException("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
+              case Some(ms) => SField(-1, ms.name, ClassAnalyzer.typeRefType(ms), m) // TODO: -1 magic number for idx which is required but not used
+              case None     => sys.error("Could not find ScalaSig method symbol for method=%s in clazz=%s".format(m.getName, clazz.getName))
             }
         }
       }
@@ -267,33 +194,9 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     val persist = classOf[Persist]
     val fromClazz = findAnnotatedFields(clazz, persist)
     // not necessary to look directly on trait, is necessary to look directly on superclass
-    val fromSuperclass = interestingSuperclass.flatMap(i => findAnnotatedFields(i._1, persist))
+    val fromSuperclass = ca.interestingSuperclass.flatMap(i => findAnnotatedFields(i._1, persist))
 
     fromClazz ::: fromSuperclass
-  }
-
-  protected lazy val keyOverridesFromAbove = {
-    val key = classOf[Key]
-    val builder = Map.newBuilder[MethodSymbol, String]
-    val annotated = interestingInterfaces.map(i => findAnnotatedMethodSymbol(i._1, key)).flatten ++
-      interestingSuperclass.map(i => findAnnotatedMethodSymbol(i._1, key)).flatten
-    for ((method, ms) <- annotated) {
-      method.annotation[Key].map(_.value) match {
-        case Some(key) => builder += ms -> key
-        case None      =>
-      }
-    }
-    builder.result
-  }
-
-  protected lazy val companionClass = clazz.companionClass
-  protected lazy val companionObject = clazz.companionObject
-
-  protected[salat] lazy val constructor: Constructor[X] = BestAvailableConstructor(clazz)
-
-  protected def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
-    case PolyType(tr @ TypeRefType(_, _, _), _)       => tr
-    case NullaryMethodType(tr @ TypeRefType(_, _, _)) => tr
   }
 
   def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
@@ -338,8 +241,8 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 
   def asObject[A <% MongoDBObject](dbo: A): X =
-    if (sym.isModule) {
-      companionObject.asInstanceOf[X]
+    if (ca.sym.isModule) {
+      ca.companionObject.asInstanceOf[X]
     }
     else {
       val args = indexedFields.map {
@@ -385,15 +288,15 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   private def feedArgsToConstructor(args: Seq[AnyRef]): X = {
     try {
-      constructor.newInstance(args: _*)
+      ca.constructor.newInstance(args: _*)
     }
     catch {
       // when something bad happens feeding args into constructor, catch these exceptions and
       // wrap them in a custom exception that will provide detailed information about what's happening.
-      case e: InstantiationException    => throw ToObjectGlitch(this, sym, constructor, args, e)
-      case e: IllegalAccessException    => throw ToObjectGlitch(this, sym, constructor, args, e)
-      case e: IllegalArgumentException  => throw ToObjectGlitch(this, sym, constructor, args, e)
-      case e: InvocationTargetException => throw ToObjectGlitch(this, sym, constructor, args, e)
+      case e: InstantiationException    => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
+      case e: IllegalAccessException    => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
+      case e: IllegalArgumentException  => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
+      case e: InvocationTargetException => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
       case e                            => throw e
     }
   }
@@ -434,12 +337,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     feedArgsToConstructor(args)
   }
 
-  override def hashCode = sym.path.hashCode
+  override def hashCode = ca.sym.path.hashCode
 
   protected lazy val defaults: Seq[Option[Method]] = indexedFields.map {
     field =>
       try {
-        Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
+        Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
       }
       catch {
         case _ => None
@@ -463,7 +366,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     for (field <- indexedFields) {
       val defaultMethod = try {
         // Some(null) is actually "desirable" here because it allows using null as a default value for an ignored field
-        Some(companionClass.getMethod("apply$default$%d".format(field.idx + 1)).invoke(companionObject))
+        Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)).invoke(ca.companionObject))
       }
       catch {
         case _ => None // indicates no default value was supplied

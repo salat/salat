@@ -49,7 +49,7 @@ protected[salat] object ScalaSigUtil extends Logging {
     }
   }
 
-  def parseScalaSig0(_clazz: Class[_], classloaders: Seq[ClassLoader] = Seq.empty): Option[ScalaSig] = {
+  def parseScalaSig0(_clazz: Class[_], classloaders: Iterable[ClassLoader]): Option[ScalaSig] = {
 
     // support case objects by selectively re-jiggering the class that has been passed in
     val clazz = if (_clazz.getName.endsWith("$")) {

@@ -83,7 +83,7 @@ trait GraterPrettyPrinter {
 object ConstructorPrettyPrinter extends GraterPrettyPrinter {
   def apply[X <: AnyRef with Product](g: ConcreteGrater[X]) = {
     val indexedFields = g.indexedFields
-    val constructor = g.constructor
+    val constructor = g.ca.constructor
     val defaultArgs = g.betterDefaults
 
     val builder = List.newBuilder[String]
@@ -108,7 +108,7 @@ object ConstructorPrettyPrinter extends GraterPrettyPrinter {
 object ConstructorInputPrettyPrinter extends GraterPrettyPrinter with Logging {
   def apply[X <: AnyRef with Product](g: ConcreteGrater[X], args: Seq[AnyRef]) = {
     val indexedFields = g.indexedFields
-    val constructor = g.constructor
+    val constructor = g.ca.constructor
     val defaultArgs = g.betterDefaults
 
     val builder = List.newBuilder[String]

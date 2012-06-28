@@ -86,14 +86,14 @@ object `package` {
     builder.result
   }
 
-  protected[salat] def resolveClass_!(c: String, classLoaders: Seq[ClassLoader]): Class[_] = {
+  protected[salat] def resolveClass_!(c: String, classLoaders: Iterable[ClassLoader]): Class[_] = {
     val clazz = resolveClass(c, classLoaders)
     if (clazz.isDefined) clazz.get else sys.error("resolveClass: path='%s' does not resolve in any of %d available classloaders".format(c, classLoaders.size))
   }
 
   protected[salat] def toUsableClassName(clazz: String) = if (clazz.endsWith("$")) clazz.substring(0, clazz.size - 1) else clazz
 
-  protected[salat] def resolveClass[X <: AnyRef](c: String, classLoaders: Seq[ClassLoader]): Option[Class[X]] = classLoaders match {
+  protected[salat] def resolveClass[X <: AnyRef](c: String, classLoaders: Iterable[ClassLoader]): Option[Class[X]] = classLoaders match {
     case Nil      => sys.error("resolveClass: expected 1+ classloaders but received empty list")
     case List(cl) => Some(Class.forName(c, true, cl).asInstanceOf[Class[X]])
     case many => {

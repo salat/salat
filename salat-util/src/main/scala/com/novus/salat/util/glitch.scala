@@ -31,9 +31,9 @@ import java.lang.reflect.Constructor
 /** Runtime error indicating that a class defines more than one constructor with args.
  *  @param clazz parameterized class instance
  *  @param cl list of parameterized constructors found for this class
- *  @tparam X type parameter for AnyRef with Product
+ *  @tparam X any reft
  */
-case class TooManyConstructorsWithArgs[X <: AnyRef with Product](clazz: Class[X], cl: List[Constructor[X]]) extends Error(
+case class TooManyConstructorsWithArgs[X](clazz: Class[X], cl: List[Constructor[X]]) extends Error(
   "constructor: clazz=%s ---> expected 1 constructor with args but found %d\n%s".format(clazz, cl.size, cl.mkString("\n")))
 
 /** Runtime error indicating that Salat can't identify any constructor for this class.

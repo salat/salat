@@ -30,8 +30,6 @@ object `package` extends Logging {
 
   type CaseClass = AnyRef with Product
 
-  val ModuleFieldName = "MODULE$"
-
   val DefaultMathContext = new MathContext(17, RoundingMode.HALF_UP)
 
   def timeAndLog[T](f: => T)(l: Long => Unit): T = {
@@ -49,14 +47,9 @@ object `package` extends Logging {
   }
 
   implicit def class2companion(clazz: Class[_])(implicit ctx: Context) = new {
-    def companionClass: Class[_] = {
-      val path = if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName)
-      val c = getClassNamed(path)
-      if (c.isDefined) c.get else sys.error(
-        "Could not resolve clazz='%s' in any of the %d classpaths in ctx='%s'".format(path, ctx.classLoaders.size, ctx.name))
-    }
+    def companionClass: Class[_] = ClassAnalyzer.companionClass(clazz, ctx.classLoaders)
 
-    def companionObject = companionClass.getField(ModuleFieldName).get(null)
+    def companionObject = ClassAnalyzer.companionObject(clazz, ctx.classLoaders)
   }
 
   val TypeHint = "_typeHint"

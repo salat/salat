@@ -30,11 +30,11 @@ import java.lang.reflect.Constructor
 object BestAvailableConstructor extends Logging {
 
   /** @param clazz parameterized class instance
-   *  @tparam X type param for AnyRef with Product
+   *  @tparam A any ref
    *  @return parameterized constructor instance
    */
-  def apply[X <: AnyRef with Product](clazz: Class[X]): Constructor[X] = {
-    val cl = clazz.getConstructors.toList.asInstanceOf[List[Constructor[X]]]
+  def apply[A](clazz: Class[A]): Constructor[A] = {
+    val cl = clazz.getConstructors.toList.asInstanceOf[List[Constructor[A]]]
     //    log.info("constructor: found %d:\n%s", cl.size, cl.mkString("\n"))
     if (cl.isEmpty) {
       throw MissingConstructor(clazz)
