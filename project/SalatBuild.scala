@@ -125,15 +125,7 @@ object Dependencies {
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
   val casbah = "org.mongodb" %% "casbah" % "2.3.0"
-  // TODO: these dependencies are not yet available for 2.9.2
-  // causes complaining:
-  //  Setting version to 2.9.2
-  //  [info] Set current project to salat (in build file:/home/rose/workspace/salat/)
-  //  [warn] Potentially incompatible versions of dependencies of {file:/home/rose/workspace/salat/}salat-core:
-  //  [warn]    org.scala-lang: 2.9.2, 2.9.1
-  //  [warn] Potentially incompatible versions of dependencies of {file:/home/rose/workspace/salat/}salat:
-  //  [warn]    org.scala-lang: 2.9.2, 2.9.1
-  val lift_json = "net.liftweb" % "lift-json_2.9.1" % "2.4"
+  val lift_json = "net.liftweb" %% "lift-json" % "2.5-SNAPSHOT"
 }
 
 object Repos {
