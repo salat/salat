@@ -150,8 +150,10 @@ object ShellPrompt {
     def buffer[T] (f: => T): T = f
   }
   def currBranch = (
+  /*
     ("git status -sb" lines_! devnull headOption)
       getOrElse "-" stripPrefix "## "
+	  */
   )
 
   val buildShellPrompt = {

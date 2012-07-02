@@ -270,7 +270,9 @@ package in {
   trait BigIntInjector extends Transformer {
     self: Transformer =>
 
-    override def transform(value: Any)(implicit ctx: Context): Any = ctx.bigIntStrategy.in(value)
+    override def transform(value: Any)(implicit ctx: Context): Any = {
+      ctx.bigIntStrategy.in(value)
+    }
   }
 
   trait DBObjectToInContext extends Transformer with InContextTransformer with Logging {
@@ -368,12 +370,16 @@ package in {
     val companion: Any = clazz.companionObject
     val withName: Method = clazz.getDeclaredMethods.filter(_.getName == "withName").head
     val applyInt: Method = clazz.getDeclaredMethods.filter(_.getName == "apply").head
+    println("Enum infalter!")
 
     override def transform(value: Any)(implicit ctx: Context): Any = {
+      println("Here in transform...")
       val strategy = {
         val s = getClassNamed_!(path).annotation[com.novus.salat.annotations.raw.EnumAs].map(_.strategy())
         if (s.isDefined) s.get else ctx.defaultEnumStrategy
       }
+      println("Value: "+value)
+      println("Strat: "+strategy)
 
       (strategy, value) match {
         case (EnumStrategy.BY_VALUE, name: String) => withName.invoke(companion, name)

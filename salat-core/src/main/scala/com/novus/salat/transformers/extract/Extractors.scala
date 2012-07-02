@@ -236,9 +236,11 @@ package out {
       if (s.isDefined) s.get else ctx.defaultEnumStrategy
     }
 
-    override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case ev: Enumeration#Value if strategy == EnumStrategy.BY_VALUE => ev.toString
-      case ev: Enumeration#Value if strategy == EnumStrategy.BY_ID    => ev.id
+    override def transform(value: Any)(implicit ctx: Context): Any = {
+      value match {
+        case ev: Enumeration#Value if strategy == EnumStrategy.BY_VALUE => ev.toString
+        case ev: Enumeration#Value if strategy == EnumStrategy.BY_ID    => ev.id
+      }
     }
   }
 

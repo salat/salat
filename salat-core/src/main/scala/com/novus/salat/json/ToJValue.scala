@@ -32,7 +32,7 @@ import com.novus.salat.util.Logging
 import java.net.URL
 import com.novus.salat.TypeFinder
 import com.novus.salat.StringTypeHintStrategy
-import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
+import scala.tools.scalap.scalax.rules.scalasig.{ TypeRefType, SingleType }
 
 object ToJField extends Logging {
   def typeHint[X](clazz: Class[X], useTypeHint: Boolean)(implicit ctx: Context) = {
@@ -130,9 +130,13 @@ object FromJValue extends Logging {
 
   def deserialize(j: JValue, tf: TypeFinder)(implicit ctx: Context): Any = {
     val v = j match {
-      case v if tf.isDateTime            => ctx.jsonConfig.dateStrategy.toDateTime(v)
-      case v if tf.isDate                => ctx.jsonConfig.dateStrategy.toDate(v)
-      case v if tf.isOid                 => ctx.jsonConfig.objectIdStrategy.in(v)
+      case v if tf.isDateTime => ctx.jsonConfig.dateStrategy.toDateTime(v)
+      case v if tf.isDate     => ctx.jsonConfig.dateStrategy.toDate(v)
+      case v if tf.isOid      => ctx.jsonConfig.objectIdStrategy.in(v)
+      case v if tf.t.symbol.path == "scala.Enumeration.Value" => {
+        val enumTrans = new com.novus.salat.transformers.Transformer(tf.t.prefix.asInstanceOf[SingleType].symbol.path, tf.t)(ctx) with com.novus.salat.transformers.in.EnumInflater
+        enumTrans.transform(v.values)
+      }
       case s: JString if tf.isChar       => s.values.charAt(0)
       case s: JString if tf.isURL        => new URL(s.values)
       case s: JString                    => s.values
