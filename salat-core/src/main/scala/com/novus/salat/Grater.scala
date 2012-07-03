@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Grater.scala
- * Last modified: 2012-06-28 15:37:35 EDT
+ * Last modified: 2012-07-03 00:26:21 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -350,7 +350,10 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 
   def defaultArg(field: SField): DefaultArg = {
-    if (betterDefaults.contains(field)) {
+    if (field.name == "_id") {
+      DefaultArg(clazz, field, Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)).invoke(ca.companionObject)))
+    }
+    else if (betterDefaults.contains(field)) {
       betterDefaults(field)
     }
     else sys.error("Grater error: clazz='%s' field '%s' needs to register presence or absence of default values".
@@ -363,7 +366,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   protected[salat] lazy val betterDefaults = {
     val builder = Map.newBuilder[SField, DefaultArg]
-    for (field <- indexedFields) {
+    for (field <- indexedFields.filterNot(_.name == "_id")) {
       val defaultMethod = try {
         // Some(null) is actually "desirable" here because it allows using null as a default value for an ignored field
         Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)).invoke(ca.companionObject))
