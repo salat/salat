@@ -34,6 +34,10 @@ Available for Scala 2.8.1, 2.9.1 and 2.9.2.
 
     "com.novus" %% "salat" % "1.9-SNAPSHOT"
 
+If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
+
+    resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+
 [Release Notes](https://github.com/novus/salat/blob/master/notes/1.9.0.markdown)
 
 ## Play 2 plugin
