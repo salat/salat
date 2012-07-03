@@ -378,6 +378,7 @@ package in {
       }
 
       (strategy, value) match {
+        case (_, v: scala.Enumeration$Val)         => v // Can get called for some reason, even though we already have an enum, so pass-thru harmlessly
         case (EnumStrategy.BY_VALUE, name: String) => withName.invoke(companion, name)
         case (EnumStrategy.BY_ID, id: Int)         => applyInt.invoke(companion, id.asInstanceOf[Integer])
         case (EnumStrategy.BY_ID, idAsString: String) => idAsString match {
