@@ -62,6 +62,7 @@ We don't have the resources to support everything.  Here are some things Salat d
 - nested inner classes
 - varags
 - arrays
+- multiple constructors
 - `Option` containing a collection (see [collection support][collections] for workarounds)
 - relationship management like a traditional ORM
 
