@@ -22,7 +22,11 @@ Please remove all references to `repo.novus.com` from your build files.  After 0
 
 ## Stable Release
 
-Available for Scala 2.8.1, 2.9.1 and 2.9.2.
+Available for Scala 2.9.1 and 2.9.2.  Based on Casbah 2.4.1.
+
+    "com.novus" %% "salat" % "1.9.0"
+
+Available for Scala 2.8.1, 2.9.1 and 2.9.2.  Based on Casbah 2.1.5-1.
 
     "com.novus" %% "salat" % "0.0.8"
 
@@ -32,7 +36,7 @@ Available for Scala 2.8.1, 2.9.1 and 2.9.2.
 
 [![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.9.1 and 2.9.2.
 
-    "com.novus" %% "salat" % "1.9-SNAPSHOT"
+    "com.novus" %% "salat" % "2.0-SNAPSHOT"
 
 If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
@@ -63,6 +67,7 @@ We don't have the resources to support everything.  Here are some things Salat d
 - varags
 - arrays
 - multiple constructors
+- tuples
 - `Option` containing a collection (see [collection support][collections] for workarounds)
 - relationship management like a traditional ORM
 
