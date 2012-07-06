@@ -124,7 +124,7 @@ object Dependencies {
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
-  val casbah = "org.mongodb" %% "casbah" % "2.4.0"
+  val casbah = "org.mongodb" %% "casbah" % "2.4.1"
   val lift_json = "net.liftweb" %% "lift-json" % "2.5-SNAPSHOT"
 }
 
