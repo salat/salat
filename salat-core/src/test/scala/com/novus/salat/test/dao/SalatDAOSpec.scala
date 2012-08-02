@@ -116,11 +116,12 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.collection.count must_== 1L
 
       // need to explicitly specify upsert and multi when updating using an object instead of dbo
-      val cr = AlphaDAO.update(q = MongoDBObject("_id" -> 3),
+      val wr = AlphaDAO.update(q = MongoDBObject("_id" -> 3),
         t = alpha3.copy(beta = List[Beta](Gamma("gamma3"))),
         upsert = false,
         multi = false,
         wc = new WriteConcern())
+      wr.getN must_== 1L
 
       AlphaDAO.collection.count must_== 1L
 

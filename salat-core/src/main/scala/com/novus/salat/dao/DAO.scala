@@ -130,8 +130,9 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
    *  @param upsert if the database should create the element if it does not exist
    *  @param multi if the update should be applied to all objects matching
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern)
+  def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern): WriteResult
 
   /** Performs an update operation.
    *  @param q search query for old object to update
@@ -139,8 +140,9 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
    *  @param upsert if the database should create the element if it does not exist
    *  @param multi if the update should be applied to all objects matching
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def update(q: DBObject, t: ObjectType, upsert: Boolean, multi: Boolean, wc: WriteConcern) {
+  def update(q: DBObject, t: ObjectType, upsert: Boolean, multi: Boolean, wc: WriteConcern): WriteResult = {
     update(q = q, o = toDBObject(t), upsert = upsert, multi = multi, wc = wc)
   }
 
