@@ -151,7 +151,7 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
    *  @return count of documents matching the search criteria
    */
   def count(q: DBObject, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil) =
-    dao.count(q, fieldsThatMustExist, fieldsThatMustExist)
+    dao.count(q, fieldsThatMustExist, fieldsThatMustNotExist)
 
   /** @param ref object for which to search
    *  @param keys fields to return
