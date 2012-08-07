@@ -28,10 +28,10 @@ import com.novus.salat.test.global._
 import com.novus.salat.test.model._
 
 import com.mongodb.casbah.Imports._
-import com.mongodb.util.JSON.parse
-import org.bson.types.Code
 import org.specs2.matcher.Matcher
 import com.mongodb
+
+//  @author akraievoy@gmail.com
 
 class TypeParamSpec extends SalatSpec {
   "A grater" should {
