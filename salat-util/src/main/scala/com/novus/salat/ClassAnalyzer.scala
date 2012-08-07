@@ -112,8 +112,9 @@ object ClassAnalyzer extends Logging {
   //    }
 
   def typeRefType(ms: MethodSymbol): TypeRefType = ms.infoType match {
-    case PolyType(tr @ TypeRefType(_, _, _), _)       => tr
-    case NullaryMethodType(tr @ TypeRefType(_, _, _)) => tr
+    case PolyType(tr @ TypeRefType(_, _, _), _)                           => tr
+    case NullaryMethodType(tr @ TypeRefType(_, _, _))                     => tr
+    case NullaryMethodType(ExistentialType(tr @ TypeRefType(_, _, _), _)) => tr
   }
 
   def companionClass(clazz: Class[_], classLoaders: Iterable[ClassLoader]) = {

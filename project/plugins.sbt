@@ -1,3 +1,5 @@
+addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.0.0")
+
 resolvers += Classpaths.typesafeResolver
 
 addSbtPlugin("com.typesafe.sbtscalariform" % "sbtscalariform" % "0.4.0")
