@@ -75,7 +75,10 @@ trait Context extends ContextLifecycle with Logging {
   private[salat] val resolveCaseObjectOverrides = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
   private[salat] val caseObjectHierarchy = scala.collection.mutable.Set[String]()
 
-  def registerCaseObjectOverride[A, B <: A](parentClazz: Class[A], caseObjectClazz: Class[B], serializedValue: String) {
+  def registerCaseObjectOverride[A : Manifest, B <: A : Manifest](serializedValue: String) {
+
+    val parentClazz = manifest[A].erasure
+    val caseObjectClazz = manifest[B].erasure
     assume(!caseObjectOverrides.contains(caseObjectClazz.getName), "registerCaseObjectOverride: clazz='%s' already overriden with value '%s'".
       format(caseObjectClazz.getName, caseObjectOverrides.get(caseObjectClazz.getName)))
 

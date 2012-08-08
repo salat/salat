@@ -69,8 +69,8 @@ package object case_object_override {
     val ctx = new Context {
       val name = "case_object_override"
     }
-    ctx.registerCaseObjectOverride(classOf[Foo], Bar.getClass, "B")
-    ctx.registerCaseObjectOverride(classOf[Foo], Baz.getClass, "Z")
+    ctx.registerCaseObjectOverride[Foo, Bar.type]("B")
+    ctx.registerCaseObjectOverride[Foo, Baz.type ]("Z")
     ctx
   }
 }
