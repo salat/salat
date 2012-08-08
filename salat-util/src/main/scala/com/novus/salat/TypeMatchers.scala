@@ -3,7 +3,7 @@
  *
  * Module:        salat-util
  * Class:         TypeMatchers.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-08-08 14:45:21 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 package com.novus.salat
 
 import scala.math.{ BigDecimal => SBigDecimal, BigInt }
-import scala.tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
+import tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
 
 protected[salat] object Types {
   val Date = "java.util.Date"

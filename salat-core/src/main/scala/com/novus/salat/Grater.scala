@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Grater.scala
- * Last modified: 2012-07-03 00:26:21 EDT
+ * Last modified: 2012-08-08 14:54:19 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ package com.novus.salat
 import scala.tools.scalap.scalax.rules.scalasig._
 import com.novus.salat.{ Field => SField }
 
-import java.lang.reflect.{ InvocationTargetException, Constructor, Method }
+import java.lang.reflect.{ InvocationTargetException, Method }
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
@@ -35,10 +35,7 @@ import com.novus.salat.util._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
 import net.liftweb.json._
-import java.util.Date
-import org.joda.time.DateTime
-import java.net.URL
-import com.novus.salat.json.{ FromJValue, ToJField, ToJValue }
+import com.novus.salat.json.{ FromJValue, ToJField }
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -388,19 +385,6 @@ case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(imp
   def suppress(element: Any) = if (ctx.suppressDefaultArgs && field.name != "_id") {
     val result = value.exists {
       v =>
-
-        //        log.trace(
-        //          """
-        //            |
-        //            |suppress:
-        //            |                     clazz: %s
-        //            |                field.name: %s
-        //            |                         v: %s
-        //            |                   element: %s
-        //            |              element == v: %s
-        //            |
-        //          """.stripMargin, clazz.getName, field.name, v, element, element == v)
-
         element match {
           case element: MongoDBList if element.isEmpty && isEmptyTraversable => true
           case element: BasicDBList if element.isEmpty && isEmptyTraversable => true

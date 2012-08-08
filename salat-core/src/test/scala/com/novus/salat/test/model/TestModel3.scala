@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         TestModel3.scala
- * Last modified: 2012-08-08 09:12:35 EDT
+ * Last modified: 2012-08-08 12:37:26 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,4 +60,27 @@ package sda {
 
   case class Qux(thingy: String = Qux.Thingy) extends Baz
 
+}
+
+package object case_object_override {
+  import com.novus.salat.test.model.coo._
+
+  implicit val ctx = {
+    val ctx = new Context {
+      val name = "case_object_override"
+    }
+    ctx.registerCaseObjectOverride(classOf[Foo], Bar.getClass, "B")
+    ctx.registerCaseObjectOverride(classOf[Foo], Baz.getClass, "Z")
+    ctx
+  }
+}
+
+package coo {
+
+  @Salat
+  trait Foo
+  case object Bar extends Foo
+  case object Baz extends Foo
+  case object Qux extends Foo
+  case class Thingy(foo: Foo)
 }

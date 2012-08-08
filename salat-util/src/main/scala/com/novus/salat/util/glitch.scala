@@ -3,7 +3,7 @@
  *
  * Module:        salat-util
  * Class:         glitch.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-08-08 13:27:16 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,3 +55,6 @@ case class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Sc
 //case class NestingGlitch(clazz: Class[_], owner: String, outer: String, inner: String) extends Error("Didn't find owner=%s, outer=%s, inner=%s in pickled scala sig for %s"
 //  .format(owner, outer, inner, clazz))
 
+case class MissingCaseObjectOverride(path: String, value: Any, ctxName: String) extends Error(
+  "Ctx='%s' does not define a case object override that can be used with class='%s' and value='%s'".
+    format(ctxName, path, value))

@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Context.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-08-08 14:45:21 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,20 @@ trait Context extends ContextLifecycle with Logging {
   val bigIntStrategy: BigIntStrategy = BigIntToBinaryStrategy
 
   val jsonConfig: JSONConfig = JSONConfig()
+
+  private[salat] val caseObjectOverrides = JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
+  private[salat] val resolveCaseObjectOverrides = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
+  private[salat] val caseObjectHierarchy = scala.collection.mutable.Set[String]()
+
+  def registerCaseObjectOverride[A, B <: A](parentClazz: Class[A], caseObjectClazz: Class[B], serializedValue: String) {
+    assume(!caseObjectOverrides.contains(caseObjectClazz.getName), "registerCaseObjectOverride: clazz='%s' already overriden with value '%s'".
+      format(caseObjectClazz.getName, caseObjectOverrides.get(caseObjectClazz.getName)))
+
+    caseObjectOverrides += caseObjectClazz.getName -> serializedValue
+    resolveCaseObjectOverrides += (parentClazz.getName, serializedValue) -> caseObjectClazz.getName
+    caseObjectHierarchy += parentClazz.getName
+    log.info("registerCaseObjectOverride[%s]: %s <- %s will serialize as '%s'", name, parentClazz.getSimpleName, caseObjectClazz.getSimpleName, serializedValue)
+  }
 
   def registerClassLoader(cl: ClassLoader) {
     classLoaders = cl +: classLoaders

@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Extractors.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-08-08 14:54:18 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,18 @@
 package com.novus.salat.transformers
 
 import scala.tools.scalap.scalax.rules.scalasig._
-import scala.math.{ BigDecimal => ScalaBigDecimal }
-import scala.collection.immutable.{ List => IList, Map => IMap }
-import scala.collection.mutable.{ Buffer, ArrayBuffer, Map => MMap }
 
 import com.novus.salat._
-import com.novus.salat.impls._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
-import com.novus.salat.transformers.out._
 import com.novus.salat.annotations.util._
 
 package object out {
   def select(t: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     t match {
+      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) => {
+        new Transformer(pt.symbol.path, pt)(ctx) with CaseObjectExtractor
+      }
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with BigDecimalExtractor
@@ -143,7 +141,16 @@ package object out {
 
 package out {
 
-  import com.novus.salat.annotations.EnumAs
+  trait CaseObjectExtractor extends Transformer with Logging {
+    self: Transformer =>
+
+    override def transform(value: Any)(implicit ctx: Context) = {
+      val name = value.asInstanceOf[AnyRef].getClass.getName
+      ctx.caseObjectOverrides.get(name).getOrElse {
+        MongoDBObject(ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(name))
+      }
+    }
+  }
 
   trait BigDecimalExtractor extends Transformer {
     self: Transformer =>
