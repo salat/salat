@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Context.scala
- * Last modified: 2012-08-08 14:45:21 EDT
+ * Last modified: 2012-08-08 16:18:52 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ trait Context extends ContextLifecycle with Logging {
   private[salat] val resolveCaseObjectOverrides = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
   private[salat] val caseObjectHierarchy = scala.collection.mutable.Set[String]()
 
-  def registerCaseObjectOverride[A : Manifest, B <: A : Manifest](serializedValue: String) {
+  def registerCaseObjectOverride[A: Manifest, B <: A: Manifest](serializedValue: String) {
 
     val parentClazz = manifest[A].erasure
     val caseObjectClazz = manifest[B].erasure

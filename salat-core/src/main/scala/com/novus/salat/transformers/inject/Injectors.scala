@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Injectors.scala
- * Last modified: 2012-08-08 14:45:21 EDT
+ * Last modified: 2012-08-08 17:15:11 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,10 @@ package object in extends Logging {
 
   def select(pt: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     pt match {
-      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) => {
-        new Transformer(pt.symbol.path, pt)(ctx) with CaseObjectInjector
-      }
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(pt.symbol.path, pt)(ctx) with OptionInjector with CaseObjectInjector
+        }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigDecimalInjector
 
@@ -71,8 +71,12 @@ package object in extends Logging {
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionInjector
       }
-
       case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(t.symbol.path, t)(ctx) with CaseObjectInjector with TraversableInjector {
+            val parentType = pt
+          }
+        }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalInjector with TraversableInjector {
             val parentType = pt
@@ -122,6 +126,11 @@ package object in extends Logging {
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(t.symbol.path, t)(ctx) with CaseObjectInjector with MapInjector {
+            val parentType = pt
+          }
+        }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalInjector with MapInjector {
             val parentType = pt
@@ -174,6 +183,9 @@ package object in extends Logging {
           val parentType = pt
           val grater = ctx.lookup_?(symbol.path)
         }
+      }
+      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) => {
+        new Transformer(pt.symbol.path, pt)(ctx) with CaseObjectInjector
       }
 
       case TypeRefType(_, symbol, _) => pt match {

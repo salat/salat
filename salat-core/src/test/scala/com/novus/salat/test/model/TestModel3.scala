@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         TestModel3.scala
- * Last modified: 2012-08-08 12:37:26 EDT
+ * Last modified: 2012-08-08 17:05:05 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ package object case_object_override {
       val name = "case_object_override"
     }
     ctx.registerCaseObjectOverride[Foo, Bar.type]("B")
-    ctx.registerCaseObjectOverride[Foo, Baz.type ]("Z")
+    ctx.registerCaseObjectOverride[Foo, Baz.type]("Z")
     ctx
   }
 }

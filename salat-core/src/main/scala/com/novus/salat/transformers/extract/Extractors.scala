@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Extractors.scala
- * Last modified: 2012-08-08 14:54:18 EDT
+ * Last modified: 2012-08-08 17:16:25 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,11 @@ import com.novus.salat.annotations.util._
 package object out {
   def select(t: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     t match {
-      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) => {
-        new Transformer(pt.symbol.path, pt)(ctx) with CaseObjectExtractor
-      }
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(t.symbol.path, t)(ctx) with OptionExtractor with CaseObjectExtractor
+        }
+
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with BigDecimalExtractor
 
@@ -62,6 +63,10 @@ package object out {
       }
 
       case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with TraversableExtractor
+        }
+
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with TraversableExtractor
 
@@ -88,6 +93,10 @@ package object out {
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with MapExtractor
+        }
+
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with MapExtractor
 
@@ -110,7 +119,9 @@ package object out {
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapExtractor
       }
-
+      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) => {
+        new Transformer(pt.symbol.path, pt)(ctx) with CaseObjectExtractor
+      }
       case TypeRefType(_, symbol, _) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor
@@ -132,7 +143,6 @@ package object out {
           new Transformer(symbol.path, t)(ctx) with InContextToDBObject {
             val grater = ctx.lookup_?(symbol.path)
           }
-
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) {}
       }
     }
@@ -144,7 +154,7 @@ package out {
   trait CaseObjectExtractor extends Transformer with Logging {
     self: Transformer =>
 
-    override def transform(value: Any)(implicit ctx: Context) = {
+    override def transform(value: Any)(implicit ctx: Context): Any = {
       val name = value.asInstanceOf[AnyRef].getClass.getName
       ctx.caseObjectOverrides.get(name).getOrElse {
         MongoDBObject(ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(name))
