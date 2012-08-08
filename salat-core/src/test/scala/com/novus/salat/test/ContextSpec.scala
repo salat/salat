@@ -326,4 +326,12 @@ class ContextSpec extends SalatSpec {
   //  "The context numeric for BigInt" should {
   //    "provide "
   //  }
+
+  "The context" should {
+    "support suppressing default args" in {
+      import com.novus.salat.test.model.suppress_default_args._
+      import com.novus.salat.test.model.sda._
+      grater[Bar].asDBObject(Bar()) must beEmpty
+    }
+  }
 }

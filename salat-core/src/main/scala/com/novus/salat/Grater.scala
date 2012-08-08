@@ -136,7 +136,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
           //            (safeDefault(field).map(dv => dv == serialized).getOrElse(false)))
 
           serialized match {
-            case serialized if ctx.suppressDefaultArgs && defaultArg(field).suppress(serialized) => None
+            case serialized if ctx.suppressDefaultArgs && defaultArg(field).suppress(element) => None
             case serialized => {
               val key = cachedFieldName(field)
               val value = serialized match {
@@ -383,18 +383,33 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 }
 
-case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(implicit val ctx: Context) {
+case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(implicit val ctx: Context) extends Logging {
 
-  def suppress(serialized: Any) = if (ctx.suppressDefaultArgs && field.name != "_id") {
-    value.exists {
+  def suppress(element: Any) = if (ctx.suppressDefaultArgs && field.name != "_id") {
+    val result = value.exists {
       v =>
-        serialized match {
-          case serialized: MongoDBList if serialized.isEmpty && isEmptyTraversable => true
-          case serialized: BasicDBList if serialized.isEmpty && isEmptyTraversable => true
-          case serialized: BasicDBObject if serialized.isEmpty && isEmptyMap => true
-          case serialized => serialized == v
+
+        //        log.trace(
+        //          """
+        //            |
+        //            |suppress:
+        //            |                     clazz: %s
+        //            |                field.name: %s
+        //            |                         v: %s
+        //            |                   element: %s
+        //            |              element == v: %s
+        //            |
+        //          """.stripMargin, clazz.getName, field.name, v, element, element == v)
+
+        element match {
+          case element: MongoDBList if element.isEmpty && isEmptyTraversable => true
+          case element: BasicDBList if element.isEmpty && isEmptyTraversable => true
+          case element: BasicDBObject if element.isEmpty && isEmptyMap => true
+          case element => element == v
         }
     }
+
+    result
   }
   else false
 
