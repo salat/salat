@@ -150,7 +150,7 @@ object PomPostProcessor {
 }
 
 object Dependencies {
-  val specs2 = "org.specs2" %% "specs2" % "1.11" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "1.12" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
