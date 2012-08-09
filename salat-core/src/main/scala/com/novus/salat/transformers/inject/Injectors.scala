@@ -40,7 +40,7 @@ package object in extends Logging {
     pt match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
-          new Transformer(pt.symbol.path, pt)(ctx) with OptionInjector with CaseObjectInjector
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with CaseObjectInjector
         }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigDecimalInjector

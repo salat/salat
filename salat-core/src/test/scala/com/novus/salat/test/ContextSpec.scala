@@ -333,23 +333,5 @@ class ContextSpec extends SalatSpec {
       import com.novus.salat.test.model.sda._
       grater[Bar].asDBObject(Bar()) must beEmpty
     }
-    "support custom case class serialization" in {
-      import com.novus.salat.test.model.case_object_override._
-      import com.novus.salat.test.model.coo._
-      val bar = Thingy(Bar)
-      val baz = Thingy(Baz)
-      val qux = Thingy(Qux)
-      val barDbo: MongoDBObject = grater[Thingy].asDBObject(bar)
-      val bazDbo: MongoDBObject = grater[Thingy].asDBObject(baz)
-      val quxDbo: MongoDBObject = grater[Thingy].asDBObject(qux)
-      barDbo must havePair("foo", "B")
-      bazDbo must havePair("foo", "Z")
-      quxDbo must havePair("foo", MongoDBObject("_typeHint" -> "com.novus.salat.test.model.coo.Qux$"))
-      grater[Thingy].asObject(barDbo) must_== bar
-      grater[Thingy].asObject(bazDbo) must_== baz
-      grater[Thingy].asObject(quxDbo) must_== qux
-      // for backwards compatibility
-      grater[Thingy].asObject(MongoDBObject("foo" -> MongoDBObject("_typeHint" -> "com.novus.salat.test.model.coo.Bar$"))) must_== bar
-    }
   }
 }

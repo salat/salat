@@ -83,4 +83,6 @@ package coo {
   case object Baz extends Foo
   case object Qux extends Foo
   case class Thingy(foo: Foo)
+  case class Thingy2(foo: Option[Foo])
+  case class Thingy3(foo: List[Foo])
 }
