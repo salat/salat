@@ -61,35 +61,35 @@ sealed abstract class Field(val idx: Int,
 
   def in_!(value: Any) = {
     val xformed = in.transform_!(value)
-//    log.debug(
-//      """
-//        |IN:
-//        |                name: %s
-//        |         typeRefType:
-//        |%s
-//        |                  in:
-//        |%s
-//        |               value: %s
-//        |         transformed: %s
-//        |
-//      """.stripMargin, name, typeRefType, in.getClass.getInterfaces.mkString("\n"), value, xformed)
+    //    log.debug(
+    //      """
+    //        |IN:
+    //        |                name: %s
+    //        |         typeRefType:
+    //        |%s
+    //        |                  in:
+    //        |%s
+    //        |               value: %s
+    //        |         transformed: %s
+    //        |
+    //      """.stripMargin, name, typeRefType, in.getClass.getInterfaces.mkString("\n"), value, xformed)
     xformed
   }
 
   def out_!(value: Any) = {
     val xformed = out.transform_!(value)
-//    log.debug(
-//      """
-//        |IN:
-//        |                name: %s
-//        |         typeRefType:
-//        |%s
-//        |                  out:
-//        |%s
-//        |               value: %s
-//        |         transformed: %s
-//        |
-//      """.stripMargin, name, typeRefType, in.getClass.getInterfaces.mkString("\n"), value, xformed)
+    //    log.debug(
+    //      """
+    //        |IN:
+    //        |                name: %s
+    //        |         typeRefType:
+    //        |%s
+    //        |                  out:
+    //        |%s
+    //        |               value: %s
+    //        |         transformed: %s
+    //        |
+    //      """.stripMargin, name, typeRefType, in.getClass.getInterfaces.mkString("\n"), value, xformed)
     xformed
   }
 

@@ -61,6 +61,13 @@ trait Context extends ContextLifecycle with Logging {
   /**Don't serialize any field whose value matches the supplied default args */
   val suppressDefaultArgs: Boolean = false
 
+  private[salat] val neverSuppressTheseFields = scala.collection.mutable.Set[String]("_id")
+
+  def neverSuppressThisField(key: String) {
+    neverSuppressTheseFields += key
+    log.debug("neverSuppressThisField[%s]: never suppress field with key '%s'", name, key)
+  }
+
   // BigDecimal handling strategy: binary vs double vs string
   val bigDecimalStrategy: BigDecimalStrategy = BigDecimalToDoubleStrategy()
 
