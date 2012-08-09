@@ -131,11 +131,10 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
           //            safeDefault(field),
           //            safeDefault(field).map(_.asInstanceOf[AnyRef].getClass.getName).getOrElse("N/A"),
           //            (safeDefault(field).map(dv => dv == serialized).getOrElse(false)))
-
+          val key = cachedFieldName(field)
           serialized match {
-            case serialized if ctx.suppressDefaultArgs && defaultArg(field).suppress(element) => None
+            case serialized if ctx.suppressDefaultArgs && key != "_id" && defaultArg(field).suppress(element) => None
             case serialized => {
-              val key = cachedFieldName(field)
               val value = serialized match {
                 case Some(unwrapped) => unwrapped
                 case _               => serialized
