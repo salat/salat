@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         JsonSpec.scala
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Last modified: 2012-06-28 15:37:34 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -316,6 +316,15 @@ class JsonSpec extends Specification with Logging {
             Nil)
         grater[Kalle].fromJSONArray(j) must_== List(Martin("one", 1.1), Martin("two", 2.2), Martin("three", 3.3))
       }
+    }
+    "handle Enums" in {
+      val b = Blather("Greg", Map("a" -> Scope.TWO), Scope.TWO)
+      val js = grater[Blather].toCompactJSON(b)
+      val b2 = grater[Blather].fromJSON(js)
+      val z = b2.scope.get("a")
+      z must_== Some(Scope.TWO)
+      val y = z.flatMap(b => Some(true)) // This goes boom w/ClassCastException before fix
+      y must_== Some(true) // ensure the above didn't blow up
     }
   }
 

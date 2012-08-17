@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         Context.scala
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Last modified: 2012-08-08 16:18:52 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,13 @@ trait Context extends ContextLifecycle with Logging {
   /**Don't serialize any field whose value matches the supplied default args */
   val suppressDefaultArgs: Boolean = false
 
+  private[salat] val neverSuppressTheseFields = scala.collection.mutable.Set[String]("_id")
+
+  def neverSuppressThisField(key: String) {
+    neverSuppressTheseFields += key
+    log.debug("neverSuppressThisField[%s]: never suppress field with key '%s'", name, key)
+  }
+
   // BigDecimal handling strategy: binary vs double vs string
   val bigDecimalStrategy: BigDecimalStrategy = BigDecimalToDoubleStrategy()
 
@@ -70,6 +77,23 @@ trait Context extends ContextLifecycle with Logging {
   val bigIntStrategy: BigIntStrategy = BigIntToBinaryStrategy
 
   val jsonConfig: JSONConfig = JSONConfig()
+
+  private[salat] val caseObjectOverrides = JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
+  private[salat] val resolveCaseObjectOverrides = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
+  private[salat] val caseObjectHierarchy = scala.collection.mutable.Set[String]()
+
+  def registerCaseObjectOverride[A: Manifest, B <: A: Manifest](serializedValue: String) {
+
+    val parentClazz = manifest[A].erasure
+    val caseObjectClazz = manifest[B].erasure
+    assume(!caseObjectOverrides.contains(caseObjectClazz.getName), "registerCaseObjectOverride: clazz='%s' already overriden with value '%s'".
+      format(caseObjectClazz.getName, caseObjectOverrides.get(caseObjectClazz.getName)))
+
+    caseObjectOverrides += caseObjectClazz.getName -> serializedValue
+    resolveCaseObjectOverrides += (parentClazz.getName, serializedValue) -> caseObjectClazz.getName
+    caseObjectHierarchy += parentClazz.getName
+    log.info("registerCaseObjectOverride[%s]: %s <- %s will serialize as '%s'", name, parentClazz.getSimpleName, caseObjectClazz.getSimpleName, serializedValue)
+  }
 
   def registerClassLoader(cl: ClassLoader) {
     classLoaders = cl +: classLoaders

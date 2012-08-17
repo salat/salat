@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         ContextSpec.scala
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Last modified: 2012-08-08 14:54:10 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -326,4 +326,12 @@ class ContextSpec extends SalatSpec {
   //  "The context numeric for BigInt" should {
   //    "provide "
   //  }
+
+  "The context" should {
+    "support suppressing default args" in {
+      import com.novus.salat.test.model.suppress_default_args._
+      import com.novus.salat.test.model.sda._
+      grater[Bar].asDBObject(Bar()) must beEmpty
+    }
+  }
 }

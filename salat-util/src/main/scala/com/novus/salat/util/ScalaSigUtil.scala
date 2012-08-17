@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-util
  * Class:         ScalaSigUtil.scala
- * Last modified: 2012-04-28 20:34:21 EDT
+ * Last modified: 2012-06-28 15:37:35 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ protected[salat] object ScalaSigUtil extends Logging {
     }
   }
 
-  def parseScalaSig0(_clazz: Class[_], classloaders: Seq[ClassLoader] = Seq.empty): Option[ScalaSig] = {
+  def parseScalaSig0(_clazz: Class[_], classloaders: Iterable[ClassLoader]): Option[ScalaSig] = {
 
     // support case objects by selectively re-jiggering the class that has been passed in
     val clazz = if (_clazz.getName.endsWith("$")) {

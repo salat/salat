@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-util
  * Class:         util.scala
- * Last modified: 2012-04-28 20:34:21 EDT
+ * Last modified: 2012-06-28 15:37:35 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,14 +86,14 @@ object `package` {
     builder.result
   }
 
-  protected[salat] def resolveClass_!(c: String, classLoaders: Seq[ClassLoader]): Class[_] = {
+  protected[salat] def resolveClass_!(c: String, classLoaders: Iterable[ClassLoader]): Class[_] = {
     val clazz = resolveClass(c, classLoaders)
     if (clazz.isDefined) clazz.get else sys.error("resolveClass: path='%s' does not resolve in any of %d available classloaders".format(c, classLoaders.size))
   }
 
   protected[salat] def toUsableClassName(clazz: String) = if (clazz.endsWith("$")) clazz.substring(0, clazz.size - 1) else clazz
 
-  protected[salat] def resolveClass[X <: AnyRef](c: String, classLoaders: Seq[ClassLoader]): Option[Class[X]] = classLoaders match {
+  protected[salat] def resolveClass[X <: AnyRef](c: String, classLoaders: Iterable[ClassLoader]): Option[Class[X]] = classLoaders match {
     case Nil      => sys.error("resolveClass: expected 1+ classloaders but received empty list")
     case List(cl) => Some(Class.forName(c, true, cl).asInstanceOf[Class[X]])
     case many => {

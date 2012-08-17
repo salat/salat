@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
- * Module:        salat-core
- * Class:         annotations.scala
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Module:        salat-util
+ * Class:         EnumStrategy.java
+ * Last modified: 2012-06-28 15:37:35 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,21 @@
  * Wiki:         http://github.com/novus/salat/wiki
  * Mailing list: http://groups.google.com/group/scala-salat
  */
-package com.novus.salat.annotations
+package com.novus.salat;
 
-import scala.annotation.target.getter
+/**
+ * Supported strategies for serializing enums.
+ */
+public enum EnumStrategy {
 
-object `package` {
-  type Key = com.novus.salat.annotations.raw.Key @getter
-  type Salat = com.novus.salat.annotations.raw.Salat @getter
-  type EnumAs = com.novus.salat.annotations.raw.EnumAs @getter
-  type Persist = com.novus.salat.annotations.raw.Persist @getter
-  type Ignore = com.novus.salat.annotations.raw.Ignore @getter
+    /**
+     * Serialize using the original value of the enum.  Reorganising the list of values could cause unexpected remapping
+     * when deserializing.
+     */
+    BY_ID,
+    /**
+     * Serialize using the toString of each enum value.  Renaming the values or overriding toString could cause your enum
+     * to fail to deserialize.
+     */
+    BY_VALUE
 }

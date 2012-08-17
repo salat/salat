@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-util
  * Class:         BestAvailableConstructor.scala
- * Last modified: 2012-04-28 20:34:21 EDT
+ * Last modified: 2012-06-28 15:37:34 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ import java.lang.reflect.Constructor
 object BestAvailableConstructor extends Logging {
 
   /** @param clazz parameterized class instance
-   *  @tparam X type param for AnyRef with Product
+   *  @tparam A any ref
    *  @return parameterized constructor instance
    */
-  def apply[X <: AnyRef with Product](clazz: Class[X]): Constructor[X] = {
-    val cl = clazz.getConstructors.toList.asInstanceOf[List[Constructor[X]]]
+  def apply[A](clazz: Class[A]): Constructor[A] = {
+    val cl = clazz.getConstructors.toList.asInstanceOf[List[Constructor[A]]]
     //    log.info("constructor: found %d:\n%s", cl.size, cl.mkString("\n"))
     if (cl.isEmpty) {
       throw MissingConstructor(clazz)

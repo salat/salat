@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         Injectors.scala
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Last modified: 2012-08-08 17:15:11 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,7 @@
 package com.novus.salat.transformers
 
 import java.lang.reflect.Method
-import scala.collection.immutable.{ List => IList, Map => IMap }
-import scala.collection.mutable.{ Map => MMap }
 import scala.tools.scalap.scalax.rules.scalasig._
-import scala.math.{ BigDecimal => ScalaBigDecimal }
 import com.novus.salat.annotations.util._
 
 import com.novus.salat._
@@ -37,11 +34,14 @@ import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
 import org.scala_tools.time.Imports._
 
-package object in {
+package object in extends Logging {
 
   def select(pt: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     pt match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with CaseObjectInjector
+        }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigDecimalInjector
 
@@ -71,8 +71,12 @@ package object in {
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionInjector
       }
-
       case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(t.symbol.path, t)(ctx) with CaseObjectInjector with TraversableInjector {
+            val parentType = pt
+          }
+        }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalInjector with TraversableInjector {
             val parentType = pt
@@ -122,6 +126,11 @@ package object in {
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(t.symbol.path, t)(ctx) with CaseObjectInjector with MapInjector {
+            val parentType = pt
+          }
+        }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalInjector with MapInjector {
             val parentType = pt
@@ -175,6 +184,9 @@ package object in {
           val grater = ctx.lookup_?(symbol.path)
         }
       }
+      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) => {
+        new Transformer(pt.symbol.path, pt)(ctx) with CaseObjectInjector
+      }
 
       case TypeRefType(_, symbol, _) => pt match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
@@ -213,8 +225,7 @@ package object in {
 package in {
 
   import java.lang.Integer
-  import com.novus.salat.annotations.EnumAs
-  import net.liftweb.json.JsonAST.{ JObject, JArray }
+  import net.liftweb.json.JsonAST.JArray
 
   trait LongToInt extends Transformer {
     self: Transformer =>
@@ -270,9 +281,7 @@ package in {
   trait BigIntInjector extends Transformer {
     self: Transformer =>
 
-    override def transform(value: Any)(implicit ctx: Context): Any = {
-      ctx.bigIntStrategy.in(value)
-    }
+    override def transform(value: Any)(implicit ctx: Context): Any = ctx.bigIntStrategy.in(value)
   }
 
   trait DBObjectToInContext extends Transformer with InContextTransformer with Logging {
@@ -298,6 +307,19 @@ package in {
       case mdbo: MongoDBObject => transform0(mdbo)
       case x                   => x
     }
+  }
+
+  trait CaseObjectInjector extends Transformer with Logging {
+    self: Transformer =>
+
+    override def transform(value: Any)(implicit ctx: Context) = value match {
+      case s: String => fromPath(ctx.resolveCaseObjectOverrides.get(t.symbol.path, s).
+        getOrElse(throw MissingCaseObjectOverride(t.symbol.path, value, ctx.name)))
+      case dbo: DBObject       => fromPath(ctx.extractTypeHint(dbo).getOrElse(throw MissingTypeHint(dbo.toMap.asInstanceOf[Map[String, Any]])))
+      case mdbo: MongoDBObject => fromPath(ctx.extractTypeHint(mdbo).getOrElse(throw MissingTypeHint(mdbo.toMap.asInstanceOf[Map[String, Any]])))
+    }
+
+    def fromPath(path: String) = ClassAnalyzer.companionObject(getClassNamed_!(path)(ctx), ctx.classLoaders)
   }
 
   trait OptionInjector extends Transformer {

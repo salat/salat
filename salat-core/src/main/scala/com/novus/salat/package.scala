@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         package.scala
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Last modified: 2012-06-28 15:37:34 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,6 @@ object `package` extends Logging {
 
   type CaseClass = AnyRef with Product
 
-  val ModuleFieldName = "MODULE$"
-
   val DefaultMathContext = new MathContext(17, RoundingMode.HALF_UP)
 
   def timeAndLog[T](f: => T)(l: Long => Unit): T = {
@@ -49,14 +47,9 @@ object `package` extends Logging {
   }
 
   implicit def class2companion(clazz: Class[_])(implicit ctx: Context) = new {
-    def companionClass: Class[_] = {
-      val path = if (clazz.getName.endsWith("$")) clazz.getName else "%s$".format(clazz.getName)
-      val c = getClassNamed(path)
-      if (c.isDefined) c.get else sys.error(
-        "Could not resolve clazz='%s' in any of the %d classpaths in ctx='%s'".format(path, ctx.classLoaders.size, ctx.name))
-    }
+    def companionClass: Class[_] = ClassAnalyzer.companionClass(clazz, ctx.classLoaders)
 
-    def companionObject = companionClass.getField(ModuleFieldName).get(null)
+    def companionObject = ClassAnalyzer.companionObject(clazz, ctx.classLoaders)
   }
 
   val TypeHint = "_typeHint"

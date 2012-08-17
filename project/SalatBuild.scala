@@ -42,7 +42,7 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "1.9-SNAPSHOT"
+  val buildVersion = "1.9.1-SNAPSHOT"
   val buildScalaVersion = "2.9.2"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Ls.settings ++ Seq(
@@ -52,7 +52,7 @@ object BuildSettings {
     shellPrompt := ShellPrompt.buildShellPrompt,
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
-    resolvers ++= Seq(typeSafeRepo, typeSafeIDERepo, typeSafeSnapsRepo),
+    resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
     crossScalaVersions := Seq("2.9.1", "2.9.2")
   )
@@ -103,6 +103,10 @@ object Publish {
     pomIncludeRepository := { _ => false },
     licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
     homepage := Some(url("https://github.com/novus/salat")),
+    pomPostProcess := {
+      (pomXML: scala.xml.Node) =>
+        PomPostProcessor(pomXML)
+    },
     pomExtra := (
       <scm>
         <url>git://github.com/novus/salat.git</url>
@@ -118,28 +122,48 @@ object Publish {
   )
 }
 
+object PomPostProcessor {
+  import scala.xml._
+
+  // see https://groups.google.com/d/topic/simple-build-tool/pox4BwWshtg/discussion
+  // adding a post pom processor to make sure that pom for salat-core correctly specifies depdency type pom for casbah dependency
+
+  def apply(pomXML: Node): Node = {
+    def rewrite(pf: PartialFunction[Node, Node])(ns: Seq[Node]): Seq[Node] = for (subnode <- ns) yield subnode match {
+      case e: Elem =>
+        if (pf isDefinedAt e) pf(e)
+        else Elem(e.prefix, e.label, e.attributes, e.scope, rewrite(pf)(e.child): _*)
+      case other => other
+    }
+
+    val rule: PartialFunction[Node, Node] = {
+      case e @ Elem(prefix, "dependency", attribs, scope, children @ _*) => {
+        if (children.contains(<groupId>org.mongodb</groupId>)) {
+          Elem(prefix, "dependency", attribs, scope, children ++ <type>pom</type>: _*)
+        }
+        else e
+      }
+    }
+
+    rewrite(rule)(pomXML.theSeq)(0)
+  }
+}
+
 object Dependencies {
-  val specs2 = "org.specs2" %% "specs2" % "1.11" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "1.12" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
-  val casbah = "org.mongodb" %% "casbah" % "2.3.0"
-  // TODO: these dependencies are not yet available for 2.9.2
-  // causes complaining:
-  //  Setting version to 2.9.2
-  //  [info] Set current project to salat (in build file:/home/rose/workspace/salat/)
-  //  [warn] Potentially incompatible versions of dependencies of {file:/home/rose/workspace/salat/}salat-core:
-  //  [warn]    org.scala-lang: 2.9.2, 2.9.1
-  //  [warn] Potentially incompatible versions of dependencies of {file:/home/rose/workspace/salat/}salat:
-  //  [warn]    org.scala-lang: 2.9.2, 2.9.1
-  val lift_json = "net.liftweb" % "lift-json_2.9.1" % "2.4"
+  val casbah = "org.mongodb" %% "casbah" % "2.4.1" artifacts( Artifact("casbah", "pom", "pom") )
+  val lift_json = "net.liftweb" %% "lift-json" % "2.5-SNAPSHOT"
 }
 
 object Repos {
   val typeSafeRepo = "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
-  val typeSafeIDERepo = "Typesafe Repo" at "http://repo.typesafe.com/typesafe/ide-2.9/"
   val typeSafeSnapsRepo = "Typesafe Snaps Repo" at "http://repo.typesafe.com/typesafe/snapshots/"
+  val oss = "OSS Sonatype" at "http://oss.sonatype.org/content/repositories/releases/"
+  val ossSnaps = "OSS Sonatype Snaps" at "http://oss.sonatype.org/content/repositories/snapshots/"
 }
 
 // Shell prompt which show the current project, git branch and build version
@@ -150,10 +174,8 @@ object ShellPrompt {
     def buffer[T] (f: => T): T = f
   }
   def currBranch = (
-  /*
     ("git status -sb" lines_! devnull headOption)
       getOrElse "-" stripPrefix "## "
-	  */
   )
 
   val buildShellPrompt = {

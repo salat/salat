@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         Field.scala
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Last modified: 2012-08-08 14:54:18 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ package com.novus.salat
 
 import java.lang.reflect.Method
 
-import scala.math.{ BigDecimal => ScalaBigDecimal }
 import scala.tools.scalap.scalax.rules.scalasig._
 
 import com.novus.salat.transformers._
@@ -65,8 +64,40 @@ sealed abstract class Field(val idx: Int,
                             val outNoResolve: Transformer,
                             val ignore: Boolean)(implicit val ctx: Context) extends Logging {
 
-  def in_!(value: Any) = in.transform_!(value)
-  def out_!(value: Any) = out.transform_!(value)
+  def in_!(value: Any) = {
+    val xformed = in.transform_!(value)
+    //    log.debug(
+    //      """
+    //        |IN:
+    //        |                name: %s
+    //        |         typeRefType:
+    //        |%s
+    //        |                  in:
+    //        |%s
+    //        |               value: %s
+    //        |         transformed: %s
+    //        |
+    //      """.stripMargin, name, typeRefType, in.getClass.getInterfaces.mkString("\n"), value, xformed)
+    xformed
+  }
+
+  def out_!(value: Any) = {
+    val xformed = out.transform_!(value)
+    //    log.debug(
+    //      """
+    //        |IN:
+    //        |                name: %s
+    //        |         typeRefType:
+    //        |%s
+    //        |                  out:
+    //        |%s
+    //        |               value: %s
+    //        |         transformed: %s
+    //        |
+    //      """.stripMargin, name, typeRefType, in.getClass.getInterfaces.mkString("\n"), value, xformed)
+    xformed
+  }
+
   def outNoResolve_!(value: Any) = outNoResolve.transform_!(value)
 
   lazy val tf = TypeFinder(typeRefType)

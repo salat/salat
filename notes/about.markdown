@@ -8,6 +8,7 @@ Salat currently supports bidirectional serialization for:
 
 Find us online:
 
+- Project: [http://novus.github.com/salat][project]
 - Source code: [https://github.com/novus/salat][source]
 - Wiki: [https://github.com/novus/salat/wiki][wiki]
 - CI: [http://travis-ci.org/#!/novus/salat][ci]
@@ -17,6 +18,7 @@ Salat is an Open Source project under the Apache License v2.
 
 [casbah]: https://github.com/mongodb/casbah/
 [lift-json]: https://github.com/lift/lift/tree/master/framework/lift-base/lift-json/
+[project]: http://novus.github.com/salat
 [source]: https://github.com/novus/salat
 [wiki]: https://github.com/novus/salat/wiki
 [ci]: http://travis-ci.org/#!/novus/salat

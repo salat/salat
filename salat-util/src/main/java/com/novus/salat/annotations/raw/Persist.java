@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
- * Module:        salat-core
- * Class:         Ignore
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Module:        salat-util
+ * Class:         Persist.java
+ * Last modified: 2012-06-28 15:37:35 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,24 +29,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Ignore annotated field when serializing model objects.  This annotation must be used in conjunction with a
- * default argument.
- *
- * Good:
+ * Serializes a field outside the case class constructor.
+ * <p/>
+ * In the example below, when Foo is serialized, field "goodbye" will appear in the serialized output.
  * {@code
- *    import com.novus.salat.annotations._
- *    
- *    case class Foo(@Ignore ignoreMe: String = "bar", dontIgnoreMe: Int)
- * }
+ *  import com.novus.salat.annotations._
  *
- * Bad:
- * {@code
- *     import com.novus.salat.annotations._
- *     
- *     case class Foo(@Ignore ignoreMe: String, dontIgnoreMe: Int)
+ *  case class Foo(hello: String) {
+ *      @Persist val goodbye = hello.reverse
+ *  }
  * }
- *
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Ignore {}
+public @interface Persist {}

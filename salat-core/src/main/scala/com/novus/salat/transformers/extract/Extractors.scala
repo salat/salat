@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         Extractors.scala
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Last modified: 2012-08-08 17:16:25 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,21 +24,20 @@
 package com.novus.salat.transformers
 
 import scala.tools.scalap.scalax.rules.scalasig._
-import scala.math.{ BigDecimal => ScalaBigDecimal }
-import scala.collection.immutable.{ List => IList, Map => IMap }
-import scala.collection.mutable.{ Buffer, ArrayBuffer, Map => MMap }
 
 import com.novus.salat._
-import com.novus.salat.impls._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
-import com.novus.salat.transformers.out._
 import com.novus.salat.annotations.util._
 
 package object out {
   def select(t: TypeRefType, hint: Boolean, resolveKey: Boolean = true)(implicit ctx: Context): Transformer = {
     t match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(t.symbol.path, t)(ctx) with OptionExtractor with CaseObjectExtractor
+        }
+
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with BigDecimalExtractor
 
@@ -64,6 +63,10 @@ package object out {
       }
 
       case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with TraversableExtractor
+        }
+
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with TraversableExtractor
 
@@ -90,6 +93,10 @@ package object out {
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+          new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with MapExtractor
+        }
+
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with MapExtractor
 
@@ -112,7 +119,9 @@ package object out {
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t, resolveKey)(ctx) with MapExtractor
       }
-
+      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) => {
+        new Transformer(pt.symbol.path, pt)(ctx) with CaseObjectExtractor
+      }
       case TypeRefType(_, symbol, _) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor
@@ -134,7 +143,6 @@ package object out {
           new Transformer(symbol.path, t, resolveKey)(ctx) with InContextToDBObject {
             val grater = ctx.lookup_?(symbol.path)
           }
-
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t, resolveKey)(ctx) {}
       }
     }
@@ -143,7 +151,16 @@ package object out {
 
 package out {
 
-  import com.novus.salat.annotations.EnumAs
+  trait CaseObjectExtractor extends Transformer with Logging {
+    self: Transformer =>
+
+    override def transform(value: Any)(implicit ctx: Context): Any = {
+      val name = value.asInstanceOf[AnyRef].getClass.getName
+      ctx.caseObjectOverrides.get(name).getOrElse {
+        MongoDBObject(ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(name))
+      }
+    }
+  }
 
   trait BigDecimalExtractor extends Transformer {
     self: Transformer =>
@@ -243,6 +260,5 @@ package out {
       }
     }
   }
-
 }
 

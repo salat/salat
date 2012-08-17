@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
- * Module:        salat-core
- * Class:         Key
- * Last modified: 2012-04-28 20:39:09 EDT
+ * Module:        salat-util
+ * Class:         Salat.java
+ * Last modified: 2012-06-28 15:37:35 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,18 +29,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Overrides the name of a field in the model object with the value specified in Key.
+ * Optimises deserialization for class hierarchies.  Although <i>not necessary</i> for deserializing, by giving Salat a
+ * hint that the class is typed to a trait or an abstract superclass, it removes the need for Salat to try to figure this
+ * out via class introspection.
  * <p/>
- * In this example, when Foo is serialized, the "bar" field will be called "baz".
  * {@code
  *  import com.novus.salat.annotations._
  *
- *  case class Foo(@Key("baz") bar: String)
+ *  @Salat
+ *  trait BabyAnimal
+ *  case class Kitten() extends BabyAnimal
+ *  case class Bunny() extends BabyAnimal
+ *  case class Duckling() extends BabyAnimal
  * }
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Key {
-    /** The serialized representation of the model object will use this value for the field instead of the field name */
-    String value();
-}
+public @interface Salat {}

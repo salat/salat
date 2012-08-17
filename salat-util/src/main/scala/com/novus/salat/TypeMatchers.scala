@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. <http://novus.com>
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-util
  * Class:         TypeMatchers.scala
- * Last modified: 2012-04-28 20:34:21 EDT
+ * Last modified: 2012-08-08 14:45:21 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 package com.novus.salat
 
 import scala.math.{ BigDecimal => SBigDecimal, BigInt }
-import scala.tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
+import tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
 
 protected[salat] object Types {
   val Date = "java.util.Date"
