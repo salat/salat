@@ -1,3 +1,21 @@
+# Note:
+
+This project is a fork of novus/salat.  There are one key difference between the project and one bug fixed.
+The bug fixed is that the original code goes boom if you try to deserialize a JSON Map[String,Enumeration.Value].  Certain uses of
+deserialized object crash with a ClassCastException.  This has been fixed in this code.
+
+The big difference between the two project is that the gzoller/salat version ignores the @Key annotation for JSON but 
+recognizes it for Mongo serialization.  The idea here is that for JSON serialization you're using that JSON in a various
+ways, including sending to a GUI, and you probably don't want your key field called '_id', but rather want it called
+whatever you named the field originally.  But... for Mongo you do want to rename the field '_id'.  This code recognizes
+this difference.
+
+I've had some email exchanges with Rose and there's a good chance future novus/salat releases may have a more flexible
+way to do what I've done here, but for now those who need this feature are welcome to use this code.  I don't claim to
+track the original project perfectly but I do update it from time to time.
+
+Cheers.
+
 # Salat
 
 Salat is a simple serialization library for case classes.
