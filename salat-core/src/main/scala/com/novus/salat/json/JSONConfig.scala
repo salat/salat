@@ -30,7 +30,7 @@ import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
 import java.util.Date
 import org.scala_tools.time.Imports
 import net.liftweb.json.JsonAST._
-import org.bson.types.ObjectId
+import org.bson.types.{ BSONTimestamp, ObjectId }
 
 object JSONConfig {
   val ISO8601 = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC)
@@ -38,6 +38,7 @@ object JSONConfig {
 
 case class JSONConfig(dateStrategy: JSONDateStrategy = StringDateStrategy(),
                       objectIdStrategy: JSONObjectIdStrategy = StrictJSONObjectIdStrategy,
+                      bsonTimestampStrategy: JSONbsTimesampStrategy = StrictBSONTimestampStrategy,
                       outputNullValues: Boolean = false)
 
 trait JSONObjectIdStrategy {
@@ -112,4 +113,21 @@ case class StrictJSONDateStrategy(zone: DateTimeZone = DateTimeZone.UTC) extends
   }
 }
 
+trait JSONbsTimesampStrategy {
+  def in(j: JValue): BSONTimestamp
+
+  def out(ts: BSONTimestamp): JValue
+
+  protected def unexpectedInput(x: JValue) =
+    sys.error("in: unexpected OID input class='%s', value='%s'".format(x.getClass.getName, x.values))
+}
+
+object StrictBSONTimestampStrategy extends JSONbsTimesampStrategy {
+  def in(j: JValue) = j match {
+    case JObject(JField("$ts", JInt(ts)) :: JField("$inc", JInt(inc)) :: Nil) => new BSONTimestamp(ts.toInt, inc.toInt)
+    case x => unexpectedInput(x)
+  }
+
+  def out(ts: BSONTimestamp) = JObject(List(JField("$ts", JInt(ts.getTime)), JField("$inc", JInt(ts.getInc))))
+}
 // or roll your own date strategy....  O the excitement.
