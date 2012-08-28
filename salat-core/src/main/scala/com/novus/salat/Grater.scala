@@ -217,7 +217,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       case (key, value) => {
         builder += ToJField(key, value)
       }
-    }
+    }.toList
     JObject(builder.result())
   }
 
