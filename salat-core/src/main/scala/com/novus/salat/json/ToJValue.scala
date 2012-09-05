@@ -33,6 +33,7 @@ import java.net.URL
 import com.novus.salat.TypeFinder
 import com.novus.salat.StringTypeHintStrategy
 import scala.tools.scalap.scalax.rules.scalasig.{ TypeRefType, SingleType }
+import org.bson.types.BSONTimestamp
 
 object ToJField extends Logging {
   def typeHint[X](clazz: Class[X], useTypeHint: Boolean)(implicit ctx: Context) = {
@@ -79,6 +80,7 @@ object ToJValue extends Logging {
       case o: ObjectId => ctx.jsonConfig.objectIdStrategy.out(o)
       case u: java.net.URL => JString(u.toString) // might as well
       case n if n == null && ctx.jsonConfig.outputNullValues => JNull
+      case ts: BSONTimestamp => ctx.jsonConfig.bsonTimestampStrategy.out(ts)
       case x: AnyRef => sys.error("serialize: Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
     }
 
@@ -124,15 +126,17 @@ object FromJValue extends Logging {
     }
     case o: JObject if field.tf.isOid => deserialize(o, field.tf)
     case o: JObject if field.tf.isDate || field.tf.isDateTime => deserialize(o, field.tf)
+    case o: JObject if field.tf.isBSONTimestamp => deserialize(o, field.tf)
     case o: JObject => ctx.lookup(if (childType.isDefined) childType.get.symbol.path else field.typeRefType.symbol.path).fromJSON(o)
     case x => deserialize(x, if (childType.isDefined) TypeFinder(childType.get) else field.tf)
   }
 
   def deserialize(j: JValue, tf: TypeFinder)(implicit ctx: Context): Any = {
     val v = j match {
-      case v if tf.isDateTime => ctx.jsonConfig.dateStrategy.toDateTime(v)
-      case v if tf.isDate     => ctx.jsonConfig.dateStrategy.toDate(v)
-      case v if tf.isOid      => ctx.jsonConfig.objectIdStrategy.in(v)
+      case v if tf.isDateTime      => ctx.jsonConfig.dateStrategy.toDateTime(v)
+      case v if tf.isDate          => ctx.jsonConfig.dateStrategy.toDate(v)
+      case v if tf.isOid           => ctx.jsonConfig.objectIdStrategy.in(v)
+      case v if tf.isBSONTimestamp => ctx.jsonConfig.bsonTimestampStrategy.in(v)
       case v if tf.t.symbol.path == "scala.Enumeration.Value" => {
         val enumTrans = new com.novus.salat.transformers.Transformer(tf.t.prefix.asInstanceOf[SingleType].symbol.path, tf.t)(ctx) with com.novus.salat.transformers.in.EnumInflater
         enumTrans.transform(v.values)

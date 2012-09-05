@@ -43,9 +43,9 @@ Please remove all references to `repo.novus.com` from your build files.  After 0
 
 Available for Scala 2.9.1 and 2.9.2.  Based on Casbah 2.4.1.
 
-    "com.novus" %% "salat" % "1.9.0"
+    "com.novus" %% "salat" % "1.9.1"
 
-[Release Notes](http://notes.implicit.ly/post/26652751811/salat-1-9-0)
+[Release Notes](http://notes.implicit.ly/post/30497070468/salat-1-9-1)
 
 Available for Scala 2.8.1, 2.9.1 and 2.9.2.  Based on Casbah 2.1.5-1.
 
@@ -57,7 +57,7 @@ Available for Scala 2.8.1, 2.9.1 and 2.9.2.  Based on Casbah 2.1.5-1.
 
 [![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.9.1 and 2.9.2.
 
-    "com.novus" %% "salat" % "1.9.1-SNAPSHOT"
+    "com.novus" %% "salat" % "1.9.2-SNAPSHOT"
 
 If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 

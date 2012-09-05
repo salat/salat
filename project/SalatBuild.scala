@@ -42,7 +42,7 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "1.9.1-SNAPSHOT"
+  val buildVersion = "1.9.2-SNAPSHOT"
   val buildScalaVersion = "2.9.2"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Ls.settings ++ Seq(
@@ -156,7 +156,8 @@ object Dependencies {
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
   val casbah = "org.mongodb" %% "casbah" % "2.4.1" artifacts( Artifact("casbah", "pom", "pom") )
-  val lift_json = "net.liftweb" %% "lift-json" % "2.5-SNAPSHOT"
+  // hard-coded because 2.5-M1 which has 2.9.2 support is not out yet
+  val lift_json = "net.liftweb" % "lift-json_2.9.1" % "2.4"
 }
 
 object Repos {

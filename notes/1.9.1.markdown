@@ -1,3 +1,7 @@
 Features new in Salat 1.9.1 include:
 
-- nothing yet, but keep an eye out!
+- serialize case objects as strings (backward compatible with old type hint serialization)
+- shrink your serialized objects by suppressing fields whose value is the same as the default value
+- existential typing (pull request #48 from akraievoy)
+- BSON Timestamp support (pull request #53 from rajish)
+- Maven users rejoice: Salat's Casbah dependency now correctly typed to aggregator pom in generated POMs

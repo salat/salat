@@ -30,6 +30,7 @@ protected[salat] object Types {
   val Date = "java.util.Date"
   val DateTime = Set("org.joda.time.DateTime", "org.scala_tools.time.TypeImports.DateTime")
   val Oid = Set("org.bson.types.ObjectId", "com.mongodb.casbah.commons.TypeImports.ObjectId")
+  val BsonTimestamp = "org.bson.types.BSONTimestamp"
   val SBigDecimal = classOf[SBigDecimal].getName
   val BigInt = classOf[BigInt].getName
   val Option = "scala.Option"
@@ -64,6 +65,7 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
   lazy val isOption = TypeMatchers.matches(t, Types.Option)
   lazy val isOid = TypeMatchers.matches(t, Types.Oid)
   lazy val isURL = TypeMatchers.matches(t, classOf[java.net.URL].getName)
+  lazy val isBSONTimestamp = TypeMatchers.matches(t, Types.BsonTimestamp)
 }
 
 protected[salat] object TypeMatchers {
