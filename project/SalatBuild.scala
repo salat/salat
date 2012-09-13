@@ -156,8 +156,7 @@ object Dependencies {
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
   val casbah = "org.mongodb" %% "casbah" % "2.4.1" artifacts( Artifact("casbah", "pom", "pom") )
-  // hard-coded because 2.5-M1 which has 2.9.2 support is not out yet
-  val lift_json = "net.liftweb" % "lift-json_2.9.1" % "2.4"
+  val lift_json = "net.liftweb" %% "lift-json" % "2.5-M1"
 }
 
 object Repos {
