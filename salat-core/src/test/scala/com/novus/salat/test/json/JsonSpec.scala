@@ -25,11 +25,14 @@ package com.novus.salat.test.json
 
 import com.novus.salat._
 import com.novus.salat.util._
+import json.{ StrictJSONDateStrategy, TimestampDateStrategy, JSONConfig }
 import org.specs2.mutable.Specification
 import net.liftweb.json._
 import scala.util.parsing.json.{ JSONObject, JSONArray }
 import org.bson.types.ObjectId
 import net.liftweb.json.JsonParser.ParseException
+import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.DateTimeConstants._
 
 class JsonSpec extends Specification with Logging {
 
@@ -44,135 +47,174 @@ class JsonSpec extends Specification with Logging {
   val b = Bertil(ints = ints, strings = strings)
   val g = Gustav(o = Some("OG"))
   val n = Niklas(Some(g))
+  val date = new DateTime(2012, SEPTEMBER, 13, 8, 30, 5, 237)
 
   "JSON support" should {
-    "handle converting model objects to JObject" in {
-      "simple types" in {
-        val rendered = grater[Adam].toPrettyJSON(a)
-        //        00:15:46.298 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
-        //          "a":"string",
-        //          "b":99,
-        //          "c":3.14,
-        //          "d":false,
-        //          "e":"2011-12-28T14:37:56.008-05:00",
-        //          "u":"http://www.typesafe.com",
-        //          "o":{
-        //            "$oid":"4fd0bead4ceab231e6f3220b"
-        //          }
+    //    "handle converting model objects to JObject" in {
+    "serialize simple types" in {
+      val rendered = grater[Adam].toPrettyJSON(a)
+      //        00:15:46.298 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
+      //          "a":"string",
+      //          "b":99,
+      //          "c":3.14,
+      //          "d":false,
+      //          "e":"2011-12-28T14:37:56.008-05:00",
+      //          "u":"http://www.typesafe.com",
+      //          "o":{
+      //            "$oid":"4fd0bead4ceab231e6f3220b"
+      //          }
+      //        }
+      rendered must /("a" -> "string")
+      rendered must /("b" -> 99)
+      rendered must /("c" -> 3.14)
+      rendered must /("d" -> false)
+      rendered must /("e" -> "2011-12-28T14:37:56.008Z")
+      rendered must /("u" -> testURL.toString)
+      rendered must /("o") / ("$oid" -> "4fd0bead4ceab231e6f3220b")
+    }
+    "serialize lists" in {
+      "of simple types" in {
+        val rendered = grater[Bertil].toPrettyJSON(b)
+        //        log.debug(rendered)
+        //        09:47:43.440 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
+        //          "ints":[1,2,3],
+        //          "strings":["a","b","c"]
         //        }
-        rendered must /("a" -> "string")
-        rendered must /("b" -> 99)
-        rendered must /("c" -> 3.14)
-        rendered must /("d" -> false)
-        rendered must /("e" -> "2011-12-28T14:37:56.008Z")
-        rendered must /("u" -> testURL.toString)
-        rendered must /("o") / ("$oid" -> "4fd0bead4ceab231e6f3220b")
-      }
-      "lists" in {
-        "of simple types" in {
-          val rendered = grater[Bertil].toPrettyJSON(b)
-          //        log.debug(rendered)
-          //        09:47:43.440 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
-          //          "ints":[1,2,3],
-          //          "strings":["a","b","c"]
-          //        }
 
-          rendered must /("ints" -> JSONArray(ints))
-          rendered must /("strings" -> JSONArray(strings))
-        }
-        "of case classes" in {
-          val ints = List(1, 2, 3)
-          val strings = List("a", "b", "c")
-          val b1 = Bertil(ints = ints, strings = strings)
-          val b2 = Bertil(ints = ints.map(_ * 2), strings = strings.map(_.capitalize))
-          val c = Caesar(l = List(b1, b2))
-          val rendered = grater[Caesar].toPrettyJSON(c)
-          //        log.debug(rendered)
-          //        09:50:47.309 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
-          //          "l":[{
-          //            "ints":[1,2,3],
-          //            "strings":["a","b","c"]
-          //          },{
-          //            "ints":[2,4,6],
-          //            "strings":["A","B","C"]
-          //          }]
-          //        }
-          rendered must /("l" -> JSONArray(List(
-            JSONObject(Map("ints" -> JSONArray(ints), "strings" -> JSONArray(strings))),
-            JSONObject(Map("ints" -> JSONArray(ints.map(_ * 2)), "strings" -> JSONArray(strings.map(_.capitalize)))))))
-        }
+        rendered must /("ints" -> JSONArray(ints))
+        rendered must /("strings" -> JSONArray(strings))
       }
-      "maps" in {
-        "of simple types" in {
-          val d = David(m = Map("a" -> 1, "b" -> 2, "c" -> 3))
-          val rendered = grater[David].toPrettyJSON(d)
-          //          log.debug(rendered)
-          //          11:12:38.127 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
-          //            "m":{
-          //              "a":1,
-          //              "b":2,
-          //              "c":3
-          //            }
-          //          }
-          rendered must /("m") / ("a" -> 1.0) // by default, specs2 parses numbers in JSON as doubles
-          rendered must /("m") / ("b" -> 2.0)
-          rendered must /("m") / ("c" -> 3.0)
-        }
-        "of case classes" in {
-          val f = Filip(m = Map("e1" -> Erik(e = "Erik"), "e2" -> Erik(e = "Another Erik")))
-          val rendered = grater[Filip].toPrettyJSON(f)
-          //          "m":{
-          //            "e1":{
-          //              "e":"Erik"
-          //            },
-          //            "e2":{
-          //              "e":"Another Erik"
-          //            }
-          //          }
-          //        }
-          rendered must /("m") / ("e1") / ("e" -> "Erik")
-          rendered must /("m") / ("e2") / ("e" -> "Another Erik")
-        }
-      }
-      "Options" in {
-        "Some[A]" in {
-          "simple type" in {
-            grater[Gustav].toPrettyJSON(g) must /("o" -> "OG")
-          }
-          "case class" in {
-            grater[Niklas].toPrettyJSON(n) must /("g") */ ("o" -> "OG")
-          }
-        }
-        "None" in {
-          grater[Gustav].toCompactJSON(Gustav(o = None)) must_== "{}"
-        }
-      }
-      "class hierarchies" in {
-        // TODO: sort out type hinting when concrete grater is accessed via proxy grater without @Salat annotation
-        "with a top-level trait" in {
-          val i = Ivar(s = "Hello")
-          val i_* = grater[Helge].toPrettyJSON(i)
-          i_* must /("_t" -> "com.novus.salat.test.json.Ivar")
-          i_* must /("s" -> "Hello")
-          val j = Johan(s = "Hello", d = 3.14)
-          val j_* = grater[Helge].toPrettyJSON(j)
-          j_* must /("_t" -> "com.novus.salat.test.json.Johan")
-          j_* must /("s" -> "Hello")
-          j_* must /("d" -> 3.14)
-        }
-        "with an abstract superclass" in {
-          val l = Ludvig(s = "Hello")
-          val l_* = grater[Kalle].toPrettyJSON(l)
-          l_* must /("_t" -> "com.novus.salat.test.json.Ludvig")
-          l_* must /("s" -> "Hello")
-          val m = Martin(s = "Hello", d = 3.14)
-          val m_* = grater[Kalle].toPrettyJSON(m)
-          m_* must /("_t" -> "com.novus.salat.test.json.Martin")
-          m_* must /("s" -> "Hello")
-          m_* must /("d" -> 3.14)
-        }
+      "of case classes" in {
+        val ints = List(1, 2, 3)
+        val strings = List("a", "b", "c")
+        val b1 = Bertil(ints = ints, strings = strings)
+        val b2 = Bertil(ints = ints.map(_ * 2), strings = strings.map(_.capitalize))
+        val c = Caesar(l = List(b1, b2))
+        val rendered = grater[Caesar].toPrettyJSON(c)
+        //        log.debug(rendered)
+        //        09:50:47.309 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
+        //          "l":[{
+        //            "ints":[1,2,3],
+        //            "strings":["a","b","c"]
+        //          },{
+        //            "ints":[2,4,6],
+        //            "strings":["A","B","C"]
+        //          }]
+        //        }
+        rendered must /("l" -> JSONArray(List(
+          JSONObject(Map("ints" -> JSONArray(ints), "strings" -> JSONArray(strings))),
+          JSONObject(Map("ints" -> JSONArray(ints.map(_ * 2)), "strings" -> JSONArray(strings.map(_.capitalize)))))))
       }
     }
+    "serialize maps" in {
+      "of simple types" in {
+        val d = David(m = Map("a" -> 1, "b" -> 2, "c" -> 3))
+        val rendered = grater[David].toPrettyJSON(d)
+        //          log.debug(rendered)
+        //          11:12:38.127 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
+        //            "m":{
+        //              "a":1,
+        //              "b":2,
+        //              "c":3
+        //            }
+        //          }
+        rendered must /("m") / ("a" -> 1.0) // by default, specs2 parses numbers in JSON as doubles
+        rendered must /("m") / ("b" -> 2.0)
+        rendered must /("m") / ("c" -> 3.0)
+      }
+      "of case classes" in {
+        val f = Filip(m = Map("e1" -> Erik(e = "Erik"), "e2" -> Erik(e = "Another Erik")))
+        val rendered = grater[Filip].toPrettyJSON(f)
+        //          "m":{
+        //            "e1":{
+        //              "e":"Erik"
+        //            },
+        //            "e2":{
+        //              "e":"Another Erik"
+        //            }
+        //          }
+        //        }
+        rendered must /("m") / ("e1") / ("e" -> "Erik")
+        rendered must /("m") / ("e2") / ("e" -> "Another Erik")
+      }
+    }
+    "serialize Options" in {
+      "Some[A]" in {
+        "simple type" in {
+          grater[Gustav].toPrettyJSON(g) must /("o" -> "OG")
+        }
+        "case class" in {
+          grater[Niklas].toPrettyJSON(n) must /("g") */ ("o" -> "OG")
+        }
+        val petter = Petter(Some(date))
+        "DateTime using timestamp strategy" in {
+          implicit val ctx = new Context {
+            val name = "timestamp"
+            override val jsonConfig = JSONConfig(dateStrategy = TimestampDateStrategy(DateTimeZone.UTC))
+          }
+          grater[Petter].toCompactJSON(petter) must_== "{\"d\":1347539405237}"
+        }
+        "DateTime using strict JSON strategy" in {
+          implicit val ctx = new Context {
+            val name = "strict-JSON"
+            override val jsonConfig = JSONConfig(dateStrategy = StrictJSONDateStrategy(DateTimeZone.UTC))
+          }
+          grater[Petter].toCompactJSON(petter) must_== "{\"d\":{\"$date\":1347539405237}}"
+        }
+        "DateTime using string strategy" in {
+          grater[Petter].toCompactJSON(petter) must_== "{\"d\":\"2012-09-13T12:30:05.237Z\"}"
+        }
+      }
+      "None" in {
+        grater[Gustav].toCompactJSON(Gustav(o = None)) must_== "{}"
+      }
+    }
+    "serialize DateTime" in {
+      val olof = Olof(date)
+      "using timestamp strategy" in {
+        implicit val ctx = new Context {
+          val name = "timestamp"
+          override val jsonConfig = JSONConfig(dateStrategy = TimestampDateStrategy(DateTimeZone.UTC))
+        }
+        grater[Olof].toCompactJSON(olof) must_== "{\"d\":1347539405237}"
+      }
+      "using strict JSON strategy" in {
+        implicit val ctx = new Context {
+          val name = "strict-JSON"
+          override val jsonConfig = JSONConfig(dateStrategy = StrictJSONDateStrategy(DateTimeZone.UTC))
+        }
+        grater[Olof].toCompactJSON(olof) must_== "{\"d\":{\"$date\":1347539405237}}"
+      }
+      "using string strategy" in {
+        grater[Olof].toCompactJSON(olof) must_== "{\"d\":\"2012-09-13T12:30:05.237Z\"}"
+      }
+    }
+    "serialize class hierarchies" in {
+      // TODO: sort out type hinting when concrete grater is accessed via proxy grater without @Salat annotation
+      "with a top-level trait" in {
+        val i = Ivar(s = "Hello")
+        val i_* = grater[Helge].toPrettyJSON(i)
+        i_* must /("_t" -> "com.novus.salat.test.json.Ivar")
+        i_* must /("s" -> "Hello")
+        val j = Johan(s = "Hello", d = 3.14)
+        val j_* = grater[Helge].toPrettyJSON(j)
+        j_* must /("_t" -> "com.novus.salat.test.json.Johan")
+        j_* must /("s" -> "Hello")
+        j_* must /("d" -> 3.14)
+      }
+      "with an abstract superclass" in {
+        val l = Ludvig(s = "Hello")
+        val l_* = grater[Kalle].toPrettyJSON(l)
+        l_* must /("_t" -> "com.novus.salat.test.json.Ludvig")
+        l_* must /("s" -> "Hello")
+        val m = Martin(s = "Hello", d = 3.14)
+        val m_* = grater[Kalle].toPrettyJSON(m)
+        m_* must /("_t" -> "com.novus.salat.test.json.Martin")
+        m_* must /("s" -> "Hello")
+        m_* must /("d" -> 3.14)
+      }
+    }
+    //    }
     "handle converting a list of model objects to a JArray" in {
       val jarr = grater[Kalle].toJSONArray(List(Martin("one", 1.1), Martin("two", 2.2), Martin("three", 3.3)))
       //        [{
@@ -207,6 +249,33 @@ class JsonSpec extends Specification with Logging {
               JField("o", JObject(JField("$oid", JString("4fd0bead4ceab231e6f3220b")) :: Nil)) ::
               Nil)
           grater[Adam].fromJSON(j) must_== a
+        }
+        "containing DateTimes" in {
+          val olof = Olof(date)
+          val petter = Petter(Some(date))
+          "DateTime using timestamp strategy" in {
+            implicit val ctx = new Context {
+              val name = "timestamp"
+              override val jsonConfig = JSONConfig(dateStrategy = TimestampDateStrategy(DateTimeZone.UTC))
+            }
+            val s = "{\"d\":1347539405237}"
+            grater[Petter].fromJSON(s) must_== petter
+            grater[Olof].fromJSON("{\"d\":1347539405237}") must_== olof
+          }
+          "DateTime using strict JSON strategy" in {
+            implicit val ctx = new Context {
+              val name = "strict-JSON"
+              override val jsonConfig = JSONConfig(dateStrategy = StrictJSONDateStrategy(DateTimeZone.UTC))
+            }
+            val s = "{\"d\":{\"$date\":1347539405237}}"
+            grater[Petter].fromJSON(s) must_== petter
+            grater[Olof].fromJSON("{\"d\":{\"$date\":1347539405237}}") must_== olof
+          }
+          "DateTime using string strategy" in {
+            val s = "{\"d\":\"2012-09-13T12:30:05.237Z\"}"
+            grater[Petter].fromJSON(s) must_== petter
+            grater[Olof].fromJSON(s) must_== olof
+          }
         }
         "containing lists" in {
           "of simple types" in {
