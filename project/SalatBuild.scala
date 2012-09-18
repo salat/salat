@@ -153,8 +153,8 @@ object Dependencies {
   val specs2 = "org.specs2" %% "specs2" % "1.12.1" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
-  val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.0" % "test"
-  val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.0" % "test"
+  val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.6" % "test"
+  val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.6" % "test"
   val casbah = "org.mongodb" %% "casbah" % "2.4.1" artifacts( Artifact("casbah", "pom", "pom") )
   val lift_json = "net.liftweb" %% "lift-json" % "2.5-M1"
 }
