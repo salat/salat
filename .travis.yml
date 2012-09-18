@@ -4,6 +4,8 @@ scala:
   - 2.9.2
   - 2.9.1
 # whitelist branches for now.  need backport branch to support 2.8.x
+jdk:
+  - oraclejdk7
 branches:
   only:
     - master
