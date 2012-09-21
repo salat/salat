@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         ToJValue.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-09-17 23:13:37 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,45 +98,56 @@ object ToJValue extends Logging {
 
 object FromJValue extends Logging {
 
-  def apply(j: Option[JValue], field: SField, childType: Option[TypeRefType] = None)(implicit ctx: Context): Option[Any] = j.map {
-    case j: JArray => field.typeRefType match {
-      case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
-      case notTraversable                        => sys.error("FromJValue: expected types for Traversable but instead got:\n%s".format(notTraversable))
-    }
-    case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
-      case IsMap(_, childType: TypeRefType) => {
-        //        val builder = Map.newBuilder[String, Any]
-        //        o.obj.foreach {
-        //          v =>
-        //            apply(Some(v.value), field, Some(childType)).foreach {
-        //              value =>
-        //                builder += v.name -> value
-        //            }
-        //        }
-
-        o.obj.map(v => (v.name, apply(Some(v.value), field, Some(childType)))).collect {
-          case (key, Some(value)) => key -> value
-        }.toMap
+  def apply(j: Option[JValue], field: SField, childType: Option[TypeRefType] = None)(implicit ctx: Context): Option[Any] = {
+    val v = j.map {
+      case j: JArray => field.typeRefType match {
+        case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
+        case notTraversable                        => sys.error("FromJValue: expected types for Traversable but instead got:\n%s".format(notTraversable))
       }
-      case notMap => sys.error("FromJValue: expected types for Map but instead got:\n%s".format(notMap))
+      case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
+        case IsMap(_, childType: TypeRefType) => {
+          o.obj.map(v => (v.name, apply(Some(v.value), field, Some(childType)))).collect {
+            case (key, Some(value)) => key -> value
+          }.toMap
+        }
+        case notMap => sys.error("FromJValue: expected types for Map but instead got:\n%s".format(notMap))
+      }
+      case v: JValue if field.tf.isOption && childType.isEmpty => field.typeRefType.typeArgs.toList match {
+        case List(ct: TypeRefType) => {
+          val childTf = TypeFinder(ct)
+          if (childTf.directlyDeserialize) deserialize(v, childTf) else apply(j, field, Some(ct))
+        }
+        case notOption => sys.error("FromJValue: expected type for Option but instead got:\n%s".format(notOption))
+      }
+      case o: JObject if field.tf.isOid => deserialize(o, field.tf)
+      case v: JValue if field.tf.isDate || field.tf.isDateTime => deserialize(v, field.tf)
+      case o: JInt if field.tf.isDate || field.tf.isDateTime => deserialize(o, field.tf)
+      case o: JObject if field.tf.isBSONTimestamp => deserialize(o, field.tf)
+      case o: JObject => ctx.lookup(if (childType.isDefined) childType.get.symbol.path else field.typeRefType.symbol.path).fromJSON(o)
+      case x => deserialize(x, if (childType.isDefined) TypeFinder(childType.get) else field.tf)
     }
-    case o: JObject if field.tf.isOption && childType.isEmpty => field.typeRefType.typeArgs match {
-      case List(childType: TypeRefType) => apply(j, field, Some(childType))
-      case notOption                    => sys.error("FromJValue: expected type for Option but instead got:\n%s".format(notOption))
-    }
-    case o: JObject if field.tf.isOid => deserialize(o, field.tf)
-    case o: JObject if field.tf.isDate || field.tf.isDateTime => deserialize(o, field.tf)
-    case o: JObject if field.tf.isBSONTimestamp => deserialize(o, field.tf)
-    case o: JObject => ctx.lookup(if (childType.isDefined) childType.get.symbol.path else field.typeRefType.symbol.path).fromJSON(o)
-    case x => deserialize(x, if (childType.isDefined) TypeFinder(childType.get) else field.tf)
+    //    log.debug(
+    //      """
+    //        | FromJValue:
+    //        |                                       j: %s
+    //        |                             field.name: %s
+    //        |                      field.typeRefType: %s
+    //        |             field.typeRefType.typeArgs: [%s]
+    //        |                      field.tf.isOption: %s
+    //        | field.tf.isDate || field.tf.isDateTime: %s
+    //        |                              childType: %s
+    //        |                                      v: %s
+    //        |
+    //      """.stripMargin, j, field.name, field.typeRefType, field.typeRefType.typeArgs.mkString(", "), field.tf.isOption, field.tf.isDate || field.tf.isDateTime, childType, v)
+    v
   }
 
   def deserialize(j: JValue, tf: TypeFinder)(implicit ctx: Context): Any = {
     val v = j match {
-      case v if tf.isDateTime      => ctx.jsonConfig.dateStrategy.toDateTime(v)
-      case v if tf.isDate          => ctx.jsonConfig.dateStrategy.toDate(v)
-      case v if tf.isOid           => ctx.jsonConfig.objectIdStrategy.in(v)
-      case v if tf.isBSONTimestamp => ctx.jsonConfig.bsonTimestampStrategy.in(v)
+      case d if tf.isDateTime       => ctx.jsonConfig.dateStrategy.toDateTime(d)
+      case d if tf.isDate           => ctx.jsonConfig.dateStrategy.toDate(d)
+      case oid if tf.isOid          => ctx.jsonConfig.objectIdStrategy.in(oid)
+      case bt if tf.isBSONTimestamp => ctx.jsonConfig.bsonTimestampStrategy.in(bt)
       case v if tf.t.symbol.path == "scala.Enumeration.Value" => {
         val enumTrans = new com.novus.salat.transformers.Transformer(tf.t.prefix.asInstanceOf[SingleType].symbol.path, tf.t)(ctx) with com.novus.salat.transformers.in.EnumInflater
         enumTrans.transform(v.values)
@@ -157,12 +168,12 @@ object FromJValue extends Logging {
     }
     //    log.debug(
     //      """
-    //            |deserialize:
-    //            | tf.t.symbol.path: %s
-    //            | jValue: %s
-    //            | v.getClass: %s
-    //            | v: %s
-    //          """.stripMargin, tf.t.symbol.path, j, v.asInstanceOf[AnyRef].getClass, v)
+    //                |deserialize:
+    //                | tf.t.symbol.path: %s
+    //                | jValue: %s
+    //                | v.getClass: %s
+    //                | v: %s
+    //              """.stripMargin, tf.t.symbol.path, j, v.asInstanceOf[AnyRef].getClass, v)
     v
   }
 }

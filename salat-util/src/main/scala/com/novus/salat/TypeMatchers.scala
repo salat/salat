@@ -3,7 +3,7 @@
  *
  * Module:        salat-util
  * Class:         TypeMatchers.scala
- * Last modified: 2012-08-08 14:45:21 EDT
+ * Last modified: 2012-09-17 22:38:46 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,8 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
   lazy val isOid = TypeMatchers.matches(t, Types.Oid)
   lazy val isURL = TypeMatchers.matches(t, classOf[java.net.URL].getName)
   lazy val isBSONTimestamp = TypeMatchers.matches(t, Types.BsonTimestamp)
+
+  lazy val directlyDeserialize = isDate || isDateTime || isBSONTimestamp || isOid
 }
 
 protected[salat] object TypeMatchers {
