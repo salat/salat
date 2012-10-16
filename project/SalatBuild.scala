@@ -3,7 +3,7 @@
  *
  * Module:        salat-build
  * Class:         SalatBuild.scala
- * Last modified: 2012-10-15 20:31:23 EDT
+ * Last modified: 2012-10-15 20:46:51 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 import sbt._
@@ -127,10 +128,6 @@ object Publish {
     pomIncludeRepository := { _ => false },
     licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
     homepage := Some(url("https://github.com/novus/salat")),
-    pomPostProcess := {
-      (pomXML: scala.xml.Node) =>
-        PomPostProcessor(pomXML)
-    },
     pomExtra := (
       <scm>
         <url>git://github.com/novus/salat.git</url>
@@ -146,40 +143,13 @@ object Publish {
   )
 }
 
-object PomPostProcessor {
-  import scala.xml._
-
-  // see https://groups.google.com/d/topic/simple-build-tool/pox4BwWshtg/discussion
-  // adding a post pom processor to make sure that pom for salat-core correctly specifies depdency type pom for casbah dependency
-
-  def apply(pomXML: Node): Node = {
-    def rewrite(pf: PartialFunction[Node, Node])(ns: Seq[Node]): Seq[Node] = for (subnode <- ns) yield subnode match {
-      case e: Elem =>
-        if (pf isDefinedAt e) pf(e)
-        else Elem(e.prefix, e.label, e.attributes, e.scope, rewrite(pf)(e.child): _*)
-      case other => other
-    }
-
-    val rule: PartialFunction[Node, Node] = {
-      case e @ Elem(prefix, "dependency", attribs, scope, children @ _*) => {
-        if (children.contains(<groupId>org.mongodb</groupId>)) {
-          Elem(prefix, "dependency", attribs, scope, children ++ <type>pom</type>: _*)
-        }
-        else e
-      }
-    }
-
-    rewrite(rule)(pomXML.theSeq)(0)
-  }
-}
-
 object Dependencies {
   val specs2 = "org.specs2" %% "specs2" % "1.12.1" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.6" % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.6" % "test"
-  val casbah = "org.mongodb" %% "casbah" % "2.4.1" artifacts( Artifact("casbah", "pom", "pom") )
+  val casbah = "org.mongodb" %% "casbah" % "2.4.1" pomOnly()
   val lift_json = "net.liftweb" %% "lift-json" % "2.5-M1"
 }
 
