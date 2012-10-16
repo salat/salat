@@ -13,6 +13,7 @@ Find us online:
 - Wiki: [https://github.com/novus/salat/wiki][wiki]
 - CI: [http://travis-ci.org/#!/novus/salat][ci]
 - Mailing List: [http://groups.google.com/group/scala-salat][group]
+- StackOverflow: [http://stackoverflow.com/questions/tagged/salat][so]
 
 Salat is an Open Source project under the Apache License v2.
 
@@ -23,3 +24,4 @@ Salat is an Open Source project under the Apache License v2.
 [wiki]: https://github.com/novus/salat/wiki
 [ci]: http://travis-ci.org/#!/novus/salat
 [group]: http://groups.google.com/group/scala-salat
+[so]: http://stackoverflow.com/questions/tagged/salat
