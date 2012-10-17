@@ -316,8 +316,8 @@ package in {
     override def transform(value: Any)(implicit ctx: Context) = value match {
       case s: String => fromPath(ctx.resolveCaseObjectOverrides.get(t.symbol.path, s).
         getOrElse(throw MissingCaseObjectOverride(t.symbol.path, value, ctx.name)))
-      case dbo: DBObject       => fromPath(ctx.extractTypeHint(dbo).getOrElse(throw MissingTypeHint(dbo.toMap.asInstanceOf[Map[String, Any]])))
-      case mdbo: MongoDBObject => fromPath(ctx.extractTypeHint(mdbo).getOrElse(throw MissingTypeHint(mdbo.toMap.asInstanceOf[Map[String, Any]])))
+      case dbo: DBObject       => fromPath(ctx.extractTypeHint(dbo).getOrElse(throw MissingTypeHint(dbo)))
+      case mdbo: MongoDBObject => fromPath(ctx.extractTypeHint(mdbo).getOrElse(throw MissingTypeHint(mdbo)))
     }
 
     def fromPath(path: String) = ClassAnalyzer.companionObject(getClassNamed_!(path)(ctx), ctx.classLoaders)
