@@ -11,3 +11,10 @@ notifications:
   email:
     recipients:
       - prasinous@gmail.com
+jdk:
+  - openjdk6
+script: sh ./scripts/travis.sh
+# these seem to segfault 2/3 of the time, need to understand why
+#jdk:
+#  - openjdk7
+#  - oraclejdk7
