@@ -36,6 +36,21 @@ import com.novus.salat.StringTypeHintStrategy
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 import org.bson.types.BSONTimestamp
 
+object FromMapToJSON extends Logging {
+
+  val empty = compact(render(JObject(Nil)))
+
+  def apply(m: Map[String, _])(implicit ctx: Context): String = compact(render(mapToJObject(m)))
+
+  def mapToJObject(m: Map[String, _])(implicit ctx: Context): JObject = {
+    JObject(m.map(v => ToJField(v._1, v._2)).toList)
+  }
+
+  def apply(iter: Iterable[Map[String, _]])(implicit ctx: Context): String = {
+    compact(render(JArray(iter.map(mapToJObject(_)).toList)))
+  }
+}
+
 object ToJField extends Logging {
   def typeHint[X](clazz: Class[X], useTypeHint: Boolean)(implicit ctx: Context) = {
     val th = if (useTypeHint) {
@@ -57,11 +72,14 @@ object ToJField extends Logging {
 
 object ToJValue extends Logging {
   def apply(o: Any)(implicit ctx: Context): JValue = o.asInstanceOf[AnyRef] match {
-    case t: MongoDBList => JArray(t.map(apply(_)).toList)
-    case t: BasicDBList => JArray(t.map(apply(_)).toList)
-    case dbo: DBObject  => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, apply(v._2))))
-    case m: Map[_, _]   => JObject(m.toList.map(v => JField(v._1.toString, apply(v._2))))
-    case x              => serialize(x)
+    case t: MongoDBList              => JArray(t.map(apply(_)).toList)
+    case t: BasicDBList              => JArray(t.map(apply(_)).toList)
+    case dbo: DBObject               => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, apply(v._2))))
+    case m: Map[_, _]                => JObject(m.toList.map(v => JField(v._1.toString, apply(v._2))))
+    case m: java.util.Map[_, _]      => JObject(scala.collection.JavaConversions.mapAsScalaMap(m).toList.map(v => JField(v._1.toString, apply(v._2))))
+    case iter: Iterable[_]           => JArray(iter.map(apply(_)).toList)
+    case iter: java.lang.Iterable[_] => JArray(scala.collection.JavaConversions.iterableAsScalaIterable(iter).map(apply(_)).toList)
+    case x                           => serialize(x)
   }
 
   def serialize(o: Any)(implicit ctx: Context) = {
