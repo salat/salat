@@ -36,7 +36,7 @@ import com.novus.salat.StringTypeHintStrategy
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 import org.bson.types.BSONTimestamp
 
-object FromMapToJSON extends Logging {
+object MapToJSON extends Logging {
 
   val empty = compact(render(JObject(Nil)))
 

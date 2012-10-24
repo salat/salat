@@ -1,7 +1,7 @@
 package com.novus.salat.test.json
 
 import com.novus.salat.test.SalatSpec
-import com.novus.salat.json.FromMapToJSON
+import com.novus.salat.json.MapToJSON
 import net.liftweb.json._
 
 class JsonMapSupport extends SalatSpec {
@@ -41,26 +41,26 @@ class JsonMapSupport extends SalatSpec {
   "JSON map support" should {
     "turn a map with simple values into a JSON document" in {
       val simpleMap = Map("a" -> 1, "b" -> 2.34, "c" -> testDate)
-      FromMapToJSON(simpleMap) must_== """{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z"}"""
+      MapToJSON(simpleMap) must_== """{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z"}"""
     }
     "turn a map whose value is a list of simple values into a JSON document" in {
       val m = Map("a" -> 1, "b" -> 2.34, "c" -> testDate, "d" -> List(1, "x", 3.14, testDate))
-      FromMapToJSON(m) must_== """{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z","d":[1,"x",3.14,"2011-12-28T14:37:56.008Z"]}"""
+      MapToJSON(m) must_== """{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z","d":[1,"x",3.14,"2011-12-28T14:37:56.008Z"]}"""
     }
     "turn a map whose value is a list of maps into a JSON document" in {
       val mm = Map("a" -> 1, "b" -> 2.34, "c" -> testDate)
       val m = Map("a" -> 1, "b" -> 2.34, "c" -> testDate, "d" -> List(mm, mm, mm))
-      FromMapToJSON(m) must_==
+      MapToJSON(m) must_==
         """{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z","d":[{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z"},{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z"},{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z"}]}"""
     }
     "turn a list of maps into a JSON array" in {
       val m = Map("a" -> 1, "b" -> 2.34, "c" -> testDate)
       val l = List(m, m, Map("a" -> 1, "b" -> 2.34, "c" -> testDate, "d" -> List(1, "x", 3.14, testDate)))
-      FromMapToJSON(l) must_==
+      MapToJSON(l) must_==
         """[{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z"},{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z"},{"a":1,"b":2.34,"c":"2011-12-28T14:37:56.008Z","d":[1,"x",3.14,"2011-12-28T14:37:56.008Z"]}]"""
     }
     "deal with ugly nested maps" in {
-      FromMapToJSON(uglyMap) must_== expected
+      MapToJSON(uglyMap) must_== expected
     }
   }
 }
