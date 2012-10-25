@@ -34,8 +34,8 @@ import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
 import com.mongodb.casbah.Imports._
 import java.util.concurrent.ConcurrentHashMap
-import net.liftweb.json._
 import com.novus.salat.json.JSONConfig
+import org.json4s.JsonAST.JObject
 
 trait Context extends ContextLifecycle with Logging {
 

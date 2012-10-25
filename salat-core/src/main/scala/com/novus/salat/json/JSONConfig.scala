@@ -29,8 +29,8 @@ import org.scala_tools.time.Imports._
 import org.joda.time.DateTimeZone
 import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
 import java.util.Date
-import org.scala_tools.time.Imports
-import net.liftweb.json.JsonAST._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 import org.bson.types.{ BSONTimestamp, ObjectId }
 
 object JSONConfig {

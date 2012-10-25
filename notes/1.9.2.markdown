@@ -1,3 +1,8 @@
 Features new in Salat 1.9.2 include:
 
-- watch here
+- serialize case objects as strings (backwards compatible with old type hint serialization)
+- switched from lift-json to [JSON4S][JSON4S]
+- various fixes for JSON conversion, including an `Option` that contains a case object
+- support for converting `Map[String, _]` to compact rendered JSON
+
+[JSON4S]: http://json4s.org/

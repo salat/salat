@@ -2,7 +2,6 @@ package com.novus.salat.test.json
 
 import com.novus.salat.test.SalatSpec
 import com.novus.salat.json.MapToJSON
-import net.liftweb.json._
 
 class JsonMapSupport extends SalatSpec {
 

@@ -26,15 +26,12 @@
 package com.novus.salat.test.dao
 
 import com.novus.salat.test.global._
-import com.novus.salat.annotations._
 import com.mongodb.casbah.Imports._
 import org.scala_tools.time.Imports._
-import com.novus.salat.dao.ModelCompanion
 import com.novus.salat.test._
 import org.specs2.specification.Scope
 import com.novus.salat.json.JSONConfig
-import net.liftweb.json._
-import scala.util.parsing.json.JSONArray
+import org.json4s.JsonAST._
 
 class ModelCompanionSpec extends SalatSpec {
   // which most specs can execute concurrently, this particular spec needs to execute sequentially to avoid mutating shared state,

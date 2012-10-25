@@ -28,8 +28,7 @@ package com.novus.salat.dao
 import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.util.Logging
-import net.liftweb.json._
-import net.liftweb.json.JsonAST.JObject
+import org.json4s.JsonAST.{ JArray, JObject }
 
 /** Play framework style model companion
  *  <p/>

@@ -24,13 +24,13 @@
  */
 package com.novus.salat.test
 
-import com.novus.salat.util.Logging
 import com.mongodb.casbah.Imports._
 import org.specs2.mutable._
 import org.specs2.specification.{ Scope, Step }
 import com.novus.salat.{ BigDecimalStrategy, Context }
+import com.mongodb.casbah.commons.test.CasbahMutableSpecification
 
-trait SalatSpec extends Specification with Logging {
+trait SalatSpec extends CasbahMutableSpecification {
 
   override def is =
     Step {

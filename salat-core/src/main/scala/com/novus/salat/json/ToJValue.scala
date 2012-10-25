@@ -25,7 +25,8 @@
 
 package com.novus.salat.json
 
-import net.liftweb.json._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
 import com.novus.salat.{ Field => SField, _ }
@@ -125,7 +126,7 @@ object FromJValue extends Logging {
       }
       case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
         case IsMap(_, childType: TypeRefType) => {
-          o.obj.map(v => (v.name, apply(Some(v.value), field, Some(childType)))).collect {
+          o.obj.map(v => (v._1, apply(Some(v._2), field, Some(childType)))).collect {
             case (key, Some(value)) => key -> value
           }.toMap
         }

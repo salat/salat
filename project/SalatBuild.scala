@@ -33,7 +33,7 @@ object SalatBuild extends Build {
 
   val testDeps = Seq(specs2, logbackCore, logbackClassic)
   val utilDeps = Seq(slf4jApi) ++ testDeps
-  val coreDeps = Seq(casbah, lift_json, commonsLang) ++ testDeps
+  val coreDeps = Seq(casbah, json4sNative, commonsLang) ++ testDeps
 
   lazy val salat = Project(
     id = "salat",
@@ -70,7 +70,7 @@ object BuildSettings {
   val buildVersion = "1.9.2-SNAPSHOT"
   val buildScalaVersion = "2.9.2"
 
-  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Ls.settings ++ Seq(
+  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Ls.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
@@ -146,13 +146,13 @@ object Dependencies {
 
   private val LogbackVersion = "1.0.7"
 
-  val specs2 = "org.specs2" %% "specs2" % "1.12.1" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "1.12.2" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % LogbackVersion % "test"
   val casbah = "org.mongodb" %% "casbah" % "2.4.1" pomOnly()
-  val lift_json = "net.liftweb" %% "lift-json" % "2.5-M1"
+  val json4sNative = "org.json4s" %% "json4s-native" % "3.0.0"
 }
 
 object Repos {

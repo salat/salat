@@ -29,8 +29,8 @@ import org.specs2.mutable.Specification
 import com.novus.salat.util.Logging
 import org.joda.time.{ DateTimeZone, DateTime }
 import com.novus.salat.json.StrictBSONTimestampStrategy
-import net.liftweb.json.JsonAST.{ JField, JObject, JInt, JString }
 import org.bson.types.BSONTimestamp
+import org.json4s.JsonAST._
 
 class BSONTimestampStrategySpec extends Specification with Logging {
 

@@ -26,7 +26,7 @@
 package com.novus.salat
 
 import com.mongodb.casbah.Imports._
-import net.liftweb.json._
+import org.json4s.JsonAST.JObject
 
 class ProxyGrater[X <: AnyRef](clazz: Class[X])(implicit ctx: Context) extends Grater[X](clazz)(ctx) {
 

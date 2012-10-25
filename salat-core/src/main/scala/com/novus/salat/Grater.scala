@@ -35,8 +35,10 @@ import com.novus.salat.util._
 
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
-import net.liftweb.json._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 import com.novus.salat.json.{ FromJValue, ToJField }
+import org.json4s.native.JsonParser
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -299,7 +301,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 
   def fromJSON(j: JObject) = {
-    val values = j.obj.map(v => (v.name, v.value)).toMap
+    val values = j.obj.map(v => (v._1, v._2)).toMap
     val args = indexedFields.map {
       case field if field.ignore => safeDefault(field)
       case field => {

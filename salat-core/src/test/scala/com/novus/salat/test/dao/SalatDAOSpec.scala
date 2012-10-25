@@ -75,9 +75,9 @@ class SalatDAOSpec extends SalatSpec {
 
       // the standard collection cursor returns DBOs
       val mongoCursor = AlphaDAO.collection.find()
-      mongoCursor.next() must_== grater[Alpha].asDBObject(alpha4)
-      mongoCursor.next() must_== grater[Alpha].asDBObject(alpha5)
-      mongoCursor.next() must_== grater[Alpha].asDBObject(alpha6)
+      mongoCursor.next() must haveEntry("_id", alpha4.id)
+      mongoCursor.next() must haveEntry("_id", alpha5.id)
+      mongoCursor.next() must haveEntry("_id", alpha6.id)
 
       // BUT the Salat DAO returns a cursor types to case classes!
       val salatCursor = AlphaDAO.find(MongoDBObject.empty)

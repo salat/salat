@@ -28,10 +28,9 @@ import com.novus.salat._
 import com.novus.salat.util._
 import json.{ StringDateStrategy, StrictJSONDateStrategy, TimestampDateStrategy, JSONConfig }
 import org.specs2.mutable.Specification
-import net.liftweb.json._
 import scala.util.parsing.json.{ JSONObject, JSONArray }
 import org.bson.types.ObjectId
-import net.liftweb.json.JsonParser.ParseException
+import org.json4s._
 import org.joda.time.{ DateTime, DateTimeZone }
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.ISODateTimeFormat
@@ -375,7 +374,7 @@ class JsonSpec extends Specification with Logging {
       }
       "throw an exception when string cannot be parsed to valid JSON" in {
         val invalid = """?"""
-        grater[Adam].fromJSON(invalid) must throwA[ParseException]
+        grater[Adam].fromJSON(invalid) must throwA[org.json4s.ParserUtil.ParseException]
       }
       "throw an exception when string parses to valid but unexpected JSON" in {
         grater[Adam].fromJSON("""["a","b","c"]""") must throwA[RuntimeException]

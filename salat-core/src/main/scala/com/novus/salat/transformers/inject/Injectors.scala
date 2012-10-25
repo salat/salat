@@ -226,7 +226,7 @@ package object in extends Logging {
 package in {
 
   import java.lang.Integer
-  import net.liftweb.json.JsonAST.JArray
+  import org.json4s.JsonAST.JArray
 
   trait LongToInt extends Transformer {
     self: Transformer =>

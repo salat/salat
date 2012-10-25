@@ -5,7 +5,7 @@ Salat is a simple serialization library for case classes.
 Salat currently supports bidirectional serialization for:
 
 - MongoDB's `DBObject` (using [casbah][casbah])
-- JSON (using [lift-json][lift-json])
+- JSON (using [JSON4S][JSON4S])
 - maps
 
 # Goals
@@ -85,7 +85,7 @@ Details are thin on the ground, but here's where we got started:
 [types]: https://github.com/novus/salat/wiki/SupportedTypes
 [wiki]: https://github.com/novus/salat/wiki
 [casbah]: https://github.com/mongodb/casbah/
-[lift-json]: https://github.com/lift/lift/tree/master/framework/lift-base/lift-json/
+[JSON4S]: http://json4s.org/
 [group]: http://groups.google.com/group/scala-salat
 [play-salat]: https://github.com/novus/salat/wiki/SalatWithPlay2
 [play-salat-plugin]: https://github.com/leon/play-salat
