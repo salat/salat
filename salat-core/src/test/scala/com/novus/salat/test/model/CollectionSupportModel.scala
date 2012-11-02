@@ -63,6 +63,7 @@ case class Roger(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection
 //Uncle
 //Victor
 //William
-//X-ray
-//Yoke
-//Zebra
+
+case class XRay(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.BitSet)
+case class Yoke(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.immutable.BitSet)
+case class Zebra(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.BitSet)

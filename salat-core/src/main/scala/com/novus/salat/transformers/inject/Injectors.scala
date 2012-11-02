@@ -208,6 +208,9 @@ package object in extends Logging {
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with DateToJodaDateTime
 
+        case TypeRefType(_, symbol, _) if Types.isBitSet(symbol) =>
+          new Transformer(symbol.path, pt)(ctx) with BitSetInjector
+
         case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
           new Transformer(prefix.symbol.path, t)(ctx) with EnumInflater
         }
@@ -356,6 +359,25 @@ package in {
     }
 
     val parentType: TypeRefType
+  }
+
+  trait BitSetInjector extends Transformer with Logging {
+    override def transform(value: Any)(implicit ctx: Context): Any = value
+
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case ba: Array[Byte] => {
+        val bs = scala.collection.mutable.BitSet.empty
+        ba.foreach(b => bs.add(b))
+        Option(path match {
+          case "scala.collection.BitSet"           => scala.collection.BitSet.empty ++ bs
+          case "scala.collection.immutable.BitSet" => scala.collection.immutable.BitSet.empty ++ bs
+          case "scala.collection.mutable.BitSet"   => bs
+          case x                                   => sys.error("unexpected TypeRefType %s".format(t))
+        })
+      }
+      case bs: scala.collection.BitSet => Some(bs)
+      case _                           => None
+    }
   }
 
   trait MapInjector extends Transformer {

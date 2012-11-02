@@ -36,6 +36,7 @@ protected[salat] object Types {
   val Option = "scala.Option"
   val Map = ".Map"
   val Traversables = Set(".Seq", ".List", ".Vector", ".Set", ".Buffer", ".ArrayBuffer", ".IndexedSeq", ".LinkedList", ".DoubleLinkedList")
+  val BitSets = Set("scala.collection.BitSet", "scala.collection.immutable.BitSet", "scala.collection.mutable.BitSet")
 
   def isOption(sym: Symbol) = sym.path == Option
 
@@ -43,14 +44,20 @@ protected[salat] object Types {
 
   def isTraversable(symbol: Symbol) = Traversables.exists(symbol.path.endsWith(_))
 
+  def isBitSet(symbol: Symbol) = BitSets.contains(symbol.path)
+
   def isBigDecimal(symbol: Symbol) = symbol.path == SBigDecimal
 
   def isBigInt(symbol: Symbol) = symbol.path == BigInt
 }
 
 protected[salat] case class TypeFinder(t: TypeRefType) {
+
+  lazy val path = t.symbol.path
+
   lazy val isMap = Types.isMap(t.symbol)
   lazy val isTraversable = Types.isTraversable(t.symbol)
+  lazy val isBitSet = Types.isBitSet(t.symbol)
 
   lazy val isDate = TypeMatchers.matches(t, Types.Date)
   lazy val isDateTime = TypeMatchers.matches(t, Types.DateTime)
@@ -88,6 +95,11 @@ protected[salat] object TypeMatchers {
 
   def matchesTraversable(t: Type) = t match {
     case TypeRefType(_, symbol, List(arg)) if Types.isTraversable(symbol) => Some(arg)
+    case _ => None
+  }
+
+  def matchesBitSet(t: Type) = t match {
+    case TypeRefType(_, symbol, _) if Types.isBitSet(symbol) => Some(symbol)
     case _ => None
   }
 }

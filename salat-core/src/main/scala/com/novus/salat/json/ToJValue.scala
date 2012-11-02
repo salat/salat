@@ -76,6 +76,7 @@ object ToJValue extends Logging {
     case t: MongoDBList              => JArray(t.map(apply(_)).toList)
     case t: BasicDBList              => JArray(t.map(apply(_)).toList)
     case dbo: DBObject               => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, apply(v._2))))
+    case ba: Array[Byte]             => JArray(ba.toList.map(JInt(_)))
     case m: Map[_, _]                => JObject(m.toList.map(v => JField(v._1.toString, apply(v._2))))
     case m: java.util.Map[_, _]      => JObject(scala.collection.JavaConversions.mapAsScalaMap(m).toList.map(v => JField(v._1.toString, apply(v._2))))
     case iter: Iterable[_]           => JArray(iter.map(apply(_)).toList)
@@ -121,6 +122,21 @@ object FromJValue extends Logging {
   def apply(j: Option[JValue], field: SField, childType: Option[TypeRefType] = None)(implicit ctx: Context): Option[Any] = {
     val v = j.map {
       case j: JArray => field.typeRefType match {
+        case t if Types.isBitSet(t.symbol) => {
+          val bs = scala.collection.mutable.BitSet.empty
+          j.arr.foreach {
+            case JInt(bi) => bs.add(bi.toInt)
+            case x        => sys.error("expected JInt got %s\n%s".format(x.getClass.getName, x))
+          }
+          val v = field.tf.path match {
+            case "scala.collection.BitSet"           => scala.collection.BitSet.empty ++ bs
+            case "scala.collection.immutable.BitSet" => scala.collection.immutable.BitSet.empty ++ bs
+            case "scala.collection.mutable.BitSet"   => bs
+            case x                                   => sys.error("unexpected TypeRefType %s".format(field.tf.t))
+          }
+          log.debug("RETURNING: v=%s", v)
+          v
+        }
         case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
         case notTraversable                        => sys.error("FromJValue: expected types for Traversable but instead got:\n%s".format(notTraversable))
       }

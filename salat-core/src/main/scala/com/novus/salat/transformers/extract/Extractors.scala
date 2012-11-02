@@ -136,6 +136,9 @@ package object out {
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with FloatToDouble
 
+        case TypeRefType(_, symbol, _) if Types.isBitSet(symbol) =>
+          new Transformer(symbol.path, t)(ctx) with BitSetExtractor
+
         case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
           new Transformer(prefix.symbol.path, t)(ctx) with EnumStringifier
         }
@@ -222,6 +225,16 @@ package out {
           case el => super.transform(el)
         }.toList: _*))
       case _ => None
+    }
+  }
+
+  trait BitSetExtractor extends Transformer with Logging {
+
+    override def transform(value: Any)(implicit ctx: Context): Any = value
+
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case bs: scala.collection.BitSet => Some(bs.toArray.map(_.toByte))
+      case _                           => None
     }
   }
 

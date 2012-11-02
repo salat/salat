@@ -4,5 +4,6 @@ Features new in Salat 1.9.2 include:
 - switched from lift-json to [JSON4S][JSON4S]
 - various fixes for JSON conversion, including an `Option` that contains a case object
 - support for converting `Map[String, _]` to compact rendered JSON
+- BitSet support
 
 [JSON4S]: http://json4s.org/

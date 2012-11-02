@@ -24,12 +24,11 @@
  */
 package com.novus.salat.test
 
-import com.novus.salat._
-import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.MongoDBObject
-import com.novus.salat.util.MapPrettyPrinter
+import com.novus.salat._
 import com.novus.salat.dao.SalatDAO
+import com.novus.salat.test.global._
 import com.novus.salat.test.model._
 
 class CollectionSupportSpec extends SalatSpec {
@@ -359,5 +358,23 @@ class CollectionSupportSpec extends SalatSpec {
     }
 
     // TODO: moar collection types
+
+    "support BitSet" in {
+      "scala.collection.BitSet" in {
+        val coll = scala.collection.BitSet(0, 5, 10, 15)
+        val x = XRay(coll = coll)
+        grater[XRay].asObject(grater[XRay].asDBObject(x)) must_== x
+      }
+      "scala.collection.immutable.BitSet" in {
+        val coll = scala.collection.immutable.BitSet(0, 5, 10, 15)
+        val y = Yoke(coll = coll)
+        grater[Yoke].asObject(grater[Yoke].asDBObject(y)) must_== y
+      }
+      "scala.collection.mutable.BitSet" in {
+        val coll = scala.collection.mutable.BitSet(0, 5, 10, 15)
+        val y = Zebra(coll = coll)
+        grater[Zebra].asObject(grater[Zebra].asDBObject(y)) must_== y
+      }
+    }
   }
 }
