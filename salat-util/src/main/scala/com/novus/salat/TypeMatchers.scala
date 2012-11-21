@@ -67,7 +67,7 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
   lazy val isShort = TypeMatchers.matches(t, classOf[Short].getName)
   lazy val isBigDecimal = Types.isBigDecimal(t.symbol)
   lazy val isBigInt = Types.isBigInt(t.symbol)
-  lazy val isLong = TypeMatchers.matches(t, classOf[Long].getName)
+  lazy val isLong = TypeMatchers.matches(t, "scala.Long")
 
   lazy val isOption = TypeMatchers.matches(t, Types.Option)
   lazy val isOid = TypeMatchers.matches(t, Types.Oid)
