@@ -272,7 +272,14 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
     dao.save(t, wc)
   }
 
-  def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern = defaultWriteConcern): WriteResult = {
+  /** @param q search query for old object to update
+   *  @param o object with which to update <tt>q</tt>
+   *  @param upsert if the database should create the element if it does not exist
+   *  @param multi if the update should be applied to all objects matching
+   *  @param wc write concern
+   *  @return (WriteResult) result of write operation
+   */
+  def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern = defaultWriteConcern) = {
     dao.update(q, o, upsert, multi, wc)
   }
 
