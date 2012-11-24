@@ -376,14 +376,16 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @param upsert if the database should create the element if it does not exist
    *  @param multi if the update should be applied to all objects matching
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def update(q: DBObject, o: DBObject, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = defaultWriteConcern) {
+  def update(q: DBObject, o: DBObject, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = defaultWriteConcern): WriteResult = {
     try {
       val wr = collection.update(q, o, upsert, multi, wc)
       val lastError = wr.getCachedLastError
       if (lastError != null && !lastError.ok()) {
         throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
       }
+      wr
     }
   }
 
