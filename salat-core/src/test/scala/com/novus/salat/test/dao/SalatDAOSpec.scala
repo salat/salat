@@ -137,7 +137,8 @@ class SalatDAOSpec extends SalatSpec {
 
       val alpha3_* = alpha3.copy(beta = List[Beta](Gamma("gamma3")))
       alpha3_* must_!= alpha3
-      val cr = AlphaDAO.save(alpha3_*)
+      val wr = AlphaDAO.save(alpha3_*)
+      wr.getN must_== 1L
       AlphaDAO.collection.count must_== 1L
 
       val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(AlphaColl).findOne().get
@@ -151,7 +152,8 @@ class SalatDAOSpec extends SalatSpec {
       _ids must contain(Some(alpha6.id))
       AlphaDAO.collection.count must_== 3L
 
-      val cr = AlphaDAO.remove(alpha5)
+      val wr = AlphaDAO.remove(alpha5)
+      wr.getN must_== 1L
       AlphaDAO.collection.count must_== 2L
 
       AlphaDAO.findOne(grater[Alpha].asDBObject(alpha5)) must beNone
@@ -165,14 +167,16 @@ class SalatDAOSpec extends SalatSpec {
     "support removing by ID" in new alphaContext {
       AlphaDAO.insert(alpha1)
       AlphaDAO.collection.count must_== 1L
-      AlphaDAO.removeById(alpha1.id)
+      val wr = AlphaDAO.removeById(alpha1.id)
+      wr.getN must_== 1L
       AlphaDAO.collection.count must_== 0L
     }
 
     "support removing by a list of IDs" in new alphaContext {
       val _ids = AlphaDAO.insert(alpha4, alpha5, alpha6)
       AlphaDAO.collection.count must_== 3L
-      AlphaDAO.removeByIds(_ids.flatten)
+      val wr = AlphaDAO.removeByIds(_ids.flatten)
+      wr.getN must_== 3L
       AlphaDAO.collection.count must_== 0L
     }
 

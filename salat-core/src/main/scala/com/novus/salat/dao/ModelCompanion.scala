@@ -233,41 +233,53 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
 
   /** @param t object to remove from the collection
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def remove(t: ObjectType, wc: WriteConcern = defaultWriteConcern) {
+  def remove(t: ObjectType, wc: WriteConcern = defaultWriteConcern) = {
     dao.remove(t, wc)
   }
 
   /** @param q the object that documents to be removed must match
    *  @param wc write concern
    *  @tparam A
+   *  @return (WriteResult) result of write operation
    */
-  def remove[A <% DBObject](q: A, wc: WriteConcern) {
+  def remove[A <% DBObject](q: A, wc: WriteConcern) = {
     dao.remove(q, wc)
   }
 
   /** @param id the ID of the document to be removed
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def removeById(id: ID, wc: WriteConcern = defaultWriteConcern) {
+  def removeById(id: ID, wc: WriteConcern = defaultWriteConcern) = {
     dao.removeById(id, wc)
   }
 
   /** @param ids the list of IDs identifying the list of documents to be removed
    *  @param wc wrote concern
+   *  @return (WriteResult) result of write operation
    */
-  def removeByIds(ids: List[ID], wc: WriteConcern = defaultWriteConcern) {
+  def removeByIds(ids: List[ID], wc: WriteConcern = defaultWriteConcern) = {
     dao.removeByIds(ids, wc)
   }
 
   /** @param t object to save
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def save(t: ObjectType, wc: WriteConcern = defaultWriteConcern) {
+  def save(t: ObjectType, wc: WriteConcern = defaultWriteConcern) = {
     dao.save(t, wc)
   }
 
-  def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern = defaultWriteConcern): WriteResult = {
+  /** @param q search query for old object to update
+   *  @param o object with which to update <tt>q</tt>
+   *  @param upsert if the database should create the element if it does not exist
+   *  @param multi if the update should be applied to all objects matching
+   *  @param wc write concern
+   *  @return (WriteResult) result of write operation
+   */
+  def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern = defaultWriteConcern) = {
     dao.update(q, o, upsert, multi, wc)
   }
 

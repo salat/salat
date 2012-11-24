@@ -115,13 +115,15 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
   /** Saves an object to this collection.
    *  @param t object to save
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def save(t: ObjectType, wc: WriteConcern)
+  def save(t: ObjectType, wc: WriteConcern): WriteResult
 
   /** Saves an object to this collection.
    *  @param t object to save
+   *  @return (WriteResult) result of write operation
    */
-  def save(t: ObjectType) {
+  def save(t: ObjectType): WriteResult = {
     save(t = t, wc = defaultWriteConcern)
   }
 
@@ -149,41 +151,47 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
 
   /** Remove a matching object from the collection
    *  @param t object to remove from the collection
+   *  @return (WriteResult) result of write operation
    */
-  def remove(t: ObjectType) {
+  def remove(t: ObjectType): WriteResult = {
     remove(t = t, wc = defaultWriteConcern)
   }
 
   /** Remove a matching object from the collection
    *  @param t object to remove from the collection
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def remove(t: ObjectType, wc: WriteConcern)
+  def remove(t: ObjectType, wc: WriteConcern): WriteResult
 
   /** Removes objects from the database collection.
    *  @param q the object that documents to be removed must match
+   *  @return (WriteResult) result of write operation
    */
-  def remove[A <% DBObject](q: A) {
+  def remove[A <% DBObject](q: A): WriteResult = {
     remove(q = q, wc = defaultWriteConcern)
   }
 
   /** Removes objects from the database collection.
    *  @param q the object that documents to be removed must match
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def remove[A <% DBObject](q: A, wc: WriteConcern)
+  def remove[A <% DBObject](q: A, wc: WriteConcern): WriteResult
 
   /** Remove document identified by this ID.
    *  @param id the ID of the document to be removed
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def removeById(id: ID, wc: WriteConcern = defaultWriteConcern)
+  def removeById(id: ID, wc: WriteConcern = defaultWriteConcern): WriteResult
 
   /** Remove documents matching any of the supplied list of IDs.
    *  @param ids the list of IDs identifying the list of documents to be removed
    *  @param wc wrote concern
+   *  @return (WriteResult) result of write operation
    */
-  def removeByIds(ids: List[ID], wc: WriteConcern = defaultWriteConcern)
+  def removeByIds(ids: List[ID], wc: WriteConcern = defaultWriteConcern): WriteResult
 
   /** Count the number of documents matching the search criteria.
    *  @param q object for which to search

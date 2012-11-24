@@ -318,8 +318,9 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
   /** @param t object to remove from the collection
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def remove(t: ObjectType, wc: WriteConcern) {
+  def remove(t: ObjectType, wc: WriteConcern) = {
     try {
       val dbo = _grater.asDBObject(t)
       val wr = collection.remove(dbo, wc)
@@ -327,40 +328,46 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       if (lastError != null && !lastError.ok()) {
         throw SalatRemoveError(description, collection, wc, wr, List(dbo))
       }
+      wr
     }
   }
 
   /** @param q the object that documents to be removed must match
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def remove[A <% DBObject](q: A, wc: WriteConcern) {
+  def remove[A <% DBObject](q: A, wc: WriteConcern) = {
     try {
       val wr = collection.remove(q, wc)
       val lastError = wr.getCachedLastError
       if (lastError != null && !lastError.ok()) {
         throw SalatRemoveQueryError(description, collection, q, wc, wr)
       }
+      wr
     }
   }
 
   /** @param id the ID of the document to be removed
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def removeById(id: ID, wc: WriteConcern = defaultWriteConcern) {
+  def removeById(id: ID, wc: WriteConcern = defaultWriteConcern) = {
     remove(MongoDBObject("_id" -> id), wc)
   }
 
   /** @param ids the list of IDs identifying the list of documents to be removed
    *  @param wc wrote concern
+   *  @return (WriteResult) result of write operation
    */
-  def removeByIds(ids: List[ID], wc: WriteConcern) {
+  def removeByIds(ids: List[ID], wc: WriteConcern) = {
     remove(MongoDBObject("_id" -> MongoDBObject("$in" -> MongoDBList(ids: _*))), wc)
   }
 
   /** @param t object to save
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def save(t: ObjectType, wc: WriteConcern) {
+  def save(t: ObjectType, wc: WriteConcern) = {
     try {
       val dbo = _grater.asDBObject(t)
       val wr = collection.save(dbo, wc)
@@ -368,6 +375,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       if (lastError != null && !lastError.ok()) {
         throw SalatSaveError(description, collection, wc, wr, List(dbo))
       }
+      wr
     }
   }
 
