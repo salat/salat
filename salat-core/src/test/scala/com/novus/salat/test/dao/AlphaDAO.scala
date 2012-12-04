@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         AlphaDAO.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-04 13:14:23 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,8 @@ import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations._
 import org.scala_tools.time.Imports._
-import com.novus.salat.dao.SalatDAO
+import com.novus.salat.dao._
 import org.joda.time.DateMidnight
-import org.joda.time.DateTimeConstants._
-import com.mongodb.casbah.Imports
 
 @Salat
 trait Beta {
@@ -115,3 +113,47 @@ object UserDAO extends SalatDAO[User, ObjectId](collection = MongoConnection()(S
 }
 
 object RoleDAO extends SalatDAO[Role, ObjectId](collection = MongoConnection()(SalatSpecDb)(RoleColl))
+
+object ToValidate {
+  object validator extends Validation[ToValidate] {
+    def apply(x: ToValidate) = if (x.a < 0) {
+      Left(NegativeA(x))
+    }
+    else if (x.b.isEmpty) {
+      Left(EmptyB(x))
+    }
+    else Right(x)
+  }
+
+  case class NegativeA(x: ToValidate) extends Error("Expected x.a to be positive but got %d instead".format(x.a))
+  case class EmptyB(x: ToValidate) extends Error("Expected x.b to be non-empty but got %s instead".format(x))
+}
+
+object ToValidateChain {
+  object validator extends ChainedValidation[ToValidate] {
+    object nonNegativeA extends Validation[ToValidate] {
+      def apply(x: ToValidate) = if (x.a < 0) {
+        Left(ToValidate.NegativeA(x))
+      }
+      else Right(x)
+    }
+    object nonEmptyB extends Validation[ToValidate] {
+      def apply(x: ToValidate) = if (x.b.isEmpty) {
+        Left(ToValidate.EmptyB(x))
+      }
+      else Right(x)
+    }
+
+    def validationChain = nonNegativeA :: nonEmptyB :: Nil
+  }
+}
+
+case class ToValidate(@Key("_id") id: ObjectId = new ObjectId, a: Int, b: String)
+
+object SimpleValidationDAO extends ValidatingSalatDAO[ToValidate, ObjectId](MongoConnection()(SalatSpecDb)(ToValidateColl)) {
+  implicit def validator = ToValidate.validator
+}
+
+object ChainedValidationDAO extends ValidatingSalatDAO[ToValidate, ObjectId](MongoConnection()(SalatSpecDb)(ToValidateColl)) {
+  implicit def validator = ToValidateChain.validator
+}

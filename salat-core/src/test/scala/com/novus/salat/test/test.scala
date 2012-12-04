@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         test.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-04 12:52:56 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ package object test {
   val ChildColl = "child_dao_spec"
   val UserColl = "user_dao_spec"
   val RoleColl = "role_dao_spec"
+  val ToValidateColl = "to_validate_spec"
   val MyModelColl = "my_model_coll"
 
   def graph = Alice("x", Some("y"),
