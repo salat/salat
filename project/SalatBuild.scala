@@ -144,11 +144,11 @@ object Publish {
 
 object Dependencies {
 
-  private val LogbackVersion = "1.0.7"
+  private val LogbackVersion = "1.0.9"
 
   val specs2 = "org.specs2" %% "specs2" % "1.12.2" % "test"
-  val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
-  val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
+  val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
+  val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.2"
   val logbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % LogbackVersion % "test"
   val casbah = "org.mongodb" %% "casbah" % "2.4.1" pomOnly()
