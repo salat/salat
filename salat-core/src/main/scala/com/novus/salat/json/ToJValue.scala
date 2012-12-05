@@ -28,7 +28,7 @@ package com.novus.salat.json
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import com.mongodb.casbah.Imports._
-import org.joda.time.DateTime
+import org.joda.time.{ DateTimeZone, DateTime }
 import com.novus.salat.{ Field => SField, _ }
 import com.novus.salat.util.Logging
 import java.net.URL
@@ -36,6 +36,7 @@ import com.novus.salat.TypeFinder
 import com.novus.salat.StringTypeHintStrategy
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 import org.bson.types.BSONTimestamp
+import org.joda.time.tz.CachedDateTimeZone
 
 object MapToJSON extends Logging {
 
@@ -98,6 +99,8 @@ object ToJValue extends Logging {
       case b: Boolean => JBool(b)
       case d: java.util.Date => ctx.jsonConfig.dateStrategy.out(d)
       case d: DateTime => ctx.jsonConfig.dateStrategy.out(d)
+      case tz: java.util.TimeZone => ctx.jsonConfig.timeZoneStrategy.out(tz)
+      case tz: DateTimeZone => ctx.jsonConfig.timeZoneStrategy.out(tz)
       case o: ObjectId => ctx.jsonConfig.objectIdStrategy.out(o)
       case u: java.net.URL => JString(u.toString) // might as well
       case n if n == null && ctx.jsonConfig.outputNullValues => JNull
@@ -157,6 +160,7 @@ object FromJValue extends Logging {
       }
       case o: JObject if field.tf.isOid => deserialize(o, field.tf)
       case v: JValue if field.tf.isDate || field.tf.isDateTime => deserialize(v, field.tf)
+      case tz: JValue if field.tf.isTimeZone || field.tf.isDateTimeZone => deserialize(tz, field.tf)
       case o: JInt if field.tf.isDate || field.tf.isDateTime => deserialize(o, field.tf)
       case o: JObject if field.tf.isBSONTimestamp => deserialize(o, field.tf)
       case o: JObject => ctx.lookup(if (childType.isDefined) childType.get.symbol.path else field.typeRefType.symbol.path).fromJSON(o)
@@ -182,6 +186,8 @@ object FromJValue extends Logging {
     val v = j match {
       case d if tf.isDateTime            => ctx.jsonConfig.dateStrategy.toDateTime(d)
       case d if tf.isDate                => ctx.jsonConfig.dateStrategy.toDate(d)
+      case tz if tf.isTimeZone           => ctx.jsonConfig.timeZoneStrategy.toTimeZone(tz)
+      case tz if tf.isDateTimeZone       => ctx.jsonConfig.timeZoneStrategy.toDateTimeZone(tz)
       case oid if tf.isOid               => ctx.jsonConfig.objectIdStrategy.in(oid)
       case bt if tf.isBSONTimestamp      => ctx.jsonConfig.bsonTimestampStrategy.in(bt)
       case s: JString if tf.isChar       => s.values.charAt(0)

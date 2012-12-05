@@ -25,7 +25,7 @@
 
 package com.novus.salat.test.model
 
-import org.joda.time.DateTime
+import org.joda.time.{ DateTimeZone, DateTime }
 import org.joda.time.DateTimeConstants._
 
 object useful {
@@ -34,4 +34,5 @@ object useful {
   val KaprekarsConstant = 6174
   val TestDate = new DateTime(2011, DECEMBER, 28, 14, 37, 56, 8)
   val TestChar = 'e'
+  val TestTimeZone = DateTimeZone.forID("Europe/London")
 }

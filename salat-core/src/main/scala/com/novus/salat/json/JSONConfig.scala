@@ -28,7 +28,7 @@ package com.novus.salat.json
 import org.scala_tools.time.Imports._
 import org.joda.time.DateTimeZone
 import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
-import java.util.Date
+import java.util.{ TimeZone, Date }
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.bson.types.{ BSONTimestamp, ObjectId }
@@ -38,6 +38,7 @@ object JSONConfig {
 }
 
 case class JSONConfig(dateStrategy: JSONDateStrategy = StringDateStrategy(),
+                      timeZoneStrategy: JSONTimeZoneStrategy = StringTimeZoneStrategy(),
                       objectIdStrategy: JSONObjectIdStrategy = StrictJSONObjectIdStrategy,
                       bsonTimestampStrategy: JSONbsTimesampStrategy = StrictBSONTimestampStrategy,
                       outputNullValues: Boolean = false)
@@ -81,6 +82,16 @@ trait JSONDateStrategy {
   def toDate(j: JValue) = toDateTime(j).toDate
 }
 
+trait JSONTimeZoneStrategy {
+  def out(tz: DateTimeZone): JValue
+
+  def out(tz: TimeZone): JValue
+
+  def toDateTimeZone(j: JValue): DateTimeZone
+
+  def toTimeZone(j: JValue) = toDateTimeZone(j).toTimeZone
+}
+
 case class StringDateStrategy(dateFormatter: DateTimeFormatter = JSONConfig.ISO8601) extends JSONDateStrategy {
   def out(d: Date) = JString(dateFormatter.print(d.getTime))
 
@@ -89,6 +100,17 @@ case class StringDateStrategy(dateFormatter: DateTimeFormatter = JSONConfig.ISO8
   def toDateTime(j: JValue) = j match {
     case JString(s) => dateFormatter.parseDateTime(s)
     case x          => sys.error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+  }
+}
+
+case class StringTimeZoneStrategy() extends JSONTimeZoneStrategy {
+  def out(tz: DateTimeZone) = JString(tz.getID)
+
+  def out(tz: TimeZone) = JString(tz.getID)
+
+  def toDateTimeZone(j: JValue) = j match {
+    case JString(s) => DateTimeZone.forID(s)
+    case x          => sys.error("toDateTimeZone: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
 }
 
