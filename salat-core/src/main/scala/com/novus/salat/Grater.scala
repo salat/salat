@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Grater.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-05 12:30:03 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   lazy val ca = ClassAnalyzer(clazz, ctx.classLoaders)
 
-  protected lazy val useTypeHint = {
+  lazy val useTypeHint = {
     ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
       (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && ca.requiresTypeHint)
   }

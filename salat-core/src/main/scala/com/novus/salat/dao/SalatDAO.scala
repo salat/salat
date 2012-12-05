@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         SalatDAO.scala
- * Last modified: 2012-10-15 20:40:59 EDT
+ * Last modified: 2012-12-05 12:24:48 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,46 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
   /** Supplies the [[com.novus.salat.Grater]] from the implicit [[com.novus.salat.Context]] and `ObjectType` manifest */
   val _grater = grater[ObjectType](ctx, mot)
+
+  /** Force type hints when objects are persisted.  Used to support a DAO typed to an abstract superclass or trait.
+   *  Should be overriden and forced to true when you want to select
+   */
+  val forceTypeHints = {
+    val isProxy = _grater.isInstanceOf[ProxyGrater[_]]
+    // safety check - if you never type hint, then deserializing using a proxy grater is impossible
+    require(!isProxy || ctx.typeHintStrategy.when != TypeHintFrequency.Never,
+      "Abstract class hierarchies cannot be deserialized when the context '%s' type hint strategy is NeverTypeHint".format(ctx.name))
+    isProxy
+  }
+
+  /** If you are mixing and matching abstract and concrete DAOs, turn this on in the concrete DAOs to ensure that querying on a
+   *  mixed collection will only yield results in the child collection.
+   */
+  val appendTypeHintToQueries = false
+
+  /** A central place to modify find, count and update queries before executing them.
+   *  @param query query to decorate
+   *  @return decorated query for execution
+   */
+  def decorateQuery(query: DBObject) = {
+    if (appendTypeHintToQueries) {
+      query(ctx.typeHintStrategy.typeHint) = ctx.typeHintStrategy.encode(_grater.clazz.getName).asInstanceOf[AnyRef]
+    }
+    query
+  }
+
+  /** A central place to modify DBOs before inserting, saving, or updating.
+   *  @param toPersist object to be serialized
+   *  @return decorated DBO for persisting
+   */
+  def decorateDBO(toPersist: ObjectType) = {
+    val dbo = _grater.asDBObject(toPersist)
+    if (forceTypeHints) {
+      // take advantage of the mutability of DBObject by cramming in a type hint
+      dbo(ctx.typeHintStrategy.typeHint) = ctx.typeHintStrategy.encode(toPersist.getClass.getName).asInstanceOf[AnyRef]
+    }
+    dbo
+  }
 
   /** Inner abstract class to facilitate working with child collections using a typed parent id -
    *  no cascading support will be offered, but you can override saves and deletes in the parent DAO
@@ -91,7 +131,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
      *  @return base query object for a single parent id
      */
     def parentIdQuery(parentId: ID): DBObject = {
-      MongoDBObject(parentIdField -> parentId)
+      decorateQuery(MongoDBObject(parentIdField -> parentId))
     }
 
     /** @param parentIds list of parent ids
@@ -261,19 +301,15 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return if insert succeeds, ID of inserted object
    */
   def insert(t: ObjectType, wc: WriteConcern) = {
-    val _id = try {
-      val dbo = _grater.asDBObject(t)
-      val wr = collection.insert(dbo, wc)
-      val error = wr.getCachedLastError
-      if (error == null || (error != null && error.ok())) {
-        dbo.getAs[ID]("_id")
-      }
-      else {
-        throw SalatInsertError(description, collection, wc, wr, List(dbo))
-      }
+    val dbo = decorateDBO(t)
+    val wr = collection.insert(dbo, wc)
+    val error = wr.getCachedLastError
+    if (error == null || (error != null && error.ok())) {
+      dbo.getAs[ID]("_id")
     }
-
-    _id
+    else {
+      throw SalatInsertError(description, collection, wc, wr, List(dbo))
+    }
   }
 
   /** @param docs collection of `ObjectType` instances to insert
@@ -282,7 +318,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  TODO: flatten list of IDs - why on earth didn't I do that in the first place?
    */
   def insert(docs: Traversable[ObjectType], wc: WriteConcern = defaultWriteConcern) = if (docs.nonEmpty) {
-    val dbos = docs.map(_grater.asDBObject(_)).toList
+    val dbos = docs.map(decorateDBO(_)).toList
     val wr = collection.insert(dbos: _*)
     val lastError = wr.getCachedLastError
     if (lastError == null || (lastError != null && lastError.ok())) {
@@ -302,14 +338,14 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return list of IDs
    */
   def ids[A <% DBObject](query: A): List[ID] = {
-    collection.find(query, MongoDBObject("_id" -> 1)).map(_.expand[ID]("_id").get).toList
+    collection.find(decorateQuery(query), MongoDBObject("_id" -> 1)).map(_.expand[ID]("_id").get).toList
   }
 
   /** @param t object for which to search
    *  @tparam A type view bound to DBObject
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
    */
-  def findOne[A <% DBObject](t: A) = collection.findOne(t).map(_grater.asObject(_))
+  def findOne[A <% DBObject](t: A) = collection.findOne(decorateQuery(t)).map(_grater.asObject(_))
 
   /** @param id identifier
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
@@ -321,15 +357,13 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (WriteResult) result of write operation
    */
   def remove(t: ObjectType, wc: WriteConcern) = {
-    try {
-      val dbo = _grater.asDBObject(t)
-      val wr = collection.remove(dbo, wc)
-      val lastError = wr.getCachedLastError
-      if (lastError != null && !lastError.ok()) {
-        throw SalatRemoveError(description, collection, wc, wr, List(dbo))
-      }
-      wr
+    val dbo = decorateDBO(t)
+    val wr = collection.remove(dbo, wc)
+    val lastError = wr.getCachedLastError
+    if (lastError != null && !lastError.ok()) {
+      throw SalatRemoveError(description, collection, wc, wr, List(dbo))
     }
+    wr
   }
 
   /** @param q the object that documents to be removed must match
@@ -337,14 +371,12 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (WriteResult) result of write operation
    */
   def remove[A <% DBObject](q: A, wc: WriteConcern) = {
-    try {
-      val wr = collection.remove(q, wc)
-      val lastError = wr.getCachedLastError
-      if (lastError != null && !lastError.ok()) {
-        throw SalatRemoveQueryError(description, collection, q, wc, wr)
-      }
-      wr
+    val wr = collection.remove(q, wc)
+    val lastError = wr.getCachedLastError
+    if (lastError != null && !lastError.ok()) {
+      throw SalatRemoveQueryError(description, collection, q, wc, wr)
     }
+    wr
   }
 
   /** @param id the ID of the document to be removed
@@ -368,15 +400,13 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (WriteResult) result of write operation
    */
   def save(t: ObjectType, wc: WriteConcern) = {
-    try {
-      val dbo = _grater.asDBObject(t)
-      val wr = collection.save(dbo, wc)
-      val lastError = wr.getCachedLastError
-      if (lastError != null && !lastError.ok()) {
-        throw SalatSaveError(description, collection, wc, wr, List(dbo))
-      }
-      wr
+    val dbo = decorateDBO(t)
+    val wr = collection.save(dbo, wc)
+    val lastError = wr.getCachedLastError
+    if (lastError != null && !lastError.ok()) {
+      throw SalatSaveError(description, collection, wc, wr, List(dbo))
     }
+    wr
   }
 
   /** @param q search query for old object to update
@@ -387,14 +417,12 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (WriteResult) result of write operation
    */
   def update(q: DBObject, o: DBObject, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = defaultWriteConcern): WriteResult = {
-    try {
-      val wr = collection.update(q, o, upsert, multi, wc)
-      val lastError = wr.getCachedLastError
-      if (lastError != null && !lastError.ok()) {
-        throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
-      }
-      wr
+    val wr = collection.update(decorateQuery(q), o, upsert, multi, wc)
+    val lastError = wr.getCachedLastError
+    if (lastError != null && !lastError.ok()) {
+      throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
     }
+    wr
   }
 
   /** @param ref object for which to search
@@ -404,7 +432,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return a typed cursor to iterate over results
    */
   def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = SalatMongoCursor[ObjectType](_grater,
-    collection.find(ref, keys).asInstanceOf[MongoCursorBase].underlying)
+    collection.find(decorateQuery(ref), keys).asInstanceOf[MongoCursorBase].underlying)
 
   /** @param query object for which to search
    *  @param field field to project on
@@ -414,7 +442,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (Option[P]) Some() of the object found, or <code>None</code> if no such object exists
    */
   def projection[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
-    collection.findOne(query, MongoDBObject(field -> 1)).flatMap {
+    collection.findOne(decorateQuery(query), MongoDBObject(field -> 1)).flatMap {
       dbo =>
         dbo.expand[DBObject](field).map(grater[P].asObject(_))
     }
@@ -428,7 +456,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (Option[P]) Some() of the object found, or <code>None</code> if no such object exists
    */
   def primitiveProjection[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): Option[P] = {
-    collection.findOne(query, MongoDBObject(field -> 1)).flatMap {
+    collection.findOne(decorateQuery(query), MongoDBObject(field -> 1)).flatMap {
       dbo =>
         dbo.expand[P](field)
     }
@@ -441,19 +469,11 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @tparam P type of projected field
    *  @return (List[P]) of the objects found
    */
-  def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P] = {
-
-    // Casbah hiccup - needs to be cast to MongoCursor
-    val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList
-
-    val builder = List.newBuilder[P]
-    results.foreach {
+  def projections[P <: CaseClass](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P] =
+    collection.find(decorateQuery(query), MongoDBObject(field -> 1)).toList.flatMap {
       r =>
-        r.expand[DBObject](field).map(grater[P].asObject(_)).foreach(builder += _)
+        r.expand[DBObject](field).map(grater[P].asObject(_))
     }
-
-    builder.result()
-  }
 
   /** @param query object for which to search
    *  @param field field to project on
@@ -463,17 +483,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (List[P]) of the objects found
    */
   def primitiveProjections[P <: Any](query: DBObject, field: String)(implicit m: Manifest[P], ctx: Context): List[P] = {
-
-    // Casbah hiccup - needs to be cast to MongoCursor
-    val results = collection.find(query, MongoDBObject(field -> 1)).asInstanceOf[MongoCursor].toList
-
-    val builder = List.newBuilder[P]
-    results.foreach {
-      r =>
-        r.expand[P](field).foreach(builder += _)
-    }
-
-    builder.result()
+    collection.find(query, MongoDBObject(field -> 1)).toList.flatMap(_.expand[P](field))
   }
 
   /** @param q object for which to search
@@ -482,7 +492,6 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return count of documents matching the search criteria
    */
   def count(q: DBObject = MongoDBObject.empty, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
-    // convenience method - don't personally enjoy writing these queries
     val query = {
       val builder = MongoDBObject.newBuilder
       builder ++= q
@@ -494,6 +503,21 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       }
       builder.result()
     }
-    collection.count(query)
+    collection.count(decorateQuery(query))
   }
+}
+
+/** When you use a single collection to contain an entire type hierarchy, then use this trait to make sure that type hints
+ *  are appended to find, count and update queries.  (Please note you need to make sure your indexes on this shared collection
+ *  take your type hint fields into account!)
+ *
+ *  In addition, when you use the concrete subclass DAO to insert, update and save objects, a type hint will be appended to
+ *  the serialized object.
+ *
+ */
+trait ConcreteSubclassDAO {
+  self: SalatDAO[_, _] =>
+  override val forceTypeHints = true
+  override val appendTypeHintToQueries = true
+  require(_grater.ctx.typeHintStrategy.when != TypeHintFrequency.Never, "Concrete subclass DAO must support type hinting!")
 }
