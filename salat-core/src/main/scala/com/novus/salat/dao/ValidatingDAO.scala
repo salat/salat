@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         ValidatingDAO.scala
- * Last modified: 2012-12-04 17:16:30 EST
+ * Last modified: 2012-12-05 09:29:05 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,47 +30,7 @@ import scala.Right
 import com.novus.salat.Context
 import com.mongodb
 
-object Validation {
-  /** Example of a validation that does nothing but return success
-   *  @tparam T the object to validate
-   *  @return the input wrapped in the successful side of an Either[Throwable, T]
-   */
-  implicit def nil[T]: Validation[T] = new Validation[T] {
-    def apply(x: T) = Right(x)
-  }
-}
-
-/** Simple validation type class
- *  @tparam T type to validate
- */
-trait Validation[T] {
-  /** Simple validation method
-   *  @param x the input to validate
-   *  @return if successful, the input wrapped in Right; if unsuccessful, a Throwable of your choice wrapped in Left
-   */
-  def apply(x: T): Either[Throwable, T]
-}
-
-trait ChainedValidation[T] extends Validation[T] {
-
-  def validationChain: Iterable[Validation[T]]
-
-  require(validationChain.nonEmpty, "%s: validation chain must have at least one entry!".format(getClass.getName))
-
-  /** Validation method that applies a chain of checks to the input object
-   *  @param x the input to validate
-   *  @return if successful, the input wrapped in Right; if unsuccessful, a Throwable of your choice wrapped in Left
-   */
-  def apply(x: T) = {
-    val (failed, success) = validationChain.map(_.apply(x)).partition(_.isLeft)
-    if (failed.nonEmpty) {
-      Left(ValidationErrorChain(x, failed.map(_.left.get)))
-    }
-    else Right(success.last.right.get)
-  }
-}
-
-case class ValidationErrorChain(t: Any, iter: Iterable[Throwable]) extends Error(
+case class ValidationError[T](t: T, iter: Iterable[Throwable]) extends Error(
   """
     |VALIDATION FAILED
     |
@@ -81,8 +41,11 @@ case class ValidationErrorChain(t: Any, iter: Iterable[Throwable]) extends Error
     |%s
   """.stripMargin.format(t, iter.map(_.getMessage).mkString("\n")))
 
-abstract class Validates[T: Validation] {
-  def apply(x: T) = implicitly[Validation[T]].apply(x)
+abstract class Validates[T](validators: List[T => Either[Throwable, T]]) {
+  def apply(x: T) = validators.map(_.apply(x)).partition(_.isLeft) match {
+    case (Nil, passed) => Right(x)
+    case (failed, _)   => Left(ValidationError(x, failed.map(_.left.get)))
+  }
 }
 
 case class MutilValidateError(ts: Traversable[Throwable]) extends Error(
@@ -94,14 +57,9 @@ case class MutilValidateError(ts: Traversable[Throwable]) extends Error(
 abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
                                                                                                              mid: Manifest[ID], ctx: Context) extends SalatDAO[ObjectType, ID](collection)(mot, mid, ctx) {
 
-  implicit def validator: Validation[ObjectType]
+  def validators: List[ObjectType => Either[Throwable, ObjectType]]
 
-  log.debug(
-    """
-      |%s
-    """.stripMargin, description)
-
-  object validates extends Validates[ObjectType]
+  object validates extends Validates[ObjectType](validators)
 
   /** @param t instance of ObjectType
    *  @param wc write concern
@@ -145,7 +103,7 @@ abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val 
     case Left(e)  => throw e
   }
 
-  override lazy val description = "ValidatingSalatDAO[%s,%s](%s) using validator %s".format(mot.erasure.getSimpleName, mid.erasure.getSimpleName, collection.name, implicitly[Validation[ObjectType]].getClass.getName)
+  override lazy val description = "ValidatingSalatDAO[%s,%s](%s)".format(mot.erasure.getSimpleName, mid.erasure.getSimpleName, collection.name)
 
   /** @param t object to save
    *  @param wc write concern
