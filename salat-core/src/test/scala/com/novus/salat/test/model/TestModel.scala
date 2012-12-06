@@ -169,6 +169,8 @@ abstract class UnannotatedAbstractMaud()
 
 case class Neville(ennui: Boolean = true, asOf: DateTime = new DateTime)
 
+case class Prue(brawl: Boolean = true, zone: DateTimeZone = DateTimeZone.forID("Europe/London"))
+
 case class Olive(awl: java.util.UUID)
 
 case class Quentin(mire: Float)
