@@ -44,9 +44,10 @@ class GraterSpec extends SalatSpec {
       val f = true
       val g = TestDate
       val h = TestChar
+      val i = TestTimeZone
 
       "case class <-> map" in {
-        val aural = Aural(_id = _id, a = a, b = b, c = c, d = d, e = e, f = f, g = g, h = h)
+        val aural = Aural(_id = _id, a = a, b = b, c = c, d = d, e = e, f = f, g = g, h = h, i = i)
         val map = grater[Aural].toMap(aural)
         map must havePair(ctx.typeHintStrategy.typeHint, "com.novus.salat.test.model.Aural")
         map must havePair("_id", _id)
@@ -58,6 +59,7 @@ class GraterSpec extends SalatSpec {
         map must havePair("f", f)
         map must havePair("g", g)
         map must havePair("h", h)
+        map must havePair("i", i)
         val aural_* = grater[Aural].fromMap(map)
         aural_* must_== aural
       }
