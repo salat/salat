@@ -36,7 +36,6 @@ import com.novus.salat.TypeFinder
 import com.novus.salat.StringTypeHintStrategy
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 import org.bson.types.BSONTimestamp
-import org.joda.time.tz.CachedDateTimeZone
 
 object MapToJSON extends Logging {
 

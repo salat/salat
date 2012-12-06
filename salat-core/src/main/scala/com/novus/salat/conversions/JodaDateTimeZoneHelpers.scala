@@ -1,10 +1,7 @@
-package com.novus.salat
+package com.novus.salat.conversions
 
 import com.mongodb.casbah.commons.conversions
 import conversions.{ MongoConversionHelper, scala }
-
-import com.mongodb.casbah.commons.Imports._
-import com.mongodb.casbah.commons.Logging
 
 import org.bson.{ BSON, Transformer }
 
