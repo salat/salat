@@ -3,7 +3,7 @@
  *
  * Module:        salat-util
  * Class:         util.scala
- * Last modified: 2012-06-28 15:37:35 EDT
+ * Last modified: 2012-12-06 21:53:30 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.util
 
@@ -117,7 +118,7 @@ object `package` {
         if (clazz != null) Some(clazz.asInstanceOf[Class[X]]) else None
       }
       catch {
-        case _ => None
+        case _: Throwable => None
       }
     }
   }

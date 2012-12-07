@@ -3,7 +3,7 @@
  *
  * Module:        salat-util
  * Class:         annotations.scala
- * Last modified: 2012-06-28 15:37:35 EDT
+ * Last modified: 2012-12-06 22:09:59 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 package com.novus.salat
@@ -50,7 +51,7 @@ package annotations {
        *  @return Some annotation if element X is annotated with an annotation of type A; otherwise None
        */
       def annotation[A <: Annotation: Manifest]: Option[A] = x match {
-        case x: AnnotatedElement if x != null => Option(x.getAnnotation[A](manifest[A].erasure.asInstanceOf[Class[A]]))
+        case x: AnnotatedElement if x != null => Option(x.getAnnotation[A](manifest[A].runtimeClass.asInstanceOf[Class[A]]))
         case _                                => None
       }
 
