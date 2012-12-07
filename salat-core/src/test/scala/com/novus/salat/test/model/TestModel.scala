@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         TestModel.scala
- * Last modified: 2012-10-15 20:40:59 EDT
+ * Last modified: 2012-12-06 23:04:13 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,8 @@ case class Hector(thug: ThugLevel.Value, doneIn: DoneIn.Value)
 case class HectorOverrideId(thug: ThugLevel.Value, doneInById: DoneInById.Value)
 case class HectorOverrideValue(thug: ThugLevel.Value, doneInByValue: DoneInByValue.Value)
 
-object ThugLevel extends Enumeration("Fairplay Tony", "Honour student", "Just a good boy who loves his mum", "Trouble, you") {
+object ThugLevel extends Enumeration {
+  //  "Fairplay Tony", "Honour student", "Just a good boy who loves his mum", "Trouble, you"
   val One, Two, Three, Four = Value
 }
 

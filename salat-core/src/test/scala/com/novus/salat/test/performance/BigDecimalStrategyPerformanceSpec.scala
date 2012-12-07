@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         BigDecimalStrategyPerformanceSpec.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-06 22:58:43 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ class BigDecimalStrategyPerformanceSpec extends Specification with Logging {
     val name = strategy.getClass.getSimpleName
     val coll = MongoConnection()("salat_test_performance")(name)
     coll.drop()
-    coll.count must_== 0L
+    coll.count() must_== 0L
 
     val generator = new Random()
     //    val rangeMin = -1000000d

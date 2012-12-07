@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Grater.scala
- * Last modified: 2012-12-05 12:30:03 EST
+ * Last modified: 2012-12-06 22:29:03 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -296,7 +296,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       case e: IllegalAccessException    => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
       case e: IllegalArgumentException  => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
       case e: InvocationTargetException => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
-      case e                            => throw e
+      case e: Throwable                 => throw e
     }
   }
 
@@ -344,7 +344,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
       }
       catch {
-        case _ => None
+        case _: Throwable => None
       }
   }
 
@@ -371,7 +371,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)).invoke(ca.companionObject))
       }
       catch {
-        case _ => None // indicates no default value was supplied
+        case _: Throwable => None // indicates no default value was supplied
       }
 
       builder += field -> DefaultArg(clazz, field, defaultMethod)

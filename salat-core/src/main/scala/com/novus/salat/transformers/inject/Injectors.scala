@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Injectors.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-06 22:31:17 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -243,7 +243,7 @@ package in {
         Integer.valueOf(x)
       }
       catch {
-        case e => None
+        case e: Throwable => None
       }
     }
   }

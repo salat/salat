@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         TypeHintStrategy.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-06 22:18:28 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,9 @@
 package com.novus.salat
 
 import com.novus.salat.util.encoding.TypeHintEncoding
-import java.util.regex.Pattern
-import scala.collection.mutable.ConcurrentMap
-import scala.collection.JavaConversions.JConcurrentMapWrapper
-import java.util.concurrent.ConcurrentHashMap
 import com.novus.salat.util.{ Logging, ClassPrettyPrinter }
+import java.util.concurrent.ConcurrentHashMap
+import java.util.regex.Pattern
 
 // TODO: oof.  this is not OO design at its most graceful.  refactor it!
 
@@ -74,8 +72,8 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
 
   private val PossibleBigInt = Pattern.compile("^[-]?\\d+$")
 
-  protected[salat] val toTypeHint: ConcurrentMap[String, BigInt] = JConcurrentMapWrapper(new ConcurrentHashMap[String, BigInt]())
-  protected[salat] val fromTypeHint: ConcurrentMap[BigInt, String] = JConcurrentMapWrapper(new ConcurrentHashMap[BigInt, String]())
+  protected[salat] val toTypeHint: scala.collection.concurrent.Map[String, BigInt] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, BigInt]())
+  protected[salat] val fromTypeHint: scala.collection.concurrent.Map[BigInt, String] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[BigInt, String]())
 
   assume(when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
     "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when))

@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         BigDecimalPrecisionTest.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-06 22:53:11 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.Implicits._
 import java.math.{ RoundingMode, MathContext }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
 

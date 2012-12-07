@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         MissingGraterExplanation.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-06 22:48:17 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,14 +31,13 @@ import com.mongodb.casbah.commons.Imports._
 object MissingGraterExplanation extends Logging {
 
   def clazzFromTypeHint(typeHint: Option[String])(implicit ctx: Context): Option[Class[_]] = typeHint match {
-    case Some(typeHint) => try {
-      getClassNamed(typeHint)
+    case Some(th) => try {
+      getClassNamed(th)
     }
     catch {
       case c: ClassNotFoundException => None
-      case e => {
-        log.error("Type hint from dbo with key='%s', value='%s' is some bad candy!".format(ctx.typeHintStrategy.typeHint, typeHint),
-          e)
+      case e: Throwable => {
+        log.error("Type hint from dbo with key='%s', value='%s' is some bad candy!".format(ctx.typeHintStrategy.typeHint, th), e)
         None
       }
     }
@@ -51,9 +50,8 @@ object MissingGraterExplanation extends Logging {
     }
     catch {
       case c: ClassNotFoundException => None
-      case e => {
-        log.error("Error resolving class from path='%s'".format(path),
-          e)
+      case e: Throwable => {
+        log.error("Error resolving class from path='%s'".format(path), e)
         None
       }
     }

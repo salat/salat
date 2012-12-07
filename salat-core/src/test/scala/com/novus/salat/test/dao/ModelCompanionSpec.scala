@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         ModelCompanionSpec.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-06 22:58:08 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,7 +125,7 @@ class ModelCompanionSpec extends SalatSpec {
   trait myModelScope extends Scope {
     log.trace("before: dropping %s", MyModel.collection.getFullName())
     MyModel.collection.drop()
-    MyModel.collection.count must_== 0L
+    MyModel.collection.count() must_== 0L
 
     val _id = new ObjectId
     val d = new DateTime

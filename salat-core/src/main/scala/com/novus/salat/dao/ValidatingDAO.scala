@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         ValidatingDAO.scala
- * Last modified: 2012-12-05 09:29:05 EST
+ * Last modified: 2012-12-06 22:51:54 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val 
     case Left(e)  => throw e
   }
 
-  override lazy val description = "ValidatingSalatDAO[%s,%s](%s)".format(mot.erasure.getSimpleName, mid.erasure.getSimpleName, collection.name)
+  override lazy val description = "ValidatingSalatDAO[%s,%s](%s)".format(mot.runtimeClass.getSimpleName, mid.runtimeClass.getSimpleName, collection.name)
 
   /** @param t object to save
    *  @param wc write concern

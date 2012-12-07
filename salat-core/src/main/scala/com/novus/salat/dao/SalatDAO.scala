@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         SalatDAO.scala
- * Last modified: 2012-12-05 12:24:48 EST
+ * Last modified: 2012-12-06 22:51:54 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,8 +124,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     childDao =>
 
     override lazy val description = "SalatDAO[%s,%s](%s) -> ChildCollection[%s,%s](%s)".format(
-      mot.erasure.getSimpleName, mid.erasure.getSimpleName, dao.collection.name,
-      mct.erasure.getSimpleName, mcid.erasure.getSimpleName, childDao.collection.name)
+      mot.runtimeClass.getSimpleName, mid.runtimeClass.getSimpleName, dao.collection.name,
+      mct.runtimeClass.getSimpleName, mcid.runtimeClass.getSimpleName, childDao.collection.name)
 
     /** @param parentId parent id
      *  @return base query object for a single parent id
@@ -294,7 +294,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
   /** Default description is the case class simple name and the collection.
    */
-  override lazy val description = "SalatDAO[%s,%s](%s)".format(mot.erasure.getSimpleName, mid.erasure.getSimpleName, collection.name)
+  override lazy val description = "SalatDAO[%s,%s](%s)".format(mot.runtimeClass.getSimpleName, mid.runtimeClass.getSimpleName, collection.name)
 
   /** @param t instance of ObjectType
    *  @param wc write concern
