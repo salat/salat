@@ -3,7 +3,7 @@
  *
  * Module:        salat-build
  * Class:         SalatBuild.scala
- * Last modified: 2012-12-06 21:59:13 EST
+ * Last modified: 2012-12-06 23:10:17 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,8 +78,8 @@ object BuildSettings {
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
-    scalacOptions ++= Seq("-deprecation", "-unchecked"),
-    crossScalaVersions := Seq("2.9.1", "2.9.2", "2.10.0-RC3")
+    scalacOptions ++= Seq("-deprecation", "-unchecked")/*,
+    crossScalaVersions := Seq("2.9.1", "2.9.2", "2.10.0-RC3")*/   // as usual, this actually won't cross build....
   )
 }
 
