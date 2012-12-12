@@ -277,10 +277,12 @@ package in {
     self: Transformer =>
 
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case d: Double => d.toFloat
-      case i: Int    => i.toFloat
-      case l: Long   => l.toFloat
-      case s: Short  => s.toFloat
+      case d: Double                           => d.toFloat
+      case i: Int                              => i.toFloat
+      case l: Long                             => l.toFloat
+      case s: Short                            => s.toFloat
+      case Some(d) if (d.isInstanceOf[Double]) => d.asInstanceOf[Double].toFloat
+      case Some(f) if (f.isInstanceOf[Float])  => f.asInstanceOf[Float]
     }
   }
 

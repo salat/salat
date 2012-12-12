@@ -32,11 +32,13 @@ import com.mongodb.casbah.Imports._
 class OptionNumSpec extends SalatSpec {
   "A grater" should {
     "support option there" in {
-      val a = OptionSpecExample(timestamp = Some(1356048000000L), value = Some(26))
+      val a = OptionSpecExample(timestamp = Some(1356048000000L), valueInt = Some(26), valueDouble = Some(1337.0), valueFloat = Some(31047.0f))
       val dbo: MongoDBObject = grater[OptionSpecExample].asDBObject(a)
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.OptionSpecExample")
       dbo must havePair("timestamp" -> 1356048000000L)
-      dbo must havePair("value" -> 26)
+      dbo must havePair("valueInt" -> 26)
+      dbo must havePair("valueDouble" -> 1337.0)
+      dbo must havePair("valueFloat" -> 31047.0f)
 
       val json = dbo.toString()
       grater[OptionSpecExample].fromJSON(json) must_== a
