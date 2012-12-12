@@ -176,6 +176,7 @@ case class Olive(awl: java.util.UUID)
 case class Quentin(mire: Float)
 
 case class LongSpecExample(timestamp: Long, value: Int)
+case class OptionSpecExample(timestamp: Option[Long] = None, valueInt: Option[Int] = None, valueDouble: Option[Double] = None, valueFloat: Option[Float] = None)
 
 case class Rhoda(consumed: Option[String] = None)
 case class Rhoda2(howHot: Option[BigDecimal] = None)

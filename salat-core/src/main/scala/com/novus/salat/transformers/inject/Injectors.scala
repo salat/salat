@@ -251,11 +251,13 @@ package in {
   trait LongToInt extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context) = value match {
-      case l: Long   => l.intValue
-      case d: Double => d.intValue // Mongo 1.8.3 shell quirk - fixed with NumberInt in 1.9.1 (see https://jira.mongodb.org/browse/SERVER-854)
-      case f: Float  => f.intValue // Mongo 1.8.3 shell quirk - fixed with NumberInt in 1.9.1 (see https://jira.mongodb.org/browse/SERVER-854)
-      case i: Int    => i
-      case s: Short  => s.intValue
+      case l: Long                           => l.intValue
+      case d: Double                         => d.intValue // Mongo 1.8.3 shell quirk - fixed with NumberInt in 1.9.1 (see https://jira.mongodb.org/browse/SERVER-854)
+      case f: Float                          => f.intValue // Mongo 1.8.3 shell quirk - fixed with NumberInt in 1.9.1 (see https://jira.mongodb.org/browse/SERVER-854)
+      case i: Int                            => i
+      case s: Short                          => s.intValue
+      case Some(l) if (l.isInstanceOf[Long]) => l.asInstanceOf[Long].intValue
+      case Some(l) if (l.isInstanceOf[Int])  => l.asInstanceOf[Int]
       case x: String => try {
         Integer.valueOf(x)
       }
@@ -275,10 +277,12 @@ package in {
     self: Transformer =>
 
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case d: Double => d.toFloat
-      case i: Int    => i.toFloat
-      case l: Long   => l.toFloat
-      case s: Short  => s.toFloat
+      case d: Double                           => d.toFloat
+      case i: Int                              => i.toFloat
+      case l: Long                             => l.toFloat
+      case s: Short                            => s.toFloat
+      case Some(d) if (d.isInstanceOf[Double]) => d.asInstanceOf[Double].toFloat
+      case Some(f) if (f.isInstanceOf[Float])  => f.asInstanceOf[Float]
     }
   }
 
