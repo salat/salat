@@ -46,17 +46,11 @@ package object in extends Logging {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigDecimalInjector
 
-        case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with LongToInt
-
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigIntInjector
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToChar
-
-        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToFloat
 
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DateToJodaDateTime
