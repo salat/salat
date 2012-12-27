@@ -68,7 +68,7 @@ object BuildSettings {
 
   val buildOrganization = "com.novus"
   val buildVersion = "1.9.2-SNAPSHOT"
-  val buildScalaVersion = "2.10.0-RC3"
+  val buildScalaVersion = "2.10.0"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Ls.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
     organization := buildOrganization,
@@ -146,12 +146,12 @@ object Dependencies {
 
   private val LogbackVersion = "1.0.7"
 
-  val specs2 = "org.specs2" %% "specs2" % "1.13-SNAPSHOT" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "1.13" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.5" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.6.4"
   val logbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % LogbackVersion % "test"
-  val casbah = "com.github.tmingos" % "casbah_2.10" % "2.5.0-SNAPSHOT" pomOnly()
+  val casbah = "org.mongodb" %% "casbah-core" % "2.5.0-SNAPSHOT"
   val json4sNative = "org.json4s" % "json4s-native_2.10.0-RC3" % "3.1.0-SNAPSHOT"
 }
 
