@@ -78,7 +78,7 @@ object BuildSettings {
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
-    scalacOptions ++= Seq("-deprecation", "-unchecked")/*,
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")/*,
     crossScalaVersions := Seq("2.9.1", "2.9.2", "2.10.0-RC3")*/   // as usual, this actually won't cross build....
   )
 }

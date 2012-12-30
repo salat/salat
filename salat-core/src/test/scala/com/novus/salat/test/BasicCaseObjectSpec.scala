@@ -47,9 +47,9 @@ class BasicCaseObjectSpec extends SalatSpec {
         dbo must not have key("bb")
         dbo must havePair("bbb" -> e.bbb.get)
 
-        dbo must havePair("c" -> e.c)
+        dbo must havePair("c" -> e.c.toDouble)
         dbo must not have key("cc")
-        dbo must havePair("ccc" -> e.ccc.get)
+        dbo must havePair("ccc" -> e.ccc.get.toDouble)
       }
 
       "work with object graphs" in {
