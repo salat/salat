@@ -44,8 +44,8 @@ class BigDecimalPrecisionTest extends SalatSpec {
       val g = George(number = PrecisePi, someNumber = Some(PrecisePi), noNumber = None)
 
       val dbo: MongoDBObject = grater[George].asDBObject(g)
-      dbo must havePair("number" -> PrecisePi)
-      dbo must havePair("someNumber" -> PrecisePi)
+      dbo must havePair("number" -> PrecisePi.toDouble)
+      dbo must havePair("someNumber" -> PrecisePi.toDouble)
       dbo must not have key("noNumber")
 
       val coll = MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test")
@@ -72,8 +72,8 @@ class BigDecimalPrecisionTest extends SalatSpec {
       val h = George2(number = PrecisePi, someNumber = Some(PrecisePi), noNumber = None)
 
       val dbo: MongoDBObject = grater[George2].asDBObject(h)
-      dbo must havePair("number" -> PrecisePi)
-      dbo must havePair("someNumber" -> PrecisePi)
+      dbo must havePair("number" -> PrecisePi.toDouble)
+      dbo must havePair("someNumber" -> PrecisePi.toDouble)
       dbo must not have key("noNumber")
 
       val coll = MongoConnection()(SalatSpecDb)("scala_big_decimal_precision_test")
@@ -99,7 +99,7 @@ class BigDecimalPrecisionTest extends SalatSpec {
       val i = Ida(Some(lake))
 
       val dbo: MongoDBObject = grater[Ida].asDBObject(i)
-      dbo must havePair("lake" -> lake)
+      dbo must havePair("lake" -> lake.toDouble)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test_2")
       val wr = coll.insert(dbo)
@@ -115,7 +115,7 @@ class BigDecimalPrecisionTest extends SalatSpec {
       val i = Ida(Some(lake))
 
       val dbo: MongoDBObject = grater[Ida].asDBObject(i)
-      dbo must havePair("lake" -> lake)
+      dbo must havePair("lake" -> lake.toDouble)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_math_big_decimal_precision_test_3")
       val wr = coll.insert(dbo)
