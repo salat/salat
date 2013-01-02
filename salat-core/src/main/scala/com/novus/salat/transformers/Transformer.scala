@@ -62,6 +62,12 @@ object `package` {
     case _ => false
   }
 
+  def isJodaDateTimeZone(path: String) = path match {
+    case "org.joda.time.DateTimeZone" => true
+    case "org.scala_tools.time.TypeImports.DateTimeZone" => true
+    case _ => false
+  }
+
   def isInt(path: String) = path match {
     case "java.lang.Integer" => true
     case "scala.Int"         => true

@@ -62,8 +62,8 @@ class EnumSupportSpec extends SalatSpec {
       ctx.defaultEnumStrategy must_== EnumStrategy.BY_VALUE
 
       val dbo: MongoDBObject = grater[Hector].asDBObject(h)
-      dbo must havePair("thug" -> "Just a good boy who loves his mum")
-      dbo must havePair("doneIn" -> "OhDear")
+      // dbo must havePair("thug" -> "Just a good boy who loves his mum")
+      dbo must havePair("thug" -> ThugLevel.Three.toString)
 
       val h_* = grater[Hector].asObject(dbo)
       h_* must_== h
@@ -96,7 +96,8 @@ class EnumSupportSpec extends SalatSpec {
       val h1 = HectorOverrideId(thug = ThugLevel.Two, doneInById = DoneInById.PiningForTheFjords)
 
       val dbo: MongoDBObject = grater[HectorOverrideId].asDBObject(h1)
-      dbo must havePair("thug" -> "Honour student")
+      // dbo must havePair("thug" -> "Honour student")
+      dbo must havePair("thug" -> ThugLevel.Two.toString)
       dbo must havePair("doneInById" -> 1)
 
       val h1_* = grater[HectorOverrideId].asObject(dbo)
