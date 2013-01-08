@@ -29,6 +29,7 @@ import org.specs2.mutable._
 import org.specs2.specification.{ Scope, Step }
 import com.novus.salat.{ BigDecimalStrategy, Context }
 import com.mongodb.casbah.commons.test.CasbahMutableSpecification
+import com.novus.salat.conversions.RegisterJodaTimeZoneConversionHelpers
 
 trait SalatSpec extends CasbahMutableSpecification {
 
@@ -37,6 +38,8 @@ trait SalatSpec extends CasbahMutableSpecification {
       //      log.info("beforeSpec: registering BSON conversion helpers")
       com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
       com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
+
+      RegisterJodaTimeZoneConversionHelpers()
 
     } ^
       super.is ^

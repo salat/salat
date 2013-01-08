@@ -46,20 +46,17 @@ package object in extends Logging {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigDecimalInjector
 
-        case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with LongToInt
-
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigIntInjector
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToChar
 
-        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToFloat
-
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DateToJodaDateTime
+
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with TimeZoneToJodaDateTimeZone
 
         case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
           new Transformer(prefix.symbol.path, t)(ctx) with OptionInjector with EnumInflater
@@ -105,6 +102,11 @@ package object in extends Logging {
 
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DateToJodaDateTime with TraversableInjector {
+            val parentType = pt
+          }
+
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with TimeZoneToJodaDateTimeZone with TraversableInjector {
             val parentType = pt
           }
 
@@ -168,6 +170,12 @@ package object in extends Logging {
             val grater = ctx.lookup_?(symbol.path)
           }
 
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with TimeZoneToJodaDateTimeZone with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup_?(symbol.path)
+          }
+
         case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
           new Transformer(prefix.symbol.path, t)(ctx) with EnumInflater with MapInjector {
             val parentType = pt
@@ -207,6 +215,9 @@ package object in extends Logging {
 
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with DateToJodaDateTime
+
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, pt)(ctx) with TimeZoneToJodaDateTimeZone
 
         case TypeRefType(_, symbol, _) if Types.isBitSet(symbol) =>
           new Transformer(symbol.path, pt)(ctx) with BitSetInjector
@@ -279,6 +290,16 @@ package in {
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
       case d: java.util.Date if d != null => new DateTime(d)
       case dt: DateTime                   => dt
+    }
+  }
+
+  trait TimeZoneToJodaDateTimeZone extends Transformer {
+    self: Transformer =>
+
+    override def transform(value: Any)(implicit ctx: Context): Any = value match {
+      case tz: String if tz != null             => DateTimeZone.forID(tz)
+      case tz: java.util.TimeZone if tz != null => DateTimeZone.forID(tz.getID)
+      case tz: DateTimeZone                     => tz
     }
   }
 
