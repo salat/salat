@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         DateTimeZoneSpec.scala
- * Last modified: 2013-01-07 22:47:45 EST
+ * Last modified: 2013-01-07 23:00:06 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class DateTimeZoneSpec extends SalatSpec {
       //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint", "com.novus.salat.test.model.Prue")
       dbo must havePair("brawl" -> true)
-      dbo must havePair("zone", tz)
+      dbo must havePair("zone", tz.getID)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_timezone_test_1")
       val wr = coll.insert(dbo)
@@ -55,7 +55,7 @@ class DateTimeZoneSpec extends SalatSpec {
       //      log.info(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint", "com.novus.salat.test.model.Prue")
       dbo must havePair("brawl" -> true)
-      dbo must havePair("zone", tz)
+      dbo must havePair("zone", tz.getID)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_timezone_test_2")
       val wr = coll.insert(dbo)
