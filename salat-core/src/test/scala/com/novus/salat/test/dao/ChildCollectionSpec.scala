@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         ChildCollectionSpec.scala
- * Last modified: 2012-12-06 22:58:08 EST
+ * Last modified: 2013-01-07 22:41:58 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,12 @@
  */
 package com.novus.salat.test.dao
 
+import com.mongodb.casbah.commons.MongoDBObject
 import com.novus.salat.test._
-import com.novus.salat._
 import com.novus.salat.test.global._
-import com.mongodb.casbah.Imports._
-import org.specs2.specification.Scope
-import com.novus.salat.test.dao._
-import org.scala_tools.time.Imports._
-import org.joda.time.DateTimeConstants._
 import org.joda.time.DateMidnight
-import com.mongodb.casbah.commons.{ MongoDBList, MongoDBObject }
+import org.joda.time.DateTimeConstants._
+import org.specs2.specification.Scope
 
 class ChildCollectionSpec extends SalatSpec {
 

@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
- * Class:         DateTimeSpec.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Class:         DateTimeZoneSpec.scala
+ * Last modified: 2013-01-07 22:47:45 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,16 @@
  */
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
+import com.mongodb.util.JSON.parse
 import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
-
-import com.mongodb.casbah.Imports._
-import com.mongodb.util.JSON.parse
+import org.joda.time.DateTimeZone
 
 class DateTimeZoneSpec extends SalatSpec {
   "A grater" should {
     "support org.scala_tools.time.TypeImports.DateTimeZone" in {
-      import org.scala_tools.time.Imports._
       val tz = DateTimeZone.forID("Europe/London")
       val n = Prue(zone = tz)
       val dbo: MongoDBObject = grater[Prue].asDBObject(n)

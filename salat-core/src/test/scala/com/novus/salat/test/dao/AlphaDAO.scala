@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         AlphaDAO.scala
- * Last modified: 2012-12-05 09:30:14 EST
+ * Last modified: 2013-01-07 22:47:45 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@ import com.novus.salat.test._
 import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations._
-import org.scala_tools.time.Imports._
 import com.novus.salat.dao._
-import org.joda.time.DateMidnight
+import com.novus.salat.test._
+import org.joda.time.{ DateTime, DateMidnight }
 
 @Salat
 trait Beta {

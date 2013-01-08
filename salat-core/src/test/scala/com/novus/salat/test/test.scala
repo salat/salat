@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         test.scala
- * Last modified: 2012-12-05 12:24:47 EST
+ * Last modified: 2013-01-07 22:44:35 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,11 @@
  */
 package com.novus.salat
 
-import com.novus.salat.test.model._
 import com.novus.salat.test.global._
+import com.novus.salat.test.model._
 import scala.collection.immutable.{ Map => IMap }
+import scala.collection.mutable.{ Map => MMap }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
-import org.joda.time.format.{ PeriodFormat, PeriodFormatterBuilder }
-import org.scala_tools.time.TypeImports._
-import org.joda.time.{ DateTimeZone, Period, DateTime }
-import scala.collection.mutable.{ ArrayBuffer, Map => MMap }
 
 package object test {
 

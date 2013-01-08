@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         IgnoreAnnotationSpec.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2013-01-07 22:41:58 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@
 
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
-import com.mongodb.casbah.Imports._
-import org.scala_tools.time.Imports._
 import com.novus.salat.util.MapPrettyPrinter
+import org.joda.time.DateTime
 
 class IgnoreAnnotationSpec extends SalatSpec {
 

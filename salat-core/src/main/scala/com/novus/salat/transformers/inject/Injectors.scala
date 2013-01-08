@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         Injectors.scala
- * Last modified: 2012-12-06 22:31:17 EST
+ * Last modified: 2013-01-07 22:43:52 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,13 @@
  */
 package com.novus.salat.transformers
 
-import java.lang.reflect.Method
-import scala.tools.scalap.scalax.rules.scalasig._
-import com.novus.salat.annotations.util._
-
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
+import com.novus.salat.annotations.util._
 import com.novus.salat.impls._
 import com.novus.salat.util._
-import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
-import org.scala_tools.time.Imports._
+import java.lang.reflect.Method
+import scala.tools.scalap.scalax.rules.scalasig._
 
 package object in extends Logging {
 
@@ -240,6 +237,7 @@ package object in extends Logging {
 package in {
 
   import java.lang.Integer
+  import org.joda.time.{ DateTimeZone, DateTime }
   import org.json4s.JsonAST.JArray
 
   trait LongToInt extends Transformer {
