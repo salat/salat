@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         Extractors.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2013-01-07 22:59:22 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,9 @@ package object out {
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with FloatToDouble
 
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionExtractor with DateTimeZoneExtractor
+
         case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
           new Transformer(prefix.symbol.path, t)(ctx) with OptionExtractor with EnumStringifier
         }
@@ -80,6 +83,9 @@ package object out {
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString with TraversableExtractor
 
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DateTimeZoneExtractor with TraversableExtractor
+
         case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
           new Transformer(prefix.symbol.path, t)(ctx) with EnumStringifier with TraversableExtractor
         }
@@ -107,6 +113,9 @@ package object out {
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString with MapExtractor
 
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DateTimeZoneExtractor with MapExtractor
+
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with FloatToDouble with MapExtractor
 
@@ -132,6 +141,9 @@ package object out {
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with CharToString
+
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DateTimeZoneExtractor
 
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with FloatToDouble
@@ -235,6 +247,14 @@ package out {
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case bs: scala.collection.BitSet => Some(bs.toArray.map(_.toByte))
       case _                           => None
+    }
+  }
+
+  trait DateTimeZoneExtractor extends Transformer {
+    override def transform(value: Any)(implicit ctx: Context) = value match {
+      case tz: org.joda.time.DateTimeZone => Some(tz.getID)
+      case tz: java.util.TimeZone         => Some(tz.getID)
+      case _                              => None
     }
   }
 
