@@ -12,9 +12,7 @@ notifications:
     recipients:
       - prasinous@gmail.com
 jdk:
-  - openjdk6
-# these seem to segfault 2/3 of the time, need to understand why
-#  - openjdk7
-#  - oraclejdk7
+  - openjdk7
+  - oraclejdk7
 services:
   - mongodb
