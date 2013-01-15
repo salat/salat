@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         useful.scala
- * Last modified: 2012-06-28 15:37:35 EDT
+ * Last modified: 2012-10-15 20:40:58 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 package com.novus.salat.test.model
 
-import org.joda.time.DateTime
+import org.joda.time.{ DateTimeZone, DateTime }
 import org.joda.time.DateTimeConstants._
 
 object useful {
@@ -33,4 +34,5 @@ object useful {
   val KaprekarsConstant = 6174
   val TestDate = new DateTime(2011, DECEMBER, 28, 14, 37, 56, 8)
   val TestChar = 'e'
+  val TestTimeZone = DateTimeZone.forID("Europe/London")
 }

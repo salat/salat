@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         JSONConfig.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2013-01-07 22:41:58 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 package com.novus.salat.json
 
-import org.scala_tools.time.Imports._
-import org.joda.time.DateTimeZone
-import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
-import java.util.Date
-import org.scala_tools.time.Imports
-import net.liftweb.json.JsonAST._
+import java.util.{ TimeZone, Date }
 import org.bson.types.{ BSONTimestamp, ObjectId }
+import org.joda.time._
+import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
+import org.json4s._
 
 object JSONConfig {
   val ISO8601 = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC)
 }
 
 case class JSONConfig(dateStrategy: JSONDateStrategy = StringDateStrategy(),
+                      timeZoneStrategy: JSONTimeZoneStrategy = StringTimeZoneStrategy(),
                       objectIdStrategy: JSONObjectIdStrategy = StrictJSONObjectIdStrategy,
                       bsonTimestampStrategy: JSONbsTimesampStrategy = StrictBSONTimestampStrategy,
                       outputNullValues: Boolean = false)
@@ -80,6 +80,16 @@ trait JSONDateStrategy {
   def toDate(j: JValue) = toDateTime(j).toDate
 }
 
+trait JSONTimeZoneStrategy {
+  def out(tz: DateTimeZone): JValue
+
+  def out(tz: TimeZone): JValue
+
+  def toDateTimeZone(j: JValue): DateTimeZone
+
+  def toTimeZone(j: JValue) = toDateTimeZone(j).toTimeZone
+}
+
 case class StringDateStrategy(dateFormatter: DateTimeFormatter = JSONConfig.ISO8601) extends JSONDateStrategy {
   def out(d: Date) = JString(dateFormatter.print(d.getTime))
 
@@ -88,6 +98,17 @@ case class StringDateStrategy(dateFormatter: DateTimeFormatter = JSONConfig.ISO8
   def toDateTime(j: JValue) = j match {
     case JString(s) => dateFormatter.parseDateTime(s)
     case x          => sys.error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+  }
+}
+
+case class StringTimeZoneStrategy() extends JSONTimeZoneStrategy {
+  def out(tz: DateTimeZone) = JString(tz.getID)
+
+  def out(tz: TimeZone) = JString(tz.getID)
+
+  def toDateTimeZone(j: JValue) = j match {
+    case JString(s) => DateTimeZone.forID(s)
+    case x          => sys.error("toDateTimeZone: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
 }
 

@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         SalatMongoCursor.scala
- * Last modified: 2012-06-28 15:37:35 EDT
+ * Last modified: 2012-12-06 22:28:57 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.dao
 
-import com.novus.salat._
-import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
 import com.mongodb.DBCursor
-import com.mongodb.casbah.{ MongoCursorBase, CursorExplanation, Imports }
-import scala.Predef._
+import com.mongodb.casbah.CursorExplanation
+import com.mongodb.casbah.Imports._
+import com.novus.salat._
+import com.novus.salat.util.Logging
 
 /** Unfortunately, MongoCursorBase is typed to DBObject, but....
  *  Ripped off from casbah-mapper.
@@ -37,8 +37,6 @@ import scala.Predef._
  */
 
 trait SalatMongoCursorBase[T <: AnyRef] extends Logging {
-
-  import scalaj.collection.Imports._
 
   val _grater: Grater[T]
 
@@ -56,11 +54,13 @@ trait SalatMongoCursorBase[T <: AnyRef] extends Logging {
 
   def count = underlying.count
 
-  def option_=(option: Int): Unit = underlying.addOption(option)
+  def option_=(option: Int) {
+    underlying.addOption(option)
+  }
 
   def option = underlying.getOptions
 
-  def resetOptions() = underlying.resetOptions() // use parens because this side-effects
+  def resetOptions() = underlying.resetOptions()
 
   def options = underlying.getOptions
 
@@ -94,17 +94,19 @@ trait SalatMongoCursorBase[T <: AnyRef] extends Logging {
     this
   }
 
-  def cursorId = underlying.getCursorId()
+  def cursorId = underlying.getCursorId
 
-  def close() = underlying.close() // parens for side-effect
+  def close() {
+    underlying.close()
+  }
 
-  def slaveOk() = underlying.slaveOk() // parens for side-effect
+  def slaveOk() = underlying.slaveOk()
 
   def numGetMores = underlying.numGetMores
 
   def numSeen = underlying.numSeen
 
-  def sizes = underlying.getSizes.asScala
+  def sizes = scala.collection.convert.Wrappers.JListWrapper(underlying.getSizes)
 
   def batchSize(n: Int) = {
     underlying.batchSize(n)

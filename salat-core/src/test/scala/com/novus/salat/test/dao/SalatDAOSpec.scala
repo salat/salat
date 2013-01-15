@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         SalatDAOSpec.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-12-06 22:58:08 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.test.dao
 
@@ -58,7 +59,7 @@ class SalatDAOSpec extends SalatSpec {
     "insert a case class" in new alphaContext {
       val _id = AlphaDAO.insert(alpha3)
       _id must beSome(alpha3.id)
-      AlphaDAO.collection.count must_== 1L
+      AlphaDAO.collection.count() must_== 1L
 
       val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(AlphaColl).findOne().get
       grater[Alpha].asObject(dbo) must_== alpha3
@@ -70,13 +71,13 @@ class SalatDAOSpec extends SalatSpec {
       _ids must contain(Some(alpha4.id))
       _ids must contain(Some(alpha5.id))
       _ids must contain(Some(alpha6.id))
-      AlphaDAO.collection.count must_== 3L
+      AlphaDAO.collection.count() must_== 3L
 
       // the standard collection cursor returns DBOs
       val mongoCursor = AlphaDAO.collection.find()
-      mongoCursor.next() must_== grater[Alpha].asDBObject(alpha4)
-      mongoCursor.next() must_== grater[Alpha].asDBObject(alpha5)
-      mongoCursor.next() must_== grater[Alpha].asDBObject(alpha6)
+      mongoCursor.next() must haveEntry("_id", alpha4.id)
+      mongoCursor.next() must haveEntry("_id", alpha5.id)
+      mongoCursor.next() must haveEntry("_id", alpha6.id)
 
       // BUT the Salat DAO returns a cursor types to case classes!
       val salatCursor = AlphaDAO.find(MongoDBObject.empty)
@@ -94,7 +95,7 @@ class SalatDAOSpec extends SalatSpec {
       _ids must contain(Some(alpha4.id))
       _ids must contain(Some(alpha5.id))
       _ids must contain(Some(alpha6.id))
-      AlphaDAO.collection.count must_== 3L
+      AlphaDAO.collection.count() must_== 3L
 
       // note: you can query using an object transformed into a dbo
       AlphaDAO.findOne(grater[Alpha].asDBObject(alpha6)) must beSome(alpha6)
@@ -105,7 +106,7 @@ class SalatDAOSpec extends SalatSpec {
       _ids must contain(Some(alpha4.id))
       _ids must contain(Some(alpha5.id))
       _ids must contain(Some(alpha6.id))
-      AlphaDAO.collection.count must_== 3L
+      AlphaDAO.collection.count() must_== 3L
 
       AlphaDAO.findOneById(id = 5) must beSome(alpha5)
     }
@@ -113,16 +114,17 @@ class SalatDAOSpec extends SalatSpec {
     "support updating a case class" in new alphaContext {
       val _id = AlphaDAO.insert(alpha3)
       _id must beSome(alpha3.id)
-      AlphaDAO.collection.count must_== 1L
+      AlphaDAO.collection.count() must_== 1L
 
       // need to explicitly specify upsert and multi when updating using an object instead of dbo
-      val cr = AlphaDAO.update(q = MongoDBObject("_id" -> 3),
+      val wr = AlphaDAO.update(q = MongoDBObject("_id" -> 3),
         t = alpha3.copy(beta = List[Beta](Gamma("gamma3"))),
         upsert = false,
         multi = false,
         wc = new WriteConcern())
+      wr.getN must_== 1L
 
-      AlphaDAO.collection.count must_== 1L
+      AlphaDAO.collection.count() must_== 1L
 
       val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(AlphaColl).findOne().get
       grater[Alpha].asObject(dbo) must_== alpha3.copy(beta = List[Beta](Gamma("gamma3")))
@@ -131,12 +133,13 @@ class SalatDAOSpec extends SalatSpec {
     "support saving a case class" in new alphaContext {
       val _id = AlphaDAO.insert(alpha3)
       _id must beSome(alpha3.id)
-      AlphaDAO.collection.count must_== 1L
+      AlphaDAO.collection.count() must_== 1L
 
       val alpha3_* = alpha3.copy(beta = List[Beta](Gamma("gamma3")))
       alpha3_* must_!= alpha3
-      val cr = AlphaDAO.save(alpha3_*)
-      AlphaDAO.collection.count must_== 1L
+      val wr = AlphaDAO.save(alpha3_*)
+      wr.getN must_== 1L
+      AlphaDAO.collection.count() must_== 1L
 
       val dbo: MongoDBObject = MongoConnection()(SalatSpecDb)(AlphaColl).findOne().get
       grater[Alpha].asObject(dbo) must_== alpha3_*
@@ -147,10 +150,11 @@ class SalatDAOSpec extends SalatSpec {
       _ids must contain(Some(alpha4.id))
       _ids must contain(Some(alpha5.id))
       _ids must contain(Some(alpha6.id))
-      AlphaDAO.collection.count must_== 3L
+      AlphaDAO.collection.count() must_== 3L
 
-      val cr = AlphaDAO.remove(alpha5)
-      AlphaDAO.collection.count must_== 2L
+      val wr = AlphaDAO.remove(alpha5)
+      wr.getN must_== 1L
+      AlphaDAO.collection.count() must_== 2L
 
       AlphaDAO.findOne(grater[Alpha].asDBObject(alpha5)) must beNone
 
@@ -162,16 +166,18 @@ class SalatDAOSpec extends SalatSpec {
 
     "support removing by ID" in new alphaContext {
       AlphaDAO.insert(alpha1)
-      AlphaDAO.collection.count must_== 1L
-      AlphaDAO.removeById(alpha1.id)
-      AlphaDAO.collection.count must_== 0L
+      AlphaDAO.collection.count() must_== 1L
+      val wr = AlphaDAO.removeById(alpha1.id)
+      wr.getN must_== 1L
+      AlphaDAO.collection.count() must_== 0L
     }
 
     "support removing by a list of IDs" in new alphaContext {
       val _ids = AlphaDAO.insert(alpha4, alpha5, alpha6)
-      AlphaDAO.collection.count must_== 3L
-      AlphaDAO.removeByIds(_ids.flatten)
-      AlphaDAO.collection.count must_== 0L
+      AlphaDAO.collection.count() must_== 3L
+      val wr = AlphaDAO.removeByIds(_ids.flatten)
+      wr.getN must_== 3L
+      AlphaDAO.collection.count() must_== 0L
     }
 
     "support find returning a Mongo cursor typed to a case class" in new alphaContextWithData {
@@ -222,7 +228,7 @@ class SalatDAOSpec extends SalatSpec {
       val e = Epsilon(notes = "Just a test")
       val _id = EpsilonDAO.insert(e)
       _id must beSome(e.id)
-      EpsilonDAO.collection.count must_== 1L
+      EpsilonDAO.collection.count() must_== 1L
 
       val e_* = EpsilonDAO.findOne(grater[Epsilon].asDBObject(e))
       e_* must not beNone
@@ -282,29 +288,29 @@ class SalatDAOSpec extends SalatSpec {
   trait alphaContext extends Scope {
     log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
     AlphaDAO.collection.drop()
-    AlphaDAO.collection.count must_== 0L
+    AlphaDAO.collection.count() must_== 0L
   }
 
   trait alphaContextWithData extends Scope {
     log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
     AlphaDAO.collection.drop()
-    AlphaDAO.collection.count must_== 0L
+    AlphaDAO.collection.count() must_== 0L
 
     val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
     _ids must contain(Option(alpha1.id), Option(alpha2.id), Option(alpha3.id), Option(alpha4.id), Option(alpha5.id), Option(alpha6.id))
-    AlphaDAO.collection.count must_== 6L
+    AlphaDAO.collection.count() must_== 6L
   }
 
   trait epsilonContext extends Scope {
     log.debug("before: dropping %s", EpsilonDAO.collection.getFullName())
     EpsilonDAO.collection.drop()
-    EpsilonDAO.collection.count must_== 0L
+    EpsilonDAO.collection.count() must_== 0L
   }
 
   trait thetaContext extends Scope {
     log.debug("before: dropping %s", ThetaDAO.collection.getFullName())
     ThetaDAO.collection.drop()
-    ThetaDAO.collection.count must_== 0L
+    ThetaDAO.collection.count() must_== 0L
 
     val theta1 = Theta(x = "x1", y = "y1")
     val theta2 = Theta(x = "x2", y = "y2")
@@ -313,13 +319,13 @@ class SalatDAOSpec extends SalatSpec {
     val theta5 = Theta(x = "x5", y = null)
     val _ids = ThetaDAO.insert(theta1, theta2, theta3, theta4, theta5)
     _ids must contain(Option(theta1.id), Option(theta2.id), Option(theta3.id), Option(theta4.id), Option(theta5.id))
-    ThetaDAO.collection.count must_== 5L
+    ThetaDAO.collection.count() must_== 5L
   }
 
   trait xiContext extends Scope {
     log.debug("before: dropping %s", XiDAO.collection.getFullName())
     XiDAO.collection.drop()
-    XiDAO.collection.count must_== 0L
+    XiDAO.collection.count() must_== 0L
 
     val xi1 = Xi(x = "x1", y = Some("y1"))
     val xi2 = Xi(x = "x2", y = Some("y2"))
@@ -328,13 +334,13 @@ class SalatDAOSpec extends SalatSpec {
     val xi5 = Xi(x = "x5", y = None)
     val _ids = XiDAO.insert(xi1, xi2, xi3, xi4, xi5)
     _ids must contain(Option(xi1.id), Option(xi2.id), Option(xi3.id), Option(xi4.id), Option(xi5.id))
-    XiDAO.collection.count must_== 5L
+    XiDAO.collection.count() must_== 5L
   }
 
   trait kappaContext extends Scope {
     log.debug("before: dropping %s", KappaDAO.collection.getFullName())
     KappaDAO.collection.drop()
-    KappaDAO.collection.count must_== 0L
+    KappaDAO.collection.count() must_== 0L
 
     val nu1 = Nu(x = "x1", y = "y1")
     val nu2 = Nu(x = "x2", y = "y2")
@@ -345,6 +351,6 @@ class SalatDAOSpec extends SalatSpec {
     val kappa3 = Kappa(k = "k3", nu = nu3)
     val _ids = KappaDAO.insert(kappa1, kappa2, kappa3)
     _ids must contain(Option(kappa1.id), Option(kappa2.id), Option(kappa3.id))
-    KappaDAO.collection.count must_== 3L
+    KappaDAO.collection.count() must_== 3L
   }
 }

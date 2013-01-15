@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Grater.scala
- * Last modified: 2012-08-08 14:54:19 EDT
+ * Last modified: 2012-12-06 22:29:03 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat
 
@@ -34,8 +35,10 @@ import com.novus.salat.util._
 
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
-import net.liftweb.json._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 import com.novus.salat.json.{ FromJValue, ToJField }
+import org.json4s.native.JsonParser
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -106,7 +109,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   lazy val ca = ClassAnalyzer(clazz, ctx.classLoaders)
 
-  protected lazy val useTypeHint = {
+  lazy val useTypeHint = {
     ctx.typeHintStrategy.when == TypeHintFrequency.Always ||
       (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && ca.requiresTypeHint)
   }
@@ -295,12 +298,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       case e: IllegalAccessException    => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
       case e: IllegalArgumentException  => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
       case e: InvocationTargetException => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
-      case e                            => throw e
+      case e: Throwable                 => throw e
     }
   }
 
   def fromJSON(j: JObject) = {
-    val values = j.obj.map(v => (v.name, v.value)).toMap
+    val values = j.obj.map(v => (v._1, v._2)).toMap
     val args = indexedFields.map {
       case field if field.ignore => safeDefault(field)
       case field => {
@@ -343,7 +346,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)))
       }
       catch {
-        case _ => None
+        case _: Throwable => None
       }
   }
 
@@ -370,7 +373,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)).invoke(ca.companionObject))
       }
       catch {
-        case _ => None // indicates no default value was supplied
+        case _: Throwable => None // indicates no default value was supplied
       }
 
       builder += field -> DefaultArg(clazz, field, defaultMethod)

@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         ImplClasses.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-12-06 22:51:08 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat
 
@@ -44,9 +45,6 @@ package object impls {
     case ImplClasses.ISetClass        => ISet.empty ++ real
     case ImplClasses.MSetClass        => MSet.empty ++ real
 
-    case ImplClasses.ISetClass        => ISet.empty ++ real
-    case ImplClasses.MSetClass        => MSet.empty ++ real
-
     case ImplClasses.VectorClass      => Vector.empty ++ real
 
     case ImplClasses.IndexedSeq       => IndexedSeq.empty ++ real
@@ -56,7 +54,7 @@ package object impls {
     case ImplClasses.LinkedList       => LinkedList.empty ++ real
     case ImplClasses.DoubleLinkedList => DoubleLinkedList.empty ++ real
 
-    case x                            => throw new IllegalArgumentException("failed to find proper Traversable[_] impl for %s".format(x))
+    case x                            => sys.error("failed to find proper Traversable[_] impl for %s".format(x))
   }
 
   def traversableImpl(t: Type, real: scala.collection.Traversable[_]): scala.collection.Traversable[_] =

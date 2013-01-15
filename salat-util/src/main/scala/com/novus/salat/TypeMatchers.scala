@@ -29,6 +29,8 @@ import tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
 protected[salat] object Types {
   val Date = "java.util.Date"
   val DateTime = Set("org.joda.time.DateTime", "org.scala_tools.time.TypeImports.DateTime")
+  val TimeZone = "java.util.TimeZone"
+  val DateTimeZone = Set("org.joda.time.DateTimeZone", "org.scala_tools.time.TypeImports.DateTimeZone")
   val Oid = Set("org.bson.types.ObjectId", "com.mongodb.casbah.commons.TypeImports.ObjectId")
   val BsonTimestamp = "org.bson.types.BSONTimestamp"
   val SBigDecimal = classOf[SBigDecimal].getName
@@ -36,6 +38,7 @@ protected[salat] object Types {
   val Option = "scala.Option"
   val Map = ".Map"
   val Traversables = Set(".Seq", ".List", ".Vector", ".Set", ".Buffer", ".ArrayBuffer", ".IndexedSeq", ".LinkedList", ".DoubleLinkedList")
+  val BitSets = Set("scala.collection.BitSet", "scala.collection.immutable.BitSet", "scala.collection.mutable.BitSet")
 
   def isOption(sym: Symbol) = sym.path == Option
 
@@ -43,24 +46,33 @@ protected[salat] object Types {
 
   def isTraversable(symbol: Symbol) = Traversables.exists(symbol.path.endsWith(_))
 
+  def isBitSet(symbol: Symbol) = BitSets.contains(symbol.path)
+
   def isBigDecimal(symbol: Symbol) = symbol.path == SBigDecimal
 
   def isBigInt(symbol: Symbol) = symbol.path == BigInt
 }
 
 protected[salat] case class TypeFinder(t: TypeRefType) {
+
+  lazy val path = t.symbol.path
+
   lazy val isMap = Types.isMap(t.symbol)
   lazy val isTraversable = Types.isTraversable(t.symbol)
+  lazy val isBitSet = Types.isBitSet(t.symbol)
 
   lazy val isDate = TypeMatchers.matches(t, Types.Date)
   lazy val isDateTime = TypeMatchers.matches(t, Types.DateTime)
+
+  lazy val isTimeZone = TypeMatchers.matches(t, Types.TimeZone)
+  lazy val isDateTimeZone = TypeMatchers.matches(t, Types.DateTimeZone)
 
   lazy val isChar = TypeMatchers.matches(t, classOf[Char].getName)
   lazy val isFloat = TypeMatchers.matches(t, classOf[Float].getName)
   lazy val isShort = TypeMatchers.matches(t, classOf[Short].getName)
   lazy val isBigDecimal = Types.isBigDecimal(t.symbol)
   lazy val isBigInt = Types.isBigInt(t.symbol)
-  lazy val isLong = TypeMatchers.matches(t, classOf[Long].getName)
+  lazy val isLong = TypeMatchers.matches(t, "scala.Long")
 
   lazy val isOption = TypeMatchers.matches(t, Types.Option)
   lazy val isOid = TypeMatchers.matches(t, Types.Oid)
@@ -88,6 +100,11 @@ protected[salat] object TypeMatchers {
 
   def matchesTraversable(t: Type) = t match {
     case TypeRefType(_, symbol, List(arg)) if Types.isTraversable(symbol) => Some(arg)
+    case _ => None
+  }
+
+  def matchesBitSet(t: Type) = t match {
+    case TypeRefType(_, symbol, _) if Types.isBitSet(symbol) => Some(symbol)
     case _ => None
   }
 }

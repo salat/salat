@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         ToJValue.scala
- * Last modified: 2012-09-17 23:13:37 EDT
+ * Last modified: 2012-12-06 22:49:46 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 package com.novus.salat.json
 
-import net.liftweb.json._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 import com.mongodb.casbah.Imports._
-import org.joda.time.DateTime
+import org.joda.time.{ DateTimeZone, DateTime }
 import com.novus.salat.{ Field => SField, _ }
 import com.novus.salat.util.Logging
 import java.net.URL
@@ -34,6 +36,23 @@ import com.novus.salat.TypeFinder
 import com.novus.salat.StringTypeHintStrategy
 import scala.tools.scalap.scalax.rules.scalasig.{ TypeRefType, SingleType }
 import org.bson.types.BSONTimestamp
+
+object MapToJSON extends Logging {
+
+  val empty = compact(render(JObject(Nil)))
+
+  def apply(m: Map[String, _])(implicit ctx: Context): String = compact(render(mapToJObject(m)))
+
+  def mapToJObject(m: Map[String, Any])(implicit ctx: Context): JObject = {
+    JObject(m.map {
+      case (k, v) => ToJField(k, v)
+    }.toList)
+  }
+
+  def apply(iter: Iterable[Map[String, _]])(implicit ctx: Context): String = {
+    compact(render(JArray(iter.map(mapToJObject(_)).toList)))
+  }
+}
 
 object ToJField extends Logging {
   def typeHint[X](clazz: Class[X], useTypeHint: Boolean)(implicit ctx: Context) = {
@@ -56,11 +75,15 @@ object ToJField extends Logging {
 
 object ToJValue extends Logging {
   def apply(o: Any)(implicit ctx: Context): JValue = o.asInstanceOf[AnyRef] match {
-    case t: MongoDBList => JArray(t.map(apply(_)).toList)
-    case t: BasicDBList => JArray(t.map(apply(_)).toList)
-    case dbo: DBObject  => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, apply(v._2))))
-    case m: Map[_, _]   => JObject(m.toList.map(v => JField(v._1.toString, apply(v._2))))
-    case x              => serialize(x)
+    case t: MongoDBList              => JArray(t.map(apply(_)).toList)
+    case t: BasicDBList              => JArray(t.map(apply(_)).toList)
+    case dbo: DBObject               => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, apply(v._2))))
+    case ba: Array[Byte]             => JArray(ba.toList.map(JInt(_)))
+    case m: Map[_, _]                => JObject(m.toList.map(v => JField(v._1.toString, apply(v._2))))
+    case m: java.util.Map[_, _]      => JObject(scala.collection.JavaConversions.mapAsScalaMap(m).toList.map(v => JField(v._1.toString, apply(v._2))))
+    case iter: Iterable[_]           => JArray(iter.map(apply(_)).toList)
+    case iter: java.lang.Iterable[_] => JArray(scala.collection.JavaConversions.iterableAsScalaIterable(iter).map(apply(_)).toList)
+    case x                           => serialize(x)
   }
 
   def serialize(o: Any)(implicit ctx: Context) = {
@@ -77,6 +100,8 @@ object ToJValue extends Logging {
       case b: Boolean => JBool(b)
       case d: java.util.Date => ctx.jsonConfig.dateStrategy.out(d)
       case d: DateTime => ctx.jsonConfig.dateStrategy.out(d)
+      case tz: java.util.TimeZone => ctx.jsonConfig.timeZoneStrategy.out(tz)
+      case tz: DateTimeZone => ctx.jsonConfig.timeZoneStrategy.out(tz)
       case o: ObjectId => ctx.jsonConfig.objectIdStrategy.out(o)
       case u: java.net.URL => JString(u.toString) // might as well
       case n if n == null && ctx.jsonConfig.outputNullValues => JNull
@@ -101,12 +126,27 @@ object FromJValue extends Logging {
   def apply(j: Option[JValue], field: SField, childType: Option[TypeRefType] = None)(implicit ctx: Context): Option[Any] = {
     val v = j.map {
       case j: JArray => field.typeRefType match {
+        case t if Types.isBitSet(t.symbol) => {
+          val bs = scala.collection.mutable.BitSet.empty
+          j.arr.foreach {
+            case JInt(bi) => bs.add(bi.toInt)
+            case x        => sys.error("expected JInt got %s\n%s".format(x.getClass.getName, x))
+          }
+          val v = field.tf.path match {
+            case "scala.collection.BitSet"           => scala.collection.BitSet.empty ++ bs
+            case "scala.collection.immutable.BitSet" => scala.collection.immutable.BitSet.empty ++ bs
+            case "scala.collection.mutable.BitSet"   => bs
+            case x                                   => sys.error("unexpected TypeRefType %s".format(field.tf.t))
+          }
+          log.debug("RETURNING: v=%s", v)
+          v
+        }
         case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
         case notTraversable                        => sys.error("FromJValue: expected types for Traversable but instead got:\n%s".format(notTraversable))
       }
       case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
         case IsMap(_, childType: TypeRefType) => {
-          o.obj.map(v => (v.name, apply(Some(v.value), field, Some(childType)))).collect {
+          o.obj.map(v => (v._1, apply(Some(v._2), field, Some(childType)))).collect {
             case (key, Some(value)) => key -> value
           }.toMap
         }
@@ -121,6 +161,7 @@ object FromJValue extends Logging {
       }
       case o: JObject if field.tf.isOid => deserialize(o, field.tf)
       case v: JValue if field.tf.isDate || field.tf.isDateTime => deserialize(v, field.tf)
+      case tz: JValue if field.tf.isTimeZone || field.tf.isDateTimeZone => deserialize(tz, field.tf)
       case o: JInt if field.tf.isDate || field.tf.isDateTime => deserialize(o, field.tf)
       case o: JObject if field.tf.isBSONTimestamp => deserialize(o, field.tf)
       case o: JObject => ctx.lookup(if (childType.isDefined) childType.get.symbol.path else field.typeRefType.symbol.path).fromJSON(o)
@@ -146,6 +187,8 @@ object FromJValue extends Logging {
     val v = j match {
       case d if tf.isDateTime       => ctx.jsonConfig.dateStrategy.toDateTime(d)
       case d if tf.isDate           => ctx.jsonConfig.dateStrategy.toDate(d)
+      case tz if tf.isTimeZone      => ctx.jsonConfig.timeZoneStrategy.toTimeZone(tz)
+      case tz if tf.isDateTimeZone  => ctx.jsonConfig.timeZoneStrategy.toDateTimeZone(tz)
       case oid if tf.isOid          => ctx.jsonConfig.objectIdStrategy.in(oid)
       case bt if tf.isBSONTimestamp => ctx.jsonConfig.bsonTimestampStrategy.in(bt)
       case v if tf.t.symbol.path == "scala.Enumeration.Value" => {

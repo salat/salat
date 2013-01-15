@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         AlphaDAO.scala
- * Last modified: 2012-06-28 15:37:35 EDT
+ * Last modified: 2013-01-07 22:47:45 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.test.dao
 
@@ -28,11 +29,9 @@ import com.novus.salat.test._
 import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations._
-import org.scala_tools.time.Imports._
-import com.novus.salat.dao.SalatDAO
-import org.joda.time.DateMidnight
-import org.joda.time.DateTimeConstants._
-import com.mongodb.casbah.Imports
+import com.novus.salat.dao._
+import com.novus.salat.test._
+import org.joda.time.{ DateTime, DateMidnight }
 
 @Salat
 trait Beta {
@@ -114,3 +113,18 @@ object UserDAO extends SalatDAO[User, ObjectId](collection = MongoConnection()(S
 }
 
 object RoleDAO extends SalatDAO[Role, ObjectId](collection = MongoConnection()(SalatSpecDb)(RoleColl))
+
+object ToValidate {
+
+  def notNegativeA(x: ToValidate): Either[Throwable, ToValidate] = if (x.a < 0) Left(NegativeA(x)) else Right(x)
+  def notEmptyB(x: ToValidate): Either[Throwable, ToValidate] = if (x.b.isEmpty) Left(EmptyB(x)) else Right(x)
+
+  case class NegativeA(x: ToValidate) extends Error("Expected x.a to be positive but got %d instead".format(x.a))
+  case class EmptyB(x: ToValidate) extends Error("Expected x.b to be non-empty but got %s instead".format(x))
+}
+
+case class ToValidate(@Key("_id") id: ObjectId = new ObjectId, a: Int, b: String)
+
+object SimpleValidationDAO extends ValidatingSalatDAO[ToValidate, ObjectId](MongoConnection()(SalatSpecDb)(ToValidateColl)) {
+  def validators = ToValidate.notNegativeA _ :: ToValidate.notEmptyB _ :: Nil
+}

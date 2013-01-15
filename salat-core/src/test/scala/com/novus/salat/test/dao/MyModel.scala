@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         MyModel.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2013-01-07 22:46:23 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 package com.novus.salat.test.dao
 
-import com.novus.salat.annotations._
 import com.mongodb.casbah.Imports._
-import org.scala_tools.time.Imports._
+import com.novus.salat.annotations._
+import com.novus.salat.dao.{ SalatDAO, ModelCompanion }
+import org.joda.time._
 import com.novus.salat.test._
 import com.novus.salat.test.global._
-import com.novus.salat.dao.{ SalatDAO, ModelCompanion }
 
 object MyModel extends ModelCompanion[MyModel, ObjectId] {
   val collection = MongoConnection()(SalatSpecDb)(MyModelColl)

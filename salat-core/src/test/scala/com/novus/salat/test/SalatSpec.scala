@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         SalatSpec.scala
- * Last modified: 2012-06-28 15:37:35 EDT
+ * Last modified: 2012-10-15 20:40:58 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.test
 
-import com.novus.salat.util.Logging
 import com.mongodb.casbah.Imports._
 import org.specs2.mutable._
 import org.specs2.specification.{ Scope, Step }
 import com.novus.salat.{ BigDecimalStrategy, Context }
+import com.mongodb.casbah.commons.test.CasbahMutableSpecification
+import com.novus.salat.conversions.RegisterJodaTimeZoneConversionHelpers
 
-trait SalatSpec extends Specification with Logging {
+trait SalatSpec extends CasbahMutableSpecification {
 
   override def is =
     Step {
       //      log.info("beforeSpec: registering BSON conversion helpers")
       com.mongodb.casbah.commons.conversions.scala.RegisterConversionHelpers()
       com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
+
+      RegisterJodaTimeZoneConversionHelpers()
 
     } ^
       super.is ^

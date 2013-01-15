@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         DateStrategySpec.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-10-15 20:40:58 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 package com.novus.salat.test.json
@@ -28,8 +29,8 @@ import org.specs2.mutable.Specification
 import com.novus.salat.util.Logging
 import org.joda.time.{ DateTimeZone, DateTime }
 import com.novus.salat.json.{ StrictJSONDateStrategy, TimestampDateStrategy, StringDateStrategy }
-import net.liftweb.json.JsonAST.{ JField, JObject, JInt, JString }
 import org.joda.time.format.ISODateTimeFormat
+import org.json4s.JsonAST._
 
 class DateStrategySpec extends Specification with Logging {
 

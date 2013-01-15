@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         ModelCompanion.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-10-15 20:40:58 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 package com.novus.salat.dao
@@ -27,8 +28,7 @@ package com.novus.salat.dao
 import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.util.Logging
-import net.liftweb.json._
-import net.liftweb.json.JsonAST.JObject
+import org.json4s.JsonAST.{ JArray, JObject }
 
 /** Play framework style model companion
  *  <p/>
@@ -233,41 +233,53 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
 
   /** @param t object to remove from the collection
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def remove(t: ObjectType, wc: WriteConcern = defaultWriteConcern) {
+  def remove(t: ObjectType, wc: WriteConcern = defaultWriteConcern) = {
     dao.remove(t, wc)
   }
 
   /** @param q the object that documents to be removed must match
    *  @param wc write concern
    *  @tparam A
+   *  @return (WriteResult) result of write operation
    */
-  def remove[A <% DBObject](q: A, wc: WriteConcern) {
+  def remove[A <% DBObject](q: A, wc: WriteConcern) = {
     dao.remove(q, wc)
   }
 
   /** @param id the ID of the document to be removed
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def removeById(id: ID, wc: WriteConcern = defaultWriteConcern) {
+  def removeById(id: ID, wc: WriteConcern = defaultWriteConcern) = {
     dao.removeById(id, wc)
   }
 
   /** @param ids the list of IDs identifying the list of documents to be removed
    *  @param wc wrote concern
+   *  @return (WriteResult) result of write operation
    */
-  def removeByIds(ids: List[ID], wc: WriteConcern = defaultWriteConcern) {
+  def removeByIds(ids: List[ID], wc: WriteConcern = defaultWriteConcern) = {
     dao.removeByIds(ids, wc)
   }
 
   /** @param t object to save
    *  @param wc write concern
+   *  @return (WriteResult) result of write operation
    */
-  def save(t: ObjectType, wc: WriteConcern = defaultWriteConcern) {
+  def save(t: ObjectType, wc: WriteConcern = defaultWriteConcern) = {
     dao.save(t, wc)
   }
 
-  def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern = defaultWriteConcern) {
+  /** @param q search query for old object to update
+   *  @param o object with which to update <tt>q</tt>
+   *  @param upsert if the database should create the element if it does not exist
+   *  @param multi if the update should be applied to all objects matching
+   *  @param wc write concern
+   *  @return (WriteResult) result of write operation
+   */
+  def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern = defaultWriteConcern) = {
     dao.update(q, o, upsert, multi, wc)
   }
 

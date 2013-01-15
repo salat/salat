@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         Context.scala
- * Last modified: 2012-08-08 16:18:52 EDT
+ * Last modified: 2012-12-06 22:51:54 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat
 
-import java.math.{ RoundingMode => JRoundingMode, MathContext => JMathContext }
-import scala.collection.mutable.ConcurrentMap
-import scala.collection.JavaConversions.JConcurrentMapWrapper
-
+import com.mongodb.casbah.Imports._
+import com.novus.salat.annotations.util._
+import com.novus.salat.json.JSONConfig
 import com.novus.salat.util._
 import com.novus.salat.{ Field => SField }
-import com.novus.salat.annotations.util._
 import java.lang.reflect.Modifier
-import com.mongodb.casbah.Imports._
 import java.util.concurrent.ConcurrentHashMap
-import net.liftweb.json._
-import com.novus.salat.json.JSONConfig
+import org.json4s.JsonAST.JObject
 
 trait Context extends ContextLifecycle with Logging {
 
@@ -42,16 +39,16 @@ trait Context extends ContextLifecycle with Logging {
   val name: String
 
   /**Concurrent hashmap of classname to Grater */
-  private[salat] val graters: ConcurrentMap[String, Grater[_ <: AnyRef]] = JConcurrentMapWrapper(new ConcurrentHashMap[String, Grater[_ <: AnyRef]]())
+  private[salat] val graters: scala.collection.concurrent.Map[String, Grater[_ <: AnyRef]] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, Grater[_ <: AnyRef]]())
 
   /**Mutable seq of classloaders */
   private[salat] var classLoaders: Vector[ClassLoader] = Vector(this.getClass.getClassLoader)
 
   /**Global key remapping - for instance, always serialize "id" to "_id" */
-  private[salat] val globalKeyOverrides: ConcurrentMap[String, String] = JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
+  private[salat] val globalKeyOverrides: scala.collection.concurrent.Map[String, String] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
 
   /**Per class key overrides - map key is (clazz.getName, field name) */
-  private[salat] val perClassKeyOverrides: ConcurrentMap[(String, String), String] = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
+  private[salat] val perClassKeyOverrides: scala.collection.concurrent.Map[(String, String), String] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
 
   val typeHintStrategy: TypeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
 
@@ -78,14 +75,14 @@ trait Context extends ContextLifecycle with Logging {
 
   val jsonConfig: JSONConfig = JSONConfig()
 
-  private[salat] val caseObjectOverrides = JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
-  private[salat] val resolveCaseObjectOverrides = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
+  private[salat] val caseObjectOverrides = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
+  private[salat] val resolveCaseObjectOverrides = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
   private[salat] val caseObjectHierarchy = scala.collection.mutable.Set[String]()
 
   def registerCaseObjectOverride[A: Manifest, B <: A: Manifest](serializedValue: String) {
 
-    val parentClazz = manifest[A].erasure
-    val caseObjectClazz = manifest[B].erasure
+    val parentClazz = manifest[A].runtimeClass
+    val caseObjectClazz = manifest[B].runtimeClass
     assume(!caseObjectOverrides.contains(caseObjectClazz.getName), "registerCaseObjectOverride: clazz='%s' already overriden with value '%s'".
       format(caseObjectClazz.getName, caseObjectOverrides.get(caseObjectClazz.getName)))
 
@@ -202,7 +199,7 @@ needsProxyGrater: clazz='%s'
     if (g.isDefined) g.get else throw GraterGlitch(c)(this)
   }
 
-  def lookup[A <: CaseClass: Manifest]: Grater[A] = lookup(manifest[A].erasure.getName).asInstanceOf[Grater[A]]
+  def lookup[A <: CaseClass: Manifest]: Grater[A] = lookup(manifest[A].runtimeClass.getName).asInstanceOf[Grater[A]]
 
   def lookup(c: String, clazz: CaseClass): Grater[_ <: AnyRef] = {
     val g = lookup_?(c)

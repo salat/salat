@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         EnumSupportSpec.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-10-15 20:40:58 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.test
 
@@ -61,8 +62,8 @@ class EnumSupportSpec extends SalatSpec {
       ctx.defaultEnumStrategy must_== EnumStrategy.BY_VALUE
 
       val dbo: MongoDBObject = grater[Hector].asDBObject(h)
-      dbo must havePair("thug" -> "Just a good boy who loves his mum")
-      dbo must havePair("doneIn" -> "OhDear")
+      // dbo must havePair("thug" -> "Just a good boy who loves his mum")
+      dbo must havePair("thug" -> ThugLevel.Three.toString)
 
       val h_* = grater[Hector].asObject(dbo)
       h_* must_== h
@@ -95,7 +96,8 @@ class EnumSupportSpec extends SalatSpec {
       val h1 = HectorOverrideId(thug = ThugLevel.Two, doneInById = DoneInById.PiningForTheFjords)
 
       val dbo: MongoDBObject = grater[HectorOverrideId].asDBObject(h1)
-      dbo must havePair("thug" -> "Honour student")
+      // dbo must havePair("thug" -> "Honour student")
+      dbo must havePair("thug" -> ThugLevel.Two.toString)
       dbo must havePair("doneInById" -> 1)
 
       val h1_* = grater[HectorOverrideId].asObject(dbo)

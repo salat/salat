@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         CollectionSupportSpec.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-10-15 20:40:59 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.test
 
-import com.novus.salat._
-import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.MongoDBObject
-import com.novus.salat.util.MapPrettyPrinter
+import com.novus.salat._
 import com.novus.salat.dao.SalatDAO
+import com.novus.salat.test.global._
 import com.novus.salat.test.model._
 
 class CollectionSupportSpec extends SalatSpec {
@@ -131,8 +131,8 @@ class CollectionSupportSpec extends SalatSpec {
         val dbo: MongoDBObject = grater[Easy].asDBObject(easy)
         dbo must havePair("coll" -> {
           val builder = MongoDBList.newBuilder
-          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
           builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "A")
+          builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Thingy", "t" -> "B")
           builder.result()
         })
 
@@ -358,5 +358,23 @@ class CollectionSupportSpec extends SalatSpec {
     }
 
     // TODO: moar collection types
+
+    "support BitSet" in {
+      "scala.collection.BitSet" in {
+        val coll = scala.collection.BitSet(0, 5, 10, 15)
+        val x = XRay(coll = coll)
+        grater[XRay].asObject(grater[XRay].asDBObject(x)) must_== x
+      }
+      "scala.collection.immutable.BitSet" in {
+        val coll = scala.collection.immutable.BitSet(0, 5, 10, 15)
+        val y = Yoke(coll = coll)
+        grater[Yoke].asObject(grater[Yoke].asDBObject(y)) must_== y
+      }
+      "scala.collection.mutable.BitSet" in {
+        val coll = scala.collection.mutable.BitSet(0, 5, 10, 15)
+        val y = Zebra(coll = coll)
+        grater[Zebra].asObject(grater[Zebra].asDBObject(y)) must_== y
+      }
+    }
   }
 }

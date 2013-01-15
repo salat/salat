@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         ModelCompanionSpec.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2013-01-07 22:46:55 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 package com.novus.salat.test.dao
 
-import com.novus.salat.test.global._
-import com.novus.salat.annotations._
 import com.mongodb.casbah.Imports._
-import org.scala_tools.time.Imports._
-import com.novus.salat.dao.ModelCompanion
-import com.novus.salat.test._
-import org.specs2.specification.Scope
 import com.novus.salat.json.JSONConfig
-import net.liftweb.json._
-import scala.util.parsing.json.JSONArray
+import com.novus.salat.test._
+import com.novus.salat.test.global._
+import org.joda.time._
+import org.json4s.JsonAST._
+import org.specs2.specification.Scope
 
 class ModelCompanionSpec extends SalatSpec {
   // which most specs can execute concurrently, this particular spec needs to execute sequentially to avoid mutating shared state,
@@ -69,14 +67,14 @@ class ModelCompanionSpec extends SalatSpec {
   "y":99,
   "z":[1.0,2.0,3.0],
   "d":"%s"
-}""".format(_id.toString, JSONConfig.ISO8601.print(d.millis))
+}""".format(_id.toString, JSONConfig.ISO8601.print(d.getMillis))
       }
 
       "toCompactJson" in new myModelScope {
         val expected = "{\"_typeHint\":\"com.novus.salat.test.dao.MyModel\",\"_id\":{\"$oid\":\""+
           _id.toString+
           "\"},\"x\":\"Test\",\"y\":99,\"z\":[1.0,2.0,3.0],\"d\":\""+
-          JSONConfig.ISO8601.print(d.millis)+
+          JSONConfig.ISO8601.print(d.getMillis)+
           "\"}"
         MyModel.toCompactJson(m) must_== expected
       }
@@ -127,7 +125,7 @@ class ModelCompanionSpec extends SalatSpec {
   trait myModelScope extends Scope {
     log.trace("before: dropping %s", MyModel.collection.getFullName())
     MyModel.collection.drop()
-    MyModel.collection.count must_== 0L
+    MyModel.collection.count() must_== 0L
 
     val _id = new ObjectId
     val d = new DateTime

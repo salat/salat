@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         CollectionSupportModel.scala
- * Last modified: 2012-06-28 15:37:35 EDT
+ * Last modified: 2012-10-15 20:40:58 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.test.model
 
@@ -62,6 +63,7 @@ case class Roger(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection
 //Uncle
 //Victor
 //William
-//X-ray
-//Yoke
-//Zebra
+
+case class XRay(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.BitSet)
+case class Yoke(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.immutable.BitSet)
+case class Zebra(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.BitSet)

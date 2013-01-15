@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         ChildCollectionSpec.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2013-01-07 22:41:58 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.test.dao
 
+import com.mongodb.casbah.commons.MongoDBObject
 import com.novus.salat.test._
-import com.novus.salat._
 import com.novus.salat.test.global._
-import com.mongodb.casbah.Imports._
-import org.specs2.specification.Scope
-import com.novus.salat.test.dao._
-import org.scala_tools.time.Imports._
-import org.joda.time.DateTimeConstants._
 import org.joda.time.DateMidnight
-import com.mongodb.casbah.commons.{ MongoDBList, MongoDBObject }
+import org.joda.time.DateTimeConstants._
+import org.specs2.specification.Scope
 
 class ChildCollectionSpec extends SalatSpec {
 
@@ -71,7 +68,7 @@ class ChildCollectionSpec extends SalatSpec {
       val cr = ParentDAO.children.updateByParentId(parent1.id, updateQuery, false, true)
 
       // number of children is unchanged
-      ParentDAO.children.collection.count must_== 5L
+      ParentDAO.children.collection.count() must_== 5L
       // children of parent1 are updated as expected
       ParentDAO.children.findByParentId(parent1.id).toList must contain(
         child1Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated)),
@@ -87,7 +84,7 @@ class ChildCollectionSpec extends SalatSpec {
 
       // three children of parent1 have been removed from the child collection, overall count is reduced
       ParentDAO.children.findByParentId(parent1.id).toList must beEmpty
-      ParentDAO.children.collection.count must_== 2L
+      ParentDAO.children.collection.count() must_== 2L
       // child collection is otherwise unchanged
       ParentDAO.children.findByParentId(parent2.id).toList must contain(child1Parent2, child2Parent2).only
       ParentDAO.children.findByParentId(parent3.id).toList must beEmpty
@@ -130,12 +127,12 @@ class ChildCollectionSpec extends SalatSpec {
   trait parentChildContext extends Scope {
     log.debug("before: dropping %s", ParentDAO.collection.getFullName())
     ParentDAO.collection.drop()
-    ParentDAO.collection.count must_== 0L
+    ParentDAO.collection.count() must_== 0L
 
     val childDAO = ParentDAO.children
     log.debug("before: dropping %s", childDAO.collection.getFullName())
     childDAO.collection.drop()
-    childDAO.collection.count must_== 0L
+    childDAO.collection.count() must_== 0L
 
     val parent1 = Parent(name = "parent1")
     val parent2 = Parent(name = "parent2")
@@ -143,7 +140,7 @@ class ChildCollectionSpec extends SalatSpec {
 
     val _ids = ParentDAO.insert(parent1, parent2, parent3)
     _ids must contain(Option(parent1.id), Option(parent2.id), Option(parent3.id)).only
-    ParentDAO.collection.count must_== 3L
+    ParentDAO.collection.count() must_== 3L
 
     val child1Parent1 = Child(id = 1, parentId = parent1.id, x = "child1Parent1", y = Some("child1Parent1"))
     val child2Parent1 = Child(id = 2, parentId = parent1.id, x = "child2Parent1")
@@ -155,7 +152,7 @@ class ChildCollectionSpec extends SalatSpec {
     val childIds = ParentDAO.children.insert(child1Parent1, child2Parent1, child3Parent1, child1Parent2, child2Parent2)
     childIds must contain(Option(child1Parent1.id), Option(child2Parent1.id), Option(child3Parent1.id),
       Option(child1Parent2.id), Option(child2Parent2.id)).only
-    ParentDAO.children.collection.count must_== 5L
+    ParentDAO.children.collection.count() must_== 5L
   }
 
 }

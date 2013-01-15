@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         GraterSpec.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-10-15 20:40:58 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 package com.novus.salat.test
@@ -43,9 +44,10 @@ class GraterSpec extends SalatSpec {
       val f = true
       val g = TestDate
       val h = TestChar
+      val i = TestTimeZone
 
       "case class <-> map" in {
-        val aural = Aural(_id = _id, a = a, b = b, c = c, d = d, e = e, f = f, g = g, h = h)
+        val aural = Aural(_id = _id, a = a, b = b, c = c, d = d, e = e, f = f, g = g, h = h, i = i)
         val map = grater[Aural].toMap(aural)
         map must havePair(ctx.typeHintStrategy.typeHint, "com.novus.salat.test.model.Aural")
         map must havePair("_id", _id)
@@ -57,6 +59,7 @@ class GraterSpec extends SalatSpec {
         map must havePair("f", f)
         map must havePair("g", g)
         map must havePair("h", h)
+        map must havePair("i", i)
         val aural_* = grater[Aural].fromMap(map)
         aural_* must_== aural
       }

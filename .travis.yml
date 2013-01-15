@@ -7,7 +7,16 @@ scala:
 branches:
   only:
     - master
+# use sbt-extras runner instead of stock Travis CI sbt version
+script: sh ./scripts/travis.sh
 notifications:
   email:
     recipients:
       - prasinous@gmail.com
+jdk:
+  - openjdk6
+# these seem to segfault 2/3 of the time, need to understand why
+#  - openjdk7
+#  - oraclejdk7
+services:
+  - mongodb

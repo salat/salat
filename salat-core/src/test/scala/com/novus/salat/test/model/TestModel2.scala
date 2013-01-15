@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         TestModel2.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2012-10-15 20:40:58 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 
 package com.novus.salat.test.model
 
 import org.bson.types.ObjectId
 import com.novus.salat.annotations._
-import org.joda.time.DateTime
+import org.joda.time.{ DateTimeZone, DateTime }
 import org.joda.time.DateTimeConstants._
 
 // a reboot of test model using the Nearly Anacrophonic Phonetic Alphabet
@@ -66,7 +67,8 @@ case class Aural(_id: ObjectId = new ObjectId,
                  e: BigInt,
                  f: Boolean,
                  g: DateTime,
-                 h: Char)
+                 h: Char,
+                 i: DateTimeZone)
 
 trait Bdellatomy {
   val a: String

@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         TestModel.scala
- * Last modified: 2012-06-28 15:37:35 EDT
+ * Last modified: 2013-01-07 22:47:46 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.test.model
 
 // Just a dummy data model. It's totally contrived, so don't hold it
 // against me, neh?
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.annotations._
+import org.joda.time._
 import scala.collection.immutable.{ Map => IMap }
 import scala.collection.mutable.{ Map => MMap }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
-import com.mongodb.casbah.Imports._
-
-import org.scala_tools.time.Imports._
 
 case class Alice(x: String, y: Option[String] = Some("default y"), z: Basil)
 case class Basil(p: Option[Int], q: Int = 1067, r: Clara)
@@ -53,7 +53,8 @@ case class Hector(thug: ThugLevel.Value, doneIn: DoneIn.Value)
 case class HectorOverrideId(thug: ThugLevel.Value, doneInById: DoneInById.Value)
 case class HectorOverrideValue(thug: ThugLevel.Value, doneInByValue: DoneInByValue.Value)
 
-object ThugLevel extends Enumeration("Fairplay Tony", "Honour student", "Just a good boy who loves his mum", "Trouble, you") {
+object ThugLevel extends Enumeration {
+  //  "Fairplay Tony", "Honour student", "Just a good boy who loves his mum", "Trouble, you"
   val One, Two, Three, Four = Value
 }
 
@@ -168,9 +169,14 @@ abstract class UnannotatedAbstractMaud()
 
 case class Neville(ennui: Boolean = true, asOf: DateTime = new DateTime)
 
+case class Prue(brawl: Boolean = true, zone: DateTimeZone = DateTimeZone.forID("Europe/London"))
+
 case class Olive(awl: java.util.UUID)
 
 case class Quentin(mire: Float)
+
+case class LongSpecExample(timestamp: Long, value: Int)
+case class OptionSpecExample(timestamp: Option[Long] = None, valueInt: Option[Int] = None, valueDouble: Option[Double] = None, valueFloat: Option[Float] = None)
 
 case class Rhoda(consumed: Option[String] = None)
 case class Rhoda2(howHot: Option[BigDecimal] = None)

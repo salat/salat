@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         JsonSpec.scala
- * Last modified: 2012-09-17 23:10:43 EDT
+ * Last modified: 2012-10-15 20:40:58 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.test.json
 
@@ -27,10 +28,9 @@ import com.novus.salat._
 import com.novus.salat.util._
 import json.{ StringDateStrategy, StrictJSONDateStrategy, TimestampDateStrategy, JSONConfig }
 import org.specs2.mutable.Specification
-import net.liftweb.json._
 import scala.util.parsing.json.{ JSONObject, JSONArray }
 import org.bson.types.ObjectId
-import net.liftweb.json.JsonParser.ParseException
+import org.json4s._
 import org.joda.time.{ DateTime, DateTimeZone }
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.ISODateTimeFormat
@@ -383,7 +383,7 @@ class JsonSpec extends Specification with Logging {
       }
       "throw an exception when string cannot be parsed to valid JSON" in {
         val invalid = """?"""
-        grater[Adam].fromJSON(invalid) must throwA[ParseException]
+        grater[Adam].fromJSON(invalid) must throwA[org.json4s.ParserUtil.ParseException]
       }
       "throw an exception when string parses to valid but unexpected JSON" in {
         grater[Adam].fromJSON("""["a","b","c"]""") must throwA[RuntimeException]

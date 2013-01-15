@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         Injectors.scala
- * Last modified: 2012-08-08 17:15:11 EDT
+ * Last modified: 2013-01-07 22:43:52 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/novus/salat
+ *              Wiki:  http://github.com/novus/salat/wiki
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
 package com.novus.salat.transformers
 
-import java.lang.reflect.Method
-import scala.tools.scalap.scalax.rules.scalasig._
-import com.novus.salat.annotations.util._
-
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
+import com.novus.salat.annotations.util._
 import com.novus.salat.impls._
 import com.novus.salat.util._
-import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
-import org.scala_tools.time.Imports._
+import java.lang.reflect.Method
+import scala.tools.scalap.scalax.rules.scalasig._
 
 package object in extends Logging {
 
@@ -45,20 +43,17 @@ package object in extends Logging {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigDecimalInjector
 
-        case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with LongToInt
-
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigIntInjector
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToChar
 
-        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToFloat
-
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DateToJodaDateTime
+
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with TimeZoneToJodaDateTimeZone
 
         case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
           new Transformer(prefix.symbol.path, t)(ctx) with OptionInjector with EnumInflater
@@ -104,6 +99,11 @@ package object in extends Logging {
 
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DateToJodaDateTime with TraversableInjector {
+            val parentType = pt
+          }
+
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with TimeZoneToJodaDateTimeZone with TraversableInjector {
             val parentType = pt
           }
 
@@ -167,6 +167,12 @@ package object in extends Logging {
             val grater = ctx.lookup_?(symbol.path)
           }
 
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with TimeZoneToJodaDateTimeZone with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup_?(symbol.path)
+          }
+
         case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
           new Transformer(prefix.symbol.path, t)(ctx) with EnumInflater with MapInjector {
             val parentType = pt
@@ -207,6 +213,12 @@ package object in extends Logging {
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with DateToJodaDateTime
 
+        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+          new Transformer(symbol.path, pt)(ctx) with TimeZoneToJodaDateTimeZone
+
+        case TypeRefType(_, symbol, _) if Types.isBitSet(symbol) =>
+          new Transformer(symbol.path, pt)(ctx) with BitSetInjector
+
         case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
           new Transformer(prefix.symbol.path, t)(ctx) with EnumInflater
         }
@@ -225,7 +237,8 @@ package object in extends Logging {
 package in {
 
   import java.lang.Integer
-  import net.liftweb.json.JsonAST.JArray
+  import org.joda.time.{ DateTimeZone, DateTime }
+  import org.json4s.JsonAST.JArray
 
   trait LongToInt extends Transformer {
     self: Transformer =>
@@ -239,7 +252,7 @@ package in {
         Integer.valueOf(x)
       }
       catch {
-        case e => None
+        case e: Throwable => None
       }
     }
   }
@@ -275,6 +288,16 @@ package in {
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
       case d: java.util.Date if d != null => new DateTime(d)
       case dt: DateTime                   => dt
+    }
+  }
+
+  trait TimeZoneToJodaDateTimeZone extends Transformer {
+    self: Transformer =>
+
+    override def transform(value: Any)(implicit ctx: Context): Any = value match {
+      case tz: String if tz != null             => DateTimeZone.forID(tz)
+      case tz: java.util.TimeZone if tz != null => DateTimeZone.forID(tz.getID)
+      case tz: DateTimeZone                     => tz
     }
   }
 
@@ -315,8 +338,8 @@ package in {
     override def transform(value: Any)(implicit ctx: Context) = value match {
       case s: String => fromPath(ctx.resolveCaseObjectOverrides.get(t.symbol.path, s).
         getOrElse(throw MissingCaseObjectOverride(t.symbol.path, value, ctx.name)))
-      case dbo: DBObject       => fromPath(ctx.extractTypeHint(dbo).getOrElse(throw MissingTypeHint(dbo.toMap.asInstanceOf[Map[String, Any]])))
-      case mdbo: MongoDBObject => fromPath(ctx.extractTypeHint(mdbo).getOrElse(throw MissingTypeHint(mdbo.toMap.asInstanceOf[Map[String, Any]])))
+      case dbo: DBObject       => fromPath(ctx.extractTypeHint(dbo).getOrElse(throw MissingTypeHint(dbo)))
+      case mdbo: MongoDBObject => fromPath(ctx.extractTypeHint(mdbo).getOrElse(throw MissingTypeHint(mdbo)))
     }
 
     def fromPath(path: String) = ClassAnalyzer.companionObject(getClassNamed_!(path)(ctx), ctx.classLoaders)
@@ -355,6 +378,25 @@ package in {
     }
 
     val parentType: TypeRefType
+  }
+
+  trait BitSetInjector extends Transformer with Logging {
+    override def transform(value: Any)(implicit ctx: Context): Any = value
+
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case ba: Array[Byte] => {
+        val bs = scala.collection.mutable.BitSet.empty
+        ba.foreach(b => bs.add(b))
+        Option(path match {
+          case "scala.collection.BitSet"           => scala.collection.BitSet.empty ++ bs
+          case "scala.collection.immutable.BitSet" => scala.collection.immutable.BitSet.empty ++ bs
+          case "scala.collection.mutable.BitSet"   => bs
+          case x                                   => sys.error("unexpected TypeRefType %s".format(t))
+        })
+      }
+      case bs: scala.collection.BitSet => Some(bs)
+      case _                           => None
+    }
   }
 
   trait MapInjector extends Transformer {
