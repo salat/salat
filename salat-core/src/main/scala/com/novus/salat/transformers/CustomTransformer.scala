@@ -4,7 +4,7 @@ abstract class CustomTransformer[ModelObject <: AnyRef: Manifest, SerializedRepr
 
   final def in(value: Any): Any = value match {
     case o: SerializedRepr => deserialize(o)
-    case _             => None
+    case _                 => None
   }
 
   final def out(value: Any): Option[SerializedRepr] = value match {
