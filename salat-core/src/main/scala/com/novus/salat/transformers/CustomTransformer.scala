@@ -11,11 +11,11 @@ abstract class CustomTransformer[ModelObject <: AnyRef: Manifest, SerializedRepr
     case i: ModelObject => Option(serialize(i))
   }
 
-  def path = manifest[ModelObject].erasure.getName
+  def path = manifest[ModelObject].runtimeClass.getName
 
   def deserialize(b: SerializedRepr): ModelObject
 
   def serialize(a: ModelObject): SerializedRepr
 
-  override def toString = "CustomTransformer[ %s <-> %s ]".format(manifest[ModelObject].erasure.getName, manifest[SerializedRepr].erasure.getName)
+  override def toString = "CustomTransformer[ %s <-> %s ]".format(manifest[ModelObject].runtimeClass.getName, manifest[SerializedRepr].runtimeClass.getName)
 }

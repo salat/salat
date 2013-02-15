@@ -51,7 +51,7 @@ trait Context extends ContextLifecycle with Logging {
   /**Per class key overrides - map key is (clazz.getName, field name) */
   private[salat] val perClassKeyOverrides: scala.collection.concurrent.Map[(String, String), String] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
 
-  private[salat] val customTransformers: ConcurrentMap[String, CustomTransformer[_ <: AnyRef, _ <: AnyRef]] = JConcurrentMapWrapper(new ConcurrentHashMap[String, CustomTransformer[_ <: AnyRef, _ <: AnyRef]]())
+  private[salat] val customTransformers: scala.collection.concurrent.Map[String, CustomTransformer[_ <: AnyRef, _ <: AnyRef]] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, CustomTransformer[_ <: AnyRef, _ <: AnyRef]]())
 
   val typeHintStrategy: TypeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
 
@@ -105,7 +105,7 @@ trait Context extends ContextLifecycle with Logging {
       sys.error("Context '%s' already contains a custom transformer for class='%s'!".format(name, custom.path))
     }
     customTransformers += custom.path -> custom
-    log.debug("registerCustomTransformer: %s <-> %s", manifest[A].erasure.getName, manifest[B].erasure.getName)
+    log.debug("registerCustomTransformer: %s <-> %s", manifest[A].runtimeClass.getName, manifest[B].runtimeClass.getName)
   }
 
   def determineFieldName(clazz: Class[_], field: SField): String = determineFieldName(clazz, field.name)
