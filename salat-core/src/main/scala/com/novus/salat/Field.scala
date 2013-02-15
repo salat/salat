@@ -40,8 +40,11 @@ object Field {
       val n = method.annotation[Key].map(_.value)
       if (n.isDefined) n.get else name
     }
-    val _in = in.select(t, method.annotated_?[Salat])
-    val _out = out.select(t, method.annotated_?[Salat])
+
+    val customTransformer = ctx.customTransformers.get(t.symbol.path)
+
+    val _in = if (customTransformer.isDefined) new CustomSerializer(customTransformer.get, t.symbol.path, t, ctx) else in.select(t, method.annotated_?[Salat])
+    val _out = if (customTransformer.isDefined) new CustomDeserializer(customTransformer.get, t.symbol.path, t, ctx) else out.select(t, method.annotated_?[Salat])
     val ignore = method.annotation[Ignore].isDefined
 
     new Field(idx = idx,
@@ -73,7 +76,10 @@ sealed abstract class Field(val idx: Int,
     //        |               value: %s
     //        |         transformed: %s
     //        |
-    //      """.stripMargin, name, typeRefType, in.getClass.getInterfaces.mkString("\n"), value, xformed)
+    //      """.stripMargin, name, typeRefType, in match {
+    //        case c: UseCustomTransformer[_, _] => c.toString
+    //        case _                             => in.getClass.getInterfaces.mkString("\n")
+    //      }, value, xformed)
     xformed
   }
 
@@ -90,7 +96,10 @@ sealed abstract class Field(val idx: Int,
     //        |               value: %s
     //        |         transformed: %s
     //        |
-    //      """.stripMargin, name, typeRefType, in.getClass.getInterfaces.mkString("\n"), value, xformed)
+    //      """.stripMargin, name, typeRefType, out match {
+    //        case c: UseCustomTransformer[_, _] => c.toString
+    //        case _                             => out.getClass.getInterfaces.mkString("\n")
+    //      }, value, xformed)
     xformed
   }
 

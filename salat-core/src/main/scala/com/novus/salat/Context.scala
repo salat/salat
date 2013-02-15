@@ -32,6 +32,7 @@ import com.novus.salat.{ Field => SField }
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 import org.json4s.JsonAST.JObject
+import com.novus.salat.transformers.CustomTransformer
 
 trait Context extends ContextLifecycle with Logging {
 
@@ -49,6 +50,8 @@ trait Context extends ContextLifecycle with Logging {
 
   /**Per class key overrides - map key is (clazz.getName, field name) */
   private[salat] val perClassKeyOverrides: scala.collection.concurrent.Map[(String, String), String] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
+
+  private[salat] val customTransformers: ConcurrentMap[String, CustomTransformer[_ <: AnyRef, _ <: AnyRef]] = JConcurrentMapWrapper(new ConcurrentHashMap[String, CustomTransformer[_ <: AnyRef, _ <: AnyRef]]())
 
   val typeHintStrategy: TypeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
 
@@ -89,12 +92,20 @@ trait Context extends ContextLifecycle with Logging {
     caseObjectOverrides += caseObjectClazz.getName -> serializedValue
     resolveCaseObjectOverrides += (parentClazz.getName, serializedValue) -> caseObjectClazz.getName
     caseObjectHierarchy += parentClazz.getName
-    log.info("registerCaseObjectOverride[%s]: %s <- %s will serialize as '%s'", name, parentClazz.getSimpleName, caseObjectClazz.getSimpleName, serializedValue)
+    log.debug("registerCaseObjectOverride[%s]: %s <- %s will serialize as '%s'", name, parentClazz.getSimpleName, caseObjectClazz.getSimpleName, serializedValue)
   }
 
   def registerClassLoader(cl: ClassLoader) {
     classLoaders = cl +: classLoaders
     log.info("registerClassLoader: ctx='%s' registering classloader='%s' (total: %d)", name, cl.toString, classLoaders.size)
+  }
+
+  def registerCustomTransformer[A <: AnyRef: Manifest, B <: AnyRef: Manifest](custom: CustomTransformer[A, B]) {
+    if (customTransformers.contains(custom.path)) {
+      sys.error("Context '%s' already contains a custom transformer for class='%s'!".format(name, custom.path))
+    }
+    customTransformers += custom.path -> custom
+    log.debug("registerCustomTransformer: %s <-> %s", manifest[A].erasure.getName, manifest[B].erasure.getName)
   }
 
   def determineFieldName(clazz: Class[_], field: SField): String = determineFieldName(clazz, field.name)
