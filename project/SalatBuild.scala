@@ -39,7 +39,9 @@ object SalatBuild extends Build {
     id = "salat",
     base = file("."),
     settings = buildSettings ++ Seq(
-      publishArtifact := false
+      publishArtifact in (Compile, packageBin) := false, 
+      publishArtifact in (Compile, packageDoc) := false, 
+      publishArtifact in (Compile, packageSrc) := false 
     ),
     aggregate = Seq(util, core)
   ) dependsOn(util, core)
