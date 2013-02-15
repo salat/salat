@@ -87,3 +87,15 @@ trait InContextTransformer {
   val grater: Option[Grater[_ <: AnyRef]]
 }
 
+abstract class UseCustomTransformer[A <: AnyRef, B <: AnyRef](val custom: CustomTransformer[A, B], override val path: String, override val t: TypeRefType, override val ctx: Context) extends Transformer(path, t)(ctx) {
+  override def toString = "UseCustomTransformer: %s".format(custom.toString)
+}
+
+class CustomSerializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B], override val path: String, override val t: TypeRefType, override val ctx: Context) extends UseCustomTransformer(custom, path, t, ctx) {
+  override def transform(value: Any)(implicit ctx: Context) = custom.in(value)
+}
+
+class CustomDeserializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B], override val path: String, override val t: TypeRefType, override val ctx: Context) extends UseCustomTransformer(custom, path, t, ctx) {
+  override def transform(value: Any)(implicit ctx: Context) = custom.out(value)
+}
+
