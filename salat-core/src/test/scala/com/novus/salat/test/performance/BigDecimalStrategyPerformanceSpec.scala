@@ -51,7 +51,7 @@ class BigDecimalStrategyPerformanceSpec extends Specification with Logging {
     val name = strategy.getClass.getSimpleName
     val coll = MongoConnection()("salat_test_performance")(name)
     coll.drop()
-    coll.count must_== 0L
+    coll.count() must_== 0L
 
     val generator = new Random()
     //    val rangeMin = -1000000d

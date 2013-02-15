@@ -29,8 +29,9 @@ import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
-import org.scala_tools.time.Imports._
+
 import com.novus.salat.util.MapPrettyPrinter
+import org.joda.time.DateTime
 
 class IgnoreAnnotationSpec extends SalatSpec {
 

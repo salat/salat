@@ -33,8 +33,7 @@ import scala.collection.immutable.{ Map => IMap }
 import scala.collection.mutable.{ Map => MMap }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
 import com.mongodb.casbah.Imports._
-
-import org.scala_tools.time.Imports._
+import org.joda.time.{ DateTimeZone, DateTime }
 
 case class Alice(x: String, y: Option[String] = Some("default y"), z: Basil)
 case class Basil(p: Option[Int], q: Int = 1067, r: Clara)
@@ -176,7 +175,7 @@ case class Olive(awl: java.util.UUID)
 case class Quentin(mire: Float)
 
 case class LongSpecExample(timestamp: Long, value: Int)
-case class OptionSpecExample(timestamp: Option[Long] = None, valueInt: Option[Int] = None, valueDouble: Option[Double] = None, valueFloat: Option[Float] = None) 
+case class OptionSpecExample(timestamp: Option[Long] = None, valueInt: Option[Int] = None, valueDouble: Option[Double] = None, valueFloat: Option[Float] = None)
 
 case class Rhoda(consumed: Option[String] = None)
 case class Rhoda2(howHot: Option[BigDecimal] = None)

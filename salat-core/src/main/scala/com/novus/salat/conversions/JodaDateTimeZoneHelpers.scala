@@ -1,12 +1,9 @@
 package com.novus.salat.conversions
 
-import com.mongodb.casbah.commons.conversions
-import conversions.{ MongoConversionHelper, scala }
-
+import com.mongodb.casbah.commons.conversions.MongoConversionHelper
+import com.mongodb.casbah.commons.conversions.scala.JodaDateTimeHelpers
 import org.bson.{ BSON, Transformer }
-
-import org.scala_tools.time.Imports._
-import scala.JodaDateTimeHelpers
+import org.joda.time.DateTimeZone
 import org.joda.time.tz.CachedDateTimeZone
 
 object RegisterJodaTimeZoneConversionHelpers extends JodaDateTimeZoneHelpers {

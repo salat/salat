@@ -39,9 +39,9 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
     log.debug("before: dropping %s", UserDAO.collection.getFullName())
     log.debug("before: dropping %s", RoleDAO.collection.getFullName())
     UserDAO.collection.drop()
-    UserDAO.collection.count must_== 0L
+    UserDAO.collection.count() must_== 0L
     RoleDAO.collection.drop()
-    RoleDAO.collection.count must_== 0L
+    RoleDAO.collection.count() must_== 0L
 
     val userId = new ObjectId
     val editorId = new ObjectId
@@ -54,7 +54,7 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
   trait roleContext extends Scope {
     log.debug("before: dropping %s", RoleDAO.collection.getFullName())
     RoleDAO.collection.drop()
-    RoleDAO.collection.count must_== 0L
+    RoleDAO.collection.count() must_== 0L
     val user1Id = new ObjectId
     val user2Id = new ObjectId
     val user3Id = new ObjectId
@@ -73,14 +73,14 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
   trait fooContext extends Scope {
     log.debug("before: dropping %s", FooDAO.collection.getFullName())
     FooDAO.collection.drop()
-    FooDAO.collection.count must_== 0L
+    FooDAO.collection.count() must_== 0L
     val barId = new ObjectId
     val bar = Bar(_id = barId, x = 1, y = "y", z = 3.14)
     FooDAO.insert(bar) must beSome(barId)
     val bazId = new ObjectId
     val baz = Baz(_id = bazId, x = -1, y = "y'", n = "n")
     FooDAO.insert(baz) must beSome(bazId)
-    FooDAO.collection.count must_== 2L
+    FooDAO.collection.count() must_== 2L
   }
 
   "Salat DAO" should {
@@ -98,8 +98,8 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
     }
     "support a polymorphic child collection with always-on type hinting" in new userContext {
       UserDAO.insert(user)
-      UserDAO.collection.count must_== 1L
-      RoleDAO.collection.count must_== 2L
+      UserDAO.collection.count() must_== 1L
+      RoleDAO.collection.count() must_== 2L
 
       val user_* = UserDAO.findOneById(userId)
       user_* must beSome(user)

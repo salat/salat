@@ -25,13 +25,11 @@
 
 package com.novus.salat.json
 
-import org.scala_tools.time.Imports._
-import org.joda.time.DateTimeZone
-import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
 import java.util.{ TimeZone, Date }
-import org.json4s._
-import org.json4s.native.JsonMethods._
 import org.bson.types.{ BSONTimestamp, ObjectId }
+import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
+import org.joda.time.{ DateTime, DateTimeZone }
+import org.json4s._
 
 object JSONConfig {
   val ISO8601 = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC)

@@ -29,7 +29,6 @@ import com.novus.salat.test.global._
 import scala.collection.immutable.{ Map => IMap }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
 import org.joda.time.format.{ PeriodFormat, PeriodFormatterBuilder }
-import org.scala_tools.time.TypeImports._
 import org.joda.time.{ DateTimeZone, Period, DateTime }
 import scala.collection.mutable.{ ArrayBuffer, Map => MMap }
 

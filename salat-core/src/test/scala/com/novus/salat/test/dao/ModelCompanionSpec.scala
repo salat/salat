@@ -27,11 +27,12 @@ package com.novus.salat.test.dao
 
 import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
-import org.scala_tools.time.Imports._
+
 import com.novus.salat.test._
 import org.specs2.specification.Scope
 import com.novus.salat.json.JSONConfig
 import org.json4s.JsonAST._
+import org.joda.time.DateTime
 
 class ModelCompanionSpec extends SalatSpec {
   // which most specs can execute concurrently, this particular spec needs to execute sequentially to avoid mutating shared state,
@@ -67,14 +68,14 @@ class ModelCompanionSpec extends SalatSpec {
   "y":99,
   "z":[1.0,2.0,3.0],
   "d":"%s"
-}""".format(_id.toString, JSONConfig.ISO8601.print(d.millis))
+}""".format(_id.toString, JSONConfig.ISO8601.print(d.getMillis))
       }
 
       "toCompactJson" in new myModelScope {
         val expected = "{\"_typeHint\":\"com.novus.salat.test.dao.MyModel\",\"_id\":{\"$oid\":\""+
           _id.toString+
           "\"},\"x\":\"Test\",\"y\":99,\"z\":[1.0,2.0,3.0],\"d\":\""+
-          JSONConfig.ISO8601.print(d.millis)+
+          JSONConfig.ISO8601.print(d.getMillis)+
           "\"}"
         MyModel.toCompactJson(m) must_== expected
       }
@@ -125,7 +126,7 @@ class ModelCompanionSpec extends SalatSpec {
   trait myModelScope extends Scope {
     log.trace("before: dropping %s", MyModel.collection.getFullName())
     MyModel.collection.drop()
-    MyModel.collection.count must_== 0L
+    MyModel.collection.count() must_== 0L
 
     val _id = new ObjectId
     val d = new DateTime

@@ -24,17 +24,16 @@
  */
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
+import com.mongodb.util.JSON.parse
 import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
-
-import com.mongodb.casbah.Imports._
-import com.mongodb.util.JSON.parse
+import org.joda.time.DateTime
 
 class DateTimeSpec extends SalatSpec {
   "A grater" should {
     "support org.scala_tools.time.TypeImports.DateTime" in {
-      import org.scala_tools.time.Imports._
       val dt = DateTime.now
       val n = Neville(asOf = dt)
       val dbo: MongoDBObject = grater[Neville].asDBObject(n)

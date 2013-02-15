@@ -24,16 +24,13 @@
  */
 package com.novus.salat.transformers
 
-import java.lang.reflect.Method
-import scala.tools.scalap.scalax.rules.scalasig._
-import com.novus.salat.annotations.util._
-
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
+import com.novus.salat.annotations.util._
 import com.novus.salat.impls._
 import com.novus.salat.util._
-import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
-import org.scala_tools.time.Imports._
+import java.lang.reflect.Method
+import scala.tools.scalap.scalax.rules.scalasig._
 
 package object in extends Logging {
 
@@ -240,6 +237,7 @@ package object in extends Logging {
 package in {
 
   import java.lang.Integer
+  import org.joda.time.{ DateTime, DateTimeZone }
   import org.json4s.JsonAST.JArray
 
   trait LongToInt extends Transformer {

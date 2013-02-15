@@ -27,10 +27,11 @@ package com.novus.salat.test.dao
 
 import com.novus.salat.annotations._
 import com.mongodb.casbah.Imports._
-import org.scala_tools.time.Imports._
+
 import com.novus.salat.test._
 import com.novus.salat.test.global._
 import com.novus.salat.dao.{ SalatDAO, ModelCompanion }
+import org.joda.time.DateTime
 
 object MyModel extends ModelCompanion[MyModel, ObjectId] {
   val collection = MongoConnection()(SalatSpecDb)(MyModelColl)

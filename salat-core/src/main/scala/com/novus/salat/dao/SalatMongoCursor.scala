@@ -39,8 +39,6 @@ import scala.Predef._
 
 trait SalatMongoCursorBase[T <: AnyRef] extends Logging {
 
-  import scalaj.collection.Imports._
-
   val _grater: Grater[T]
 
   val underlying: DBCursor
@@ -105,7 +103,7 @@ trait SalatMongoCursorBase[T <: AnyRef] extends Logging {
 
   def numSeen = underlying.numSeen
 
-  def sizes = underlying.getSizes.asScala
+  def sizes = scala.collection.JavaConversions.collectionAsScalaIterable(underlying.getSizes).toList
 
   def batchSize(n: Int) = {
     underlying.batchSize(n)

@@ -29,9 +29,9 @@ import com.novus.salat.test._
 import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations._
-import org.scala_tools.time.Imports._
+
 import com.novus.salat.dao._
-import org.joda.time.DateMidnight
+import org.joda.time.{ DateTime, DateMidnight }
 
 @Salat
 trait Beta {
