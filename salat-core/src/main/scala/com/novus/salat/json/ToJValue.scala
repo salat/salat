@@ -34,7 +34,7 @@ import com.novus.salat.util.Logging
 import java.net.URL
 import com.novus.salat.TypeFinder
 import com.novus.salat.StringTypeHintStrategy
-import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
+import scala.tools.scalap.scalax.rules.scalasig.{ SingleType, TypeRefType }
 import org.bson.types.BSONTimestamp
 
 object MapToJSON extends Logging {
@@ -130,13 +130,14 @@ object FromJValue extends Logging {
             case JInt(bi) => bs.add(bi.toInt)
             case x        => sys.error("expected JInt got %s\n%s".format(x.getClass.getName, x))
           }
+          // TODO: move this into TypeMatchers
           val v = field.tf.path match {
             case "scala.collection.BitSet"           => scala.collection.BitSet.empty ++ bs
             case "scala.collection.immutable.BitSet" => scala.collection.immutable.BitSet.empty ++ bs
             case "scala.collection.mutable.BitSet"   => bs
             case x                                   => sys.error("unexpected TypeRefType %s".format(field.tf.t))
           }
-          log.debug("RETURNING: v=%s", v)
+          //          log.debug("RETURNING: v=%s", v)
           v
         }
         case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
@@ -167,17 +168,18 @@ object FromJValue extends Logging {
     }
     //    log.debug(
     //      """
-    //        | FromJValue:
-    //        |                                       j: %s
-    //        |                             field.name: %s
-    //        |                      field.typeRefType: %s
-    //        |             field.typeRefType.typeArgs: [%s]
-    //        |                      field.tf.isOption: %s
-    //        | field.tf.isDate || field.tf.isDateTime: %s
-    //        |                              childType: %s
-    //        |                                      v: %s
-    //        |
-    //      """.stripMargin, j, field.name, field.typeRefType, field.typeRefType.typeArgs.mkString(", "), field.tf.isOption, field.tf.isDate || field.tf.isDateTime, childType, v)
+    //            | FromJValue:
+    //            |                                       j: %s
+    //            |                             field.name: %s
+    //            |                      field.typeRefType: %s
+    //            |             field.typeRefType.typeArgs: [%s]
+    //            |                      field.tf.isOption: %s
+    //            | field.tf.isDate || field.tf.isDateTime: %s
+    //            |                  field.tf.isBigDecimal: %s
+    //            |                              childType: %s
+    //            |                                      v: %s
+    //            |
+    //          """.stripMargin, j, field.name, field.typeRefType, field.typeRefType.typeArgs.mkString(", "), field.tf.isOption, field.tf.isDate || field.tf.isDateTime, field.tf.isBigDecimal, childType, v)
     v
   }
 
@@ -205,12 +207,12 @@ object FromJValue extends Logging {
     }
     //    log.debug(
     //      """
-    //                |deserialize:
-    //                | tf.t.symbol.path: %s
-    //                | jValue: %s
-    //                | v.getClass: %s
-    //                | v: %s
-    //              """.stripMargin, tf.t.symbol.path, j, v.asInstanceOf[AnyRef].getClass, v)
+    //                    |deserialize:
+    //                    | tf.t.symbol.path: %s
+    //                    | jValue: %s
+    //                    | v.getClass: %s
+    //                    | v: %s
+    //                  """.stripMargin, tf.t.symbol.path, j, v.asInstanceOf[AnyRef].getClass, v)
     v
   }
 }
