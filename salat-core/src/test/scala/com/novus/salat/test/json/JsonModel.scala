@@ -64,6 +64,8 @@ case class Adam(a: String,
                 d: Boolean,
                 e: DateTime,
                 u: java.net.URL,
+                bd: BigDecimal,
+                bi: BigInt,
                 o: ObjectId)
 
 case class Bertil(ints: List[Int], strings: List[String])
@@ -85,3 +87,5 @@ case class Martin(s: String, d: Double) extends Kalle(s)
 case class Niklas(g: Option[Gustav])
 case class Olof(d: DateTime)
 case class Petter(d: Option[DateTime])
+case class Qvintus(bd: Option[BigDecimal])
+case class Rudolf(bi: Option[BigInt])
