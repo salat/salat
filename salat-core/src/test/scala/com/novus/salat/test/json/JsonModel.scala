@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         JsonModel.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2013-02-25 18:56:50 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,3 +89,4 @@ case class Olof(d: DateTime)
 case class Petter(d: Option[DateTime])
 case class Qvintus(bd: Option[BigDecimal])
 case class Rudolf(bi: Option[BigInt])
+case class Sigurd(o: Option[ObjectId])
