@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         JsonSpec.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2013-02-25 21:07:26 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,19 @@
 package com.novus.salat.test.json
 
 import com.novus.salat._
+import com.novus.salat.json.StrictJSONDateStrategy
+import com.novus.salat.json.StringDateStrategy
+import com.novus.salat.json.TimestampDateStrategy
+import com.novus.salat.json._
 import com.novus.salat.util._
-import com.novus.salat.json.{ StringDateStrategy, StrictJSONDateStrategy, TimestampDateStrategy, JSONConfig }
 import org.bson.types.ObjectId
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{ DateTime, DateTimeZone }
 import org.json4s._
 import org.specs2.mutable.Specification
-import scala.util.parsing.json.{ JSONObject, JSONArray }
+import scala.util.parsing.json.JSONArray
+import scala.util.parsing.json.JSONObject
 
 class JsonSpec extends Specification with Logging {
 
@@ -131,6 +135,20 @@ class JsonSpec extends Specification with Logging {
           }
           "BigInt using long strategy" in {
             grater[Rudolf].toCompactJSON(Rudolf(bi = Some(bi))) must_== "{\"bi\":123456}"
+          }
+          "ObjectId using string strategy" in {
+            implicit val ctx = new Context {
+              val name = "test_oid_string"
+              override val jsonConfig = JSONConfig(objectIdStrategy = StringObjectIdStrategy)
+            }
+            grater[Sigurd].toCompactJSON(Sigurd(o = Some(o))) must_== "{\"o\":\"4fd0bead4ceab231e6f3220b\"}"
+          }
+          "ObjectId using strict strategy" in {
+            implicit val ctx = new Context {
+              val name = "test_oid_strict"
+              override val jsonConfig = JSONConfig(objectIdStrategy = StrictJSONObjectIdStrategy)
+            }
+            grater[Sigurd].toCompactJSON(Sigurd(o = Some(o))) must_== "{\"o\":{\"$oid\":\"4fd0bead4ceab231e6f3220b\"}}"
           }
         }
         "None" in {
@@ -289,6 +307,21 @@ class JsonSpec extends Specification with Logging {
         "BigInt using Long strategy" in {
           grater[Rudolf].fromJSON("{\"bi\":123456}") must_== Rudolf(Some(bi))
         }
+        "ObjectId using String strategy" in {
+          implicit val ctx = new Context {
+            val name = "test_oid_string"
+            override val jsonConfig = JSONConfig(objectIdStrategy = StringObjectIdStrategy)
+          }
+          grater[Sigurd].fromJSON("{\"o\":\"4fd0bead4ceab231e6f3220b\"}") must_== Sigurd(Some(o))
+        }
+        "ObjectId using strict strategy" in {
+          implicit val ctx = new Context {
+            val name = "test_oid_strict"
+            override val jsonConfig = JSONConfig(objectIdStrategy = StrictJSONObjectIdStrategy)
+          }
+          grater[Sigurd].fromJSON("{\"o\":{\"$oid\":\"4fd0bead4ceab231e6f3220b\"}}") must_== Sigurd(Some(o))
+        }
+
         "case class" in {
           grater[Niklas].fromJSON(JObject(
             JField("g", JObject(JField("o", JString("OG")) :: Nil)) :: Nil)) must_== n
