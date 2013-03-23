@@ -51,6 +51,21 @@ protected[salat] object Types {
   def isBigDecimal(symbol: Symbol) = symbol.path == SBigDecimal
 
   def isBigInt(symbol: Symbol) = symbol.path == BigInt
+
+  def isValueClass(symbol: Symbol) = {
+    if (symbol.path.startsWith("scala.") || symbol.path.startsWith("java.")) false
+    else companionOf(Class.forName(symbol.path)).flatMap(c => if (c.getClass.getMethods.exists(_.getName == "hashCode$extension")) Some(true) else None).isDefined
+  }
+  // Utility to get companion object
+  private def companionOf(clazz: Class[_]): Option[AnyRef] = try {
+    val companionClassName = clazz.getName+"$"
+    val companionClass = Class.forName(companionClassName)
+    val moduleField = companionClass.getField("MODULE$")
+    Some(moduleField.get(null))
+  }
+  catch {
+    case e: Throwable => None
+  }
 }
 
 protected[salat] case class TypeFinder(t: TypeRefType) {
@@ -78,6 +93,7 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
   lazy val isOid = TypeMatchers.matches(t, Types.Oid)
   lazy val isURL = TypeMatchers.matches(t, classOf[java.net.URL].getName)
   lazy val isBSONTimestamp = TypeMatchers.matches(t, Types.BsonTimestamp)
+  lazy val isValueClass = Types.isValueClass(t.symbol)
 
   lazy val directlyDeserialize = isDate || isDateTime || isBSONTimestamp || isOid
 }

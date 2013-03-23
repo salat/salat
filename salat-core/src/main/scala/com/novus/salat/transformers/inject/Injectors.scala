@@ -31,15 +31,19 @@ import com.novus.salat.impls._
 import com.novus.salat.util._
 import java.lang.reflect.Method
 import scala.tools.scalap.scalax.rules.scalasig._
+import scala.language.reflectiveCalls // compiler-recommended import
 
 package object in extends Logging {
 
   def select(pt: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     pt match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with CaseObjectInjector
-        }
+
+        case TypeRefType(ThisType(_), symbol, _) if isValueClass_!(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with ValueClassInjector
+
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigDecimalInjector
 
@@ -72,6 +76,12 @@ package object in extends Logging {
             val parentType = pt
           }
         }
+
+        case TypeRefType(ThisType(_), symbol, _) if isValueClass_!(symbol.path) =>
+          new Transformer(t.symbol.path, t)(ctx) with ValueClassInjector with TraversableInjector {
+            val parentType = pt
+          }
+
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalInjector with TraversableInjector {
             val parentType = pt
@@ -126,11 +136,18 @@ package object in extends Logging {
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) =>
           new Transformer(t.symbol.path, t)(ctx) with CaseObjectInjector with MapInjector {
             val parentType = pt
           }
-        }
+
+        case TypeRefType(ThisType(_), symbol, _) if isValueClass_!(symbol.path) =>
+          {
+            new Transformer(t.symbol.path, t)(ctx) with MapInjector with ValueClassInjector { // Note: Ordering of with clauses important here!
+              val parentType = pt
+            }
+          }
+
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalInjector with MapInjector {
             val parentType = pt
@@ -190,9 +207,18 @@ package object in extends Logging {
           val grater = ctx.lookup_?(symbol.path)
         }
       }
-      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) => {
+
+      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) =>
         new Transformer(pt.symbol.path, pt)(ctx) with CaseObjectInjector
-      }
+
+      case TypeRefType(ThisType(_), symbol, _) if isValueClass_!(symbol.path) =>
+        new Transformer(symbol.path, pt)(ctx) with ValueClassMapper {
+          override def transform(value: Any)(implicit ctx: Context): Any = {
+            val vcClazz = vcc(symbol.path)
+            val vcType = vType(vcClazz)
+            typeMap(vcType, value)
+          }
+        }
 
       case TypeRefType(_, symbol, _) => pt match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
@@ -343,6 +369,52 @@ package in {
     }
 
     def fromPath(path: String) = ClassAnalyzer.companionObject(getClassNamed_!(path)(ctx), ctx.classLoaders)
+  }
+
+  // OK, ValueClasses are messy.  If they are a simple type they just use their base type as the value (i.e. don't create
+  // a wrapper class instance for them), but... if they're contained in a collection we need to create new wrapper objects
+  // for them.
+  trait ValueClassInjector extends Transformer with ValueClassMapper with Logging {
+    self: Transformer =>
+    override def transform(value: Any)(implicit ctx: Context) = {
+      val vcClazzConstructor = vcc(t.symbol.path)
+      val vcType = vType(vcClazzConstructor)
+      value match {
+        case v: Option[_] => {
+          Some(vcClazzConstructor.newInstance(typeMap(vcType, v.get)))
+        }
+        case m: Map[_, _] => m.map {
+          case (k, v) => {
+            (k, vcClazzConstructor.newInstance(typeMap(vcType, v)))
+          }
+        }.toMap
+        case v => vcClazzConstructor.newInstance(typeMap(vcType, v))
+      }
+    }
+  }
+  trait ValueClassMapper {
+    def vcc(path: String)(implicit ctx: Context) = Class.forName(path, false, ctx.classLoaders.head).getConstructors.head
+    def vType(vClazz: java.lang.reflect.Constructor[_]) = vClazz.getParameterTypes.head.getName
+
+    // This whole process is truly bizzare!  If a value is of class, say String, I can'd just pass it to newInstance.
+    // Nor could I get Class.cast to work.  For reasons beyond me the only reliable thing to do was determine the value's
+    // class and then hard-cast it *to the same type* using asInstanceOf.  Completely gonzo, but I'm sure it has something
+    // to do with deep, dark Scala internals I probably am better off not understanding.
+    val LongClass = classOf[java.lang.Long]
+    val FloatClass = classOf[Float]
+    val DoubleClass = classOf[Double]
+    val BooleanClass = classOf[Boolean]
+    val StringClass = classOf[String]
+    val IntClass = classOf[Integer]
+
+    def typeMap(vTypeName: String, vv: Any) = vTypeName match {
+      case "long"             => vv.asInstanceOf[java.lang.Long]
+      case "int"              => vv.asInstanceOf[Long].toInt.asInstanceOf[java.lang.Integer]
+      case "boolean"          => vv.asInstanceOf[java.lang.Boolean]
+      case "float"            => new java.lang.Float(12.55) //vv.asInstanceOf[Double].toFloat.asInstanceOf[java.lang.Float]
+      case "double"           => vv.asInstanceOf[java.lang.Double]
+      case "java.lang.String" => vv.asInstanceOf[String]
+    }
   }
 
   trait OptionInjector extends Transformer {

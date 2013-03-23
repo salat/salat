@@ -44,7 +44,6 @@ object Field {
     val _out = out.select(t, method.annotated_?[Salat])
     val _outNoResolve = out.select(t, method.annotated_?[Salat], false)
     val ignore = method.annotation[Ignore].isDefined
-
     new Field(idx = idx,
       name = _name,
       nameNoResolve = name,
@@ -67,8 +66,8 @@ sealed abstract class Field(val idx: Int,
 
   def in_!(value: Any) = {
     val xformed = in.transform_!(value)
-    //    log.debug(
-    //      """
+    //log.debug(
+    //  """
     //        |IN:
     //        |                name: %s
     //        |         typeRefType:

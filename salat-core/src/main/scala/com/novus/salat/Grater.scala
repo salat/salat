@@ -39,6 +39,7 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import com.novus.salat.json.{ FromJValue, ToJField }
 import org.json4s.native.JsonParser
+import scala.language.existentials // compiler-recommended import
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -121,7 +122,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       { if (resolveKey) field.out_!(element) else field.outNoResolve_!(element) } match {
         case Some(None) => None
         case Some(serialized) => {
-          //          log.info("""
+          //log.info("""
           //
           //          field.name = '%s'
           //          value = %s  [%s]
@@ -129,11 +130,11 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
           //          value == default? %s
           //
           //          """, field.name,
-          //            serialized,
-          //            serialized.asInstanceOf[AnyRef].getClass.getName,
-          //            safeDefault(field),
-          //            safeDefault(field).map(_.asInstanceOf[AnyRef].getClass.getName).getOrElse("N/A"),
-          //            (safeDefault(field).map(dv => dv == serialized).getOrElse(false)))
+          //  serialized,
+          //  serialized.asInstanceOf[AnyRef].getClass.getName,
+          //  safeDefault(field),
+          //  safeDefault(field).map(_.asInstanceOf[AnyRef].getClass.getName).getOrElse("N/A"),
+          //  (safeDefault(field).map(dv => dv == serialized).getOrElse(false)))
           val key = cachedFieldName(field, resolveKey)
           serialized match {
             case serialized if ctx.suppressDefaultArgs && !ctx.neverSuppressTheseFields.contains(key) && defaultArg(field).suppress(element) => None

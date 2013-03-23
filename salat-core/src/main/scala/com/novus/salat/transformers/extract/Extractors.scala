@@ -35,9 +35,11 @@ package object out {
   def select(t: TypeRefType, hint: Boolean, resolveKey: Boolean = true)(implicit ctx: Context): Transformer = {
     t match {
       case IsOption(t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+        case TypeRefType(ThisType(_), symbol, _) if isValueClass_!(symbol.path) =>
+          new Transformer(t.symbol.path, t)(ctx) with OptionExtractor with ValueClassExtractor
+
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) =>
           new Transformer(t.symbol.path, t)(ctx) with OptionExtractor with CaseObjectExtractor
-        }
 
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with BigDecimalExtractor
@@ -54,9 +56,8 @@ package object out {
         case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with DateTimeZoneExtractor
 
-        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
+        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" =>
           new Transformer(prefix.symbol.path, t)(ctx) with OptionExtractor with EnumStringifier
-        }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t, resolveKey)(ctx) with OptionExtractor with InContextToDBObject {
@@ -67,9 +68,11 @@ package object out {
       }
 
       case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+        case TypeRefType(ThisType(_), symbol, _) if isValueClass_!(symbol.path) =>
+          new Transformer(t.symbol.path, t)(ctx) with ValueClassExtractor with TraversableExtractor
+
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) =>
           new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with TraversableExtractor
-        }
 
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with TraversableExtractor
@@ -86,9 +89,8 @@ package object out {
         case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DateTimeZoneExtractor with TraversableExtractor
 
-        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
+        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" =>
           new Transformer(prefix.symbol.path, t)(ctx) with EnumStringifier with TraversableExtractor
-        }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t, resolveKey)(ctx) with InContextToDBObject with TraversableExtractor {
@@ -100,9 +102,11 @@ package object out {
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
+        case TypeRefType(ThisType(_), symbol, _) if isValueClass_!(symbol.path) =>
+          new Transformer(t.symbol.path, t)(ctx) with ValueClassExtractor with MapExtractor
+
+        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) =>
           new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with MapExtractor
-        }
 
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with MapExtractor
@@ -129,9 +133,13 @@ package object out {
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t, resolveKey)(ctx) with MapExtractor
       }
-      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) => {
+
+      case pt if ctx.caseObjectHierarchy.contains(pt.symbol.path) =>
         new Transformer(pt.symbol.path, pt)(ctx) with CaseObjectExtractor
-      }
+
+      case TypeRefType(ThisType(_), symbol, _) if isValueClass_!(symbol.path) =>
+        new Transformer(symbol.path, t)(ctx) with ValueClassExtractor
+
       case TypeRefType(_, symbol, _) => t match {
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor
@@ -151,9 +159,8 @@ package object out {
         case TypeRefType(_, symbol, _) if Types.isBitSet(symbol) =>
           new Transformer(symbol.path, t)(ctx) with BitSetExtractor
 
-        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
+        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" =>
           new Transformer(prefix.symbol.path, t)(ctx) with EnumStringifier
-        }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t, resolveKey)(ctx) with InContextToDBObject {
@@ -167,9 +174,16 @@ package object out {
 
 package out {
 
+  trait ValueClassExtractor extends Transformer with Logging {
+    self: Transformer =>
+    override def transform(value: Any)(implicit ctx: Context): Any = {
+      val valueFieldName = value.getClass.getDeclaredFields.head.getName
+      value.getClass.getDeclaredMethods.toList.find(m => m.getName == valueFieldName).get.invoke(value)
+    }
+  }
+
   trait CaseObjectExtractor extends Transformer with Logging {
     self: Transformer =>
-
     override def transform(value: Any)(implicit ctx: Context): Any = {
       val name = value.asInstanceOf[AnyRef].getClass.getName
       ctx.caseObjectOverrides.get(name).getOrElse {

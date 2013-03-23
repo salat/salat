@@ -25,6 +25,7 @@
 package com.novus.salat.util
 
 import java.lang.reflect.Constructor
+import scala.language.existentials // compiler-recommended import
 // a useful place to be when things go pear-shaped
 // p.s. could more people throw exceptions like these?
 

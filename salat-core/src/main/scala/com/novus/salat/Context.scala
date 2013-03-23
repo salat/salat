@@ -187,6 +187,9 @@ needsProxyGrater: clazz='%s'
           case Some(clazz) if isCaseClass(clazz) => {
             Some((new ConcreteGrater[CaseClass](clazz.asInstanceOf[Class[CaseClass]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
           }
+          case Some(clazz) if isValueClass(clazz) => {
+            Some((new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
+          }
           case _ => None
         }
       }

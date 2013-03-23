@@ -28,6 +28,7 @@ import com.novus.salat._
 import scala.tools.scalap.scalax.rules.scalasig.SymbolInfoSymbol
 import java.lang.reflect.Constructor
 import com.mongodb.casbah.commons.TypeImports._
+import scala.language.existentials // compiler-recommended import
 
 case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
   """

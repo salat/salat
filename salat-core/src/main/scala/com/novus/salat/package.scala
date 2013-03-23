@@ -9,7 +9,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licensesICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,6 +26,7 @@ package com.novus.salat
 
 import com.novus.salat.util._
 import java.math.{ RoundingMode, MathContext }
+import scala.language.implicitConversions // compiler-recommended import
 
 object `package` extends Logging {
 
@@ -78,4 +79,18 @@ object `package` extends Logging {
 
   protected[salat] def isCaseObject(clazz: Class[_]): Boolean = clazz.getInterfaces.contains(classOf[Product]) &&
     clazz.getInterfaces.contains(classOf[ScalaObject]) && clazz.getName.endsWith("$")
+
+  // Utility to get companion object
+  protected[salat] def companionOf(clazz: Class[_]): Option[AnyRef] = try {
+    val companionClassName = clazz.getName+"$"
+    val companionClass = Class.forName(companionClassName)
+    val moduleField = companionClass.getField("MODULE$")
+    Some(moduleField.get(null))
+  }
+  catch {
+    case e: Throwable => None
+  }
+
+  protected[salat] def isValueClass(clazz: Class[_]): Boolean = companionOf(clazz).flatMap(c => if (c.getClass.getMethods.exists(_.getName == "hashCode$extension")) Some(true) else None).isDefined
+  protected[salat] def isValueClass_!(path: String)(implicit ctx: Context) = ctx.lookup_?(path).flatMap(grater => if (isValueClass(grater.clazz)) Some(true) else None).isDefined
 }
