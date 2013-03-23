@@ -26,6 +26,19 @@ package com.novus.salat.test.json
 
 import org.specs2.mutable.Specification
 import com.novus.salat._
+import com.novus.salat.dao._
+import com.novus.salat.annotations._
+import com.mongodb.casbah.Imports._
+
+// set implicit context for DAO
+package object context {
+  val CustomTypeHint = "type"
+  implicit val ctx = new Context {
+    val name = "JsonContext-As-Needed"
+    override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = CustomTypeHint)
+  }
+}
+import context._
 
 // [*] Tested
 class LongVC(val lv: Long) extends AnyVal
@@ -41,7 +54,7 @@ class IntVC(val i: Int) extends AnyVal
 class StringVC(val s: String) extends AnyVal
 
 case class FooLong(
-  name: String,
+  @Key("_id") name: String,
   hey: Option[Long],
   big: Long,
   lv: LongVC,
@@ -49,7 +62,7 @@ case class FooLong(
   llv: List[LongVC],
   mlv: Map[String, LongVC])
 case class FooString(
-  name: String,
+  @Key("_id") name: String,
   hey: Option[String],
   big: String,
   lv: StringVC,
@@ -57,7 +70,7 @@ case class FooString(
   llv: List[StringVC],
   mlv: Map[String, StringVC])
 case class FooInt(
-  name: String,
+  @Key("_id") name: String,
   hey: Option[Int],
   big: Int,
   lv: IntVC,
@@ -65,7 +78,7 @@ case class FooInt(
   llv: List[IntVC],
   mlv: Map[String, IntVC])
 case class FooBoolean(
-  name: String,
+  @Key("_id") name: String,
   hey: Option[Boolean],
   big: Boolean,
   lv: BooleanVC,
@@ -73,7 +86,7 @@ case class FooBoolean(
   llv: List[BooleanVC],
   mlv: Map[String, BooleanVC])
 case class FooFloat(
-  name: String,
+  @Key("_id") name: String,
   hey: Option[Float],
   big: Float,
   lv: FloatVC,
@@ -81,7 +94,7 @@ case class FooFloat(
   llv: List[FloatVC],
   mlv: Map[String, FloatVC])
 case class FooDouble(
-  name: String,
+  @Key("_id") name: String,
   hey: Option[Double],
   big: Double,
   lv: DoubleVC,
@@ -91,6 +104,7 @@ case class FooDouble(
 
 class ValueClassSpec extends Specification {
 
+  MongoConnection().dropDatabase("salat_test_vc")
   "Value Class support" should {
     "handle converting value class objects to JObject" in {
       "serialize Long types" in {
@@ -107,6 +121,13 @@ class ValueClassSpec extends Specification {
         val obj = g.fromJSON(rendered)
         g.toPrettyJSON(obj) must_== rendered
         obj.lv must_== new LongVC(v)
+        object FooLongModel extends ModelCompanion[FooLong, String] {
+          val dao = new SalatDAO[FooLong, String](collection = MongoConnection("localhost")("salat_test_vc")("vc_long")) {}
+          override def defaultWriteConcern = com.mongodb.WriteConcern.ACKNOWLEDGED
+        }
+        FooLongModel.save(foo)
+        val m = FooLongModel.findOneById("Fred")
+        m.get.lv must_== new LongVC(v)
       }
       "serialize String types" in {
         val v = "Testing"
@@ -122,6 +143,13 @@ class ValueClassSpec extends Specification {
         val obj = g.fromJSON(rendered)
         g.toPrettyJSON(obj) must_== rendered
         obj.lv must_== new StringVC(v)
+        object FooStringModel extends ModelCompanion[FooString, String] {
+          val dao = new SalatDAO[FooString, String](collection = MongoConnection("localhost")("salat_test_vc")("vc_string")) {}
+          override def defaultWriteConcern = com.mongodb.WriteConcern.ACKNOWLEDGED
+        }
+        FooStringModel.save(foo)
+        val m = FooStringModel.findOneById("Fred")
+        m.get.lv must_== new StringVC(v)
       }
       "serialize Int types" in {
         val v: Int = 25
@@ -137,6 +165,13 @@ class ValueClassSpec extends Specification {
         val obj = g.fromJSON(rendered)
         g.toPrettyJSON(obj) must_== rendered
         obj.lv must_== new IntVC(v)
+        object FooIntModel extends ModelCompanion[FooInt, String] {
+          val dao = new SalatDAO[FooInt, String](collection = MongoConnection("localhost")("salat_test_vc")("vc_Int")) {}
+          override def defaultWriteConcern = com.mongodb.WriteConcern.ACKNOWLEDGED
+        }
+        FooIntModel.save(foo)
+        val m = FooIntModel.findOneById("Fred")
+        m.get.lv must_== new IntVC(v)
       }
       "serialize Boolean types" in {
         val v: Boolean = true
@@ -152,6 +187,13 @@ class ValueClassSpec extends Specification {
         val obj = g.fromJSON(rendered)
         g.toPrettyJSON(obj) must_== rendered
         obj.lv must_== new BooleanVC(v)
+        object FooBooleanModel extends ModelCompanion[FooBoolean, String] {
+          val dao = new SalatDAO[FooBoolean, String](collection = MongoConnection("localhost")("salat_test_vc")("vc_Boolean")) {}
+          override def defaultWriteConcern = com.mongodb.WriteConcern.ACKNOWLEDGED
+        }
+        FooBooleanModel.save(foo)
+        val m = FooBooleanModel.findOneById("Fred")
+        m.get.lv must_== new BooleanVC(v)
       }
       "serialize Double types" in {
         val v: Double = 12.34
@@ -167,6 +209,13 @@ class ValueClassSpec extends Specification {
         val obj = g.fromJSON(rendered)
         g.toPrettyJSON(obj) must_== rendered
         obj.lv must_== new DoubleVC(v)
+        object FooDoubleModel extends ModelCompanion[FooDouble, String] {
+          val dao = new SalatDAO[FooDouble, String](collection = MongoConnection("localhost")("salat_test_vc")("vc_Double")) {}
+          override def defaultWriteConcern = com.mongodb.WriteConcern.ACKNOWLEDGED
+        }
+        FooDoubleModel.save(foo)
+        val m = FooDoubleModel.findOneById("Fred")
+        m.get.lv must_== new DoubleVC(v)
       }
       "serialize Float types" in {
         val v = 12.34F
@@ -182,6 +231,13 @@ class ValueClassSpec extends Specification {
         val obj = g.fromJSON(rendered)
         g.toPrettyJSON(obj) must_== rendered
         obj.lv must_== new FloatVC(v)
+        object FooFloatModel extends ModelCompanion[FooFloat, String] {
+          val dao = new SalatDAO[FooFloat, String](collection = MongoConnection("localhost")("salat_test_vc")("vc_Float")) {}
+          override def defaultWriteConcern = com.mongodb.WriteConcern.ACKNOWLEDGED
+        }
+        FooFloatModel.save(foo)
+        val m = FooFloatModel.findOneById("Fred")
+        m.get.lv must_== new FloatVC(v)
       }
     }
   }

@@ -379,16 +379,22 @@ package in {
     override def transform(value: Any)(implicit ctx: Context) = {
       val vcClazzConstructor = vcc(t.symbol.path)
       val vcType = vType(vcClazzConstructor)
+        def unwrapMap[T, U](m: Map[T, U]) =
+          { (vcType: String) =>
+            m.map {
+              case (k, v) => {
+                (k, vcClazzConstructor.newInstance(typeMap(vcType, v)))
+              }
+            }.toMap
+          }
       value match {
         case v: Option[_] => {
           Some(vcClazzConstructor.newInstance(typeMap(vcType, v.get)))
         }
-        case m: Map[_, _] => m.map {
-          case (k, v) => {
-            (k, vcClazzConstructor.newInstance(typeMap(vcType, v)))
-          }
-        }.toMap
-        case v => vcClazzConstructor.newInstance(typeMap(vcType, v))
+        case m: Map[_, _]     => unwrapMap(m)(vcType)
+        case dbo: DBObject    => unwrapMap(dbo.asInstanceOf[scala.collection.mutable.Map[_, _]].toMap)(vcType)
+        case m: MongoDBObject => unwrapMap(m.asInstanceOf[scala.collection.mutable.Map[_, _]].toMap)(vcType)
+        case v                => vcClazzConstructor.newInstance(typeMap(vcType, v))
       }
     }
   }
@@ -408,12 +414,13 @@ package in {
     val IntClass = classOf[Integer]
 
     def typeMap(vTypeName: String, vv: Any) = vTypeName match {
-      case "long"             => vv.asInstanceOf[java.lang.Long]
-      case "int"              => vv.asInstanceOf[Long].toInt.asInstanceOf[java.lang.Integer]
-      case "boolean"          => vv.asInstanceOf[java.lang.Boolean]
-      case "float"            => vv.asInstanceOf[Double].toFloat.asInstanceOf[java.lang.Float]
-      case "double"           => vv.asInstanceOf[java.lang.Double]
-      case "java.lang.String" => vv.asInstanceOf[String]
+      case "long"                          => vv.asInstanceOf[java.lang.Long]
+      case "int" if (vv.isInstanceOf[Int]) => vv.asInstanceOf[java.lang.Integer]
+      case "int"                           => vv.asInstanceOf[Long].toInt.asInstanceOf[java.lang.Integer]
+      case "boolean"                       => vv.asInstanceOf[java.lang.Boolean]
+      case "float"                         => vv.asInstanceOf[Double].toFloat.asInstanceOf[java.lang.Float]
+      case "double"                        => vv.asInstanceOf[java.lang.Double]
+      case "java.lang.String"              => vv.asInstanceOf[String]
     }
   }
 
