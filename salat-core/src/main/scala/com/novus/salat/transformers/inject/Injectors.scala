@@ -411,7 +411,7 @@ package in {
       case "long"             => vv.asInstanceOf[java.lang.Long]
       case "int"              => vv.asInstanceOf[Long].toInt.asInstanceOf[java.lang.Integer]
       case "boolean"          => vv.asInstanceOf[java.lang.Boolean]
-      case "float"            => new java.lang.Float(12.55) //vv.asInstanceOf[Double].toFloat.asInstanceOf[java.lang.Float]
+      case "float"            => vv.asInstanceOf[Double].toFloat.asInstanceOf[java.lang.Float]
       case "double"           => vv.asInstanceOf[java.lang.Double]
       case "java.lang.String" => vv.asInstanceOf[String]
     }

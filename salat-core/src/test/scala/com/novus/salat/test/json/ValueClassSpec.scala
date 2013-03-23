@@ -168,7 +168,6 @@ class ValueClassSpec extends Specification {
         g.toPrettyJSON(obj) must_== rendered
         obj.lv must_== new DoubleVC(v)
       }
-      /*
       "serialize Float types" in {
         val v = 12.34F
         val foo = FooFloat("Fred",
@@ -180,13 +179,10 @@ class ValueClassSpec extends Specification {
           Map("Hey" -> new FloatVC(v), "You" -> new FloatVC(v)))
         val g = grater[FooFloat]
         val rendered = g.toPrettyJSON(foo)
-        println(rendered)
         val obj = g.fromJSON(rendered)
-        println("OBJ :: "+obj)
         g.toPrettyJSON(obj) must_== rendered
         obj.lv must_== new FloatVC(v)
       }
-      */
     }
   }
 }

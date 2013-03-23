@@ -210,8 +210,9 @@ package out {
   trait FloatToDouble extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context) = value match {
-      case f: Float           => f.toDouble
-      case f: java.lang.Float => f.doubleValue()
+      case f: Float            => f.toDouble
+      case f: java.lang.Float  => f.doubleValue()
+      case f: java.lang.Double => f.toFloat // can happen for Value Class processing
     }
   }
 

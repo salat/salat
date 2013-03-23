@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         JsonSpec.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2013-02-25 21:07:26 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,19 @@
 package com.novus.salat.test.json
 
 import com.novus.salat._
+import com.novus.salat.json.StrictJSONDateStrategy
+import com.novus.salat.json.StringDateStrategy
+import com.novus.salat.json.TimestampDateStrategy
+import com.novus.salat.json._
 import com.novus.salat.util._
-import json.{ StringDateStrategy, StrictJSONDateStrategy, TimestampDateStrategy, JSONConfig }
-import org.specs2.mutable.Specification
-import scala.util.parsing.json.{ JSONObject, JSONArray }
 import org.bson.types.ObjectId
-import org.json4s._
-import org.joda.time.{ DateTime, DateTimeZone }
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.ISODateTimeFormat
+import org.joda.time.{ DateTime, DateTimeZone }
+import org.json4s._
+import org.specs2.mutable.Specification
+import scala.util.parsing.json.JSONArray
+import scala.util.parsing.json.JSONObject
 
 class JsonSpec extends Specification with Logging {
 
@@ -43,7 +47,9 @@ class JsonSpec extends Specification with Logging {
 
   val zone = DateTimeZone.forID("US/Eastern")
   val o = new ObjectId("4fd0bead4ceab231e6f3220b")
-  val a = Adam(a = "string", b = 99, c = 3.14, d = false, e = testDate, u = testURL, o = o)
+  val bd = BigDecimal(-9.123456789)
+  val bi = BigInt(123456)
+  val a = Adam(a = "string", b = 99, c = 3.14, d = false, e = testDate, u = testURL, bd = bd, bi = bi, o = o)
   val ints = List(1, 2, 3)
   val strings = List("a", "b", "c")
   val b = Bertil(ints = ints, strings = strings)
@@ -55,34 +61,19 @@ class JsonSpec extends Specification with Logging {
     "handle converting model objects to JObject" in {
       "serialize simple types" in {
         val rendered = grater[Adam].toPrettyJSON(a)
-        //        00:15:46.298 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
-        //          "a":"string",
-        //          "b":99,
-        //          "c":3.14,
-        //          "d":false,
-        //          "e":"2011-12-28T14:37:56.008-05:00",
-        //          "u":"http://www.typesafe.com",
-        //          "o":{
-        //            "$oid":"4fd0bead4ceab231e6f3220b"
-        //          }
-        //        }
         rendered must /("a" -> "string")
         rendered must /("b" -> 99)
         rendered must /("c" -> 3.14)
         rendered must /("d" -> false)
         rendered must /("e" -> "2011-12-28T14:37:56.008Z")
         rendered must /("u" -> testURL.toString)
+        rendered must /("bd" -> -9.123456789)
+        rendered must /("bi" -> 123456)
         rendered must /("o") / ("$oid" -> "4fd0bead4ceab231e6f3220b")
       }
       "serialize lists" in {
         "of simple types" in {
           val rendered = grater[Bertil].toPrettyJSON(b)
-          //        log.debug(rendered)
-          //        09:47:43.440 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
-          //          "ints":[1,2,3],
-          //          "strings":["a","b","c"]
-          //        }
-
           rendered must /("ints" -> JSONArray(ints))
           rendered must /("strings" -> JSONArray(strings))
         }
@@ -93,16 +84,6 @@ class JsonSpec extends Specification with Logging {
           val b2 = Bertil(ints = ints.map(_ * 2), strings = strings.map(_.capitalize))
           val c = Caesar(l = List(b1, b2))
           val rendered = grater[Caesar].toPrettyJSON(c)
-          //        log.debug(rendered)
-          //        09:50:47.309 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
-          //          "l":[{
-          //            "ints":[1,2,3],
-          //            "strings":["a","b","c"]
-          //          },{
-          //            "ints":[2,4,6],
-          //            "strings":["A","B","C"]
-          //          }]
-          //        }
           rendered must /("l" -> JSONArray(List(
             JSONObject(Map("ints" -> JSONArray(ints), "strings" -> JSONArray(strings))),
             JSONObject(Map("ints" -> JSONArray(ints.map(_ * 2)), "strings" -> JSONArray(strings.map(_.capitalize)))))))
@@ -112,14 +93,6 @@ class JsonSpec extends Specification with Logging {
         "of simple types" in {
           val d = David(m = Map("a" -> 1, "b" -> 2, "c" -> 3))
           val rendered = grater[David].toPrettyJSON(d)
-          //          log.debug(rendered)
-          //          11:12:38.127 [specs2.DefaultExecutionStrategy4] DEBUG c.novus.salat.test.json.JsonSpec - {
-          //            "m":{
-          //              "a":1,
-          //              "b":2,
-          //              "c":3
-          //            }
-          //          }
           rendered must /("m") / ("a" -> 1.0) // by default, specs2 parses numbers in JSON as doubles
           rendered must /("m") / ("b" -> 2.0)
           rendered must /("m") / ("c" -> 3.0)
@@ -127,15 +100,6 @@ class JsonSpec extends Specification with Logging {
         "of case classes" in {
           val f = Filip(m = Map("e1" -> Erik(e = "Erik"), "e2" -> Erik(e = "Another Erik")))
           val rendered = grater[Filip].toPrettyJSON(f)
-          //          "m":{
-          //            "e1":{
-          //              "e":"Erik"
-          //            },
-          //            "e2":{
-          //              "e":"Another Erik"
-          //            }
-          //          }
-          //        }
           rendered must /("m") / ("e1") / ("e" -> "Erik")
           rendered must /("m") / ("e2") / ("e" -> "Another Erik")
         }
@@ -165,6 +129,26 @@ class JsonSpec extends Specification with Logging {
           }
           "DateTime using string strategy" in {
             grater[Petter].toCompactJSON(petter) must_== "{\"d\":\"2012-09-13T12:30:05.237Z\"}"
+          }
+          "BigDecimal using double strategy" in {
+            grater[Qvintus].toCompactJSON(Qvintus(bd = Some(bd))) must_== "{\"bd\":-9.123456789}"
+          }
+          "BigInt using long strategy" in {
+            grater[Rudolf].toCompactJSON(Rudolf(bi = Some(bi))) must_== "{\"bi\":123456}"
+          }
+          "ObjectId using string strategy" in {
+            implicit val ctx = new Context {
+              val name = "test_oid_string"
+              override val jsonConfig = JSONConfig(objectIdStrategy = StringObjectIdStrategy)
+            }
+            grater[Sigurd].toCompactJSON(Sigurd(o = Some(o))) must_== "{\"o\":\"4fd0bead4ceab231e6f3220b\"}"
+          }
+          "ObjectId using strict strategy" in {
+            implicit val ctx = new Context {
+              val name = "test_oid_strict"
+              override val jsonConfig = JSONConfig(objectIdStrategy = StrictJSONObjectIdStrategy)
+            }
+            grater[Sigurd].toCompactJSON(Sigurd(o = Some(o))) must_== "{\"o\":{\"$oid\":\"4fd0bead4ceab231e6f3220b\"}}"
           }
         }
         "None" in {
@@ -219,19 +203,6 @@ class JsonSpec extends Specification with Logging {
     }
     "handle converting a list of model objects to a JArray" in {
       val jarr = grater[Kalle].toJSONArray(List(Martin("one", 1.1), Martin("two", 2.2), Martin("three", 3.3)))
-      //        [{
-      //          "_t":"com.novus.salat.test.json.Martin",
-      //          "s":"one",
-      //          "d":1.1
-      //        },{
-      //          "_t":"com.novus.salat.test.json.Martin",
-      //          "s":"two",
-      //          "d":2.2
-      //        },{
-      //          "_t":"com.novus.salat.test.json.Martin",
-      //          "s":"three",
-      //          "d":3.3
-      //        }]
       jarr.arr must have size (3)
       jarr.arr must contain(
         JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("one")) :: JField("d", JDouble(1.1)) :: Nil).asInstanceOf[JValue],
@@ -246,6 +217,8 @@ class JsonSpec extends Specification with Logging {
           JField("d", JBool(false)) ::
           JField("e", JString("2011-12-28T14:37:56.008Z")) ::
           JField("u", JString(testURL.toString)) ::
+          JField("bd", JDouble(bd.doubleValue())) ::
+          JField("bi", JInt(bi)) ::
           JField("o", JObject(JField("$oid", JString("4fd0bead4ceab231e6f3220b")) :: Nil)) ::
           Nil)
       grater[Adam].fromJSON(j) must_== a
@@ -328,6 +301,27 @@ class JsonSpec extends Specification with Logging {
         "simple type" in {
           grater[Gustav].fromJSON(JObject(JField("o", JString("OG")) :: Nil)) must_== g
         }
+        "BigDecimal using Double strategy" in {
+          grater[Qvintus].fromJSON("{\"bd\":-9.123456789}") must_== Qvintus(Some(bd))
+        }
+        "BigInt using Long strategy" in {
+          grater[Rudolf].fromJSON("{\"bi\":123456}") must_== Rudolf(Some(bi))
+        }
+        "ObjectId using String strategy" in {
+          implicit val ctx = new Context {
+            val name = "test_oid_string"
+            override val jsonConfig = JSONConfig(objectIdStrategy = StringObjectIdStrategy)
+          }
+          grater[Sigurd].fromJSON("{\"o\":\"4fd0bead4ceab231e6f3220b\"}") must_== Sigurd(Some(o))
+        }
+        "ObjectId using strict strategy" in {
+          implicit val ctx = new Context {
+            val name = "test_oid_strict"
+            override val jsonConfig = JSONConfig(objectIdStrategy = StrictJSONObjectIdStrategy)
+          }
+          grater[Sigurd].fromJSON("{\"o\":{\"$oid\":\"4fd0bead4ceab231e6f3220b\"}}") must_== Sigurd(Some(o))
+        }
+
         "case class" in {
           grater[Niklas].fromJSON(JObject(
             JField("g", JObject(JField("o", JString("OG")) :: Nil)) :: Nil)) must_== n
@@ -335,6 +329,8 @@ class JsonSpec extends Specification with Logging {
       }
       "None" in {
         grater[Gustav].fromJSON(JObject(Nil)) must_== Gustav(o = None)
+        grater[Qvintus].fromJSON("{}") must_== Qvintus(None)
+        grater[Rudolf].fromJSON("{}") must_== Rudolf(None)
       }
     }
     "deserialize JObjects containing class hierarchies" in {
@@ -372,7 +368,7 @@ class JsonSpec extends Specification with Logging {
     }
     "strings" in {
       "a string that can be parsed to JSON object" in {
-        val adam = """{"a":"string","b":99,"c":3.14,"d":false,"e":"2011-12-28T14:37:56.008Z","u":"http://www.typesafe.com","o":{"$oid":"4fd0bead4ceab231e6f3220b"}}"""
+        val adam = """{"a":"string","b":99,"c":3.14,"d":false,"e":"2011-12-28T14:37:56.008Z","bd":-9.123456789,"bi":123456,"u":"http://www.typesafe.com","o":{"$oid":"4fd0bead4ceab231e6f3220b"}}"""
         grater[Adam].fromJSON(adam) must_== a
         grater[Bertil].fromJSON("""{"ints":[1,2,3],"strings":["a","b","c"]}""") must_== b
         grater[Niklas].fromJSON("""{"g":{"o":"OG"}}""") must_== n

@@ -33,8 +33,8 @@ protected[salat] object Types {
   val DateTimeZone = Set("org.joda.time.DateTimeZone", "org.scala_tools.time.TypeImports.DateTimeZone")
   val Oid = Set("org.bson.types.ObjectId", "com.mongodb.casbah.commons.TypeImports.ObjectId")
   val BsonTimestamp = "org.bson.types.BSONTimestamp"
-  val SBigDecimal = classOf[SBigDecimal].getName
-  val BigInt = classOf[BigInt].getName
+  val SBigDecimal = Set("scala.math.BigDecimal", "scala.package.BigDecimal")
+  val BigInt = Set("scala.math.BigInt", "scala.package.BigInt")
   val Option = "scala.Option"
   val Map = ".Map"
   val Traversables = Set(".Seq", ".List", ".Vector", ".Set", ".Buffer", ".ArrayBuffer", ".IndexedSeq", ".LinkedList", ".DoubleLinkedList")
@@ -48,9 +48,9 @@ protected[salat] object Types {
 
   def isBitSet(symbol: Symbol) = BitSets.contains(symbol.path)
 
-  def isBigDecimal(symbol: Symbol) = symbol.path == SBigDecimal
+  def isBigDecimal(symbol: Symbol) = SBigDecimal.contains(symbol.path)
 
-  def isBigInt(symbol: Symbol) = symbol.path == BigInt
+  def isBigInt(symbol: Symbol) = BigInt.contains(symbol.path)
 
   def isValueClass(symbol: Symbol) = {
     if (symbol.path.startsWith("scala.") || symbol.path.startsWith("java.")) false
@@ -95,7 +95,7 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
   lazy val isBSONTimestamp = TypeMatchers.matches(t, Types.BsonTimestamp)
   lazy val isValueClass = Types.isValueClass(t.symbol)
 
-  lazy val directlyDeserialize = isDate || isDateTime || isBSONTimestamp || isOid
+  lazy val directlyDeserialize = isDate || isDateTime || isBSONTimestamp || isOid || isBigDecimal || isBigInt
 }
 
 protected[salat] object TypeMatchers {
@@ -137,6 +137,3 @@ protected[salat] object IsTraversable {
   def unapply(t: Type): Option[Type] = TypeMatchers.matchesTraversable(t)
 }
 
-protected[salat] object IsScalaBigDecimal {
-  def unapply(t: Type): Option[Type] = TypeMatchers.matchesOneType(t, Types.SBigDecimal)
-}
