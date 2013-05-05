@@ -310,7 +310,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       case field => {
         val name = cachedFieldName(field, false)
         val rawValue = values.get(name)
-        val value = FromJValue(rawValue, field)
+        val value = FromJValue(rawValue, TypeFinder(field.typeRefType))
         //        log.info(
         //          """
         //fromJSON: %s

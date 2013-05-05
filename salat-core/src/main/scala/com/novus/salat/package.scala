@@ -60,7 +60,8 @@ object `package` extends Logging {
     val Never, WhenNecessary, Always = Value
   }
 
-  def grater[Y <: AnyRef](implicit ctx: Context, m: Manifest[Y]): Grater[Y] = ctx.lookup(m.runtimeClass.getName).asInstanceOf[Grater[Y]]
+  def grater[Y <: AnyRef](implicit ctx: Context, m: Manifest[Y]): Grater[Y] =
+    ctx.lookup(m.runtimeClass.getName).asInstanceOf[Grater[Y]]
 
   protected[salat] def getClassNamed_!(c: String)(implicit ctx: Context): Class[_] = {
     val clazz = getClassNamed(c)(ctx)

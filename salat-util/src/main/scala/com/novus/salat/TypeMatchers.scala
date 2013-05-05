@@ -115,7 +115,11 @@ protected[salat] object TypeMatchers {
   }
 
   def matchesTraversable(t: Type) = t match {
-    case TypeRefType(_, symbol, List(arg)) if Types.isTraversable(symbol) => Some(arg)
+    case TypeRefType(_, symbol, List(arg)) if Types.isTraversable(symbol) => {
+      //println("MATCHED: "+t)
+      //println("Next   : "+arg)
+      Some(arg)
+    }
     case _ => None
   }
 

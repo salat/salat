@@ -59,13 +59,17 @@ package object in extends Logging {
         case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with TimeZoneToJodaDateTimeZone
 
-        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" => {
+        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" =>
           new Transformer(prefix.symbol.path, t)(ctx) with OptionInjector with EnumInflater
-        }
 
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DBObjectToInContext {
             val grater = ctx.lookup_?(symbol.path)
+          }
+
+        case TypeRefType(_, symbol, _) if Types.isTraversable(t.symbol) || Types.isOption(t.symbol) || Types.isMap(t.symbol) => // Wrap nested List
+          new Transformer(symbol.path, t)(ctx) with OptionWrappingInjector {
+            val wrappedTransformer = select(t, false).asInstanceOf[Transformer]
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionInjector
@@ -127,6 +131,11 @@ package object in extends Logging {
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with TraversableInjector {
             val parentType = pt
             val grater = ctx.lookup_?(symbol.path)
+          }
+
+        case TypeRefType(_, symbol, _) if Types.isTraversable(t.symbol) || Types.isOption(t.symbol) || Types.isMap(t.symbol) => // Wrap nested List
+          new Transformer(symbol.path, t)(ctx) with TraversableWrappingInjector {
+            val wrappedTransformer = select(t).asInstanceOf[Transformer]
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with TraversableInjector {
@@ -200,6 +209,12 @@ package object in extends Logging {
           new Transformer(symbol.path, t)(ctx) with DBObjectToInContext with MapInjector {
             val parentType = pt
             val grater = ctx.lookup_?(symbol.path)
+          }
+
+        case TypeRefType(_, symbol, _) if Types.isMap(t.symbol) || Types.isOption(t.symbol) || Types.isTraversable(t.symbol) => // Wrap nested Map 
+          new Transformer(symbol.path, t)(ctx) with MapWrappingInjector {
+            val parentType = pt
+            val wrappedTransformer = select(t).asInstanceOf[Transformer]
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with MapInjector {
@@ -402,7 +417,7 @@ package in {
     def vcc(path: String)(implicit ctx: Context) = Class.forName(path, false, ctx.classLoaders.head).getConstructors.head
     def vType(vClazz: java.lang.reflect.Constructor[_]) = vClazz.getParameterTypes.head.getName
 
-    // This whole process is truly bizzare!  If a value is of class, say String, I can'd just pass it to newInstance.
+    // This whole process is truly bizzare!  If a value is of class, say String, I can't just pass it to newInstance.
     // Nor could I get Class.cast to work.  For reasons beyond me the only reliable thing to do was determine the value's
     // class and then hard-cast it *to the same type* using asInstanceOf.  Completely gonzo, but I'm sure it has something
     // to do with deep, dark Scala internals I probably am better off not understanding.
@@ -432,6 +447,15 @@ package in {
       case _                            => Some(None)
     }
   }
+  trait OptionWrappingInjector extends Transformer {
+    self: Transformer =>
+    val wrappedTransformer: Transformer
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case dboV: DBObject if value != null => Some(wrappedTransformer.transform_!(value))
+      case value if value != null          => Some(value)
+      case _                               => Some(None)
+    }
+  }
 
   trait TraversableInjector extends Transformer with Logging {
     self: Transformer =>
@@ -448,15 +472,37 @@ package in {
       case l: List[_] => Some(l)
       case _          => None
     }
-
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case traversable: Traversable[_] => Some(traversableImpl(parentType, traversable.map {
         el => super.transform(el)
       }))
       case _ => None
     }
-
     val parentType: TypeRefType
+  }
+  trait TraversableWrappingInjector extends Transformer with Logging {
+    self: Transformer =>
+    val wrappedTransformer: Transformer
+    override def transform(value: Any)(implicit ctx: Context): Any = value
+    override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case mdl: MongoDBList => Some(mdl.toList) // casbah_core 2.3.0_RC1 onwards
+      case dbl: BasicDBList => {
+        // previous to casbah_core 2.3.0
+        val list: MongoDBList = dbl
+        Some(list.toList)
+      }
+      case j: JArray  => Some(j.arr)
+      case l: List[_] => Some(l)
+      case _          => None
+    }
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = {
+      value match {
+        case traversable: Traversable[_] => Some(traversable.map {
+          el => wrappedTransformer.transform_!(el).get
+        })
+        case _ => None
+      }
+    }
   }
 
   trait BitSetInjector extends Transformer with Logging {
@@ -503,6 +549,33 @@ package in {
       case _            => None
     }
 
+    val parentType: TypeRefType
+  }
+
+  trait MapWrappingInjector extends Transformer {
+    self: Transformer =>
+    val wrappedTransformer: Transformer
+    override def transform(value: Any)(implicit ctx: Context): Any = value
+
+    override def before(value: Any)(implicit ctx: Context): Option[Any] =
+      value match {
+        case dbo: DBObject => {
+          val mdbo: MongoDBObject = dbo
+          Some(mdbo)
+        }
+        case m: Map[_, _] => Some(m)
+        case _            => None
+      }
+    override def after(value: Any)(implicit ctx: Context): Option[Any] =
+      value match {
+        case mdbo: MongoDBObject => {
+          Some((for ((k, v) <- mdbo) yield {
+            k -> wrappedTransformer.transform_!(v).get
+          }).toMap)
+        }
+        case m: Map[_, _] => Some(mapImpl(parentType, m))
+        case _            => None
+      }
     val parentType: TypeRefType
   }
 

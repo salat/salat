@@ -123,55 +123,83 @@ object ToJValue extends Logging {
 
 object FromJValue extends Logging {
 
-  def apply(j: Option[JValue], field: SField, childType: Option[TypeRefType] = None)(implicit ctx: Context): Option[Any] = {
-    val v = j.map {
-      case j: JArray => field.typeRefType match {
-        case t if Types.isBitSet(t.symbol) => {
-          val bs = scala.collection.mutable.BitSet.empty
-          j.arr.foreach {
-            case JInt(bi) => bs.add(bi.toInt)
-            case x        => sys.error("expected JInt got %s\n%s".format(x.getClass.getName, x))
+  var trigger = 0
+  def apply(jj: Option[JValue], field: TypeFinder, childType: Option[TypeRefType] = None)(implicit ctx: Context): Option[Any] = {
+    val v = jj.map {
+      case j: JArray =>
+        field match {
+          case t if t.isBitSet => {
+            val bs = scala.collection.mutable.BitSet.empty
+            j.arr.foreach {
+              case JInt(bi) => bs.add(bi.toInt)
+              case x        => sys.error("expected JInt got %s\n%s".format(x.getClass.getName, x))
+            }
+            // TODO: move this into TypeMatchers
+            val v = field.path match {
+              case "scala.collection.BitSet"           => scala.collection.BitSet.empty ++ bs
+              case "scala.collection.immutable.BitSet" => scala.collection.immutable.BitSet.empty ++ bs
+              case "scala.collection.mutable.BitSet"   => bs
+              case x                                   => sys.error("unexpected TypeRefType %s".format(field.t))
+            }
+            //          log.debug("RETURNING: v=%s", v)
+            v
           }
-          // TODO: move this into TypeMatchers
-          val v = field.tf.path match {
-            case "scala.collection.BitSet"           => scala.collection.BitSet.empty ++ bs
-            case "scala.collection.immutable.BitSet" => scala.collection.immutable.BitSet.empty ++ bs
-            case "scala.collection.mutable.BitSet"   => bs
-            case x                                   => sys.error("unexpected TypeRefType %s".format(field.tf.t))
+          case t if t.isOption => { // Option[List] means JObject is a JArray but field type is an Option
+            val childType = field.t.typeArgs.head.asInstanceOf[TypeRefType]
+            val nextChild = { if (childType.typeArgs.size > 0) Some(childType.typeArgs.head.asInstanceOf[TypeRefType]) else None }
+            apply(jj, TypeFinder(childType), nextChild)
           }
-          //          log.debug("RETURNING: v=%s", v)
-          v
+          case t if t.isTraversable => {
+            field.t match {
+              case IsMap(_, childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), TypeFinder(childType), None))
+              case _ => {
+                val childType = field.t.typeArgs.head.asInstanceOf[TypeRefType]
+                val nextChild = { if (childType.typeArgs.size > 0) Some(childType.typeArgs.head.asInstanceOf[TypeRefType]) else None }
+                j.arr.flatMap(v => apply(Some(v), TypeFinder(childType), nextChild))
+              }
+            }
+          }
+          case notTraversable => sys.error("FromJValue: expected types for Traversable but instead got:\n%s".format(notTraversable))
         }
-        case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
-        case notTraversable                        => sys.error("FromJValue: expected types for Traversable but instead got:\n%s".format(notTraversable))
-      }
-      case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
+      case o: JObject if field.isMap => field.t match {
         case IsMap(_, childType: TypeRefType) => {
-          o.obj.map(v => (v._1, apply(Some(v._2), field, Some(childType)))).collect {
+          val nextChild = { if (childType.typeArgs.size > 0) Some(childType.typeArgs.head.asInstanceOf[TypeRefType]) else None }
+          o.obj.map(v => (v._1, {
+            val childTF = TypeFinder(childType)
+            val nextVal = apply(Some(v._2), childTF, nextChild)
+            if (childTF.isOption) Some(nextVal) else nextVal
+          })).collect {
             case (key, Some(value)) => key -> value
           }.toMap
         }
         case notMap => sys.error("FromJValue: expected types for Map but instead got:\n%s".format(notMap))
       }
-      case v: JValue if field.tf.isOption && childType.isEmpty => field.typeRefType.typeArgs.toList match {
+      case v: JValue if field.isOption && childType.isEmpty => field.t.typeArgs.toList match {
         case List(ct: TypeRefType) => {
-          val childTf = TypeFinder(ct)
-          if (childTf.directlyDeserialize) deserialize(v, childTf) else apply(j, field, Some(ct))
+          ct match {
+            case IsMap(_, childType: TypeRefType) => apply(jj, TypeFinder(ct), Some(childType))
+            case IsOption(childType: TypeRefType) => Some(apply(jj, TypeFinder(ct), Some(childType)))
+            case _ => {
+              val childTf = TypeFinder(ct)
+              val nextChild = { if (ct.typeArgs.size > 0) Some(ct.typeArgs.head.asInstanceOf[TypeRefType]) else None }
+              if (childTf.directlyDeserialize) deserialize(v, childTf) else apply(Some(v), childTf, None)
+            }
+          }
         }
         case notOption => sys.error("FromJValue: expected type for Option but instead got:\n%s".format(notOption))
       }
-      case o: JObject if field.tf.isOid => deserialize(o, field.tf)
-      case v: JValue if field.tf.isDate || field.tf.isDateTime => deserialize(v, field.tf)
-      case tz: JValue if field.tf.isTimeZone || field.tf.isDateTimeZone => deserialize(tz, field.tf)
-      case o: JInt if field.tf.isDate || field.tf.isDateTime => deserialize(o, field.tf)
-      case o: JObject if field.tf.isBSONTimestamp => deserialize(o, field.tf)
-      case o: JObject => ctx.lookup(if (childType.isDefined) childType.get.symbol.path else field.typeRefType.symbol.path).fromJSON(o)
-      case x => deserialize(x, if (childType.isDefined) TypeFinder(childType.get) else field.tf)
+      case o: JObject if field.isOid => deserialize(o, field)
+      case v: JValue if field.isDate || field.isDateTime => deserialize(v, field)
+      case tz: JValue if field.isTimeZone || field.isDateTimeZone => deserialize(tz, field)
+      case o: JInt if field.isDate || field.isDateTime => deserialize(o, field)
+      case o: JObject if field.isBSONTimestamp => deserialize(o, field)
+      case o: JObject => ctx.lookup(if (childType.isDefined) childType.get.symbol.path else field.path).fromJSON(o)
+      case x => deserialize(x, if (childType.isDefined) TypeFinder(childType.get) else field)
     }
-    //    log.debug(
-    //      """
+    // log.debug(
+    //   """
     //            | FromJValue:
-    //            |                                       j: %s
+    //            |                                      j: %s
     //            |                             field.name: %s
     //            |                      field.typeRefType: %s
     //            |             field.typeRefType.typeArgs: [%s]

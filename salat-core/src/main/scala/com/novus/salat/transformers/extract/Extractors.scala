@@ -30,6 +30,7 @@ import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
 import com.novus.salat.annotations.util._
+import Types._
 
 package object out {
   def select(t: TypeRefType, hint: Boolean, resolveKey: Boolean = true)(implicit ctx: Context): Transformer = {
@@ -63,42 +64,52 @@ package object out {
           new Transformer(symbol.path, t, resolveKey)(ctx) with OptionExtractor with InContextToDBObject {
             val grater = ctx.lookup_?(symbol.path)
           }
+        case TypeRefType(_, symbol, _) if isTraversable(t.symbol) || isOption(t.symbol) || isMap(t.symbol) => // Wrap nested List
+          new Transformer(symbol.path, t, resolveKey)(ctx) with OptionWrappingExtractor {
+            val wrappedTransformer = select(t, false).asInstanceOf[Transformer]
+          }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t, resolveKey)(ctx) with OptionExtractor
       }
 
-      case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(ThisType(_), symbol, _) if isValueClass_!(symbol.path) =>
-          new Transformer(t.symbol.path, t)(ctx) with ValueClassExtractor with TraversableExtractor
-
-        case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) =>
-          new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with TraversableExtractor
-
-        case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with TraversableExtractor
-
-        case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with BigIntExtractor with TraversableExtractor
-
-        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with FloatToDouble with TraversableExtractor
-
-        case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with CharToString with TraversableExtractor
-
-        case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
-          new Transformer(symbol.path, t)(ctx) with DateTimeZoneExtractor with TraversableExtractor
-
-        case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" =>
-          new Transformer(prefix.symbol.path, t)(ctx) with EnumStringifier with TraversableExtractor
-
-        case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
-          new Transformer(symbol.path, t, resolveKey)(ctx) with InContextToDBObject with TraversableExtractor {
-            val grater = ctx.lookup_?(symbol.path)
+      case IsTraversable(t @ TypeRefType(_, _, _)) => {
+        t match {
+          case TypeRefType(ThisType(_), symbol, _) if isValueClass_!(symbol.path) => {
+            new Transformer(t.symbol.path, t)(ctx) with ValueClassExtractor with TraversableExtractor
           }
 
-        case TypeRefType(_, symbol, _) =>
-          new Transformer(symbol.path, t, resolveKey)(ctx) with TraversableExtractor
+          case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) =>
+            new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with TraversableExtractor
+
+          case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
+            new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with TraversableExtractor
+
+          case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
+            new Transformer(symbol.path, t)(ctx) with BigIntExtractor with TraversableExtractor
+
+          case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+            new Transformer(symbol.path, t)(ctx) with FloatToDouble with TraversableExtractor
+
+          case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
+            new Transformer(symbol.path, t)(ctx) with CharToString with TraversableExtractor
+
+          case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
+            new Transformer(symbol.path, t)(ctx) with DateTimeZoneExtractor with TraversableExtractor
+
+          case t @ TypeRefType(prefix @ SingleType(_, esym), sym, _) if sym.path == "scala.Enumeration.Value" =>
+            new Transformer(prefix.symbol.path, t)(ctx) with EnumStringifier with TraversableExtractor
+
+          case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
+            new Transformer(symbol.path, t, resolveKey)(ctx) with InContextToDBObject with TraversableExtractor {
+              val grater = ctx.lookup_?(symbol.path)
+            }
+          case TypeRefType(_, symbol, _) if isTraversable(t.symbol) || isOption(t.symbol) || isMap(t.symbol) => // Wrap nested List
+            new Transformer(symbol.path, t, resolveKey)(ctx) with TraversableWrappingExtractor {
+              val wrappedTransformer = select(t, false).asInstanceOf[Transformer]
+            }
+          case TypeRefType(_, symbol, _) =>
+            new Transformer(symbol.path, t, resolveKey)(ctx) with TraversableExtractor
+        }
       }
 
       case IsMap(_, t @ TypeRefType(_, _, _)) => t match {
@@ -129,6 +140,10 @@ package object out {
         case TypeRefType(_, symbol, _) if hint || ctx.lookup_?(symbol.path).isDefined =>
           new Transformer(symbol.path, t, resolveKey)(ctx) with InContextToDBObject with MapExtractor {
             val grater = ctx.lookup_?(symbol.path)
+          }
+        case TypeRefType(_, symbol, _) if isTraversable(t.symbol) || isOption(t.symbol) || isMap(t.symbol) => // Wrap nested List
+          new Transformer(symbol.path, t, resolveKey)(ctx) with MapWrappingExtractor {
+            val wrappedTransformer = select(t, false).asInstanceOf[Transformer]
           }
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t, resolveKey)(ctx) with MapExtractor
@@ -234,7 +249,6 @@ package out {
 
   trait OptionExtractor extends Transformer {
     self: Transformer =>
-
     // ok, Some(null) should never happen.  except sometimes it does.
     override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case Some(value) if value != null => Some(super.transform(value))
@@ -242,15 +256,42 @@ package out {
     }
   }
 
+  trait OptionWrappingExtractor extends Transformer {
+    self: Transformer =>
+    val wrappedTransformer: Transformer
+    // ok, Some(null) should never happen.  except sometimes it does.
+    override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case Some(value) if value != null => wrappedTransformer.transform_!(value)
+      case _                            => None
+    }
+  }
+
   trait TraversableExtractor extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value
-
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case traversable: Traversable[_] =>
         Some(MongoDBList(traversable.map {
-          case el => super.transform(el)
+          case el => {
+            super.transform(el)
+          }
         }.toList: _*))
+      case _ => None
+    }
+  }
+  // For nested Lists, create a TraverableExtractor variant that holds its own Transformer
+  // that knows how to unpack the nested artifact.
+  trait TraversableWrappingExtractor extends Transformer {
+    self: Transformer =>
+    val wrappedTransformer: Transformer
+    override def transform(value: Any)(implicit ctx: Context): Any = value
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case traversable: Traversable[_] => {
+        val mixedOpts = traversable.map {
+          case el => wrappedTransformer.transform_!(el)
+        }
+        Some(MongoDBList(mixedOpts.collect { case Some(x) => x }.toList: _*))
+      }
       case _ => None
     }
   }
@@ -276,7 +317,6 @@ package out {
   trait MapExtractor extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value
-
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case map: scala.collection.Map[_, _] => {
         val builder = MongoDBObject.newBuilder
@@ -286,6 +326,31 @@ package out {
               case s: String => s
               case x         => x.toString
             }) -> super.transform(el)
+        }
+        Some(builder.result)
+      }
+      case _ => None
+    }
+  }
+
+  trait MapWrappingExtractor extends Transformer {
+    self: Transformer =>
+    val wrappedTransformer: Transformer
+    override def transform(value: Any)(implicit ctx: Context): Any = value
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case map: scala.collection.Map[_, _] => {
+        val builder = MongoDBObject.newBuilder
+        map.foreach {
+          case (k, el) => {
+            val fromWrapped = (k match {
+              case s: String => s
+              case x         => x.toString
+            }) -> wrappedTransformer.transform_!(el)
+            if (fromWrapped._2.isDefined) { // ignore any None values from wrapped Transformer (remove from map)
+              val t = (fromWrapped._1, fromWrapped._2.get)
+              builder += t
+            }
+          }
         }
         Some(builder.result)
       }

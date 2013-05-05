@@ -41,7 +41,8 @@ class ProxyGrater[X <: AnyRef](clazz: Class[X])(implicit ctx: Context) extends G
   def iterateOut[T](o: X, resolveKey: Boolean = true)(f: ((String, Any)) => T): Iterator[T] =
     ctx.lookup(o.getClass.getName).asInstanceOf[Grater[X]].iterateOut(o, resolveKey)(f)
 
-  def fromJSON(j: JObject) = ctx.lookup(j).asInstanceOf[Grater[X]].fromJSON(j)
+  def fromJSON(j: JObject) =
+    ctx.lookup(j).asInstanceOf[Grater[X]].fromJSON(j)
 
   def toJSON(o: X) = ctx.lookup(o.getClass.getName).asInstanceOf[Grater[X]].toJSON(o)
 
