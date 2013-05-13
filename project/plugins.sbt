@@ -3,10 +3,6 @@ resolvers ++= Seq(
   "coda" at "http://repo.codahale.com"
 )
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.0.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.0.1")
 
-addSbtPlugin("me.lessis" % "ls-sbt" % "0.1.2")
-
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.0")
-
-addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.1.0")
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.3")

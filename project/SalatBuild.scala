@@ -72,7 +72,7 @@ object BuildSettings {
   val buildVersion = "1.9.2-SNAPSHOT"
   val buildScalaVersion = "2.9.2"
 
-  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Ls.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
+  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
@@ -184,16 +184,4 @@ object ShellPrompt {
       )
     }
   }
-}
-
-object Ls {
-
-  import _root_.ls.Plugin.LsKeys._
-
-  lazy val settings = _root_.ls.Plugin.lsSettings ++ Seq(
-    (description in lsync) := "A simple serialization library for case classes.",
-    licenses in lsync <<= licenses,
-    (tags in lsync) := Seq("mongo", "casbah", "json", "serialization", "object document mapping", "ODM", "mapper", "play", "salat"),
-    (docsUrl in lsync) := Some(new URL("https://github.com/novus/salat/wiki"))
-  )
 }
