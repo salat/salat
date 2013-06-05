@@ -67,14 +67,14 @@ class ModelCompanionSpec extends SalatSpec {
   "y":99,
   "z":[1.0,2.0,3.0],
   "d":"%s"
-}""".format(_id.toString, JSONConfig.ISO8601.print(d.millis))
+}""".format(_id.toString, JSONConfig.ISO8601.print(d.getMillis))
       }
 
       "toCompactJson" in new myModelScope {
         val expected = "{\"_typeHint\":\"com.novus.salat.test.dao.MyModel\",\"_id\":{\"$oid\":\""+
           _id.toString+
           "\"},\"x\":\"Test\",\"y\":99,\"z\":[1.0,2.0,3.0],\"d\":\""+
-          JSONConfig.ISO8601.print(d.millis)+
+          JSONConfig.ISO8601.print(d.getMillis)+
           "\"}"
         MyModel.toCompactJson(m) must_== expected
       }
@@ -125,7 +125,7 @@ class ModelCompanionSpec extends SalatSpec {
   trait myModelScope extends Scope {
     log.trace("before: dropping %s", MyModel.collection.getFullName())
     MyModel.collection.drop()
-    MyModel.collection.count must_== 0L
+    MyModel.collection.count() must_== 0L
 
     val _id = new ObjectId
     val d = new DateTime

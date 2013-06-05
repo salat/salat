@@ -30,7 +30,7 @@ import com.novus.salat.{ BigDecimalStrategy, Context }
 import com.novus.salat.conversions.RegisterJodaTimeZoneConversionHelpers
 import com.mongodb.casbah.commons.test.CasbahMutableSpecification
 
-trait SalatSpec extends CasbahMutableSpecification {
+trait SalatSpec extends org.specs2.mutable.Specification with com.mongodb.casbah.commons.test.CasbahSpecificationBase {
 
   override def is =
     Step {
