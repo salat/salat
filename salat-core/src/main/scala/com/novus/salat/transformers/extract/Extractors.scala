@@ -24,12 +24,11 @@
  */
 package com.novus.salat.transformers
 
-import scala.tools.scalap.scalax.rules.scalasig._
-
-import com.novus.salat._
 import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
+import com.novus.salat._
 import com.novus.salat.annotations.util._
+import com.novus.salat.util.Logging
+import scala.tools.scalap.scalax.rules.scalasig._
 
 package object out {
   def select(t: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
@@ -38,7 +37,9 @@ package object out {
         case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
           new Transformer(t.symbol.path, t)(ctx) with OptionExtractor with CaseObjectExtractor
         }
-
+        case TypeRefType(_, symbol, _) if ctx.customTransformers.contains(symbol.path) => {
+          new CustomOptionDeserializer(ctx.customTransformers(symbol.path), symbol.path, t, ctx)
+        }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with BigDecimalExtractor
 
@@ -70,6 +71,8 @@ package object out {
         case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
           new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with TraversableExtractor
         }
+        case TypeRefType(_, symbol, _) if ctx.customTransformers.contains(symbol.path) =>
+          new CustomTraversableDeserializer(ctx.customTransformers(symbol.path), symbol.path, t, ctx)
 
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with TraversableExtractor
@@ -103,6 +106,9 @@ package object out {
         case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
           new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with MapExtractor
         }
+
+        case TypeRefType(_, symbol, _) if ctx.customTransformers.contains(symbol.path) =>
+          new CustomMapDeserializer(ctx.customTransformers(symbol.path), symbol.path, t, ctx)
 
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalExtractor with MapExtractor
@@ -222,8 +228,9 @@ package out {
 
     // ok, Some(null) should never happen.  except sometimes it does.
     override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
-      case Some(value) if value != null => Some(super.transform(value))
-      case _                            => None
+      case Some(null)  => None
+      case Some(value) => Some(super.transform(value))
+      case _           => None
     }
   }
 
@@ -231,11 +238,11 @@ package out {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value
 
+    protected def transformElem(el: Any) = super.transform(el)
+
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case traversable: Traversable[_] =>
-        Some(MongoDBList(traversable.map {
-          case el => super.transform(el)
-        }.toList: _*))
+        Some(MongoDBList(traversable.map(transformElem(_)).toList: _*))
       case _ => None
     }
   }
@@ -262,6 +269,8 @@ package out {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value
 
+    protected def transformElem(el: Any) = super.transform(el)
+
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case map: scala.collection.Map[_, _] => {
         val builder = MongoDBObject.newBuilder
@@ -270,9 +279,9 @@ package out {
             builder += (k match {
               case s: String => s
               case x         => x.toString
-            }) -> super.transform(el)
+            }) -> transformElem(el)
         }
-        Some(builder.result)
+        Some(builder.result())
       }
       case _ => None
     }

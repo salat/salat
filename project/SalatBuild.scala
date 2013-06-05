@@ -31,7 +31,7 @@ object SalatBuild extends Build {
   import Dependencies._
   import BuildSettings._
 
-  val testDeps = Seq(specs2, logbackCore, logbackClassic)
+  val testDeps = Seq(specs2, logbackCore, logbackClassic, casbah_specs, casbah_commons)
   val utilDeps = Seq(slf4jApi) ++ testDeps
   val coreDeps = Seq(casbah, json4sNative, commonsLang) ++ testDeps
 
@@ -72,7 +72,7 @@ object BuildSettings {
   val buildVersion = "1.9.2-SNAPSHOT"
   val buildScalaVersion = "2.10.0"
 
-  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Ls.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
+  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
@@ -147,13 +147,16 @@ object Publish {
 object Dependencies {
 
   private val LogbackVersion = "1.0.9"
+  private val CasbahVersion = "2.6.1"
 
   val specs2 = "org.specs2" %% "specs2" % "1.13" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.2"
   val logbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % LogbackVersion % "test"
-  val casbah = "org.mongodb" %% "casbah-core" % "2.5.0"
+  val casbah = "org.mongodb" %% "casbah" % CasbahVersion pomOnly()
+  val casbah_commons = "org.mongodb" %% "casbah-commons" % CasbahVersion
+  val casbah_specs = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test" classifier "test"
   val json4sNative = "org.json4s" %% "json4s-native" % "3.1.0"
 }
 
@@ -184,16 +187,4 @@ object ShellPrompt {
       )
     }
   }
-}
-
-object Ls {
-
-  import _root_.ls.Plugin.LsKeys._
-
-  lazy val settings = _root_.ls.Plugin.lsSettings ++ Seq(
-    (description in lsync) := "A simple serialization library for case classes.",
-    licenses in lsync <<= licenses,
-    (tags in lsync) := Seq("mongo", "casbah", "json", "serialization", "object document mapping", "ODM", "mapper", "play", "salat"),
-    (docsUrl in lsync) := Some(new URL("https://github.com/novus/salat/wiki"))
-  )
 }

@@ -40,6 +40,9 @@ package object in extends Logging {
         case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
           new Transformer(symbol.path, t)(ctx) with OptionInjector with CaseObjectInjector
         }
+        case TypeRefType(_, symbol, _) if ctx.customTransformers.contains(symbol.path) => {
+          new CustomOptionSerializer(ctx.customTransformers(symbol.path), symbol.path, t, ctx)
+        }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with BigDecimalInjector
 
@@ -71,6 +74,9 @@ package object in extends Logging {
           new Transformer(t.symbol.path, t)(ctx) with CaseObjectInjector with TraversableInjector {
             val parentType = pt
           }
+        }
+        case TypeRefType(_, symbol, _) if ctx.customTransformers.contains(symbol.path) => {
+          new CustomTraversableSerializer(ctx.customTransformers(symbol.path), symbol.path, t, pt, ctx)
         }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalInjector with TraversableInjector {
@@ -130,6 +136,9 @@ package object in extends Logging {
           new Transformer(t.symbol.path, t)(ctx) with CaseObjectInjector with MapInjector {
             val parentType = pt
           }
+        }
+        case TypeRefType(_, symbol, _) if ctx.customTransformers.contains(symbol.path) => {
+          new CustomMapSerializer(ctx.customTransformers(symbol.path), symbol.path, t, pt, ctx)
         }
         case TypeRefType(_, symbol, _) if isBigDecimal(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigDecimalInjector with MapInjector {
@@ -237,7 +246,7 @@ package object in extends Logging {
 package in {
 
   import java.lang.Integer
-  import org.joda.time.{ DateTimeZone, DateTime }
+  import org.joda.time.{ DateTime, DateTimeZone }
   import org.json4s.JsonAST.JArray
 
   trait LongToInt extends Transformer {
@@ -358,6 +367,8 @@ package in {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context): Any = value
 
+    protected def transformElement(el: Any) = super.transform(el)
+
     override def before(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case mdl: MongoDBList => Some(mdl.toList) // casbah_core 2.3.0_RC1 onwards
       case dbl: BasicDBList => {
@@ -371,10 +382,8 @@ package in {
     }
 
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
-      case traversable: Traversable[_] => Some(traversableImpl(parentType, traversable.map {
-        el => super.transform(el)
-      }))
-      case _ => None
+      case traversable: Traversable[_] => Some(traversableImpl(parentType, traversable.map(transformElement(_))))
+      case _                           => None
     }
 
     val parentType: TypeRefType
@@ -416,13 +425,15 @@ package in {
       case mdbo: MongoDBObject => {
         val builder = MongoDBObject.newBuilder
         mdbo.foreach {
-          case (k, v) => builder += k -> super.transform(v)
+          case (k, v) => builder += k -> transformElement(v)
         }
-        Some(mapImpl(parentType, builder.result))
+        Some(mapImpl(parentType, builder.result()))
       }
       case m: Map[_, _] => Some(mapImpl(parentType, m))
       case _            => None
     }
+
+    protected def transformElement(el: Any) = super.transform(el)
 
     val parentType: TypeRefType
   }

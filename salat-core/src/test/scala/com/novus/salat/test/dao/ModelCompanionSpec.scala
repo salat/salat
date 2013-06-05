@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         ModelCompanionSpec.scala
- * Last modified: 2013-01-07 22:46:55 EST
+ * Last modified: 2012-10-15 20:40:58 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,14 +67,14 @@ class ModelCompanionSpec extends SalatSpec {
   "y":99,
   "z":[1.0,2.0,3.0],
   "d":"%s"
-}""".format(_id.toString, JSONConfig.ISO8601.print(d.getMillis))
+}""".format(_id.toString, JSONConfig.ISO8601.print(d.millis))
       }
 
       "toCompactJson" in new myModelScope {
         val expected = "{\"_typeHint\":\"com.novus.salat.test.dao.MyModel\",\"_id\":{\"$oid\":\""+
           _id.toString+
           "\"},\"x\":\"Test\",\"y\":99,\"z\":[1.0,2.0,3.0],\"d\":\""+
-          JSONConfig.ISO8601.print(d.getMillis)+
+          JSONConfig.ISO8601.print(d.millis)+
           "\"}"
         MyModel.toCompactJson(m) must_== expected
       }
@@ -125,7 +125,7 @@ class ModelCompanionSpec extends SalatSpec {
   trait myModelScope extends Scope {
     log.trace("before: dropping %s", MyModel.collection.getFullName())
     MyModel.collection.drop()
-    MyModel.collection.count() must_== 0L
+    MyModel.collection.count must_== 0L
 
     val _id = new ObjectId
     val d = new DateTime
