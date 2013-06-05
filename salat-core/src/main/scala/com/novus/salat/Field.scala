@@ -24,15 +24,12 @@
  */
 package com.novus.salat
 
-import java.lang.reflect.Method
-
-import scala.tools.scalap.scalax.rules.scalasig._
-
-import com.novus.salat.transformers._
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
-
+import com.novus.salat.transformers._
 import com.novus.salat.util.Logging
+import java.lang.reflect.Method
+import scala.tools.scalap.scalax.rules.scalasig._
 
 object Field {
   def apply(idx: Int, name: String, t: TypeRefType, method: Method)(implicit ctx: Context): Field = {
@@ -67,16 +64,16 @@ sealed abstract class Field(val idx: Int,
     val xformed = in.transform_!(value)
     //    log.debug(
     //      """
-    //        |IN:
-    //        |                name: %s
-    //        |         typeRefType:
-    //        |%s
-    //        |                  in:
-    //        |%s
-    //        |               value: %s
-    //        |         transformed: %s
-    //        |
-    //      """.stripMargin, name, typeRefType, in match {
+    //            |IN:
+    //            |                name: %s
+    //            |         typeRefType:
+    //            |%s
+    //            |                  in:
+    //            |%s
+    //            |               value: %s
+    //            |         transformed: %s
+    //            |
+    //          """.stripMargin, name, typeRefType, in match {
     //        case c: UseCustomTransformer[_, _] => c.toString
     //        case _                             => in.getClass.getInterfaces.mkString("\n")
     //      }, value, xformed)
@@ -87,16 +84,16 @@ sealed abstract class Field(val idx: Int,
     val xformed = out.transform_!(value)
     //    log.debug(
     //      """
-    //        |IN:
-    //        |                name: %s
-    //        |         typeRefType:
-    //        |%s
-    //        |                  out:
-    //        |%s
-    //        |               value: %s
-    //        |         transformed: %s
-    //        |
-    //      """.stripMargin, name, typeRefType, out match {
+    //            |OUT:
+    //            |                name: %s
+    //            |         typeRefType:
+    //            |%s
+    //            |                  out:
+    //            |%s
+    //            |               value: %s
+    //            |         transformed: %s
+    //            |
+    //          """.stripMargin, name, typeRefType, out match {
     //        case c: UseCustomTransformer[_, _] => c.toString
     //        case _                             => out.getClass.getInterfaces.mkString("\n")
     //      }, value, xformed)

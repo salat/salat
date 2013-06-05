@@ -25,8 +25,10 @@
 package com.novus.salat.transformers
 
 import com.novus.salat._
-import scala.tools.scalap.scalax.rules.scalasig._
-import scala.math.{ BigDecimal => ScalaBigDecimal }
+import com.novus.salat.transformers.in.{ MapInjector, TraversableInjector, OptionInjector }
+import com.novus.salat.transformers.out.{ MapExtractor, TraversableExtractor, OptionExtractor }
+import com.novus.salat.util.Logging
+import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
 object `package` {
   def isBigDecimal(path: String) = path match {
@@ -75,11 +77,15 @@ object `package` {
   }
 }
 
-abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) {
+abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ctx: Context) extends Logging {
   def transform(value: Any)(implicit ctx: Context): Any = value
   def before(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
   def after(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
-  def transform_!(x: Any)(implicit ctx: Context): Option[Any] = before(x).flatMap(x => after(transform(x)))
+  def transform_!(x: Any)(implicit ctx: Context): Option[Any] = {
+    val x_! = before(x).flatMap(x => after(transform(x)))
+    //    log.debug("\n%s#transform_!:\nINPUT:\n%s\nOUTPUT:\n%s\n", this.getClass.getName, x, x_!)
+    x_!
+  }
 }
 
 trait InContextTransformer {
@@ -95,7 +101,44 @@ class CustomSerializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTran
   override def transform(value: Any)(implicit ctx: Context) = custom.in(value)
 }
 
+class CustomOptionSerializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B], override val path: String, override val t: TypeRefType, override val ctx: Context)
+    extends UseCustomTransformer(custom, path, t, ctx) with OptionInjector {
+  override def transform(value: Any)(implicit ctx: Context) = custom.in(value)
+}
+
+class CustomTraversableSerializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B],
+                                                            override val path: String,
+                                                            override val t: TypeRefType,
+                                                            val parentType: TypeRefType,
+                                                            override val ctx: Context)
+    extends UseCustomTransformer(custom, path, t, ctx) with TraversableInjector {
+  override protected def transformElement(el: Any) = custom.in(el)
+}
+
+class CustomMapSerializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B],
+                                                    override val path: String,
+                                                    override val t: TypeRefType,
+                                                    val parentType: TypeRefType,
+                                                    override val ctx: Context)
+    extends UseCustomTransformer(custom, path, t, ctx) with MapInjector {
+  override protected def transformElement(el: Any) = custom.in(el)
+}
+
 class CustomDeserializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B], override val path: String, override val t: TypeRefType, override val ctx: Context) extends UseCustomTransformer(custom, path, t, ctx) {
   override def transform(value: Any)(implicit ctx: Context) = custom.out(value)
 }
 
+class CustomOptionDeserializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B], override val path: String, override val t: TypeRefType, override val ctx: Context)
+    extends UseCustomTransformer(custom, path, t, ctx) with OptionExtractor {
+  override def transform(value: Any)(implicit ctx: Context) = custom.out(value)
+}
+
+class CustomTraversableDeserializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B], override val path: String, override val t: TypeRefType, override val ctx: Context)
+    extends UseCustomTransformer(custom, path, t, ctx) with TraversableExtractor {
+  override protected def transformElem(el: Any) = custom.out(el)
+}
+
+class CustomMapDeserializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B], override val path: String, override val t: TypeRefType, override val ctx: Context)
+    extends UseCustomTransformer(custom, path, t, ctx) with MapExtractor {
+  override protected def transformElem(el: Any) = custom.out(el)
+}

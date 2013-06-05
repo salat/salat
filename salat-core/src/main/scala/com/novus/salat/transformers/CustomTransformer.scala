@@ -1,12 +1,18 @@
 package com.novus.salat.transformers
 
-abstract class CustomTransformer[ModelObject <: AnyRef: Manifest, SerializedRepr <: AnyRef: Manifest]() {
+import com.novus.salat.util.Logging
 
-  final def in(value: Any): Any = value match {
-    case o: SerializedRepr => deserialize(o)
-    case _                 => None
+abstract class CustomTransformer[ModelObject <: AnyRef: Manifest, SerializedRepr <: AnyRef: Manifest]() extends Logging {
+
+  final def in(value: Any): Any = {
+    //    log.debug("%s\nin: value: %s", toString, value)
+    value match {
+      case Some(o: SerializedRepr) => deserialize(o)
+      case o: SerializedRepr       => deserialize(o)
+      case _                       => None
+    }
+
   }
-
   final def out(value: Any): Option[SerializedRepr] = value match {
     case i: ModelObject => Option(serialize(i))
   }
