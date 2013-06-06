@@ -13,6 +13,5 @@ notifications:
 jdk:
   - openjdk7
   - oraclejdk7
-  - openjdk6
 services:
   - mongodb
