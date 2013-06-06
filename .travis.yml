@@ -1,12 +1,11 @@
 # See http://about.travis-ci.org/docs/user/build-configuration/
 language: scala
 scala:
-  - 2.9.2
-  - 2.9.1
-# whitelist branches for now.  need backport branch to support 2.8.x
+  - 2.10.0
+  - 2.10.1
 branches:
   only:
-    - master
+    - salat_2.10
 notifications:
   email:
     recipients:
