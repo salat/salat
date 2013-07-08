@@ -61,6 +61,7 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
    *  @return default write concern to use for insert, update, save and remove operations
    */
   def defaultWriteConcern = dao.defaultWriteConcern
+  def defaultReadPreference = dao.defaultReadPreference
 
   //
   // convenient access to methods on Grater
@@ -148,24 +149,26 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
    *  @param q object for which to search
    *  @param fieldsThatMustExist list of field keys that must exist
    *  @param fieldsThatMustNotExist list of field keys that must not exist
+   *  @param rp read preference to use for this search
    *  @return count of documents matching the search criteria
    */
-  def count(q: DBObject, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil) =
-    dao.count(q, fieldsThatMustExist, fieldsThatMustNotExist)
+  def count(q: DBObject, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil, rp: ReadPreference = defaultReadPreference) =
+    dao.count(q, fieldsThatMustExist, fieldsThatMustNotExist, rp)
 
   /** @param ref object for which to search
    *  @param keys fields to return
+   *  @param rp read preference to use for this search
    *  @tparam A type view bound to DBObject
    *  @tparam B type view bound to DBObject
    *  @return a typed cursor to iterate over results
    */
-  def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = dao.find(ref, keys)
+  def find[A <% DBObject, B <% DBObject](ref: A, keys: B, rp: ReadPreference = defaultReadPreference) = dao.find(ref, keys, rp)
 
   /** @param t object for which to search
    *  @tparam A type view bound to DBObject
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
    */
-  def findOne[A <% DBObject](t: A) = dao.findOne(t)
+  def findOne[A <% DBObject](t: A, rp: ReadPreference = defaultReadPreference) = dao.findOne(t, rp)
 
   /** @param id identifier
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists

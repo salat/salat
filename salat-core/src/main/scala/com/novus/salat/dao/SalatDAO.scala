@@ -342,10 +342,11 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
   }
 
   /** @param t object for which to search
+   *  @param rp the ReadPreference used for this find
    *  @tparam A type view bound to DBObject
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
    */
-  def findOne[A <% DBObject](t: A) = collection.findOne(decorateQuery(t)).map(_grater.asObject(_))
+  def findOne[A <% DBObject](t: A, rp: ReadPreference) = collection.findOne(o = decorateQuery(t), fields = null, readPrefs = rp).map(_grater.asObject(_))
 
   /** @param id identifier
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
@@ -427,12 +428,13 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
   /** @param ref object for which to search
    *  @param keys fields to return
+   *  @param rp sets the desired ReadPreference on the cursor
    *  @tparam A type view bound to DBObject
    *  @tparam B type view bound to DBObject
    *  @return a typed cursor to iterate over results
    */
-  def find[A <% DBObject, B <% DBObject](ref: A, keys: B) = SalatMongoCursor[ObjectType](_grater,
-    collection.find(decorateQuery(ref), keys).asInstanceOf[MongoCursorBase].underlying)
+  def find[A <% DBObject, B <% DBObject](ref: A, keys: B, rp: ReadPreference) = SalatMongoCursor[ObjectType](_grater,
+    collection.find(decorateQuery(ref), keys).asInstanceOf[MongoCursorBase].underlying.setReadPreference(rp))
 
   /** @param query object for which to search
    *  @param field field to project on
@@ -491,7 +493,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @param fieldsThatMustNotExist list of field keys that must not exist
    *  @return count of documents matching the search criteria
    */
-  def count(q: DBObject = MongoDBObject.empty, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long = {
+  def count(q: DBObject = MongoDBObject.empty, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil, rp: ReadPreference = defaultReadPreference): Long = {
     val query = {
       val builder = MongoDBObject.newBuilder
       builder ++= q
@@ -503,7 +505,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       }
       builder.result()
     }
-    collection.count(decorateQuery(query))
+    collection.count(decorateQuery(query), readPrefs = rp)
   }
 }
 

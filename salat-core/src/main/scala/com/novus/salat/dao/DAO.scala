@@ -36,6 +36,11 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
    */
   def defaultWriteConcern: WriteConcern
 
+  /** In the absence of a specific read preference, supplies a default read preference.
+   *  @return default read preference to use for find and findOne
+   */
+  def defaultReadPreference: ReadPreference
+
   /** @param o object to transform
    *  @return object serialized as `DBObject`
    */
@@ -82,7 +87,7 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
    *  @tparam A type view bound to DBObject
    *  @return a typed cursor to iterate over results
    */
-  def find[A <% DBObject](ref: A): SalatMongoCursor[ObjectType] = find(ref = ref, keys = MongoDBObject.empty)
+  def find[A <% DBObject](ref: A): SalatMongoCursor[ObjectType] = find(ref = ref, keys = MongoDBObject.empty, rp = defaultReadPreference)
 
   /** Queries for an object in this collection.
    *  @param ref object for which to search
@@ -91,14 +96,31 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
    *  @tparam B type view bound to DBObject
    *  @return a typed cursor to iterate over results
    */
-  def find[A <% DBObject, B <% DBObject](ref: A, keys: B): SalatMongoCursor[ObjectType]
+  def find[A <% DBObject, B <% DBObject](ref: A, keys: B): SalatMongoCursor[ObjectType] = find(ref = ref, keys = keys, rp = defaultReadPreference)
+
+  /** Queries for an object in this collection.
+   *  @param ref object for which to search
+   *  @param keys fields to return
+   *  @tparam A type view bound to DBObject
+   *  @tparam B type view bound to DBObject
+   *  @return a typed cursor to iterate over results
+   */
+  def find[A <% DBObject, B <% DBObject](ref: A, keys: B, rp: ReadPreference): SalatMongoCursor[ObjectType]
 
   /** Returns a single object from this collection.
    *  @param t object for which to search
    *  @tparam A type view bound to DBObject
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
    */
-  def findOne[A <% DBObject](t: A): Option[ObjectType]
+  def findOne[A <% DBObject](t: A): Option[ObjectType] = findOne(t, defaultReadPreference)
+
+  /** Returns a single object from this collection.
+   *  @param t object for which to search
+   *  @param rp the read preference for this search
+   *  @tparam A type view bound to DBObject
+   *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
+   */
+  def findOne[A <% DBObject](t: A, rp: ReadPreference): Option[ObjectType]
 
   /** Find an object by its ID.
    *  @param id identifier
@@ -199,7 +221,7 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
    *  @param fieldsThatMustNotExist list of field keys that must not exist
    *  @return count of documents matching the search criteria
    */
-  def count(q: DBObject = MongoDBObject.empty, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil): Long
+  def count(q: DBObject = MongoDBObject.empty, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil, rp: ReadPreference = defaultReadPreference): Long
 
   /** Projection typed to a case class, trait or abstract superclass.
    *  @param query object for which to search
@@ -266,6 +288,8 @@ trait DAO[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[ObjectType, ID
   /** @return DAO description for logging
    */
   def description: String = "DAO"
+
+  def defaultReadPreference = collection.readPreference
 
   def defaultWriteConcern = collection.writeConcern
 
