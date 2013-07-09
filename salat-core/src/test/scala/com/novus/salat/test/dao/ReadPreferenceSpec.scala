@@ -38,6 +38,15 @@ class ReadPreferenceSpec extends SalatSpec {
       cursor.toList must contain(alpha1)
     }
 
+    "support setting of ReadPreference on cursor" in new alphaContextWithData {
+      val cursor = AlphaDAO.find(MongoDBObject("_id" -> 1))
+      cursor.underlying.getReadPreference.getName must be matching ReadPreference.Primary.getName
+      cursor.limit(10) // just set an arbitrary option on the cursor for testing
+      cursor.readPreference(ReadPreference.Nearest)
+      cursor.underlying.getReadPreference.getName must be matching ReadPreference.Nearest.getName
+      cursor.toList must contain(alpha1)
+    }
+
     "support count with ReadPreference" in new alphaContextWithData {
       AlphaDAO.count(q = MongoDBObject("_id" -> 2), rp = ReadPreference.SecondaryPreferred) must beEqualTo(1L)
     }
