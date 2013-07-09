@@ -101,6 +101,7 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
   /** Queries for an object in this collection.
    *  @param ref object for which to search
    *  @param keys fields to return
+   *  @param rp read preference to use for this search
    *  @tparam A type view bound to DBObject
    *  @tparam B type view bound to DBObject
    *  @return a typed cursor to iterate over results
@@ -219,6 +220,7 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
    *  @param q object for which to search
    *  @param fieldsThatMustExist list of field keys that must exist
    *  @param fieldsThatMustNotExist list of field keys that must not exist
+   *  @param rp read preference to use for this search
    *  @return count of documents matching the search criteria
    */
   def count(q: DBObject = MongoDBObject.empty, fieldsThatMustExist: List[String] = Nil, fieldsThatMustNotExist: List[String] = Nil, rp: ReadPreference = defaultReadPreference): Long

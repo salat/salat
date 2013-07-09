@@ -61,6 +61,10 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
    *  @return default write concern to use for insert, update, save and remove operations
    */
   def defaultWriteConcern = dao.defaultWriteConcern
+
+  /** In the absence of a specified read preference, supplies a default read preference.
+    *  @return default read preference for all find and count operations.
+    */
   def defaultReadPreference = dao.defaultReadPreference
 
   //
@@ -166,6 +170,7 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
 
   /** @param t object for which to search
    *  @tparam A type view bound to DBObject
+   *  @param rp read preference to use for this search
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
    */
   def findOne[A <% DBObject](t: A, rp: ReadPreference = defaultReadPreference) = dao.findOne(t, rp)
