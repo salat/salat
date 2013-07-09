@@ -63,8 +63,8 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
   def defaultWriteConcern = dao.defaultWriteConcern
 
   /** In the absence of a specified read preference, supplies a default read preference.
-    *  @return default read preference for all find and count operations.
-    */
+   *  @return default read preference for all find and count operations.
+   */
   def defaultReadPreference = dao.defaultReadPreference
 
   //
