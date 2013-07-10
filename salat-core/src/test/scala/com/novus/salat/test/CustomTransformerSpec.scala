@@ -3,11 +3,31 @@ package com.novus.salat.test
 import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.test.custom._
+import com.novus.salat.custom.Bicycle
 
 class CustomTransformerSpec extends SalatSpec {
 
   "Salat" should {
-    "allow custom transformers for a case class" in {
+    "allow custom transformers for a Scala class whose serialized representation is a DBObject" in {
+      WibbleTransformer.supportsGrater must beTrue
+      val w = new Wibble("a", 4)
+      val dbo = grater[Wibble].asDBObject(w)
+      dbo should haveEntry("a", "a")
+      dbo should haveEntry("b", 4)
+      val w_* = grater[Wibble].asObject(dbo)
+      w_* must_== w
+    }
+    "allow custom transformers for a Java class whose serialized representation is a DBObject" in {
+      BicycleTransformer.supportsGrater must beTrue
+      val b = new Bicycle(1, 2, 3)
+      val dbo = grater[Bicycle].asDBObject(b)
+      dbo should haveEntry("cadence", 1)
+      dbo should haveEntry("speed", 2)
+      dbo should haveEntry("gear", 3)
+      val b_* = grater[Bicycle].asObject(dbo)
+      b_* must_== b
+    }
+    "allow custom transformers for an embedded case class" in {
       val _id = new ObjectId
       val bar = Bar("b")
       val baz = Baz(1, 3.14)

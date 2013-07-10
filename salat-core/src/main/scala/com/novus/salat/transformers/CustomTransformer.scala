@@ -23,5 +23,7 @@ abstract class CustomTransformer[ModelObject <: AnyRef: Manifest, SerializedRepr
 
   def serialize(a: ModelObject): SerializedRepr
 
+  val supportsGrater = manifest[SerializedRepr].erasure.getName.endsWith("DBObject")
+
   override def toString = "CustomTransformer[ %s <-> %s ]".format(manifest[ModelObject].erasure.getName, manifest[SerializedRepr].erasure.getName)
 }

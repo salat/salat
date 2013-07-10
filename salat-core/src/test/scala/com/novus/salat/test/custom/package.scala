@@ -7,6 +7,8 @@ package object custom {
     val name = "custom_transformer_spec"
     override val typeHintStrategy = StringTypeHintStrategy(TypeHintFrequency.Always, "_t")
     registerCustomTransformer(BarTransformer)
+    registerCustomTransformer(BicycleTransformer)
+    registerCustomTransformer(WibbleTransformer)
   }
 
 }
