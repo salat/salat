@@ -69,8 +69,8 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "1.9.2-SNAPSHOT"
-  val buildScalaVersion = "2.10.0"
+  val buildVersion = "1.9.2"
+  val buildScalaVersion = "2.10.2"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
     organization := buildOrganization,
@@ -148,7 +148,7 @@ object Publish {
 object Dependencies {
 
   private val LogbackVersion = "1.0.9"
-  private val CasbahVersion = "2.6.1"
+  private val CasbahVersion = "2.6.2"
 
   val specs2 = "org.specs2" %% "specs2" % "1.13" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
