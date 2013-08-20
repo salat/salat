@@ -69,7 +69,7 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "1.9.2-SNAPSHOT"
+  val buildVersion = "1.9.2"
   val buildScalaVersion = "2.9.2"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
