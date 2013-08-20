@@ -82,7 +82,7 @@ object BuildSettings {
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
-    crossScalaVersions := Seq("2.9.1", "2.9.2", "2.9.3")
+    crossScalaVersions := Seq("2.9.2", "2.9.3")
   )
 }
 
