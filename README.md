@@ -22,13 +22,13 @@ Please remove all references to `repo.novus.com` from your build files.  After 0
 
 ## Stable Release
 
-Available for Scala 2.9.1 and 2.9.2.  Based on Casbah 2.4.1.
+Available for Scala 2.9.1 and 2.9.2.  Based on Casbah 2.6.2.
 
-    "com.novus" %% "salat" % "1.9.1"
+    "com.novus" %% "salat" % "1.9.2"
 
-[Release Notes](http://notes.implicit.ly/post/30497070468/salat-1-9-1)
+[Release Notes](http://notes.implicit.ly/post/58752640996/salat-1-9-2)
 
-Available for Scala 2.8.1, 2.9.1 and 2.9.2.  Based on Casbah 2.1.5-1.
+Legacy support for Scala 2.8.1.  Based on Casbah 2.1.5-1.
 
     "com.novus" %% "salat" % "0.0.8"
 
