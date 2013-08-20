@@ -69,8 +69,8 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "1.9.2"
-  val buildScalaVersion = "2.9.2"
+  val buildVersion = "1.9.3-SNAPSHOT"
+  val buildScalaVersion = "2.9.3"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
     organization := buildOrganization,
@@ -82,7 +82,7 @@ object BuildSettings {
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
-    crossScalaVersions := Seq("2.9.1", "2.9.2")
+    crossScalaVersions := Seq("2.9.1", "2.9.2", "2.9.3")
   )
 }
 
