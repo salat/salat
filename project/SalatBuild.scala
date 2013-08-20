@@ -158,7 +158,7 @@ object Dependencies {
   val casbah = "org.mongodb" %% "casbah-core" % CasbahVersion
   val casbah_commons = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test"
   val casbah_specs = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test" classifier "test"
-  val json4sNative = "org.json4s" %% "json4s-native" % "3.0.0"
+  val json4sNative = "org.json4s" %% "json4s-native" % "3.2.5"
 }
 
 object Repos {
