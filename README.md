@@ -44,7 +44,7 @@ If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
     resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-[Release Notes (In Progress)](https://github.com/novus/salat/blob/master/notes/1.9.1.markdown)
+[Release Notes (In Progress)](https://github.com/novus/salat/blob/master/notes/1.9.3.markdown)
 
 ## Play 2 plugin
 
