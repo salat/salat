@@ -1,11 +1,10 @@
 # See http://about.travis-ci.org/docs/user/build-configuration/
 language: scala
 scala:
-  - 2.10.0
-  - 2.10.1
+  - 2.10.2
 branches:
   only:
-    - salat_2.10
+    - master
 notifications:
   email:
     recipients:
