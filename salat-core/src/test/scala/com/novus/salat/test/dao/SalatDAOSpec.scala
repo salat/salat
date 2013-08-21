@@ -38,7 +38,7 @@ class SalatDAOSpec extends SalatSpec {
 
   // which most specs can execute concurrently, this particular spec needs to execute sequentially to avoid mutating shared state,
   // namely, the MongoDB collection referenced by the AlphaDAO
-  override def is = args(sequential = true) ^ super.is
+  sequential
 
   implicit val wc = AlphaDAO.defaultWriteConcern
 

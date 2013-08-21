@@ -39,7 +39,7 @@ import scala.util.Random
 class BigDecimalStrategyPerformanceSpec extends Specification with Logging {
 
   // force sequential run
-  override def is = args(sequential = true) ^ super.is
+  sequential
 
   case class bdc(strategy: BigDecimalStrategy) extends Scope {
     implicit val ctx = new Context {
