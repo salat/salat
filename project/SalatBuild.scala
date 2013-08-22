@@ -81,7 +81,7 @@ object BuildSettings {
     testFrameworks += TestFrameworks.Specs2,
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"), 
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")/*,
+    scalacOptions ++= Seq("-Xlint", "-deprecation", "-unchecked", "-feature", "-language:_")/*,
     crossScalaVersions := Seq("2.9.1", "2.9.2", "2.10.0-RC3")*/   // as usual, this actually won't cross build....
   )
 }
@@ -150,7 +150,7 @@ object Dependencies {
   private val LogbackVersion = "1.0.9"
   private val CasbahVersion = "2.6.2"
 
-  val specs2 = "org.specs2" %% "specs2" % "1.13" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "2.2-SNAPSHOT" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.2"
   val logbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion % "test"

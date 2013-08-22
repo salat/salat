@@ -48,7 +48,7 @@ class SuppressDefaultArgsSpec extends SalatSpec {
       s.about must_== SuppressDefaults.AboutDefault
       val dbo: MongoDBObject = grater[Susan].asDBObject(s)
       //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Susan")
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Susan")
       dbo.get("how") must beNone
       dbo.get("perished") must beNone
       dbo.get("fits") must beNone
@@ -67,11 +67,11 @@ class SuppressDefaultArgsSpec extends SalatSpec {
       s.about must_!= SuppressDefaults.AboutDefault
       val dbo: MongoDBObject = grater[Susan].asDBObject(s)
       //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Susan")
-      dbo must havePair("how", "why")
-      dbo must havePair("perished", false)
-      dbo must havePair("about", MongoDBObject("a" -> "ants", "b" -> "bears"))
-      dbo must havePair("fits", MongoDBList(
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Susan")
+      dbo must havePair("how" -> "why")
+      dbo must havePair("perished" -> false)
+      dbo must havePair("about" -> MongoDBObject("a" -> "ants", "b" -> "bears"))
+      dbo must havePair("fits" -> MongoDBList(
         MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Fit", "length" -> 1),
         MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Fit", "length" -> 2),
         MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Fit") // 3 is a default arg for Fit: suppressed

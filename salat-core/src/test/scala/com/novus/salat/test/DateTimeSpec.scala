@@ -38,9 +38,9 @@ class DateTimeSpec extends SalatSpec {
       val n = Neville(asOf = dt)
       val dbo: MongoDBObject = grater[Neville].asDBObject(n)
       //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Neville")
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Neville")
       dbo must havePair("ennui" -> true)
-      dbo must havePair("asOf", dt)
+      dbo must havePair("asOf" -> dt)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_date_test_1")
       val wr = coll.insert(dbo)
@@ -53,9 +53,9 @@ class DateTimeSpec extends SalatSpec {
       val n = Neville(asOf = dt)
       val dbo: MongoDBObject = grater[Neville].asDBObject(n)
       //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Neville")
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Neville")
       dbo must havePair("ennui" -> true)
-      dbo must havePair("asOf", dt)
+      dbo must havePair("asOf" -> dt)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_date_test_2")
       val wr = coll.insert(dbo)

@@ -49,27 +49,27 @@ class GraterSpec extends SalatSpec {
       "case class <-> map" in {
         val aural = Aural(_id = _id, a = a, b = b, c = c, d = d, e = e, f = f, g = g, h = h, i = i)
         val map = grater[Aural].toMap(aural)
-        map must havePair(ctx.typeHintStrategy.typeHint, "com.novus.salat.test.model.Aural")
-        map must havePair("_id", _id)
-        map must havePair("a", a)
-        map must havePair("b", b)
-        map must havePair("c", c)
-        map must havePair("d", d)
-        map must havePair("e", e)
-        map must havePair("f", f)
-        map must havePair("g", g)
-        map must havePair("h", h)
-        map must havePair("i", i)
+        map must havePair(ctx.typeHintStrategy.typeHint -> "com.novus.salat.test.model.Aural")
+        map must havePair("_id" -> _id)
+        map must havePair("a" -> a)
+        map must havePair("b" -> b)
+        map must havePair("c" -> c)
+        map must havePair("d" -> d)
+        map must havePair("e" -> e)
+        map must havePair("f" -> f)
+        map must havePair("g" -> g)
+        map must havePair("h" -> h)
+        map must havePair("i" -> i)
         val aural_* = grater[Aural].fromMap(map)
         aural_* must_== aural
       }
       "concrete trait impl <-> map" in {
         val ctenoid = Ctenoid(a = a, b = b, c = c)
         val map = grater[Bdellatomy].toMap(ctenoid)
-        map must havePair(ctx.typeHintStrategy.typeHint, "com.novus.salat.test.model.Ctenoid")
-        map must havePair("a", a)
-        map must havePair("b", b)
-        map must havePair("c", c)
+        map must havePair(ctx.typeHintStrategy.typeHint -> "com.novus.salat.test.model.Ctenoid")
+        map must havePair("a" -> a)
+        map must havePair("b" -> b)
+        map must havePair("c" -> c)
         val ctenoid_* = grater[Bdellatomy].fromMap(map)
         ctenoid_* must_== ctenoid
       }
@@ -83,11 +83,11 @@ class GraterSpec extends SalatSpec {
         djinn.b must_== defaultArgB
 
         val map = grater[Djinn].toMap(djinn)
-        map must havePair(ctx.typeHintStrategy.typeHint, "com.novus.salat.test.model.Djinn")
-        map must havePair("_id", _id)
-        map must havePair("a", defaultArgA)
-        map must havePair("b", defaultArgB)
-        map must havePair("c", GoldenRatio)
+        map must havePair(ctx.typeHintStrategy.typeHint -> "com.novus.salat.test.model.Djinn")
+        map must havePair("_id" -> _id)
+        map must havePair("a" -> defaultArgA)
+        map must havePair("b" -> defaultArgB)
+        map must havePair("c" -> GoldenRatio)
         val djinn_* = grater[Djinn].fromMap(map)
         djinn_* must_== djinn
       }
@@ -102,8 +102,8 @@ class GraterSpec extends SalatSpec {
       "respect @Key when serializing case class -> map" in {
         val ewe = Ewe(fat = true)
         val map = grater[Ewe].toMap(ewe)
-        map must havePair(ctx.typeHintStrategy.typeHint, "com.novus.salat.test.model.Ewe")
-        map must havePair("fluffy", true)
+        map must havePair(ctx.typeHintStrategy.typeHint -> "com.novus.salat.test.model.Ewe")
+        map must havePair("fluffy" -> true)
         val ewe_* = grater[Ewe].fromMap(map)
         ewe_* must_== ewe
       }
@@ -115,9 +115,9 @@ class GraterSpec extends SalatSpec {
       "respect @Ignore when serializing case class -> map" in {
         val fantasm = Fantasm(_id = _id, which = "spectre", rationalExplanation = Some("just a passing breeze"))
         val map = grater[Fantasm].toMap(fantasm)
-        map must havePair(ctx.typeHintStrategy.typeHint, "com.novus.salat.test.model.Fantasm")
-        map must havePair("_id", _id)
-        map must havePair("which", "spectre")
+        map must havePair(ctx.typeHintStrategy.typeHint -> "com.novus.salat.test.model.Fantasm")
+        map must havePair("_id" -> _id)
+        map must havePair("which" -> "spectre")
         map must haveKey("rationalExplanation").not // TODO: for some reason, not haveKey is unhappy here
         val fantasm_* = grater[Fantasm].fromMap(map)
         // because rationalExplanation is annotated with @Ignore, value in fantasm is not serialized to map and doesn't
@@ -137,9 +137,9 @@ class GraterSpec extends SalatSpec {
         val gneiss = Gneiss(igneous = true)
         gneiss.classification must_== "orthogneiss"
         val map = grater[Gneiss].toMap(gneiss)
-        map must havePair(ctx.typeHintStrategy.typeHint, "com.novus.salat.test.model.Gneiss")
-        map must havePair("igneous", true)
-        map must havePair("classification", "orthogneiss")
+        map must havePair(ctx.typeHintStrategy.typeHint -> "com.novus.salat.test.model.Gneiss")
+        map must havePair("igneous" -> true)
+        map must havePair("classification" -> "orthogneiss")
         val gneiss_* = grater[Gneiss].fromMap(map)
         gneiss_* must_== gneiss
       }
