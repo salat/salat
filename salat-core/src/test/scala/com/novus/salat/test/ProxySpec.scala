@@ -47,8 +47,8 @@ class ProxySpec extends SalatSpec with PendingUntilFixed {
                 dbo2 = %s
                 """, dbo1, dbo2)
 
-      dbo1 must havePair("_typeHint", classOf[SomeTraitImpl1].getName)
-      dbo2 must havePair("_typeHint", classOf[SomeTraitImpl2].getName)
+      dbo1 must havePair("_typeHint" -> classOf[SomeTraitImpl1].getName)
+      dbo2 must havePair("_typeHint" -> classOf[SomeTraitImpl2].getName)
 
       success
     }

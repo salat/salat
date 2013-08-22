@@ -44,11 +44,11 @@ class ModelCompanionSpec extends SalatSpec {
 
       "toDBObject" in new myModelScope {
         val dbo: MongoDBObject = MyModel.toDBObject(m)
-        dbo must havePair("_id", _id)
-        dbo must havePair("x", x)
-        dbo must havePair("y", y)
-        dbo must havePair("z", DBList(z: _*))
-        dbo must havePair("d", d)
+        dbo must havePair("_id" -> _id)
+        dbo must havePair("x" -> x)
+        dbo must havePair("y" -> y)
+        dbo must havePair("z" -> DBList(z: _*))
+        dbo must havePair("d" -> d)
       }
 
       "toObject" in new myModelScope {
