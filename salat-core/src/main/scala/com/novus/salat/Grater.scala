@@ -218,7 +218,19 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     builder ++= ToJField.typeHint(clazz, useTypeHint)
     iterateOut(o) {
       case (key, value) => {
-        builder += ToJField(key, value)
+        val jField = ToJField(key, value)
+
+//        log.debug(
+//          """
+//            |toJSON:
+//            |
+//            |           key: %s
+//            |           value: %s [%s]
+//            |           jfield: %s [%s]
+//            |
+//          """.stripMargin, key, value, value.getClass.getName, jField, jField.getClass.getName)
+
+        builder += jField
       }
     }.toList
     JObject(builder.result())

@@ -41,6 +41,7 @@ object `package` {
     override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary,
       typeHint = TestTypeHint)
     override val jsonConfig = JSONConfig(dateStrategy = StringDateStrategy(dateFormatter = TestDateFormatter))
+    override val bigIntStrategy = BigIntToLongStrategy
   }
 
   val testDate = new DateTime(2011, DECEMBER, 28, 14, 37, 56, 8, DateTimeZone.UTC)
