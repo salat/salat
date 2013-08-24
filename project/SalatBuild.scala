@@ -81,7 +81,7 @@ object BuildSettings {
     testFrameworks += TestFrameworks.Specs2,
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"), 
-    scalacOptions ++= Seq("-Xlint", "-deprecation", "-unchecked", "-feature", "-language:_")
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:_")
   )
 }
 

@@ -60,7 +60,7 @@ class ReadPreferenceSpec extends SalatSpec {
     AlphaDAO.collection.count() must_== 0L
 
     val _ids = AlphaDAO.insert(alpha1, alpha2)
-    _ids must contain(Option(alpha1.id), Option(alpha2.id))
+    _ids must contain(exactly(Option(alpha1.id), Option(alpha2.id)))
     AlphaDAO.collection.count() must_== 2L
   }
 
