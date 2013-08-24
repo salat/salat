@@ -220,15 +220,15 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       case (key, value) => {
         val jField = ToJField(key, value)
 
-//        log.debug(
-//          """
-//            |toJSON:
-//            |
-//            |           key: %s
-//            |           value: %s [%s]
-//            |           jfield: %s [%s]
-//            |
-//          """.stripMargin, key, value, value.getClass.getName, jField, jField.getClass.getName)
+        //        log.debug(
+        //          """
+        //            |toJSON:
+        //            |
+        //            |           key: %s
+        //            |           value: %s [%s]
+        //            |           jfield: %s [%s]
+        //            |
+        //          """.stripMargin, key, value, value.getClass.getName, jField, jField.getClass.getName)
 
         builder += jField
       }
