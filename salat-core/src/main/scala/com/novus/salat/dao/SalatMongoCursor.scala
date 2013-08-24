@@ -100,7 +100,12 @@ trait SalatMongoCursorBase[T <: AnyRef] extends Logging {
     underlying.close()
   }
 
-  def slaveOk() = underlying.slaveOk()
+  @deprecated("Use readPreference instead", "1.9.3") def slaveOk() = underlying.slaveOk() // parens for side-effect
+
+  def readPreference(rp: ReadPreference): this.type = {
+    underlying.setReadPreference(rp)
+    this
+  }
 
   def numGetMores = underlying.numGetMores
 
