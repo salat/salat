@@ -81,8 +81,7 @@ object BuildSettings {
     testFrameworks += TestFrameworks.Specs2,
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"), 
-    scalacOptions ++= Seq("-Xlint", "-deprecation", "-unchecked", "-feature", "-language:_")/*,
-    crossScalaVersions := Seq("2.9.1", "2.9.2", "2.10.0-RC3")*/   // as usual, this actually won't cross build....
+    scalacOptions ++= Seq("-Xlint", "-deprecation", "-unchecked", "-feature", "-language:_")
   )
 }
 
