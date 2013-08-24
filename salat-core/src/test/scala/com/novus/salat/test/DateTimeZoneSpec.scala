@@ -38,9 +38,9 @@ class DateTimeZoneSpec extends SalatSpec {
       val n = Prue(zone = tz)
       val dbo: MongoDBObject = grater[Prue].asDBObject(n)
       //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Prue")
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Prue")
       dbo must havePair("brawl" -> true)
-      dbo must havePair("zone", tz.getID)
+      dbo must havePair("zone" -> tz.getID)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_timezone_test_1")
       val wr = coll.insert(dbo)
@@ -53,9 +53,9 @@ class DateTimeZoneSpec extends SalatSpec {
       val n = Prue(zone = tz)
       val dbo: MongoDBObject = grater[Prue].asDBObject(n)
       //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Prue")
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Prue")
       dbo must havePair("brawl" -> true)
-      dbo must havePair("zone", tz.getID)
+      dbo must havePair("zone" -> tz.getID)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_timezone_test_2")
       val wr = coll.insert(dbo)

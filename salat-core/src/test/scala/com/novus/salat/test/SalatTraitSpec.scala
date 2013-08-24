@@ -40,9 +40,9 @@ class SalatTraitSpec extends SalatSpec {
       val container = SomeContainerClass("tally ho", theListWhichNeedsToBeTested = List[SomeCommonTrait](s1, s2))
       val dbo: MongoDBObject = grater[SomeContainerClass].asDBObject(container)
       //      println(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.SomeContainerClass")
-      dbo must havePair("e", "tally ho")
-      dbo must havePair("theListWhichNeedsToBeTested", {
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.SomeContainerClass")
+      dbo must havePair("e" -> "tally ho")
+      dbo must havePair("theListWhichNeedsToBeTested" -> {
         val listBuilder = MongoDBList.newBuilder
         listBuilder += {
           val builder = MongoDBObject.newBuilder
@@ -72,8 +72,8 @@ class SalatTraitSpec extends SalatSpec {
       //      println(MapPrettyPrinter(container))
       val dbo: MongoDBObject = grater[VertebrateList].asDBObject(container)
       //      println(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.VertebrateList")
-      dbo must havePair("vList", {
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.VertebrateList")
+      dbo must havePair("vList" -> {
         val listBuilder = MongoDBList.newBuilder
         listBuilder += {
           val builder = MongoDBObject.newBuilder
@@ -148,8 +148,8 @@ class SalatTraitSpec extends SalatSpec {
     // the "someTrait" field is typed to SomeTrait, which is annotated with @Salat
     val container1 = ContainsFieldTypedToTrait(someTrait = SomeTraitImpl1(x = "Hello"))
     val dbo1: MongoDBObject = grater[ContainsFieldTypedToTrait].asDBObject(container1)
-    dbo1 must havePair("_typeHint", "com.novus.salat.test.model.ContainsFieldTypedToTrait")
-    dbo1 must havePair("someTrait", {
+    dbo1 must havePair("_typeHint" -> "com.novus.salat.test.model.ContainsFieldTypedToTrait")
+    dbo1 must havePair("someTrait" -> {
       // _typeHint shows that @Salat annotation on SomeTrait is working
       MongoDBObject("_typeHint" -> "com.novus.salat.test.model.SomeTraitImpl1",
         "x" -> "Hello")
@@ -158,8 +158,8 @@ class SalatTraitSpec extends SalatSpec {
 
     val container2 = ContainsFieldTypedToTrait(someTrait = SomeTraitImpl2(y = 33))
     val dbo2: MongoDBObject = grater[ContainsFieldTypedToTrait].asDBObject(container2)
-    dbo2 must havePair("_typeHint", "com.novus.salat.test.model.ContainsFieldTypedToTrait")
-    dbo2 must havePair("someTrait", {
+    dbo2 must havePair("_typeHint" -> "com.novus.salat.test.model.ContainsFieldTypedToTrait")
+    dbo2 must havePair("someTrait" -> {
       // _typeHint shows that @Salat annotation on SomeTrait is working
       MongoDBObject("_typeHint" -> "com.novus.salat.test.model.SomeTraitImpl2",
         "y" -> 33)
@@ -173,8 +173,8 @@ class SalatTraitSpec extends SalatSpec {
       Turbo(name = "Knock out", ticker = "ASX"),
       Index(name = "FTSE 100")))
     val dbo: MongoDBObject = grater[Investments].asDBObject(investments)
-    dbo must havePair("_typeHint", "com.novus.salat.test.model.Investments")
-    dbo must havePair("contracts", {
+    dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Investments")
+    dbo must havePair("contracts" -> {
       val builder = MongoDBList.newBuilder
       builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Stock", "name" -> "Apple", "ticker" -> "AAPL")
       builder += MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Turbo", "name" -> "Knock out", "ticker" -> "ASX")

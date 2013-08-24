@@ -42,14 +42,14 @@ class ContextSpec extends SalatSpec {
 
   "The context classloader handling" should {
     "provide a classloader collection populated with its own classloader" in new testContext {
-      ctx.classLoaders must contain(ctx.getClass.getClassLoader).only
+      ctx.classLoaders must contain(exactly(ctx.getClass.getClassLoader))
     }
     "accept additional classloaders" in new testContext {
       ctx.classLoaders must have size (1)
       val cl = new ClassLoader() {}
       ctx.registerClassLoader(cl)
       ctx.classLoaders must have size (2)
-      //      ctx.classLoaders must contain(cl, ctx.getClass.getClassLoader).only
+      //      ctx.classLoaders must contain(exactly(cl, ctx.getClass.getClassLoader))
     }
   }
 

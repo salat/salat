@@ -44,11 +44,11 @@ class MapSupportSpec extends SalatSpec {
 
       val dbo: MongoDBObject = grater[AttributeObject].asDBObject(ao)
       log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.AttributeObject")
-      dbo must havePair("_id", 42L)
-      dbo must havePair("key", "testKey1")
-      dbo must havePair("bestDef", "bestDef1")
-      dbo must havePair("urls", {
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.AttributeObject")
+      dbo must havePair("_id" -> 42L)
+      dbo must havePair("key" -> "testKey1")
+      dbo must havePair("bestDef" -> "bestDef1")
+      dbo must havePair("urls" -> {
         val builder = MongoDBObject.newBuilder
         builder += "foo" -> {
           val u = MongoDBObject.newBuilder
