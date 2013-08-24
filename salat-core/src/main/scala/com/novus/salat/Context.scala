@@ -195,12 +195,13 @@ needsProxyGrater: clazz='%s'
             log.trace("lookup_?: creating proxy grater for clazz='%s'", clazz.getName)
             Some((new ProxyGrater(clazz.asInstanceOf[Class[X]])(this) {}).asInstanceOf[Grater[_ <: AnyRef]])
           }
-          case Some(clazz) if isCaseClass(clazz) => {
-            Some(new ConcreteGrater[CaseClass](clazz.asInstanceOf[Class[CaseClass]])(this) {}.asInstanceOf[Grater[_ <: AnyRef]])
-          }
           case Some(clazz) if customTransformers.contains(clazz.getName) && customTransformers(clazz.getName).supportsGrater => {
             Some(new CustomGrater[X](clazz.asInstanceOf[Class[X]], customTransformers(clazz.getName).asInstanceOf[CustomTransformer[X, DBObject]])(this) {}.asInstanceOf[Grater[_ <: AnyRef]])
           }
+          case Some(clazz) if isCaseClass(clazz) => {
+            Some(new ConcreteGrater[CaseClass](clazz.asInstanceOf[Class[CaseClass]])(this) {}.asInstanceOf[Grater[_ <: AnyRef]])
+          }
+
           case _ => None
         }
       }
