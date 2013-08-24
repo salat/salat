@@ -92,7 +92,7 @@ trait Context extends ContextLifecycle with Logging {
     caseObjectOverrides += caseObjectClazz.getName -> serializedValue
     resolveCaseObjectOverrides += (parentClazz.getName, serializedValue) -> caseObjectClazz.getName
     caseObjectHierarchy += parentClazz.getName
-    log.debug("registerCaseObjectOverride[%s]: %s <- %s will serialize as '%s'", name, parentClazz.getSimpleName, caseObjectClazz.getSimpleName, serializedValue)
+    log.trace("registerCaseObjectOverride[%s]: %s <- %s will serialize as '%s'", name, parentClazz.getSimpleName, caseObjectClazz.getSimpleName, serializedValue)
   }
 
   def registerClassLoader(cl: ClassLoader) {
