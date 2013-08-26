@@ -75,9 +75,9 @@ class SalatDAOSpec extends SalatSpec {
 
       // the standard collection cursor returns DBOs
       val mongoCursor = AlphaDAO.collection.find()
-      mongoCursor.next() must haveEntry("_id", alpha4.id)
-      mongoCursor.next() must haveEntry("_id", alpha5.id)
-      mongoCursor.next() must haveEntry("_id", alpha6.id)
+      mongoCursor.next() must haveEntry("_id" -> alpha4.id)
+      mongoCursor.next() must haveEntry("_id" -> alpha5.id)
+      mongoCursor.next() must haveEntry("_id" -> alpha6.id)
 
       // BUT the Salat DAO returns a cursor types to case classes!
       val salatCursor = AlphaDAO.find(MongoDBObject.empty)
@@ -231,13 +231,13 @@ class SalatDAOSpec extends SalatSpec {
       EpsilonDAO.collection.count() must_== 1L
 
       val e_* = EpsilonDAO.findOne(grater[Epsilon].asDBObject(e))
-      e_* must not beNone
+      e_* must beSome
     }
 
     "support using a query to bring back a typed list of ids" in new alphaContextWithData {
       val idList = AlphaDAO.ids(MongoDBObject("_id" -> MongoDBObject("$gt" -> 2)))
       idList must haveSize(4)
-      idList must contain(3, 4, 5, 6)
+      idList must contain(exactly(3, 4, 5, 6))
     }
 
     "support using an iterator" in new alphaContextWithData {
@@ -259,7 +259,7 @@ class SalatDAOSpec extends SalatSpec {
 
       val projList = ThetaDAO.primitiveProjections[String](MongoDBObject.empty, "y")
       projList must haveSize(4)
-      projList must contain("y1", "y2", "y3", "y4") // theta5 has a null value for y, not in the list
+      projList must contain(exactly("y1", "y2", "y3", "y4")) // theta5 has a null value for y, not in the list
     }
 
     "support using a projection on an Option field to filter out Nones" in new xiContext {
@@ -270,7 +270,7 @@ class SalatDAOSpec extends SalatSpec {
 
       val projList = XiDAO.primitiveProjections[String](MongoDBObject.empty, "y")
       projList must haveSize(4)
-      projList must contain("y1", "y2", "y3", "y4") // xi5 has a null value for y, not in the list
+      projList must contain(exactly("y1", "y2", "y3", "y4")) // xi5 has a null value for y, not in the list
     }
 
     "support case class projections" in new kappaContext {
@@ -281,7 +281,7 @@ class SalatDAOSpec extends SalatSpec {
 
       val projList = KappaDAO.projections[Nu](MongoDBObject("k" -> MongoDBObject("$in" -> List("k2", "k3"))), "nu")
       projList must haveSize(2)
-      projList must contain(nu2, nu3)
+      projList must contain(exactly(nu2, nu3))
     }
   }
 
@@ -297,7 +297,7 @@ class SalatDAOSpec extends SalatSpec {
     AlphaDAO.collection.count() must_== 0L
 
     val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
-    _ids must contain(Option(alpha1.id), Option(alpha2.id), Option(alpha3.id), Option(alpha4.id), Option(alpha5.id), Option(alpha6.id))
+    _ids must contain(exactly(Option(alpha1.id), Option(alpha2.id), Option(alpha3.id), Option(alpha4.id), Option(alpha5.id), Option(alpha6.id)))
     AlphaDAO.collection.count() must_== 6L
   }
 
@@ -318,7 +318,7 @@ class SalatDAOSpec extends SalatSpec {
     val theta4 = Theta(x = "x4", y = "y4")
     val theta5 = Theta(x = "x5", y = null)
     val _ids = ThetaDAO.insert(theta1, theta2, theta3, theta4, theta5)
-    _ids must contain(Option(theta1.id), Option(theta2.id), Option(theta3.id), Option(theta4.id), Option(theta5.id))
+    _ids must contain(exactly(Option(theta1.id), Option(theta2.id), Option(theta3.id), Option(theta4.id), Option(theta5.id)))
     ThetaDAO.collection.count() must_== 5L
   }
 
@@ -333,7 +333,7 @@ class SalatDAOSpec extends SalatSpec {
     val xi4 = Xi(x = "x4", y = Some("y4"))
     val xi5 = Xi(x = "x5", y = None)
     val _ids = XiDAO.insert(xi1, xi2, xi3, xi4, xi5)
-    _ids must contain(Option(xi1.id), Option(xi2.id), Option(xi3.id), Option(xi4.id), Option(xi5.id))
+    _ids must contain(exactly(Option(xi1.id), Option(xi2.id), Option(xi3.id), Option(xi4.id), Option(xi5.id)))
     XiDAO.collection.count() must_== 5L
   }
 
@@ -350,7 +350,7 @@ class SalatDAOSpec extends SalatSpec {
     val kappa2 = Kappa(k = "k2", nu = nu2)
     val kappa3 = Kappa(k = "k3", nu = nu3)
     val _ids = KappaDAO.insert(kappa1, kappa2, kappa3)
-    _ids must contain(Option(kappa1.id), Option(kappa2.id), Option(kappa3.id))
+    _ids must contain(exactly(Option(kappa1.id), Option(kappa2.id), Option(kappa3.id)))
     KappaDAO.collection.count() must_== 3L
   }
 }
