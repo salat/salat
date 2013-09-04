@@ -149,6 +149,13 @@ class GraterSpec extends SalatSpec {
         val gneiss_* = grater[Gneiss].fromMap(map)
         gneiss_* must_== Gneiss(true)
       }
+
+      "support case classes in package objects" in {
+        val order = Order(42, OrderStatus.PartiallyFilled)
+        val orderMap = Map("id" -> 42, "ordStatus" -> "1")
+        val theOrder = grater[Order].fromMap(orderMap)
+        theOrder must_== order
+      }
     }
   }
 

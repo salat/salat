@@ -320,3 +320,6 @@ case class MetadataRecord(
   deleted: Boolean = false // if the record has been deleted
   )
 
+case class Order(
+  id: Long,
+  ordStatus: OrderStatus)
