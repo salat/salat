@@ -116,8 +116,8 @@ trait Context extends ContextLifecycle with Logging {
     if (globalKeyOverrides.contains(fieldName)) {
       globalKeyOverrides(fieldName)
     }
-    else if (perClassKeyOverrides.contains(clazz.getName, fieldName)) {
-      perClassKeyOverrides(clazz.getName, fieldName)
+    else if (perClassKeyOverrides.contains(clazz.getName -> fieldName)) {
+      perClassKeyOverrides(clazz.getName -> fieldName)
     }
     else fieldName
   }

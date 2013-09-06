@@ -84,7 +84,7 @@ class ContextSpec extends SalatSpec {
     "support registering a per-class key override" in new testContext {
       ctx.perClassKeyOverrides must beEmpty
       ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead)
-      ctx.perClassKeyOverrides.get(clazz.getName, remapThis) must beSome(toThisInstead)
+      ctx.perClassKeyOverrides.get(clazz.getName -> remapThis) must beSome(toThisInstead)
       ctx.perClassKeyOverrides must have size (1)
     }
     "prevent registering a duplicate per-class override" in new testContext {
