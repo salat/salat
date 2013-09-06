@@ -72,7 +72,7 @@ object BuildSettings {
   val buildVersion = "1.9.3-SNAPSHOT"
   val buildScalaVersion = "2.10.2"
 
-  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
+  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
