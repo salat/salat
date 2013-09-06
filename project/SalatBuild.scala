@@ -31,10 +31,6 @@ object SalatBuild extends Build {
   import Dependencies._
   import BuildSettings._
 
-  val testDeps = Seq(specs2, logbackCore, logbackClassic, casbah_specs, casbah_commons)
-  val utilDeps = Seq(slf4jApi) ++ testDeps
-  val coreDeps = Seq(casbah, json4sNative, commonsLang) ++ testDeps
-
   lazy val salat = Project(
     id = "salat",
     base = file("."),
@@ -43,8 +39,9 @@ object SalatBuild extends Build {
       publishArtifact in (Compile, packageDoc) := false,
       publishArtifact in (Compile, packageSrc) := false
     ),
-    aggregate = Seq(util, core)
-  ) dependsOn(util, core)
+    aggregate = Seq(util, core, salat_json4s, salat_casbah, salat_reactive_mongo)
+  ).configs( IntegrationTest )
+   .settings( Defaults.itSettings : _*) dependsOn(util, core, salat_json4s, salat_casbah, salat_reactive_mongo)
 
   lazy val util = {
     val id = "salat-util"
@@ -61,6 +58,28 @@ object SalatBuild extends Build {
     base = file("salat-core"),
     settings = buildSettings ++ Seq(libraryDependencies ++= coreDeps)
   ) dependsOn (util)
+
+  // and here begin the first of - I hope - many useful modules!
+
+  lazy val salat_json4s = Project(
+    id = "salat-json4s",
+    base = file("salat-json4s"),
+    settings = buildSettings ++ Seq(libraryDependencies ++= json4sDeps)
+  ) dependsOn (core)
+
+  // TODO: play json
+
+  lazy val salat_casbah = Project(
+    id = "salat-casbah",
+    base = file("salat-casbah"),
+    settings = buildSettings ++ Seq(libraryDependencies ++= casbahDeps)
+  ) dependsOn (core)
+
+  lazy val salat_reactive_mongo = Project(
+    id = "salat-reactivemongo",
+    base = file("salat-reactivemongo"),
+    settings = buildSettings ++ Seq(libraryDependencies ++= reactiveMongoDeps)
+  ) dependsOn (core)
 
 }
 
@@ -149,15 +168,24 @@ object Dependencies {
   private val LogbackVersion = "1.0.9"
   private val CasbahVersion = "2.6.2"
 
-  val specs2 = "org.specs2" %% "specs2" % "2.2-SNAPSHOT" % "test"
-  val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
-  val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.2"
-  val logbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion % "test"
-  val logbackClassic = "ch.qos.logback" % "logback-classic" % LogbackVersion % "test"
-  val casbah = "org.mongodb" %% "casbah-core" % CasbahVersion
-  val casbah_commons = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test"
-  val casbah_specs = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test" classifier "test"
-  val json4sNative = "org.json4s" %% "json4s-native" % "3.1.0"
+  private val specs2 = "org.specs2" %% "specs2" % "2.2-SNAPSHOT" % "it,test"
+  private val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "it,test"
+  private val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.2"
+  private val logbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion % "it,test"
+  private val logbackClassic = "ch.qos.logback" % "logback-classic" % LogbackVersion % "it,test"
+  private val casbah = "org.mongodb" %% "casbah-core" % CasbahVersion
+  private val casbah_commons = "org.mongodb" %% "casbah-commons" % CasbahVersion % "it,test"
+  private val casbah_specs = "org.mongodb" %% "casbah-commons" % CasbahVersion % "it,test" classifier "test"
+  private val json4sNative = "org.json4s" %% "json4s-native" % "3.1.0"
+  private val reactiveMongo = "org.reactivemongo" %% "reactivemongo" % "0.9"
+
+  private val baseTestDeps = Seq(specs2, logbackCore, logbackClassic)
+  val utilDeps = baseTestDeps ++ Seq(slf4jApi)
+  val json4sDeps = Seq(json4sNative)
+  val coreDeps = Seq(commonsLang)
+  val casbahDeps = Seq(casbah, casbah_specs, casbah_commons)
+  val reactiveMongoDeps = Seq(reactiveMongo)
+
 }
 
 object Repos {
