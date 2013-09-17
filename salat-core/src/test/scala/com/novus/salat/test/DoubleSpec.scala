@@ -8,7 +8,9 @@ import com.mongodb.casbah.Imports._
 class DoubleSpec extends SalatSpec {
   "Salat" should {
     "deserialize an int to a double and an option double" in {
-      grater[DoubleTest].asObject(DBObject("d" -> 9, "d2" -> 9)) must_== DoubleTest(9d, Option(9d))
+      val obj = grater[DoubleTest].asObject(DBObject("d" -> 9, "d2" -> 9)) 
+      obj must_== DoubleTest(9d, Option(9d))
+      obj.d2.map (_ *2)
     }
   }
 }
