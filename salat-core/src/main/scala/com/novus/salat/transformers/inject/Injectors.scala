@@ -310,10 +310,13 @@ package in {
     self: Transformer =>
 
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case d: Double => d.toFloat
-      case i: Int    => i.toFloat
-      case l: Long   => l.toFloat
-      case s: Short  => s.toFloat
+      case d: Double            => d.toFloat
+      case i: Int               => i.toFloat
+      case l: Long              => l.toFloat
+      case s: Short             => s.toFloat
+      case d: java.lang.Double  => d.toFloat
+      case i: java.lang.Integer => i.toFloat
+      case i: java.lang.Float   => i.toFloat
     }
   }
 
