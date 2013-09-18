@@ -202,11 +202,13 @@ package out {
   trait FloatToDouble extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context) = value match {
-      case i: Int             => i.toDouble
-      case l: Long            => l.toDouble
-      case s: Short           => s.toDouble
-      case f: Float           => f.toDouble
-      case f: java.lang.Float => f.doubleValue()
+      case i: Int               => i.toDouble
+      case i: java.lang.Integer => i.toDouble
+      case i: java.lang.Double  => i.toDouble
+      case l: Long              => l.toDouble
+      case s: Short             => s.toDouble
+      case f: Float             => f.toDouble
+      case f: java.lang.Float   => f.doubleValue()
     }
   }
 
@@ -245,7 +247,7 @@ package out {
 
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case traversable: Traversable[_] =>
-        Some(MongoDBList(traversable.map(transformElem(_)).toList: _*))
+        Some(MongoDBList(traversable.map(transformElem).toList: _*))
       case _ => None
     }
   }

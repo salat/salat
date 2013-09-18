@@ -32,7 +32,7 @@ import com.novus.salat.util._
 import java.lang.reflect.Method
 import scala.tools.scalap.scalax.rules.scalasig._
 
-package object in extends Logging {
+package object in {
 
   def select(pt: TypeRefType, hint: Boolean = false)(implicit ctx: Context): Transformer = {
     pt match {
@@ -51,6 +51,12 @@ package object in extends Logging {
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with StringToChar
+
+        case TypeRefType(_, symbol, _) if isDouble(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with NumericToDouble
+
+        case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToFloat
 
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DateToJodaDateTime
@@ -85,6 +91,11 @@ package object in extends Logging {
 
         case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with LongToInt with TraversableInjector {
+            val parentType = pt
+          }
+
+        case TypeRefType(_, symbol, _) if isDouble(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with NumericToDouble with TraversableInjector {
             val parentType = pt
           }
 
@@ -152,6 +163,12 @@ package object in extends Logging {
             val grater = ctx.lookup_?(symbol.path)
           }
 
+        case TypeRefType(_, symbol, _) if isDouble(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with NumericToDouble with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup_?(symbol.path)
+          }
+
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with BigIntInjector with MapInjector {
             val parentType = pt
@@ -209,6 +226,9 @@ package object in extends Logging {
 
         case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with LongToInt
+
+        case TypeRefType(_, symbol, _) if isDouble(symbol.path) =>
+          new Transformer(symbol.path, pt)(ctx) with NumericToDouble
 
         case TypeRefType(_, symbol, _) if isBigInt(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with BigIntInjector
@@ -270,6 +290,20 @@ package in {
     self: Transformer =>
 
     override def transform(value: Any)(implicit ctx: Context): Any = ctx.bigDecimalStrategy.in(value)
+  }
+
+  trait NumericToDouble extends Transformer {
+    self: Transformer =>
+    override def transform(value: Any)(implicit ctx: Context) = value match {
+      case d: Double            => d
+      case i: Int               => i.toDouble
+      case l: Long              => l.toDouble
+      case s: Short             => s.toDouble
+      case f: Float             => f.toDouble
+      case d: java.lang.Double  => d.toDouble
+      case i: java.lang.Integer => i.toDouble
+      case i: java.lang.Float   => i.toDouble
+    }
   }
 
   trait DoubleToFloat extends Transformer {
