@@ -52,6 +52,9 @@ package object out {
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with FloatToDouble
 
+        case TypeRefType(_, symbol, _) if isDouble(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionExtractor with FloatToDouble
+
         case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionExtractor with DateTimeZoneExtractor
 
@@ -81,6 +84,9 @@ package object out {
           new Transformer(symbol.path, t)(ctx) with BigIntExtractor with TraversableExtractor
 
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with FloatToDouble with TraversableExtractor
+
+        case TypeRefType(_, symbol, _) if isDouble(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with FloatToDouble with TraversableExtractor
 
         case TypeRefType(_, symbol, _) if isChar(symbol.path) =>
@@ -122,6 +128,9 @@ package object out {
         case TypeRefType(_, symbol, _) if isJodaDateTimeZone(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DateTimeZoneExtractor with MapExtractor
 
+        case TypeRefType(_, symbol, _) if isDouble(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with FloatToDouble with MapExtractor
+
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with FloatToDouble with MapExtractor
 
@@ -152,6 +161,9 @@ package object out {
           new Transformer(symbol.path, t)(ctx) with DateTimeZoneExtractor
 
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with FloatToDouble
+
+        case TypeRefType(_, symbol, _) if isDouble(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with FloatToDouble
 
         case TypeRefType(_, symbol, _) if Types.isBitSet(symbol) =>
@@ -202,6 +214,7 @@ package out {
   trait FloatToDouble extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context) = value match {
+      case d: Double            => d
       case i: Int               => i.toDouble
       case i: java.lang.Integer => i.toDouble
       case i: java.lang.Double  => i.toDouble

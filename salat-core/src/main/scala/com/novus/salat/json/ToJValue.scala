@@ -202,6 +202,8 @@ object FromJValue extends Logging {
       case d: JDouble                    => d.values
       case i: JInt if tf.isBigInt        => i.values
       case i: JInt if tf.isLong          => i.values.toLong
+      case i: JInt if tf.isDouble        => i.values.toDouble
+      case i: JInt if tf.isFloat         => i.values.toFloat
       case i: JInt                       => i.values.intValue()
       case b: JBool                      => b.values
       case JsonAST.JNull                 => null

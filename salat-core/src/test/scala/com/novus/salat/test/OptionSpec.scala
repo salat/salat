@@ -40,8 +40,7 @@ class OptionSpec extends SalatSpec {
       dbo must havePair("valueDouble" -> 1337.0)
       dbo must havePair("valueFloat" -> 31047.0f)
 
-      val json = dbo.toString()
-      grater[OptionSpecExample].fromJSON(json) must_== a
+      grater[OptionSpecExample].asObject(dbo) must_== a
 
     }
     "support option not there" in {
