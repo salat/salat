@@ -225,8 +225,9 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
       grater[Adam].fromJSON(j) must_== a
     }
     "be flexible about coercing Double <-> Int when deserializing" in {
-      val t = Tore(i = 9, d = 9.0)
-      grater[Tore].fromJSON("{\"i\":9.0,\"d\":9}") must_== t
+      val t = Tore(i = 9, d = Some(9.0))
+      val obj = grater[Tore].fromJSON("{\"i\":9.0,\"d\":9}")
+      obj must_== t
       grater[Tore].fromJSON(JObject(JField("i", JDouble(9d)) :: JField("d", JInt(9)) :: Nil)) must_== t
     }
     "deserialize JObjects containing DateTimes" in {
