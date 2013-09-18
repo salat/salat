@@ -45,6 +45,12 @@ object `package` {
     case _                 => false
   }
 
+  def isDouble(path: String) = path match {
+    case "scala.Double"     => true
+    case "java.lang.Double" => true
+    case _                  => false
+  }
+
   def isChar(path: String) = path match {
     case "scala.Char"          => true
     case "java.lang.Character" => true

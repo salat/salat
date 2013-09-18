@@ -62,41 +62,42 @@ sealed abstract class Field(val idx: Int,
 
   def in_!(value: Any) = {
     val xformed = in.transform_!(value)
-    //    log.debug(
-    //      """
-    //            |IN:
-    //            |                name: %s
-    //            |         typeRefType:
-    //            |%s
-    //            |                  in:
-    //            |%s
-    //            |               value: %s
-    //            |         transformed: %s
-    //            |
-    //          """.stripMargin, name, typeRefType, in match {
-    //        case c: UseCustomTransformer[_, _] => c.toString
-    //        case _                             => in.getClass.getInterfaces.mkString("\n")
-    //      }, value, xformed)
+//    log.debug(
+//      """
+//                |IN:
+//                |                name: %s
+//                |         typeRefType:
+//                |%s
+//                |                  in:
+//                |%s
+//                |               value: %s
+//                |      value.getClass: %s
+//                |         transformed: %s
+//                |
+//              """.stripMargin, name, typeRefType, in match {
+//        case c: UseCustomTransformer[_, _] => c.toString
+//        case _                             => in.getClass.getInterfaces.mkString("\n")
+//      }, value, value.getClass.getName, xformed)
     xformed
   }
 
   def out_!(value: Any) = {
     val xformed = out.transform_!(value)
-    //    log.debug(
-    //      """
-    //            |OUT:
-    //            |                name: %s
-    //            |         typeRefType:
-    //            |%s
-    //            |                  out:
-    //            |%s
-    //            |               value: %s
-    //            |         transformed: %s
-    //            |
-    //          """.stripMargin, name, typeRefType, out match {
-    //        case c: UseCustomTransformer[_, _] => c.toString
-    //        case _                             => out.getClass.getInterfaces.mkString("\n")
-    //      }, value, xformed)
+//    log.debug(
+//      """
+//                |OUT:
+//                |                name: %s
+//                |         typeRefType:
+//                |%s
+//                |                  out:
+//                |%s
+//                |               value: %s
+//                |         transformed: %s
+//                |
+//              """.stripMargin, name, typeRefType, out match {
+//        case c: UseCustomTransformer[_, _] => c.toString
+//        case _                             => out.getClass.getInterfaces.mkString("\n")
+//      }, value, xformed)
     xformed
   }
 
