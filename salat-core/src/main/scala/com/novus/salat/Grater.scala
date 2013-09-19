@@ -331,7 +331,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         //  safeDefault: %s
         //                      """, clazz.getName, field.name, name, name, rawValue, value, value.flatMap(field.in_!(_)), defaultArg(field).value)
 
-        value.flatMap(field.in_!(_)) orElse safeDefault(field)
+        value.flatMap(field.in_!) orElse safeDefault(field)
       }
     }
     feedArgsToConstructor(args.flatten.asInstanceOf[Seq[AnyRef]])
