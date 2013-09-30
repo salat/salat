@@ -1,3 +1,9 @@
-Features new in 1.9.3 include:
+Salat 1.9.3 is a bugfix release with the following fixes:
 
-- TODO
+- Fix JSON deserialization bug where long/int is not coerced to double (#99)
+- Fix priority of custom transformer over case classes (#92)
+- `ReadPreference` support for `SalatDAO#find`, `SalatDAO#findOne`
+- Minor Casbah version bump from 2.6.1 to 2.6.2
+- Fixes for specs2 upgrade to 2.2
+
+Thanks to @etorreborre, @edmondo1984, @fdeantoni, @jnguyenx, and @manuelbernhardt for contributions!
