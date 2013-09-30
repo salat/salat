@@ -27,12 +27,15 @@ package com.novus.salat
 import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations.util._
 import com.novus.salat.json.JSONConfig
+import com.novus.salat.transformers.CustomTransformer
 import com.novus.salat.util._
 import com.novus.salat.{ Field => SField }
 import java.lang.reflect.Modifier
+import java.math.{ RoundingMode => JRoundingMode, MathContext => JMathContext }
 import java.util.concurrent.ConcurrentHashMap
 import org.json4s.JsonAST.JObject
-import com.novus.salat.transformers.CustomTransformer
+import scala.collection.JavaConversions.JConcurrentMapWrapper
+import scala.collection.mutable.ConcurrentMap
 
 trait Context extends ContextLifecycle with Logging {
 
@@ -40,18 +43,19 @@ trait Context extends ContextLifecycle with Logging {
   val name: String
 
   /**Concurrent hashmap of classname to Grater */
-  private[salat] val graters: scala.collection.concurrent.Map[String, Grater[_ <: AnyRef]] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, Grater[_ <: AnyRef]]())
+  private[salat] val graters: ConcurrentMap[String, Grater[_ <: AnyRef]] = JConcurrentMapWrapper(new ConcurrentHashMap[String, Grater[_ <: AnyRef]]())
 
   /**Mutable seq of classloaders */
   private[salat] var classLoaders: Vector[ClassLoader] = Vector(this.getClass.getClassLoader)
 
   /**Global key remapping - for instance, always serialize "id" to "_id" */
-  private[salat] val globalKeyOverrides: scala.collection.concurrent.Map[String, String] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
+  private[salat] val globalKeyOverrides: ConcurrentMap[String, String] = JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
 
   /**Per class key overrides - map key is (clazz.getName, field name) */
-  private[salat] val perClassKeyOverrides: scala.collection.concurrent.Map[(String, String), String] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
+  private[salat] val perClassKeyOverrides: ConcurrentMap[(String, String), String] = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
 
-  private[salat] val customTransformers: scala.collection.concurrent.Map[String, CustomTransformer[_ <: AnyRef, _ <: AnyRef]] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, CustomTransformer[_ <: AnyRef, _ <: AnyRef]]())
+  private[salat] val customTransformers: ConcurrentMap[String, CustomTransformer[_ <: AnyRef, _ <: AnyRef]] =
+    JConcurrentMapWrapper(new ConcurrentHashMap[String, CustomTransformer[_ <: AnyRef, _ <: AnyRef]]())
 
   val typeHintStrategy: TypeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary, typeHint = TypeHint)
 
@@ -78,14 +82,14 @@ trait Context extends ContextLifecycle with Logging {
 
   val jsonConfig: JSONConfig = JSONConfig()
 
-  private[salat] val caseObjectOverrides = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
-  private[salat] val resolveCaseObjectOverrides = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
+  private[salat] val caseObjectOverrides = JConcurrentMapWrapper(new ConcurrentHashMap[String, String]())
+  private[salat] val resolveCaseObjectOverrides = JConcurrentMapWrapper(new ConcurrentHashMap[(String, String), String]())
   private[salat] val caseObjectHierarchy = scala.collection.mutable.Set[String]()
 
   def registerCaseObjectOverride[A: Manifest, B <: A: Manifest](serializedValue: String) {
 
-    val parentClazz = manifest[A].runtimeClass
-    val caseObjectClazz = manifest[B].runtimeClass
+    val parentClazz = manifest[A].erasure
+    val caseObjectClazz = manifest[B].erasure
     assume(!caseObjectOverrides.contains(caseObjectClazz.getName), "registerCaseObjectOverride: clazz='%s' already overriden with value '%s'".
       format(caseObjectClazz.getName, caseObjectOverrides.get(caseObjectClazz.getName)))
 
@@ -105,7 +109,7 @@ trait Context extends ContextLifecycle with Logging {
       sys.error("Context '%s' already contains a custom transformer for class='%s'!".format(name, custom.path))
     }
     customTransformers += custom.path -> custom
-    log.debug("registerCustomTransformer: %s <-> %s", manifest[A].runtimeClass.getName, manifest[B].runtimeClass.getName)
+    log.trace("registerCustomTransformer: %s <-> %s", manifest[A].erasure.getName, manifest[B].erasure.getName)
   }
 
   def determineFieldName(clazz: Class[_], field: SField): String = determineFieldName(clazz, field.name)
@@ -116,8 +120,8 @@ trait Context extends ContextLifecycle with Logging {
     if (globalKeyOverrides.contains(fieldName)) {
       globalKeyOverrides(fieldName)
     }
-    else if (perClassKeyOverrides.contains(clazz.getName -> fieldName)) {
-      perClassKeyOverrides(clazz.getName -> fieldName)
+    else if (perClassKeyOverrides.contains(clazz.getName, fieldName)) {
+      perClassKeyOverrides(clazz.getName, fieldName)
     }
     else fieldName
   }
@@ -213,7 +217,7 @@ needsProxyGrater: clazz='%s'
     if (g.isDefined) g.get else throw GraterGlitch(c)(this)
   }
 
-  def lookup[A <: CaseClass: Manifest]: Grater[A] = lookup(manifest[A].runtimeClass.getName).asInstanceOf[Grater[A]]
+  def lookup[A <: CaseClass: Manifest]: Grater[A] = lookup(manifest[A].erasure.getName).asInstanceOf[Grater[A]]
 
   def lookup(c: String, clazz: CaseClass): Grater[_ <: AnyRef] = {
     val g = lookup_?(c)

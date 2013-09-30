@@ -51,7 +51,7 @@ package annotations {
        *  @return Some annotation if element X is annotated with an annotation of type A; otherwise None
        */
       def annotation[A <: Annotation: Manifest]: Option[A] = x match {
-        case x: AnnotatedElement if x != null => Option(x.getAnnotation[A](manifest[A].runtimeClass.asInstanceOf[Class[A]]))
+        case x: AnnotatedElement if x != null => Option(x.getAnnotation[A](manifest[A].erasure.asInstanceOf[Class[A]]))
         case _                                => None
       }
 

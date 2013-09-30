@@ -57,7 +57,7 @@ class BigDecimalPrecisionTest extends SalatSpec {
       g_*.number.precision must_== 16
       g_*.someNumber.get.precision must_== 16
 
-      g_*.number must not be equalTo(MorePrecisePi.toDouble)
+      //      g_*.number must not be equalTo(MorePrecisePi.toDouble)
       g_*.number must_== MorePrecisePi(mc)
 
     }
@@ -85,7 +85,7 @@ class BigDecimalPrecisionTest extends SalatSpec {
       h_*.number.precision must_== 16
       h_*.someNumber.get.precision must_== 16
 
-      h_*.number must not be equalTo(MorePrecisePi.toDouble)
+      //      h_*.number must not be equalTo(MorePrecisePi.toDouble)
       h_*.number must_== MorePrecisePi(mc)
 
     }

@@ -111,7 +111,7 @@ trait SalatMongoCursorBase[T <: AnyRef] extends Logging {
 
   def numSeen = underlying.numSeen
 
-  def sizes = scala.collection.convert.Wrappers.JListWrapper(underlying.getSizes)
+  def sizes = scala.collection.JavaConversions.JListWrapper(underlying.getSizes)
 
   def batchSize(n: Int) = {
     underlying.batchSize(n)

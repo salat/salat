@@ -33,7 +33,7 @@ import com.novus.salat.{ ConcreteGrater, Grater }
 
 class PolymorphicSalatDAOSpec extends SalatSpec {
 
-  sequential
+  override def is = args(sequential = true) ^ super.is
 
   trait userContext extends Scope {
     log.debug("before: dropping %s", UserDAO.collection.getFullName())
@@ -87,14 +87,14 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
     "support a top-level polymorphic collection with always-on type hinting" in new roleContext {
       RoleDAO.insert(guest) must beSome(guestId)
       RoleDAO.findOneById(guestId) must beSome(guest)
-      RoleDAO.find(MongoDBObject("userId" -> user1Id)).toList must contain(exactly(guest))
+      RoleDAO.find(MongoDBObject("userId" -> user1Id)).toList must contain(guest).only
 
-      RoleDAO.insert(editor, author, admin)(RoleDAO.defaultWriteConcern).flatten must contain(exactly(editorId, authorId, adminId))
+      RoleDAO.insert(editor, author, admin)(RoleDAO.defaultWriteConcern).flatten must contain(editorId, authorId, adminId).only
       RoleDAO.findOneById(authorId) must beSome(author)
       RoleDAO.findOneById(editorId) must beSome(editor)
       RoleDAO.findOneById(adminId) must beSome(admin)
-      RoleDAO.find(MongoDBObject("userId" -> user2Id)).toList must contain(exactly(editor))
-      RoleDAO.find(MongoDBObject("userId" -> user3Id)).toList must contain(exactly(author, admin))
+      RoleDAO.find(MongoDBObject("userId" -> user2Id)).toList must contain(editor).only
+      RoleDAO.find(MongoDBObject("userId" -> user3Id)).toList must contain(author, admin).only
     }
     "support a polymorphic child collection with always-on type hinting" in new userContext {
       UserDAO.insert(user)
@@ -105,7 +105,7 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
       user_* must beSome(user)
 
       val roles_* = UserDAO.roles.findByParentId(userId).toList
-      roles_* must contain(exactly(author, editor))
+      roles_* must contain(author, editor).only
     }
   }
 
@@ -153,7 +153,7 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
       allFoos must haveSize(2)
       allFoos.contains(bar) must beTrue
       allFoos.contains(baz) must beTrue
-      BarDAO.find(MongoDBObject.empty).toList must contain(exactly(bar))
+      BarDAO.find(MongoDBObject.empty).toList must contain(bar).only
     }
     "limit count queries to instances of the concrete subclass" in new fooContext {
       BarDAO.count(MongoDBObject.empty) must_== 1L
