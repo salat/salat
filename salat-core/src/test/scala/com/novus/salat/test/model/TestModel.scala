@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         TestModel.scala
- * Last modified: 2012-10-15 20:40:59 EDT
+ * Last modified: 2013-01-07 22:47:46 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,10 @@ package com.novus.salat.test.model
 // Just a dummy data model. It's totally contrived, so don't hold it
 // against me, neh?
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.annotations._
+import org.joda.time._
 import scala.collection.immutable.{ Map => IMap }
 import scala.collection.mutable.{ Map => MMap }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
@@ -53,7 +55,8 @@ case class Hector(thug: ThugLevel.Value, doneIn: DoneIn.Value)
 case class HectorOverrideId(thug: ThugLevel.Value, doneInById: DoneInById.Value)
 case class HectorOverrideValue(thug: ThugLevel.Value, doneInByValue: DoneInByValue.Value)
 
-object ThugLevel extends Enumeration("Fairplay Tony", "Honour student", "Just a good boy who loves his mum", "Trouble, you") {
+object ThugLevel extends Enumeration {
+  //  "Fairplay Tony", "Honour student", "Just a good boy who loves his mum", "Trouble, you"
   val One, Two, Three, Four = Value
 }
 
@@ -319,3 +322,6 @@ case class MetadataRecord(
   deleted: Boolean = false // if the record has been deleted
   )
 
+case class Order(
+  id: Long,
+  ordStatus: OrderStatus)

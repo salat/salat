@@ -41,9 +41,9 @@ class CaseObjectSpec extends SalatSpec {
         val barDbo: MongoDBObject = grater[Thingy].asDBObject(bar)
         val bazDbo: MongoDBObject = grater[Thingy].asDBObject(baz)
         val quxDbo: MongoDBObject = grater[Thingy].asDBObject(qux)
-        barDbo must havePair("foo", "B")
-        bazDbo must havePair("foo", "Z")
-        quxDbo must havePair("foo", MongoDBObject("_typeHint" -> "com.novus.salat.test.model.coo.Qux$"))
+        barDbo must havePair("foo" -> "B")
+        bazDbo must havePair("foo" -> "Z")
+        quxDbo must havePair("foo" -> MongoDBObject("_typeHint" -> "com.novus.salat.test.model.coo.Qux$"))
         grater[Thingy].asObject(barDbo) must_== bar
         grater[Thingy].asObject(bazDbo) must_== baz
         grater[Thingy].asObject(quxDbo) must_== qux
@@ -57,9 +57,9 @@ class CaseObjectSpec extends SalatSpec {
         val barDbo: MongoDBObject = grater[Thingy2].asDBObject(bar)
         val bazDbo: MongoDBObject = grater[Thingy2].asDBObject(baz)
         val quxDbo: MongoDBObject = grater[Thingy2].asDBObject(qux)
-        barDbo must havePair("foo", "B")
-        bazDbo must havePair("foo", "Z")
-        quxDbo must havePair("foo", MongoDBObject("_typeHint" -> "com.novus.salat.test.model.coo.Qux$"))
+        barDbo must havePair("foo" -> "B")
+        bazDbo must havePair("foo" -> "Z")
+        quxDbo must havePair("foo" -> MongoDBObject("_typeHint" -> "com.novus.salat.test.model.coo.Qux$"))
         grater[Thingy2].asObject(barDbo) must_== bar
         grater[Thingy2].asObject(bazDbo) must_== baz
         grater[Thingy2].asObject(quxDbo) must_== qux

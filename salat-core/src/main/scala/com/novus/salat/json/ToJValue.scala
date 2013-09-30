@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         ToJValue.scala
- * Last modified: 2012-10-15 20:40:59 EDT
+ * Last modified: 2012-12-06 22:49:46 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,10 @@ object MapToJSON extends Logging {
 
   def apply(m: Map[String, _])(implicit ctx: Context): String = compact(render(mapToJObject(m)))
 
-  def mapToJObject(m: Map[String, _])(implicit ctx: Context): JObject = {
-    JObject(m.map(v => ToJField(v._1, v._2)).toList)
+  def mapToJObject(m: Map[String, Any])(implicit ctx: Context): JObject = {
+    JObject(m.map {
+      case (k, v) => ToJField(k, v)
+    }.toList)
   }
 
   def apply(iter: Iterable[Map[String, _]])(implicit ctx: Context): String = {

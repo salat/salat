@@ -40,9 +40,9 @@ class PersistAnnotationSpec extends SalatSpec {
 
         val dbo: MongoDBObject = grater[Maud].asDBObject(m)
         //      log.info(MapPrettyPrinter(dbo))
-        dbo must havePair("swept", "swept")
-        dbo must havePair("out", "out")
-        dbo must havePair("toSea", "tuo tpews")
+        dbo must havePair("swept" -> "swept")
+        dbo must havePair("out" -> "out")
+        dbo must havePair("toSea" -> "tuo tpews")
 
         val m_* = grater[Maud].asObject(dbo)
         m_* must_== m
@@ -53,10 +53,10 @@ class PersistAnnotationSpec extends SalatSpec {
         val m = Maud2(swept = "swept", out = "out")
         val dbo: MongoDBObject = grater[Maud2].asDBObject(m)
         //        log.info(MapPrettyPrinter(dbo))
-        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud2")
-        dbo must havePair("swept", "swept")
-        dbo must havePair("out", "out")
-        dbo must havePair("ida", {
+        dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Maud2")
+        dbo must havePair("swept" -> "swept")
+        dbo must havePair("out" -> "out")
+        dbo must havePair("ida" -> {
           val builder = MongoDBObject.newBuilder
           builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
           builder += "lake" -> 8.0
@@ -72,11 +72,11 @@ class PersistAnnotationSpec extends SalatSpec {
         val m = Maud3(swept = "swept", out = "out")
         val dbo: MongoDBObject = grater[Maud3].asDBObject(m)
         //        log.info(MapPrettyPrinter(dbo))
-        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud3")
-        dbo must havePair("swept", "swept")
-        dbo must havePair("out", "out")
+        dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Maud3")
+        dbo must havePair("swept" -> "swept")
+        dbo must havePair("out" -> "out")
         // ida is a var but gets persisted anyway
-        dbo must havePair("ida", {
+        dbo must havePair("ida" -> {
           val builder = MongoDBObject.newBuilder
           builder += "_typeHint" -> "com.novus.salat.test.model.Ida"
           builder += "lake" -> 8.0
@@ -95,9 +95,9 @@ class PersistAnnotationSpec extends SalatSpec {
 
       val dbo: MongoDBObject = grater[Maud4].asDBObject(m)
       //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("swept", "swept")
-      dbo must havePair("out", "out")
-      dbo must havePair("toSea", "tuo tpews")
+      dbo must havePair("swept" -> "swept")
+      dbo must havePair("out" -> "out")
+      dbo must havePair("toSea" -> "tuo tpews")
       dbo must not have key("ida") // ida had both @Ignore and @Persist - @Ignore wins
 
       val m_* = grater[Maud4].asObject(dbo)
@@ -108,11 +108,11 @@ class PersistAnnotationSpec extends SalatSpec {
     "respect @Persist declared in a trait" in {
       val m = Maud8(swept = "swept", out = "out")
       val dbo: MongoDBObject = grater[Maud8].asDBObject(m)
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud8")
-      dbo must havePair("swept", "swept")
-      dbo must havePair("out", "out")
-      dbo must havePair("toSea", "tuo tpews") // persisted from Maud8 itself
-      dbo must havePair("howFar", 8) // persisted from EvenMoreMaudLike trait
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Maud8")
+      dbo must havePair("swept" -> "swept")
+      dbo must havePair("out" -> "out")
+      dbo must havePair("toSea" -> "tuo tpews") // persisted from Maud8 itself
+      dbo must havePair("howFar" -> 8) // persisted from EvenMoreMaudLike trait
       val m_* = grater[Maud8].asObject(dbo)
       m_* must_== m
     }
@@ -120,11 +120,11 @@ class PersistAnnotationSpec extends SalatSpec {
     "respect @Persist declared in immediate superclass" in {
       val m = Maud11(swept = "swept", out = "out")
       val dbo: MongoDBObject = grater[Maud11].asDBObject(m)
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Maud11")
-      dbo must havePair("swept", "swept")
-      dbo must havePair("out", "out")
-      dbo must havePair("toSea", "tuo tpews") // persisted from Maud11 itself
-      dbo must havePair("howFar", 8) // persisted from abstract superclass MaudAgain
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Maud11")
+      dbo must havePair("swept" -> "swept")
+      dbo must havePair("out" -> "out")
+      dbo must havePair("toSea" -> "tuo tpews") // persisted from Maud11 itself
+      dbo must havePair("howFar" -> 8) // persisted from abstract superclass MaudAgain
       val m_* = grater[Maud11].asObject(dbo)
       m_* must_== m
     }
@@ -138,8 +138,8 @@ class PersistAnnotationSpec extends SalatSpec {
           Maud7(swept = "swept", out = "out")))
         val dbo: MongoDBObject = grater[ManyMauds].asDBObject(m)
         //      log.info(MapPrettyPrinter(dbo))
-        dbo must havePair("_typeHint", "com.novus.salat.test.model.ManyMauds")
-        dbo must havePair("mauds", {
+        dbo must havePair("_typeHint" -> "com.novus.salat.test.model.ManyMauds")
+        dbo must havePair("mauds" -> {
           val listBuilder = MongoDBList.newBuilder
           listBuilder += {
             val builder = MongoDBObject.newBuilder
@@ -185,8 +185,8 @@ class PersistAnnotationSpec extends SalatSpec {
           Maud10(swept = "swept", out = "out")))
         val dbo: MongoDBObject = grater[Maudelic].asDBObject(m)
         //        log.info(MapPrettyPrinter(dbo))
-        dbo must havePair("_typeHint", "com.novus.salat.test.model.Maudelic")
-        dbo must havePair("mauds", {
+        dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Maudelic")
+        dbo must havePair("mauds" -> {
           val listBuilder = MongoDBList.newBuilder
           listBuilder += {
             val builder = MongoDBObject.newBuilder

@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         PrettyPrinters.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-06 22:32:50 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ object FieldPrettyPrinter {
         builder.result().mkString("")
       }
       catch {
-        case e => "" // do nothing
+        case e: Throwable => "" // do nothing
       }
     }
     else t.getName

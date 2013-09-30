@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         DateTimeSpec.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2013-01-07 22:47:46 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,9 @@ class DateTimeSpec extends SalatSpec {
       val n = Neville(asOf = dt)
       val dbo: MongoDBObject = grater[Neville].asDBObject(n)
       //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Neville")
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Neville")
       dbo must havePair("ennui" -> true)
-      dbo must havePair("asOf", dt)
+      dbo must havePair("asOf" -> dt)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_date_test_1")
       val wr = coll.insert(dbo)
@@ -53,9 +53,9 @@ class DateTimeSpec extends SalatSpec {
       val n = Neville(asOf = dt)
       val dbo: MongoDBObject = grater[Neville].asDBObject(n)
       //      log.info(MapPrettyPrinter(dbo))
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Neville")
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Neville")
       dbo must havePair("ennui" -> true)
-      dbo must havePair("asOf", dt)
+      dbo must havePair("asOf" -> dt)
 
       val coll = MongoConnection()(SalatSpecDb)("scala_date_test_2")
       val wr = coll.insert(dbo)

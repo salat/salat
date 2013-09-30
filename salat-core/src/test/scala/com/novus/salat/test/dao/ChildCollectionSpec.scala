@@ -24,45 +24,41 @@
  */
 package com.novus.salat.test.dao
 
+import com.mongodb.casbah.commons.MongoDBObject
 import com.novus.salat.test._
-import com.novus.salat._
 import com.novus.salat.test.global._
-import com.mongodb.casbah.Imports._
-import org.specs2.specification.Scope
-import com.novus.salat.test.dao._
-
-import org.joda.time.DateTimeConstants._
 import org.joda.time.DateMidnight
-import com.mongodb.casbah.commons.{ MongoDBList, MongoDBObject }
+import org.joda.time.DateTimeConstants._
+import org.specs2.specification.Scope
 
 class ChildCollectionSpec extends SalatSpec {
 
   // force spec to run sequentially
-  override def is = args(sequential = true) ^ super.is
+  sequential
 
   implicit val wc = ParentDAO.defaultWriteConcern
 
   "SalatDAO's child collection trait" should {
     "support finding children by typed parent id" in new parentChildContext {
-      ParentDAO.children.findByParentId(parent1.id).toList must contain(child1Parent1, child2Parent1, child3Parent1).only
-      ParentDAO.children.findByParentId(parent2.id).toList must contain(child1Parent2, child2Parent2).only
+      ParentDAO.children.findByParentId(parent1.id).toList must contain(exactly(child1Parent1, child2Parent1, child3Parent1))
+      ParentDAO.children.findByParentId(parent2.id).toList must contain(exactly(child1Parent2, child2Parent2))
       ParentDAO.children.findByParentId(parent3.id).toList must beEmpty
     }
 
     "support finding children by parent id with key includes" in new parentChildContext {
-      ParentDAO.children.findByParentId(parentId = parent1.id, query = MongoDBObject.empty, keys = MongoDBObject("parentId" -> 1, "y" -> 1)).toList must contain(
+      ParentDAO.children.findByParentId(parentId = parent1.id, query = MongoDBObject.empty, keys = MongoDBObject("parentId" -> 1, "y" -> 1)).toList must contain(exactly(
         child1Parent1.copy(x = "", childInfo = ChildInfo()),
         child2Parent1.copy(x = "", childInfo = ChildInfo()),
-        child3Parent1.copy(x = "", childInfo = ChildInfo())).only
-      ParentDAO.children.findByParentId(parentId = parent2.id, query = MongoDBObject.empty, keys = MongoDBObject("parentId" -> 1, "y" -> 1)).toList must contain(
+        child3Parent1.copy(x = "", childInfo = ChildInfo())))
+      ParentDAO.children.findByParentId(parentId = parent2.id, query = MongoDBObject.empty, keys = MongoDBObject("parentId" -> 1, "y" -> 1)).toList must contain(exactly(
         child1Parent2.copy(x = "", childInfo = ChildInfo()),
-        child2Parent2.copy(x = "", childInfo = ChildInfo())).only
+        child2Parent2.copy(x = "", childInfo = ChildInfo())))
       ParentDAO.children.findByParentId(parent3.id).toList must beEmpty
     }
 
     "support finding child IDs by typed parent id" in new parentChildContext {
-      ParentDAO.children.idsForParentId(parent1.id).toList must contain(1, 2, 3).only
-      ParentDAO.children.idsForParentId(parent2.id).toList must contain(4, 5).only
+      ParentDAO.children.idsForParentId(parent1.id).toList must contain(exactly(1, 2, 3))
+      ParentDAO.children.idsForParentId(parent2.id).toList must contain(exactly(4, 5))
       ParentDAO.children.idsForParentId(parent3.id).toList must beEmpty
     }
 
@@ -74,12 +70,12 @@ class ChildCollectionSpec extends SalatSpec {
       // number of children is unchanged
       ParentDAO.children.collection.count() must_== 5L
       // children of parent1 are updated as expected
-      ParentDAO.children.findByParentId(parent1.id).toList must contain(
+      ParentDAO.children.findByParentId(parent1.id).toList must contain(exactly(
         child1Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated)),
         child2Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated)),
-        child3Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated))).only
+        child3Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated))))
       // child collection is otherwise unchanged
-      ParentDAO.children.findByParentId(parent2.id).toList must contain(child1Parent2, child2Parent2).only
+      ParentDAO.children.findByParentId(parent2.id).toList must contain(exactly(child1Parent2, child2Parent2))
       ParentDAO.children.findByParentId(parent3.id).toList must beEmpty
     }
 
@@ -90,23 +86,23 @@ class ChildCollectionSpec extends SalatSpec {
       ParentDAO.children.findByParentId(parent1.id).toList must beEmpty
       ParentDAO.children.collection.count() must_== 2L
       // child collection is otherwise unchanged
-      ParentDAO.children.findByParentId(parent2.id).toList must contain(child1Parent2, child2Parent2).only
+      ParentDAO.children.findByParentId(parent2.id).toList must contain(exactly(child1Parent2, child2Parent2))
       ParentDAO.children.findByParentId(parent3.id).toList must beEmpty
     }
 
     "support primitive projections by parent id" in new parentChildContext {
-      ParentDAO.children.primitiveProjectionsByParentId[String](parent1.id, "x") must contain("child1Parent1",
-        "child2Parent1", "child3Parent1").only
-      ParentDAO.children.primitiveProjectionsByParentId[String](parent2.id, "x") must contain("child1Parent2",
-        "child2Parent2").only
+      ParentDAO.children.primitiveProjectionsByParentId[String](parent1.id, "x") must contain(exactly("child1Parent1",
+        "child2Parent1", "child3Parent1"))
+      ParentDAO.children.primitiveProjectionsByParentId[String](parent2.id, "x") must contain(exactly("child1Parent2",
+        "child2Parent2"))
       ParentDAO.children.primitiveProjectionsByParentId[String](parent3.id, "x") must beEmpty
     }
 
     "support case class projections by parent id" in new parentChildContext {
-      ParentDAO.children.projectionsByParentId[ChildInfo](parent1.id, "childInfo") must contain(child1Parent1.childInfo,
-        child2Parent1.childInfo, child3Parent1.childInfo).only
-      ParentDAO.children.projectionsByParentId[ChildInfo](parent2.id, "childInfo") must contain(child1Parent2.childInfo,
-        child2Parent2.childInfo).only
+      ParentDAO.children.projectionsByParentId[ChildInfo](parent1.id, "childInfo") must contain(exactly(child1Parent1.childInfo,
+        child2Parent1.childInfo, child3Parent1.childInfo))
+      ParentDAO.children.projectionsByParentId[ChildInfo](parent2.id, "childInfo") must contain(exactly(child1Parent2.childInfo,
+        child2Parent2.childInfo))
       ParentDAO.children.projectionsByParentId[ChildInfo](parent3.id, "childInfo") must beEmpty
     }
 
@@ -143,7 +139,7 @@ class ChildCollectionSpec extends SalatSpec {
     val parent3 = Parent(name = "parent3")
 
     val _ids = ParentDAO.insert(parent1, parent2, parent3)
-    _ids must contain(Option(parent1.id), Option(parent2.id), Option(parent3.id)).only
+    _ids must contain(exactly(Option(parent1.id), Option(parent2.id), Option(parent3.id)))
     ParentDAO.collection.count() must_== 3L
 
     val child1Parent1 = Child(id = 1, parentId = parent1.id, x = "child1Parent1", y = Some("child1Parent1"))
@@ -154,8 +150,8 @@ class ChildCollectionSpec extends SalatSpec {
     val child2Parent2 = Child(id = 5, parentId = parent2.id, x = "child2Parent2", y = Some("child2Parent2"))
 
     val childIds = ParentDAO.children.insert(child1Parent1, child2Parent1, child3Parent1, child1Parent2, child2Parent2)
-    childIds must contain(Option(child1Parent1.id), Option(child2Parent1.id), Option(child3Parent1.id),
-      Option(child1Parent2.id), Option(child2Parent2.id)).only
+    childIds must contain(exactly(Option(child1Parent1.id), Option(child2Parent1.id), Option(child3Parent1.id),
+      Option(child1Parent2.id), Option(child2Parent2.id)))
     ParentDAO.children.collection.count() must_== 5L
   }
 

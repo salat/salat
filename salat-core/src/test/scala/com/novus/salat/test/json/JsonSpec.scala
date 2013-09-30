@@ -38,8 +38,9 @@ import org.json4s._
 import org.specs2.mutable.Specification
 import scala.util.parsing.json.JSONArray
 import scala.util.parsing.json.JSONObject
+import org.specs2.matcher.JsonMatchers
 
-class JsonSpec extends Specification with Logging {
+class JsonSpec extends Specification with Logging with JsonMatchers {
 
   // TODO: @Key
   // TODO: @Ignore
@@ -204,10 +205,10 @@ class JsonSpec extends Specification with Logging {
     "handle converting a list of model objects to a JArray" in {
       val jarr = grater[Kalle].toJSONArray(List(Martin("one", 1.1), Martin("two", 2.2), Martin("three", 3.3)))
       jarr.arr must have size (3)
-      jarr.arr must contain(
+      jarr.arr must contain(exactly(
         JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("one")) :: JField("d", JDouble(1.1)) :: Nil).asInstanceOf[JValue],
         JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("two")) :: JField("d", JDouble(2.2)) :: Nil).asInstanceOf[JValue],
-        JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("three")) :: JField("d", JDouble(3.3)) :: Nil).asInstanceOf[JValue]).only.inOrder
+        JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("three")) :: JField("d", JDouble(3.3)) :: Nil).asInstanceOf[JValue])).inOrder
     }
     "deserialize JObjects containing simple types" in {
       val j = JObject(

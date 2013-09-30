@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-build
  * Class:         SalatBuild.scala
- * Last modified: 2012-10-15 20:46:51 EDT
+ * Last modified: 2013-01-07 22:28:16 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,9 @@ object SalatBuild extends Build {
     id = "salat",
     base = file("."),
     settings = buildSettings ++ Seq(
-      publishArtifact in (Compile, packageBin) := false, 
-      publishArtifact in (Compile, packageDoc) := false, 
-      publishArtifact in (Compile, packageSrc) := false 
+      publishArtifact in (Compile, packageBin) := false,
+      publishArtifact in (Compile, packageDoc) := false,
+      publishArtifact in (Compile, packageSrc) := false
     ),
     aggregate = Seq(util, core)
   ) dependsOn(util, core)
@@ -69,10 +69,10 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "1.9.3-SNAPSHOT"
+  val buildVersion = "1.9.3"
   val buildScalaVersion = "2.9.3"
 
-  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
+  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,

@@ -24,13 +24,11 @@
  */
 package com.novus.salat
 
-import com.novus.salat.test.model._
 import com.novus.salat.test.global._
+import com.novus.salat.test.model._
 import scala.collection.immutable.{ Map => IMap }
+import scala.collection.mutable.{ Map => MMap }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
-import org.joda.time.format.{ PeriodFormat, PeriodFormatterBuilder }
-import org.joda.time.{ DateTimeZone, Period, DateTime }
-import scala.collection.mutable.{ ArrayBuffer, Map => MMap }
 
 package object test {
 

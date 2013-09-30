@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
  *
  * Module:        salat-core
  * Class:         Injectors.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2013-01-07 22:43:52 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -281,7 +281,7 @@ package in {
         Integer.valueOf(x)
       }
       catch {
-        case e => None
+        case e: Throwable => None
       }
     }
   }
@@ -382,7 +382,7 @@ package in {
     self: Transformer =>
 
     override def transform(value: Any)(implicit ctx: Context) = value match {
-      case s: String => fromPath(ctx.resolveCaseObjectOverrides.get(t.symbol.path, s).
+      case s: String => fromPath(ctx.resolveCaseObjectOverrides.get(t.symbol.path -> s).
         getOrElse(throw MissingCaseObjectOverride(t.symbol.path, value, ctx.name)))
       case dbo: DBObject       => fromPath(ctx.extractTypeHint(dbo).getOrElse(throw MissingTypeHint(dbo)))
       case mdbo: MongoDBObject => fromPath(ctx.extractTypeHint(mdbo).getOrElse(throw MissingTypeHint(mdbo)))

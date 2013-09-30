@@ -36,8 +36,8 @@ class OptionSupportSpec extends SalatSpec {
       "with value" in {
         val r = Rhoda(consumed = Some("flames"))
         val dbo: MongoDBObject = grater[Rhoda].asDBObject(r)
-        dbo must havePair("_typeHint", "com.novus.salat.test.model.Rhoda")
-        dbo must havePair("consumed", "flames")
+        dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Rhoda")
+        dbo must havePair("consumed" -> "flames")
 
         val r_* = grater[Rhoda].asObject(dbo)
         r_*.consumed must beSome("flames")
@@ -46,7 +46,7 @@ class OptionSupportSpec extends SalatSpec {
       "with no value" in {
         val r = Rhoda(consumed = None)
         val dbo: MongoDBObject = grater[Rhoda].asDBObject(r)
-        dbo must havePair("_typeHint", "com.novus.salat.test.model.Rhoda")
+        dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Rhoda")
         // TODO: what happened to must not haveKey
 
         val r_* = grater[Rhoda].asObject(dbo)
@@ -59,8 +59,8 @@ class OptionSupportSpec extends SalatSpec {
         val temp = BigDecimal("451")
         val r = Rhoda2(howHot = Some(temp))
         val dbo: MongoDBObject = grater[Rhoda2].asDBObject(r)
-        dbo must havePair("_typeHint", "com.novus.salat.test.model.Rhoda2")
-        dbo must havePair("howHot", 451.0)
+        dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Rhoda2")
+        dbo must havePair("howHot" -> 451.0)
 
         val r_* = grater[Rhoda2].asObject(dbo)
         r_*.howHot must beSome(temp)
@@ -69,7 +69,7 @@ class OptionSupportSpec extends SalatSpec {
       "with no value" in {
         val r = Rhoda2(howHot = None)
         val dbo: MongoDBObject = grater[Rhoda2].asDBObject(r)
-        dbo must havePair("_typeHint", "com.novus.salat.test.model.Rhoda2")
+        dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Rhoda2")
         // TODO: what happened to must not haveKey
 
         val r_* = grater[Rhoda2].asObject(dbo)

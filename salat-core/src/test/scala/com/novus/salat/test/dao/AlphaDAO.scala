@@ -29,8 +29,8 @@ import com.novus.salat.test._
 import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations._
-
 import com.novus.salat.dao._
+import com.novus.salat.test._
 import org.joda.time.{ DateTime, DateMidnight }
 
 @Salat

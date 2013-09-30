@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         package.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-06 22:51:54 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ object `package` extends Logging {
     val Never, WhenNecessary, Always = Value
   }
 
-  def grater[Y <: AnyRef](implicit ctx: Context, m: Manifest[Y]): Grater[Y] = ctx.lookup(m.erasure.getName).asInstanceOf[Grater[Y]]
+  def grater[Y <: AnyRef](implicit ctx: Context, m: Manifest[Y]): Grater[Y] = ctx.lookup(m.runtimeClass.getName).asInstanceOf[Grater[Y]]
 
   protected[salat] def getClassNamed_!(c: String)(implicit ctx: Context): Class[_] = {
     val clazz = getClassNamed(c)(ctx)

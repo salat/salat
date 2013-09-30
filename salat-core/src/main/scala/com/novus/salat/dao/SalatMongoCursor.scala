@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         SalatMongoCursor.scala
- * Last modified: 2012-10-15 20:40:59 EDT
+ * Last modified: 2012-12-06 22:28:57 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,11 @@
  */
 package com.novus.salat.dao
 
-import com.novus.salat._
-import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
 import com.mongodb.DBCursor
-import com.mongodb.casbah.{ MongoCursorBase, CursorExplanation, Imports }
-import scala.Predef._
+import com.mongodb.casbah.CursorExplanation
+import com.mongodb.casbah.Imports._
+import com.novus.salat._
+import com.novus.salat.util.Logging
 
 /** Unfortunately, MongoCursorBase is typed to DBObject, but....
  *  Ripped off from casbah-mapper.
@@ -55,11 +54,13 @@ trait SalatMongoCursorBase[T <: AnyRef] extends Logging {
 
   def count = underlying.count
 
-  def option_=(option: Int): Unit = underlying.addOption(option)
+  def option_=(option: Int) {
+    underlying.addOption(option)
+  }
 
   def option = underlying.getOptions
 
-  def resetOptions() = underlying.resetOptions() // use parens because this side-effects
+  def resetOptions() = underlying.resetOptions()
 
   def options = underlying.getOptions
 
@@ -93,17 +94,24 @@ trait SalatMongoCursorBase[T <: AnyRef] extends Logging {
     this
   }
 
-  def cursorId = underlying.getCursorId()
+  def cursorId = underlying.getCursorId
 
-  def close() = underlying.close() // parens for side-effect
+  def close() {
+    underlying.close()
+  }
 
-  def slaveOk() = underlying.slaveOk() // parens for side-effect
+  @deprecated("Use readPreference instead", "1.9.3") def slaveOk() = underlying.slaveOk() // parens for side-effect
+
+  def readPreference(rp: ReadPreference): this.type = {
+    underlying.setReadPreference(rp)
+    this
+  }
 
   def numGetMores = underlying.numGetMores
 
   def numSeen = underlying.numSeen
 
-  def sizes = scala.collection.JavaConversions.collectionAsScalaIterable(underlying.getSizes).toList
+  def sizes = scala.collection.convert.Wrappers.JListWrapper(underlying.getSizes)
 
   def batchSize(n: Int) = {
     underlying.batchSize(n)

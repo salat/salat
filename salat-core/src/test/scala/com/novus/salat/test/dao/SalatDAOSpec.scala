@@ -3,7 +3,7 @@
  *
  * Module:        salat-core
  * Class:         SalatDAOSpec.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2012-12-06 22:58:08 EST
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class SalatDAOSpec extends SalatSpec {
 
   // which most specs can execute concurrently, this particular spec needs to execute sequentially to avoid mutating shared state,
   // namely, the MongoDB collection referenced by the AlphaDAO
-  override def is = args(sequential = true) ^ super.is
+  sequential
 
   implicit val wc = AlphaDAO.defaultWriteConcern
 
@@ -75,9 +75,9 @@ class SalatDAOSpec extends SalatSpec {
 
       // the standard collection cursor returns DBOs
       val mongoCursor = AlphaDAO.collection.find()
-      mongoCursor.next() must haveEntry("_id", alpha4.id)
-      mongoCursor.next() must haveEntry("_id", alpha5.id)
-      mongoCursor.next() must haveEntry("_id", alpha6.id)
+      mongoCursor.next() must haveEntry("_id" -> alpha4.id)
+      mongoCursor.next() must haveEntry("_id" -> alpha5.id)
+      mongoCursor.next() must haveEntry("_id" -> alpha6.id)
 
       // BUT the Salat DAO returns a cursor types to case classes!
       val salatCursor = AlphaDAO.find(MongoDBObject.empty)

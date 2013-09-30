@@ -42,14 +42,14 @@ class ContextSpec extends SalatSpec {
 
   "The context classloader handling" should {
     "provide a classloader collection populated with its own classloader" in new testContext {
-      ctx.classLoaders must contain(ctx.getClass.getClassLoader).only
+      ctx.classLoaders must contain(exactly(ctx.getClass.getClassLoader))
     }
     "accept additional classloaders" in new testContext {
       ctx.classLoaders must have size (1)
       val cl = new ClassLoader() {}
       ctx.registerClassLoader(cl)
       ctx.classLoaders must have size (2)
-      //      ctx.classLoaders must contain(cl, ctx.getClass.getClassLoader).only
+      //      ctx.classLoaders must contain(exactly(cl, ctx.getClass.getClassLoader))
     }
   }
 
@@ -84,7 +84,7 @@ class ContextSpec extends SalatSpec {
     "support registering a per-class key override" in new testContext {
       ctx.perClassKeyOverrides must beEmpty
       ctx.registerPerClassKeyOverride(clazz, remapThis, toThisInstead)
-      ctx.perClassKeyOverrides.get(clazz.getName, remapThis) must beSome(toThisInstead)
+      ctx.perClassKeyOverrides.get(clazz.getName -> remapThis) must beSome(toThisInstead)
       ctx.perClassKeyOverrides must have size (1)
     }
     "prevent registering a duplicate per-class override" in new testContext {

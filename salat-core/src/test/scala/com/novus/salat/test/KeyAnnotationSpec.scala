@@ -24,12 +24,10 @@
  */
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
-import com.mongodb.casbah.Imports._
-
-import com.novus.salat.util.MapPrettyPrinter
 import org.joda.time.DateTime
 
 class KeyAnnotationSpec extends SalatSpec {
@@ -40,8 +38,8 @@ class KeyAnnotationSpec extends SalatSpec {
       val j = James2("peach pits", true)
       val dbo: MongoDBObject = grater[James2].asDBObject(j)
       // the field name is "lye" but the @Key annotation specifies "cyanide"
-      dbo must havePair("cyanide", "peach pits")
-      dbo must havePair("byMistake", true)
+      dbo must havePair("cyanide" -> "peach pits")
+      dbo must havePair("byMistake" -> true)
 
       val j_* = grater[James2].asObject(dbo)
       j_* must_== j
@@ -51,8 +49,8 @@ class KeyAnnotationSpec extends SalatSpec {
       val j = James3("old lace", false)
       val dbo: MongoDBObject = grater[James3].asDBObject(j)
       // the field name is "lye" but the @Key annotation specifies "arsenic"
-      dbo must havePair("arsenic", "old lace")
-      dbo must havePair("byMistake", false)
+      dbo must havePair("arsenic" -> "old lace")
+      dbo must havePair("byMistake" -> false)
 
       val j_* = grater[James3].asObject(dbo)
       j_* must_== j
@@ -62,8 +60,8 @@ class KeyAnnotationSpec extends SalatSpec {
       val j = James4("mad as a hatter", true)
       val dbo: MongoDBObject = grater[James4].asDBObject(j)
       // the field name is "lye" but the @Key annotation specifies "mercury"
-      dbo must havePair("mercury", "mad as a hatter")
-      dbo must havePair("byMistake", true)
+      dbo must havePair("mercury" -> "mad as a hatter")
+      dbo must havePair("byMistake" -> true)
 
       val j_* = grater[James4].asObject(dbo)
       j_* must_== j
@@ -81,14 +79,14 @@ class KeyAnnotationSpec extends SalatSpec {
         description = Some("description"),
         keywords = Some("very clever minus two"))
       val dbo: MongoDBObject = grater[Page].asDBObject(p)
-      dbo must havePair("_typeHint", "com.novus.salat.test.model.Page")
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Page")
       // @Key overrides field name "uri" with "_id"
       // the value will be serialized as a String using our custom java.net.URI -> String BSON encoding hook
-      dbo must havePair("_id", uri)
-      dbo must havePair("crawled", MongoDBList(date))
-      dbo must havePair("title", "title")
-      dbo must havePair("description", "description")
-      dbo must havePair("keywords", "very clever minus two")
+      dbo must havePair("_id" -> uri)
+      dbo must havePair("crawled" -> MongoDBList(date))
+      dbo must havePair("title" -> "title")
+      dbo must havePair("description" -> "description")
+      dbo must havePair("keywords" -> "very clever minus two")
 
       val coll = MongoConnection()(SalatSpecDb)("key-annotation-spec-1")
       val wr = coll.insert(dbo)
