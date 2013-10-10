@@ -29,6 +29,7 @@ import tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
 protected[salat] object Types {
   val Date = "java.util.Date"
   val DateTime = Set("org.joda.time.DateTime", "org.scala_tools.time.TypeImports.DateTime")
+  val LocalDateTime = Set("org.joda.time.LocalDateTime", "org.scala_tools.time.TypeImports.LocalDateTime")
   val TimeZone = "java.util.TimeZone"
   val DateTimeZone = Set("org.joda.time.DateTimeZone", "org.scala_tools.time.TypeImports.DateTimeZone")
   val Oid = Set("org.bson.types.ObjectId", "com.mongodb.casbah.commons.TypeImports.ObjectId")
@@ -63,6 +64,7 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
 
   lazy val isDate = TypeMatchers.matches(t, Types.Date)
   lazy val isDateTime = TypeMatchers.matches(t, Types.DateTime)
+  lazy val isLocalDateTime = TypeMatchers.matches(t, Types.LocalDateTime)
 
   lazy val isTimeZone = TypeMatchers.matches(t, Types.TimeZone)
   lazy val isDateTimeZone = TypeMatchers.matches(t, Types.DateTimeZone)
@@ -80,7 +82,7 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
   lazy val isURL = TypeMatchers.matches(t, classOf[java.net.URL].getName)
   lazy val isBSONTimestamp = TypeMatchers.matches(t, Types.BsonTimestamp)
 
-  lazy val directlyDeserialize = isDate || isDateTime || isBSONTimestamp || isOid || isBigDecimal || isBigInt || isDouble
+  lazy val directlyDeserialize = isDate || isDateTime || isLocalDateTime || isBSONTimestamp || isOid || isBigDecimal || isBigInt || isDouble
 }
 
 protected[salat] object TypeMatchers {
