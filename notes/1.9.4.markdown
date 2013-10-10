@@ -1,3 +1,4 @@
 Features new in Salat 1.9.4 include:
 
 - Support for Joda LocalDateTime (#103, thanks to Manuel Bernhardt)
+- Update Casbah dependency to 2.6.4, fixing Scala dependencies to 2.10.3 (#104)
