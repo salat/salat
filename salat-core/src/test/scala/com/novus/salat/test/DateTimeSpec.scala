@@ -30,6 +30,7 @@ import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
 import org.joda.time.DateTime
+import org.joda.time.LocalDateTime
 
 class DateTimeSpec extends SalatSpec {
   "A grater" should {
@@ -48,6 +49,20 @@ class DateTimeSpec extends SalatSpec {
       n_* must_== n
     }
 
+    "support org.scala_tools.time.TypeImports.LocalDateTime" in {
+      val ldt = LocalDateTime.now
+      val v = Victor(departureTime = ldt)
+      val dbo: MongoDBObject = grater[Victor].asDBObject(v)
+
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Victor")
+      dbo must havePair("departureTime" -> ldt)
+
+      val coll = MongoConnection()(SalatSpecDb)("scala_date_test_2")
+      val wr = coll.insert(dbo)
+      val v_* = grater[Victor].asObject(coll.findOne().get)
+      v_* must_== v
+    }
+
     "support org.joda.time.DateTime" in {
       val dt = new org.joda.time.DateTime()
       val n = Neville(asOf = dt)
@@ -57,10 +72,24 @@ class DateTimeSpec extends SalatSpec {
       dbo must havePair("ennui" -> true)
       dbo must havePair("asOf" -> dt)
 
-      val coll = MongoConnection()(SalatSpecDb)("scala_date_test_2")
+      val coll = MongoConnection()(SalatSpecDb)("scala_date_test_3")
       val wr = coll.insert(dbo)
       val n_* = grater[Neville].asObject(coll.findOne().get)
       n_* must_== n
+    }
+
+    "support org.joda.time.LocalDateTime" in {
+      val ldt = new org.joda.time.LocalDateTime()
+      val v = Victor(departureTime = ldt)
+      val dbo: MongoDBObject = grater[Victor].asDBObject(v)
+
+      dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Victor")
+      dbo must havePair("departureTime" -> ldt)
+
+      val coll = MongoConnection()(SalatSpecDb)("scala_date_test_4")
+      val wr = coll.insert(dbo)
+      val v_* = grater[Victor].asObject(coll.findOne().get)
+      v_* must_== v
     }
 
     "support dates parsed from JSON" in {

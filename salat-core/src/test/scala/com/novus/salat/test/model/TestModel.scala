@@ -35,7 +35,7 @@ import scala.collection.immutable.{ Map => IMap }
 import scala.collection.mutable.{ Map => MMap }
 import scala.math.{ BigDecimal => ScalaBigDecimal }
 import com.mongodb.casbah.Imports._
-import org.joda.time.{ DateTimeZone, DateTime }
+import org.joda.time.{ DateTimeZone, DateTime, LocalDateTime }
 
 case class Alice(x: String, y: Option[String] = Some("default y"), z: Basil)
 case class Basil(p: Option[Int], q: Int = 1067, r: Clara)
@@ -204,6 +204,8 @@ case class Susan2(how: String = "who", perished: Boolean = true, fits: List[Fit]
 
 sealed trait Una
 case object SlippedDownADrain extends Una
+
+case class Victor(departureTime: LocalDateTime)
 
 case class DoubleTest(d: Double, d2: Option[Double])
 

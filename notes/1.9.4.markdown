@@ -1,0 +1,3 @@
+Features new in Salat 1.9.4 include:
+
+- Support for Joda LocalDateTime (#103, thanks to Manuel Bernhardt)

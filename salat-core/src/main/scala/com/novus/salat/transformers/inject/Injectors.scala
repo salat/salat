@@ -58,6 +58,9 @@ package object in {
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToFloat
 
+        case TypeRefType(_, symbol, _) if isJodaLocalDateTime(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with DateToJodaLocalDateTime
+
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DateToJodaDateTime
 
@@ -111,6 +114,11 @@ package object in {
 
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DoubleToFloat with TraversableInjector {
+            val parentType = pt
+          }
+
+        case TypeRefType(_, symbol, _) if isJodaLocalDateTime(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DateToJodaLocalDateTime with TraversableInjector {
             val parentType = pt
           }
 
@@ -187,6 +195,12 @@ package object in {
             val grater = ctx.lookup_?(symbol.path)
           }
 
+        case TypeRefType(_, symbol, _) if isJodaLocalDateTime(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with DateToJodaLocalDateTime with MapInjector {
+            val parentType = pt
+            val grater = ctx.lookup_?(symbol.path)
+          }
+
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with DateToJodaDateTime with MapInjector {
             val parentType = pt
@@ -239,6 +253,9 @@ package object in {
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with DoubleToFloat
 
+        case TypeRefType(_, symbol, _) if isJodaLocalDateTime(symbol.path) =>
+          new Transformer(symbol.path, pt)(ctx) with DateToJodaLocalDateTime
+
         case TypeRefType(_, symbol, _) if isJodaDateTime(symbol.path) =>
           new Transformer(symbol.path, pt)(ctx) with DateToJodaDateTime
 
@@ -266,7 +283,7 @@ package object in {
 package in {
 
   import java.lang.Integer
-  import org.joda.time.{ DateTime, DateTimeZone }
+  import org.joda.time.{ DateTime, LocalDateTime, DateTimeZone }
   import org.json4s.JsonAST.JArray
 
   trait LongToInt extends Transformer {
@@ -334,6 +351,16 @@ package in {
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
       case d: java.util.Date if d != null => new DateTime(d)
       case dt: DateTime                   => dt
+    }
+  }
+
+  trait DateToJodaLocalDateTime extends Transformer {
+    self: Transformer =>
+
+    override def transform(value: Any)(implicit ctx: Context): Any = value match {
+      case d: java.util.Date if d != null => new LocalDateTime(d)
+      case ldt: LocalDateTime             => ldt
+      case dt: DateTime                   => dt.toLocalDateTime
     }
   }
 
