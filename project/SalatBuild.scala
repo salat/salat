@@ -69,8 +69,8 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "1.9.3"
-  val buildScalaVersion = "2.10.2"
+  val buildVersion = "1.9.4-SNAPSHOT"
+  val buildScalaVersion = "2.10.3"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
@@ -147,7 +147,7 @@ object Publish {
 object Dependencies {
 
   private val LogbackVersion = "1.0.9"
-  private val CasbahVersion = "2.6.3"
+  private val CasbahVersion = "2.6.4"
 
   val specs2 = "org.specs2" %% "specs2" % "2.2" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
@@ -157,7 +157,7 @@ object Dependencies {
   val casbah = "org.mongodb" %% "casbah-core" % CasbahVersion
   val casbah_commons = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test"
   val casbah_specs = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test" classifier "test"
-  val json4sNative = "org.json4s" %% "json4s-native" % "3.1.0"
+  val json4sNative = "org.json4s" %% "json4s-native" % "3.2.5"
 }
 
 object Repos {
