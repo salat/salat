@@ -28,7 +28,7 @@ package com.novus.salat.json
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import com.mongodb.casbah.Imports._
-import org.joda.time.{ DateTimeZone, DateTime }
+import org.joda.time.{ DateTimeZone, DateTime, LocalDateTime }
 import com.novus.salat.{ Field => SField, _ }
 import com.novus.salat.util.Logging
 import java.net.URL
@@ -161,9 +161,9 @@ object FromJValue extends Logging {
         case notOption => sys.error("FromJValue: expected type for Option but instead got:\n%s".format(notOption))
       }
       case o: JObject if field.tf.isOid => deserialize(o, field.tf)
-      case v: JValue if field.tf.isDate || field.tf.isDateTime => deserialize(v, field.tf)
+      case v: JValue if field.tf.isDate || field.tf.isDateTime || field.tf.isLocalDateTime => deserialize(v, field.tf)
       case tz: JValue if field.tf.isTimeZone || field.tf.isDateTimeZone => deserialize(tz, field.tf)
-      case o: JInt if field.tf.isDate || field.tf.isDateTime => deserialize(o, field.tf)
+      case o: JInt if field.tf.isDate || field.tf.isDateTime || field.tf.isLocalDateTime => deserialize(o, field.tf)
       case o: JObject if field.tf.isBSONTimestamp => deserialize(o, field.tf)
       case o: JObject => ctx.lookup(if (childType.isDefined) childType.get.symbol.path else field.typeRefType.symbol.path).fromJSON(o)
       case x => deserialize(x, if (childType.isDefined) TypeFinder(childType.get) else field.tf)
@@ -188,6 +188,7 @@ object FromJValue extends Logging {
   def deserialize(j: JValue, tf: TypeFinder)(implicit ctx: Context): Any = {
     val v = j match {
       case d if tf.isDateTime            => ctx.jsonConfig.dateStrategy.toDateTime(d)
+      case d if tf.isLocalDateTime       => ctx.jsonConfig.dateStrategy.toLocalDateTime(d)
       case d if tf.isDate                => ctx.jsonConfig.dateStrategy.toDate(d)
       case tz if tf.isTimeZone           => ctx.jsonConfig.timeZoneStrategy.toTimeZone(tz)
       case tz if tf.isDateTimeZone       => ctx.jsonConfig.timeZoneStrategy.toDateTimeZone(tz)

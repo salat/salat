@@ -147,7 +147,7 @@ object Publish {
 object Dependencies {
 
   private val LogbackVersion = "1.0.9"
-  private val CasbahVersion = "2.6.2"
+  private val CasbahVersion = "2.6.3"
 
   val specs2 = "org.specs2" %% "specs2" % "2.2" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"

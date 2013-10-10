@@ -64,6 +64,12 @@ object `package` {
     case _                      => false
   }
 
+  def isJodaLocalDateTime(path: String) = path match {
+    case "org.joda.time.LocalDateTime" => true
+    case "org.scala_tools.time.TypeImports.LocalDateTime" => true
+    case _ => false
+  }
+
   def isJodaDateTime(path: String) = path match {
     case "org.joda.time.DateTime" => true
     case "org.scala_tools.time.TypeImports.DateTime" => true

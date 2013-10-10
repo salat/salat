@@ -28,7 +28,7 @@ package com.novus.salat.json
 import java.util.{ TimeZone, Date }
 import org.bson.types.{ BSONTimestamp, ObjectId }
 import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
-import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.{ DateTime, LocalDateTime, DateTimeZone }
 import org.json4s._
 
 object JSONConfig {
@@ -77,6 +77,8 @@ trait JSONDateStrategy {
 
   def toDateTime(j: JValue): DateTime
 
+  def toLocalDateTime(j: JValue): LocalDateTime
+
   def toDate(j: JValue) = toDateTime(j).toDate
 }
 
@@ -99,6 +101,12 @@ case class StringDateStrategy(dateFormatter: DateTimeFormatter = JSONConfig.ISO8
     case JString(s) => dateFormatter.parseDateTime(s)
     case x          => sys.error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
+
+  def toLocalDateTime(j: JValue) = j match {
+    case JString(s) => dateFormatter.parseLocalDateTime(s)
+    case x          => sys.error("toDateTime: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+  }
+
 }
 
 case class StringTimeZoneStrategy() extends JSONTimeZoneStrategy {
@@ -121,6 +129,12 @@ case class TimestampDateStrategy(zone: DateTimeZone = DateTimeZone.UTC) extends 
     case JInt(v) => new DateTime(v.toLong, zone)
     case x       => sys.error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
+
+  def toLocalDateTime(j: JValue) = j match {
+    case JInt(v) => new LocalDateTime(v.toLong)
+    case x       => sys.error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+  }
+
 }
 
 case class StrictJSONDateStrategy(zone: DateTimeZone = DateTimeZone.UTC) extends JSONDateStrategy {
@@ -132,6 +146,12 @@ case class StrictJSONDateStrategy(zone: DateTimeZone = DateTimeZone.UTC) extends
     case JObject(JField(_, JInt(v)) :: Nil) => new DateTime(v.toLong, zone)
     case x                                  => sys.error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
   }
+
+  def toLocalDateTime(j: JValue) = j match {
+    case JObject(JField(_, JInt(v)) :: Nil) => new LocalDateTime(v.toLong)
+    case x                                  => sys.error("toDate: unsupported input type class='%s', value='%s'".format(x.getClass.getName, x.values))
+  }
+
 }
 
 trait JSONbsTimesampStrategy {
