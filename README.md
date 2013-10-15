@@ -26,7 +26,7 @@ Available for Scala 2.10, 2.9.2, and 2.9.1.  Based on Casbah 2.6.4.
 
     "com.novus" %% "salat" % "1.9.4"
 
-[Release Notes](http://notes.implicit.ly/post/62719626491/salat-1-9-3)
+[Release Notes](http://notes.implicit.ly/post/64114124672/salat-1-9-4)
 
 ## Snapshot
 
