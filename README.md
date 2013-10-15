@@ -22,29 +22,29 @@ Please remove all references to `repo.novus.com` from your build files.  After 0
 
 ## Stable Release
 
-Available for Scala 2.10, 2.9.2, and 2.9.1.  Based on Casbah 2.6.2.
+Available for Scala 2.10, 2.9.2, and 2.9.1.  Based on Casbah 2.6.4.
 
-    "com.novus" %% "salat" % "1.9.3"
+    "com.novus" %% "salat" % "1.9.4"
 
 [Release Notes](http://notes.implicit.ly/post/62719626491/salat-1-9-3)
 
-Legacy support for Scala 2.8.1.  Based on Casbah 2.1.5-1.
-
-    "com.novus" %% "salat" % "0.0.8"
-
-[Release Notes](http://notes.implicit.ly/post/25793638048/salat-0-0-8)
-
 ## Snapshot
 
-[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.10 and 2.9.2. Based on Casbah 2.6.2.
+[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.10 and 2.9.2. Based on Casbah 2.6.4.
 
-    "com.novus" %% "salat" % "1.9.4-SNAPSHOT"
+    "com.novus" %% "salat" % "1.9.5-SNAPSHOT"
 
 If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
     resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-[Release Notes (In Progress)](https://github.com/novus/salat/blob/master/notes/1.9.4.markdown)
+[Release Notes (In Progress)](https://github.com/novus/salat/blob/master/notes/1.9.5.markdown)
+
+## Legacy support for Scala 2.8.1.  Based on Casbah 2.1.5-1.
+
+    "com.novus" %% "salat" % "0.0.8"
+
+[Release Notes](http://notes.implicit.ly/post/25793638048/salat-0-0-8)
 
 ## Play 2 plugin
 
