@@ -1,37 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <title>Salat by novus</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <title>Salat by novus</title>
   </head>
-
   <body>
-    <div id="container">
-      <div class="inner">
+    <div class="wrapper">
+      <header>
+        <h1>Salat</h1>
+        <p>A simple serialization library for case classes.</p>
 
-        <header>
-          <h1>Salat</h1>
-          <h2>A simple serialization library for case classes.</h2>
-        </header>
+        <p class="view"><a href="https://github.com/novus/salat">View the Project on GitHub <small>novus/salat</small></a></p>
 
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/novus/salat/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/novus/salat/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/novus/salat" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
 
-        <hr>
-
-        <section id="main_content">
-          <h1>
+        <ul>
+          <li><a href="https://github.com/novus/salat/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/novus/salat/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/novus/salat">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
 <a name="salat" class="anchor" href="#salat"><span class="octicon octicon-link"></span></a>Salat</h1>
 
 <p>Salat is a simple serialization library for case classes.</p>
@@ -59,26 +56,19 @@
 <h2>
 <a name="stable-release" class="anchor" href="#stable-release"><span class="octicon octicon-link"></span></a>Stable Release</h2>
 
-<p>Available for Scala 2.10, 2.9.2, and 2.9.1.  Based on Casbah 2.6.2.</p>
+<p>Available for Scala 2.10, 2.9.2, and 2.9.1.  Based on Casbah 2.6.4.</p>
 
-<pre><code>"com.novus" %% "salat" % "1.9.2"
+<pre><code>"com.novus" %% "salat" % "1.9.4"
 </code></pre>
 
-<p><a href="http://notes.implicit.ly/post/58752640996/salat-1-9-2">Release Notes</a></p>
-
-<p>Legacy support for Scala 2.8.1.  Based on Casbah 2.1.5-1.</p>
-
-<pre><code>"com.novus" %% "salat" % "0.0.8"
-</code></pre>
-
-<p><a href="http://notes.implicit.ly/post/25793638048/salat-0-0-8">Release Notes</a></p>
+<p><a href="http://notes.implicit.ly/post/64114124672/salat-1-9-4">Release Notes</a></p>
 
 <h2>
 <a name="snapshot" class="anchor" href="#snapshot"><span class="octicon octicon-link"></span></a>Snapshot</h2>
 
-<p><a href="http://travis-ci.org/novus/salat"><img src="https://secure.travis-ci.org/novus/salat.png" alt="Build Status"></a>  Available for Scala 2.10 and 2.9.2. Based on Casbah 2.6.2.</p>
+<p><a href="http://travis-ci.org/novus/salat"><img src="https://secure.travis-ci.org/novus/salat.png" alt="Build Status"></a>  Available for Scala 2.10 and 2.9.2. Based on Casbah 2.6.4.</p>
 
-<pre><code>"com.novus" %% "salat" % "1.9.3-SNAPSHOT"
+<pre><code>"com.novus" %% "salat" % "1.9.5-SNAPSHOT"
 </code></pre>
 
 <p>If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:</p>
@@ -86,7 +76,15 @@
 <pre><code>resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 </code></pre>
 
-<p><a href="https://github.com/novus/salat/blob/master/notes/1.9.1.markdown">Release Notes (In Progress)</a></p>
+<p><a href="https://github.com/novus/salat/blob/master/notes/1.9.5.markdown">Release Notes (In Progress)</a></p>
+
+<h2>
+<a name="legacy-support-for-scala-281--based-on-casbah-215-1" class="anchor" href="#legacy-support-for-scala-281--based-on-casbah-215-1"><span class="octicon octicon-link"></span></a>Legacy support for Scala 2.8.1.  Based on Casbah 2.1.5-1.</h2>
+
+<pre><code>"com.novus" %% "salat" % "0.0.8"
+</code></pre>
+
+<p><a href="http://notes.implicit.ly/post/25793638048/salat-0-0-8">Release Notes</a></p>
 
 <h2>
 <a name="play-2-plugin" class="anchor" href="#play-2-plugin"><span class="octicon octicon-link"></span></a>Play 2 plugin</h2>
@@ -133,14 +131,14 @@
 <li>SID # 10 (draft) - <a href="http://www.scala-lang.org/sid/10">Storage of pickled Scala signatures in class files</a>
 </li>
 </ul>
-        </section>
-
-        <footer>
-          Salat is maintained by <a href="https://github.com/novus">novus</a><br>
-          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
-
-                  <script type="text/javascript">
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/novus">novus</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+              <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -151,7 +149,5 @@
             } catch(err) {}
           </script>
 
-      </div>
-    </div>
   </body>
 </html>
