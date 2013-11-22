@@ -409,6 +409,7 @@ package in {
     self: Transformer =>
 
     override def transform(value: Any)(implicit ctx: Context) = value match {
+      case Some(x) => transform(x)(ctx)
       case s: String => fromPath(ctx.resolveCaseObjectOverrides.get(t.symbol.path -> s).
         getOrElse(throw MissingCaseObjectOverride(t.symbol.path, value, ctx.name)))
       case dbo: DBObject       => fromPath(ctx.extractTypeHint(dbo).getOrElse(throw MissingTypeHint(dbo)))
