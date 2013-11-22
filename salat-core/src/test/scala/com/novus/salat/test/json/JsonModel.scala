@@ -91,3 +91,9 @@ case class Qvintus(bd: Option[BigDecimal])
 case class Rudolf(bi: Option[BigInt])
 case class Sigurd(o: Option[ObjectId])
 case class Tore(i: Int, d: Double, od: Option[Double])
+
+trait Foo
+case object Bar extends Foo
+case object Baz extends Foo
+
+case class Urban(foo: Foo, foo2: Option[Foo])

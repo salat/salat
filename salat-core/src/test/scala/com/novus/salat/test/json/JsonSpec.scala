@@ -176,6 +176,18 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
           grater[Olof].toCompactJSON(olof) must_== "{\"d\":\"2012-09-13T12:30:05.237Z\"}"
         }
       }
+      "serialize case object override" in {
+        implicit val ctx = new Context {
+          val name = "coo-json-test-context"
+          override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary,
+            typeHint = TestTypeHint)
+          override val jsonConfig = JSONConfig(dateStrategy = StringDateStrategy(dateFormatter = TestDateFormatter))
+          override val bigIntStrategy = BigIntToLongStrategy
+          registerCaseObjectOverride[Foo, Bar.type]("B")
+          registerCaseObjectOverride[Foo, Baz.type]("Z")
+        }
+        grater[Urban].toCompactJSON(Urban(foo = Bar, foo2 = Option(Baz))) must_== "{\"foo\":\"B\",\"foo2\":\"Z\"}"
+      }
       "serialize class hierarchies" in {
         // TODO: sort out type hinting when concrete grater is accessed via proxy grater without @Salat annotation
         "with a top-level trait" in {
@@ -338,6 +350,18 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
         grater[Qvintus].fromJSON("{}") must_== Qvintus(None)
         grater[Rudolf].fromJSON("{}") must_== Rudolf(None)
       }
+    }
+    "deserialize case object override" in {
+      implicit val ctx = new Context {
+        val name = "coo-json-test-context"
+        override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary,
+          typeHint = TestTypeHint)
+        override val jsonConfig = JSONConfig(dateStrategy = StringDateStrategy(dateFormatter = TestDateFormatter))
+        override val bigIntStrategy = BigIntToLongStrategy
+        registerCaseObjectOverride[Foo, Bar.type]("B")
+        registerCaseObjectOverride[Foo, Baz.type]("Z")
+      }
+      grater[Urban].fromJSON("{\"foo\":\"B\",\"foo2\":\"Z\"}") must_== Urban(foo = Bar, foo2 = Option(Baz))
     }
     "deserialize JObjects containing class hierarchies" in {
       "with a top-level trait" in {
