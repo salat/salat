@@ -313,28 +313,33 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 
   def fromJSON(j: JObject) = {
-    val values = j.obj.map(v => (v._1, v._2)).toMap
-    val args = indexedFields.map {
-      case field if field.ignore => safeDefault(field)
-      case field => {
-        val name = cachedFieldName(field)
-        val rawValue = values.get(name)
-        val value = FromJValue(rawValue, field)
-        //        log.info(
-        //          """
-        //fromJSON: %s
-        //  field: %s
-        //  name: %s
-        //  values.get("%s"): %s
-        //  fromJsonTransform(rawValue, field): %s
-        //  fromJsonTransform(rawValue, field).flatMap(field.in_!(_)): %s
-        //  safeDefault: %s
-        //                      """, clazz.getName, field.name, name, name, rawValue, value, value.flatMap(field.in_!(_)), defaultArg(field).value)
-
-        value.flatMap(field.in_!) orElse safeDefault(field)
-      }
+    if (ca.sym.isModule) {
+      ca.companionObject.asInstanceOf[X]
     }
-    feedArgsToConstructor(args.flatten.asInstanceOf[Seq[AnyRef]])
+    else {
+      val values = j.obj.map(v => (v._1, v._2)).toMap
+      val args = indexedFields.map {
+        case field if field.ignore => safeDefault(field)
+        case field => {
+          val name = cachedFieldName(field)
+          val rawValue = values.get(name)
+          val value = FromJValue(rawValue, field)
+          //        log.info(
+          //          """
+          //fromJSON: %s
+          //  field: %s
+          //  name: %s
+          //  values.get("%s"): %s
+          //  fromJsonTransform(rawValue, field): %s
+          //  fromJsonTransform(rawValue, field).flatMap(field.in_!(_)): %s
+          //  safeDefault: %s
+          //                      """, clazz.getName, field.name, name, name, rawValue, value, value.flatMap(field.in_!(_)), defaultArg(field).value)
+
+          value.flatMap(field.in_!) orElse safeDefault(field)
+        }
+      }
+      feedArgsToConstructor(args.flatten.asInstanceOf[Seq[AnyRef]])
+    }
   }
 
   def fromMap(m: Map[String, Any]): X = {
