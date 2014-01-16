@@ -1,3 +1,5 @@
-Features new in Salat 1.9.5 include:
+Bug fixes in Salat 1.9.5 include:
 
-- TODO
+- Safe serialization of doubles: NaN and infinite will be represented as null
+- Fix bug deserializing an option containing a case object when the case object also has a context override mapping it to a string
+- Casbah dependency updated to 2.6.4
