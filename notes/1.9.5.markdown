@@ -2,4 +2,7 @@ Bug fixes in Salat 1.9.5 include:
 
 - Safe serialization of doubles: NaN and infinite will be represented as null
 - Fix bug deserializing an option containing a case object when the case object also has a context override mapping it to a string
+- Fix bug where case object does not correctly deserialize from JSON (#116)
 - Casbah dependency updated to 2.6.4
+
+Thanks to @Al-Tsvetkov for #116.
