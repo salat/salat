@@ -187,6 +187,12 @@ class JsonSpec extends Specification with Logging {
         }
         grater[Urban].toCompactJSON(Urban(foo = Bar, foo2 = Option(Baz))) must_== "{\"foo\":\"B\",\"foo2\":\"Z\"}"
       }
+      "serialize Double to ensure valid JSON" in {
+        grater[Viktor].toCompactJSON(Viktor(v = Double.NaN)) must_== """{"v":null}"""
+        grater[Viktor].toCompactJSON(Viktor(v = Double.PositiveInfinity)) must_== """{"v":null}"""
+        grater[Viktor].toCompactJSON(Viktor(v = Double.NegativeInfinity)) must_== """{"v":null}"""
+        grater[Viktor].toCompactJSON(Viktor(v = 3.14)) must_== """{"v":3.14}"""
+      }
       "serialize class hierarchies" in {
         // TODO: sort out type hinting when concrete grater is accessed via proxy grater without @Salat annotation
         "with a top-level trait" in {

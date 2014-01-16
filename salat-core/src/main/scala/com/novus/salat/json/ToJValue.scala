@@ -50,7 +50,7 @@ object MapToJSON extends Logging {
   }
 
   def apply(iter: Iterable[Map[String, _]])(implicit ctx: Context): String = {
-    compact(render(JArray(iter.map(mapToJObject(_)).toList)))
+    compact(render(JArray(iter.map(mapToJObject).toList)))
   }
 }
 
@@ -75,14 +75,14 @@ object ToJField extends Logging {
 
 object ToJValue extends Logging {
   def apply(o: Any)(implicit ctx: Context): JValue = o.asInstanceOf[AnyRef] match {
-    case t: MongoDBList              => JArray(t.map(apply(_)).toList)
-    case t: BasicDBList              => JArray(t.map(apply(_)).toList)
+    case t: MongoDBList              => JArray(t.map(apply).toList)
+    case t: BasicDBList              => JArray(t.map(apply).toList)
     case dbo: DBObject               => JObject(wrapDBObj(dbo).toList.map(v => JField(v._1, apply(v._2))))
     case ba: Array[Byte]             => JArray(ba.toList.map(JInt(_)))
     case m: Map[_, _]                => JObject(m.toList.map(v => JField(v._1.toString, apply(v._2))))
     case m: java.util.Map[_, _]      => JObject(scala.collection.JavaConversions.mapAsScalaMap(m).toList.map(v => JField(v._1.toString, apply(v._2))))
-    case iter: Iterable[_]           => JArray(iter.map(apply(_)).toList)
-    case iter: java.lang.Iterable[_] => JArray(scala.collection.JavaConversions.iterableAsScalaIterable(iter).map(apply(_)).toList)
+    case iter: Iterable[_]           => JArray(iter.map(apply).toList)
+    case iter: java.lang.Iterable[_] => JArray(scala.collection.JavaConversions.iterableAsScalaIterable(iter).map(apply).toList)
     case x                           => serialize(x)
   }
 
@@ -90,7 +90,7 @@ object ToJValue extends Logging {
     val v = o match {
       case s: String => JString(s)
       case c: Char => JString(c.toString)
-      case d: Double => JDouble(d)
+      case d: Double => if (d.isNaN || d.isInfinite) JNull else JDouble(d) // Double.NaN is invalid JSON
       case f: Float => JDouble(f.toDouble)
       case s: Short => JDouble(s.toDouble)
       case bd: BigDecimal => JDouble(bd.toDouble)
