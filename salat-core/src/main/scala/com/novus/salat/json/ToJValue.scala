@@ -35,7 +35,7 @@ import java.net.URL
 import com.novus.salat.TypeFinder
 import com.novus.salat.StringTypeHintStrategy
 import scala.tools.scalap.scalax.rules.scalasig.{ SingleType, TypeRefType }
-import org.bson.types.BSONTimestamp
+import org.bson.types.{ BasicBSONList, BSONTimestamp }
 
 object MapToJSON extends Logging {
 
