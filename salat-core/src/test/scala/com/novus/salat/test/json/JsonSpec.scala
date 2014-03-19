@@ -188,7 +188,7 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
         }
         grater[Urban].toCompactJSON(Urban(foo = Bar, foo2 = Option(Baz))) must_== "{\"foo\":\"B\",\"foo2\":\"Z\"}"
       }
-      "serialize Double to ensure valid JSON" in {
+      "serialize Double.NaN and the like to JNull to ensure valid JSON output" in {
         grater[Viktor].toCompactJSON(Viktor(v = Double.NaN)) must_== """{"v":null}"""
         grater[Viktor].toCompactJSON(Viktor(v = Double.PositiveInfinity)) must_== """{"v":null}"""
         grater[Viktor].toCompactJSON(Viktor(v = Double.NegativeInfinity)) must_== """{"v":null}"""
@@ -241,6 +241,10 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
           JField("o", JObject(JField("$oid", JString("4fd0bead4ceab231e6f3220b")) :: Nil)) ::
           Nil)
       grater[Adam].fromJSON(j) must_== a
+    }
+    "deserialize null to Double.NaN when Double is expected" in {
+      val aa = Adam(a = "string", b = 99, c = Double.NaN, d = false, e = testDate, u = testURL, bd = bd, bi = bi, o = o)
+      grater[Adam].fromJSON(grater[Adam].toJSON(aa)).c.isNaN must beTrue
     }
     "be flexible about coercing Double <-> Int when deserializing" in {
       val t = Tore(i = 9, d = 9d, od = Some(9d))

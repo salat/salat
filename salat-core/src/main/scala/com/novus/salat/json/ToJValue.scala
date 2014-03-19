@@ -207,6 +207,7 @@ object FromJValue extends Logging {
       case i: JInt if tf.isFloat         => i.values.toFloat
       case i: JInt                       => i.values.intValue()
       case b: JBool                      => b.values
+      case JsonAST.JNull if tf.isDouble  => Double.NaN
       case JsonAST.JNull                 => null
       case x: AnyRef                     => sys.error("deserialize: unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
     }
