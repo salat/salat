@@ -100,6 +100,14 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
 
   type OutHandler = PartialFunction[(Any, SField), Option[(String, Any)]]
 
+  def toBSON(o: X): Array[Byte] = org.bson.BSON.encode(asDBObject(o))
+
+  def fromBSON(bytes: Array[Byte]): X = {
+    val decoded = org.bson.BSON.decode(bytes)
+    val mdbo = com.novus.salat.bson.BSONObjectToMongoDbObject(decoded)
+    asObject(mdbo)
+  }
+
   override def toString = "%s(%s @ %s)".format(getClass.getSimpleName, clazz, ctx)
 
   override def equals(that: Any) = that.isInstanceOf[Grater[_]] && that.hashCode == this.hashCode

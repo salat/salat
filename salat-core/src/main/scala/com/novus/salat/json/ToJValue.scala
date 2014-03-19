@@ -35,7 +35,7 @@ import java.net.URL
 import com.novus.salat.TypeFinder
 import com.novus.salat.StringTypeHintStrategy
 import scala.tools.scalap.scalax.rules.scalasig.{ SingleType, TypeRefType }
-import org.bson.types.BSONTimestamp
+import org.bson.types.{ BasicBSONList, BSONTimestamp }
 
 object MapToJSON extends Logging {
 
@@ -207,6 +207,7 @@ object FromJValue extends Logging {
       case i: JInt if tf.isFloat         => i.values.toFloat
       case i: JInt                       => i.values.intValue()
       case b: JBool                      => b.values
+      case JsonAST.JNull if tf.isDouble  => Double.NaN
       case JsonAST.JNull                 => null
       case x: AnyRef                     => sys.error("deserialize: unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
     }
