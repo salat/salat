@@ -1,3 +1,6 @@
-Features in Salat 1.9.6 include:
+Salat 1.9.6 is a bugfix release:
 
-- TODO
+- fix JSON serialization bug where null DateTimes were not being properly serialized to JNull where context JSON config
+ specifies null values should be output
+- fix for deserializing a null field in JSON to Double.NaN when model object expects Double
+- first cut of grater support for converting model objects to and from BSON

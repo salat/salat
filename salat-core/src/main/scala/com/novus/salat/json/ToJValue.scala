@@ -88,6 +88,7 @@ object ToJValue extends Logging {
 
   def serialize(o: Any)(implicit ctx: Context) = {
     val v = o match {
+      case n if n == null && ctx.jsonConfig.outputNullValues => JNull
       case s: String => JString(s)
       case c: Char => JString(c.toString)
       case d: Double => if (d.isNaN || d.isInfinite) JNull else JDouble(d) // Double.NaN is invalid JSON
@@ -104,7 +105,6 @@ object ToJValue extends Logging {
       case tz: DateTimeZone => ctx.jsonConfig.timeZoneStrategy.out(tz)
       case o: ObjectId => ctx.jsonConfig.objectIdStrategy.out(o)
       case u: java.net.URL => JString(u.toString) // might as well
-      case n if n == null && ctx.jsonConfig.outputNullValues => JNull
       case ts: BSONTimestamp => ctx.jsonConfig.bsonTimestampStrategy.out(ts)
       case x: AnyRef => sys.error("serialize: Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
     }

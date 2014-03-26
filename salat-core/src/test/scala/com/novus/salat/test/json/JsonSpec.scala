@@ -174,6 +174,17 @@ class JsonSpec extends Specification with Logging {
         "using string strategy" in {
           grater[Olof].toCompactJSON(olof) must_== "{\"d\":\"2012-09-13T12:30:05.237Z\"}"
         }
+        "handle null dates when context supports outputting nulls" in {
+          implicit val ctx = new Context {
+            val name = "timestamp"
+            override val jsonConfig = JSONConfig(dateStrategy = TimestampDateStrategy(DateTimeZone.UTC), outputNullValues = true)
+          }
+          val o = Olof(null)
+          grater[Olof].toJSON(o) must_== JObject(
+            JField("d", JNull) ::
+              Nil)
+          grater[Olof].toCompactJSON(o) must_== "{\"d\":null}"
+        }
       }
       "serialize case object override" in {
         implicit val ctx = new Context {
