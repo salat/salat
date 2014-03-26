@@ -30,5 +30,5 @@ class CustomGrater[ModelObject <: AnyRef](clazz: Class[ModelObject],
 
   def fromJSON(j: JObject) = transformer.deserialize(j.values.asDBObject)
 
-  def iterateOut[T](o: ModelObject)(f: ((String, Any)) => T) = Iterator.empty
+  def iterateOut[T](o: ModelObject, outputNulls: Boolean)(f: ((String, Any)) => T) = Iterator.empty
 }

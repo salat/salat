@@ -96,7 +96,7 @@ abstract class Grater[X <: AnyRef](val clazz: Class[X])(implicit val ctx: Contex
                      """.format(x.getClass.getName, s))
   }
 
-  def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T]
+  def iterateOut[T](o: X, outputNulls: Boolean)(f: ((String, Any)) => T): Iterator[T]
 
   type OutHandler = PartialFunction[(Any, SField), Option[(String, Any)]]
 
@@ -122,9 +122,10 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       (ctx.typeHintStrategy.when == TypeHintFrequency.WhenNecessary && ca.requiresTypeHint)
   }
 
-  protected def outField: OutHandler = {
-    case (_, field) if field.ignore => None
-    case (null, _)                  => None
+  protected def outField(outputNulls: Boolean): OutHandler = {
+    case (_, field) if field.ignore   => None
+    case (null, field) if outputNulls => Some((cachedFieldName(field), null))
+    case (null, _)                    => None
     case (element, field) => {
       field.out_!(element) match {
         case Some(None) => None
@@ -206,12 +207,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     fromClazz ::: fromSuperclass
   }
 
-  def iterateOut[T](o: X)(f: ((String, Any)) => T): Iterator[T] = {
+  def iterateOut[T](o: X, outputNulls: Boolean)(f: ((String, Any)) => T): Iterator[T] = {
     val fromConstructor = o.productIterator.zip(indexedFields.iterator)
     val withPersist = extraFieldsToPersist.iterator.map {
       case (m, field) => m.invoke(o) -> field
     }
-    (fromConstructor ++ withPersist).map(outField).filter(_.isDefined).map(_.get).map(f)
+    (fromConstructor ++ withPersist).map(outField(outputNulls)).filter(_.isDefined).map(_.get).map(f)
   }
 
   lazy val fieldNameMap = (indexedFields.filterNot(_.ignore) ++ extraFieldsToPersist.map(_._2)).map {
@@ -224,7 +225,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   def toJSON(o: X) = {
     val builder = List.newBuilder[JField]
     builder ++= ToJField.typeHint(clazz, useTypeHint)
-    iterateOut(o) {
+    iterateOut(o, ctx.jsonConfig.outputNullValues) {
       case (key, value) => {
         val jField = ToJField(key, value)
 
@@ -252,7 +253,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       builder += ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(clazz.getName)
     }
 
-    iterateOut(o) {
+    iterateOut(o, false) {
       case (key, value) => builder += key -> value
     }.toList
 
