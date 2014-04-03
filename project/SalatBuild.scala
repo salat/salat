@@ -70,7 +70,7 @@ object BuildSettings {
 
   val buildOrganization = "com.novus"
   val buildVersion = "1.9.7-SNAPSHOT"
-  val buildScalaVersion = "2.9.2"
+  val buildScalaVersion = "2.9.3"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
@@ -81,8 +81,7 @@ object BuildSettings {
     testFrameworks += TestFrameworks.Specs2,
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
-    scalacOptions ++= Seq("-deprecation", "-unchecked"),
-    crossScalaVersions := Seq("2.9.3")
+    scalacOptions ++= Seq("-deprecation", "-unchecked")
   )
 }
 
