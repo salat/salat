@@ -45,8 +45,8 @@ abstract class SalatDAOError(whichDAO: String,
 
 
  """.format(whichDAO, thingThatFailed,
-  collection.getName(), wc, wr,
-  thingThatFailed.toUpperCase(),
+  collection.name, wc, wr,
+  thingThatFailed.toUpperCase,
   if (dbos.size == 1) "DBO" else "DBOs",
   if (dbos.size == 1) dbos.head else dbos.mkString("\n")))
 
@@ -83,7 +83,7 @@ abstract class SalatDAOQueryError(whichDAO: String,
 
     QUERY: %s
 
- """.format(whichDAO, thingThatFailed, collection.getName(), wc, wr, query))
+ """.format(whichDAO, thingThatFailed, collection.name, wc, wr, query))
 
 case class SalatRemoveQueryError(whichDAO: String,
                                  collection: MongoCollection,
@@ -112,4 +112,4 @@ case class SalatDAOUpdateError(whichDAO: String,
 
     OBJECT TO UPDATE: %s
 
- """.format(whichDAO, collection.getName(), wc, wr, upsert, multi, query, o))
+ """.format(whichDAO, collection.name, wc, wr, upsert, multi, query, o))
