@@ -30,7 +30,7 @@ Available for Scala 2.10, 2.9.3, and 2.9.2.  Based on Casbah 2.6.4.
 
 ## Snapshot
 
-[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.10 and 2.9.2. Based on Casbah 2.6.4.
+[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.10 and 2.9.2. Based on Casbah 2.7.0.
 
     "com.novus" %% "salat" % "1.9.7-SNAPSHOT"
 
