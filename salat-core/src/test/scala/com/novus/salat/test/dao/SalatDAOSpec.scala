@@ -286,13 +286,13 @@ class SalatDAOSpec extends SalatSpec {
   }
 
   trait alphaContext extends Scope {
-    log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
+    log.debug("before: dropping %s", AlphaDAO.collection.fullName)
     AlphaDAO.collection.drop()
     AlphaDAO.collection.count() must_== 0L
   }
 
   trait alphaContextWithData extends Scope {
-    log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
+    log.debug("before: dropping %s", AlphaDAO.collection.fullName)
     AlphaDAO.collection.drop()
     AlphaDAO.collection.count() must_== 0L
 
@@ -302,13 +302,13 @@ class SalatDAOSpec extends SalatSpec {
   }
 
   trait epsilonContext extends Scope {
-    log.debug("before: dropping %s", EpsilonDAO.collection.getFullName())
+    log.debug("before: dropping %s", EpsilonDAO.collection.fullName)
     EpsilonDAO.collection.drop()
     EpsilonDAO.collection.count() must_== 0L
   }
 
   trait thetaContext extends Scope {
-    log.debug("before: dropping %s", ThetaDAO.collection.getFullName())
+    log.debug("before: dropping %s", ThetaDAO.collection.fullName)
     ThetaDAO.collection.drop()
     ThetaDAO.collection.count() must_== 0L
 
@@ -323,7 +323,7 @@ class SalatDAOSpec extends SalatSpec {
   }
 
   trait xiContext extends Scope {
-    log.debug("before: dropping %s", XiDAO.collection.getFullName())
+    log.debug("before: dropping %s", XiDAO.collection.fullName)
     XiDAO.collection.drop()
     XiDAO.collection.count() must_== 0L
 
@@ -338,7 +338,7 @@ class SalatDAOSpec extends SalatSpec {
   }
 
   trait kappaContext extends Scope {
-    log.debug("before: dropping %s", KappaDAO.collection.getFullName())
+    log.debug("before: dropping %s", KappaDAO.collection.fullName)
     KappaDAO.collection.drop()
     KappaDAO.collection.count() must_== 0L
 

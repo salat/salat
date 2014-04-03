@@ -123,7 +123,7 @@ class ModelCompanionSpec extends SalatSpec {
   }
 
   trait myModelScope extends Scope {
-    log.trace("before: dropping %s", MyModel.collection.getFullName())
+    log.trace("before: dropping %s", MyModel.collection.fullName)
     MyModel.collection.drop()
     MyModel.collection.count() must_== 0L
 
