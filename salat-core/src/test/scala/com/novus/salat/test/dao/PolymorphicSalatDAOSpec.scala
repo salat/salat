@@ -36,8 +36,8 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
   override def is = args(sequential = true) ^ super.is
 
   trait userContext extends Scope {
-    log.debug("before: dropping %s", UserDAO.collection.getFullName())
-    log.debug("before: dropping %s", RoleDAO.collection.getFullName())
+    log.debug("before: dropping %s", UserDAO.collection.fullName)
+    log.debug("before: dropping %s", RoleDAO.collection.fullName)
     UserDAO.collection.drop()
     UserDAO.collection.count() must_== 0L
     RoleDAO.collection.drop()
@@ -52,7 +52,7 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
   }
 
   trait roleContext extends Scope {
-    log.debug("before: dropping %s", RoleDAO.collection.getFullName())
+    log.debug("before: dropping %s", RoleDAO.collection.fullName)
     RoleDAO.collection.drop()
     RoleDAO.collection.count() must_== 0L
     val user1Id = new ObjectId
@@ -71,7 +71,7 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
   }
 
   trait fooContext extends Scope {
-    log.debug("before: dropping %s", FooDAO.collection.getFullName())
+    log.debug("before: dropping %s", FooDAO.collection.fullName)
     FooDAO.collection.drop()
     FooDAO.collection.count() must_== 0L
     val barId = new ObjectId

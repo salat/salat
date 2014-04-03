@@ -54,7 +54,7 @@ class ReadPreferenceSpec extends SalatSpec {
   }
 
   trait alphaContextWithData extends Scope {
-    log.debug("before: dropping %s", AlphaDAO.collection.getFullName())
+    log.debug("before: dropping %s", AlphaDAO.collection.fullName)
     AlphaDAO.collection.drop()
     AlphaDAO.collection.setReadPreference(ReadPreference.Primary)
     AlphaDAO.collection.count() must_== 0L

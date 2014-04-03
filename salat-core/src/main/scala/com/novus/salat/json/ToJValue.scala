@@ -111,11 +111,11 @@ object ToJValue extends Logging {
 
     //    log.debug(
     //      """
-    //        |serialize:
-    //        | o.getClass.getName: %s
-    //        | o: %s
-    //        | v: %s
-    //      """.stripMargin, o.asInstanceOf[AnyRef].getClass.getName, o, v)
+    //            |serialize:
+    //            | o.getClass.getName: %s
+    //            | o: %s
+    //            | v: %s
+    //          """.stripMargin, if (o != null) o.asInstanceOf[AnyRef].getClass.getName else "null", o, v)
 
     v
   }

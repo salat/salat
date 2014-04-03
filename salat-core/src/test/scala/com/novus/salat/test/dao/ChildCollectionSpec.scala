@@ -125,12 +125,12 @@ class ChildCollectionSpec extends SalatSpec {
   }
 
   trait parentChildContext extends Scope {
-    log.debug("before: dropping %s", ParentDAO.collection.getFullName())
+    log.debug("before: dropping %s", ParentDAO.collection.fullName)
     ParentDAO.collection.drop()
     ParentDAO.collection.count() must_== 0L
 
     val childDAO = ParentDAO.children
-    log.debug("before: dropping %s", childDAO.collection.getFullName())
+    log.debug("before: dropping %s", childDAO.collection.fullName)
     childDAO.collection.drop()
     childDAO.collection.count() must_== 0L
 

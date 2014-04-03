@@ -98,3 +98,5 @@ case object Baz extends Foo
 
 case class Urban(foo: Foo, foo2: Option[Foo])
 case class Viktor(v: Double)
+
+case class Wilhelm(w: DateTime, o: Olof)

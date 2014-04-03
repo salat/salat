@@ -184,6 +184,11 @@ class JsonSpec extends Specification with Logging {
             JField("d", JNull) ::
               Nil)
           grater[Olof].toCompactJSON(o) must_== "{\"d\":null}"
+
+          grater[Wilhelm].toJSON(Wilhelm(null, Olof(null))) must_== JObject(
+            JField("w", JNull) ::
+              JField("o", JObject(JField("d", JNull))) ::
+              Nil)
         }
       }
       "serialize case object override" in {

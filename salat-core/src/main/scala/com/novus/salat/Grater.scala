@@ -123,21 +123,24 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 
   protected def outField(outputNulls: Boolean): OutHandler = {
-    case (_, field) if field.ignore   => None
-    case (null, field) if outputNulls => Some((cachedFieldName(field), null))
-    case (null, _)                    => None
+    case (_, field) if field.ignore => None
+    case (null, field) if outputNulls => {
+      //      log.debug("Outputting null value for field '"+cachedFieldName(field)+"'")
+      Some((cachedFieldName(field), null))
+    }
+    case (null, _) => None
     case (element, field) => {
       field.out_!(element) match {
         case Some(None) => None
         case Some(serialized) => {
           //          log.info("""
           //
-          //          field.name = '%s'
-          //          value = %s  [%s]
-          //          default = %s [%s]
-          //          value == default? %s
+          //                    field.name = '%s'
+          //                    value = %s  [%s]
+          //                    default = %s [%s]
+          //                    value == default? %s
           //
-          //          """, field.name,
+          //                    """, field.name,
           //            serialized,
           //            serialized.asInstanceOf[AnyRef].getClass.getName,
           //            safeDefault(field),
@@ -212,7 +215,24 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     val withPersist = extraFieldsToPersist.iterator.map {
       case (m, field) => m.invoke(o) -> field
     }
-    (fromConstructor ++ withPersist).map(outField(outputNulls)).filter(_.isDefined).map(_.get).map(f)
+    (fromConstructor ++ withPersist).map {
+      case x @ (fieldVal, field) =>
+        val out = {
+          val o = outField(outputNulls)(x)
+          if (o.isEmpty && fieldVal == null) Option((cachedFieldName(field), null)) else o
+        }
+        //        log.debug(
+        //          """
+        //            |iterateOut:
+        //            |                   clazz: %s
+        //            |                   field: %s
+        //            |                fieldVal: %s
+        //            |                     out: %s
+        //            |
+        //            |
+        //          """.stripMargin, clazz.getName, field, fieldVal, out)
+        out
+    }.filter(_.isDefined).map(_.get).map(f)
   }
 
   lazy val fieldNameMap = (indexedFields.filterNot(_.ignore) ++ extraFieldsToPersist.map(_._2)).map {
@@ -231,18 +251,28 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
         //        log.debug(
         //          """
-        //            |toJSON:
-        //            |
-        //            |           key: %s
-        //            |           value: %s [%s]
-        //            |           jfield: %s [%s]
-        //            |
-        //          """.stripMargin, key, value, value.getClass.getName, jField, jField.getClass.getName)
+        //                    |toJSON:
+        //                    |
+        //                    |           key: %s
+        //                    |           value: %s [%s]
+        //                    |           jfield: %s [%s]
+        //                    |
+        //                  """.stripMargin, key, value, if (value != null) value.getClass.getName else "null", jField, jField.getClass.getName)
 
         builder += jField
       }
     }.toList
-    JObject(builder.result())
+    val j = JObject(builder.result())
+    //    log.debug(
+    //      """
+    //        |toJSON:
+    //        |
+    //        |                  input: %s
+    //        |                  output:
+    //        |%s
+    //        |
+    //      """.stripMargin, o, j)
+    j
   }
 
   def asDBObject(o: X): DBObject = {
