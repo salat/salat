@@ -1,36 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Salat : A simple serialization library for case classes." />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Salat by novus</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
-    <title>Salat</title>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
-
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/novus/salat">View on GitHub</a>
-
-          <h1 id="project_title">Salat</h1>
-          <h2 id="project_tagline">A simple serialization library for case classes.</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/novus/salat/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/novus/salat/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+    <div class="wrapper">
+      <header>
+        <h1>Salat</h1>
+        <p>A simple serialization library for case classes.</p>
+        <p class="view"><a href="https://github.com/novus/salat">View the Project on GitHub <small>novus/salat</small></a></p>
+        <ul>
+          <li><a href="https://github.com/novus/salat/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/novus/salat/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/novus/salat">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
         <h1>
 <a name="salat" class="anchor" href="#salat"><span class="octicon octicon-link"></span></a>Salat</h1>
 
@@ -57,21 +53,26 @@
 <p>Please remove all references to <code>repo.novus.com</code> from your build files.  After 0.0.8, Salat will be hosted exclusively by Sonatype.</p>
 
 <h2>
+<a name="scala-211-support" class="anchor" href="#scala-211-support"><span class="octicon octicon-link"></span></a>Scala 2.11 support</h2>
+
+<p><em>Pending Casbah release built for 2.11</em></p>
+
+<h2>
 <a name="stable-release" class="anchor" href="#stable-release"><span class="octicon octicon-link"></span></a>Stable Release</h2>
 
-<p>Available for Scala 2.10, 2.9.3, and 2.9.2.  Based on Casbah 2.6.4.</p>
+<p>Available for Scala 2.10 and 2.9.3 (this will be the last release with 2.9 support).  Based on Casbah 2.7.0.</p>
 
-<pre><code>"com.novus" %% "salat" % "1.9.5"
+<pre><code>"com.novus" %% "salat" % "1.9.7"
 </code></pre>
 
-<p><a href="http://notes.implicit.ly/post/73549426765/salat-1-9-5">Release Notes</a></p>
+<p><a href="https://github.com/novus/salat/blob/master/notes/1.9.7.markdown">Release Notes</a></p>
 
 <h2>
 <a name="snapshot" class="anchor" href="#snapshot"><span class="octicon octicon-link"></span></a>Snapshot</h2>
 
-<p><a href="http://travis-ci.org/novus/salat"><img src="https://secure.travis-ci.org/novus/salat.png" alt="Build Status"></a>  Available for Scala 2.10 and 2.9.2. Based on Casbah 2.6.4.</p>
+<p><a href="http://travis-ci.org/novus/salat"><img src="https://secure.travis-ci.org/novus/salat.png" alt="Build Status"></a>  Available for Scala 2.10. Based on Casbah 2.7.0.</p>
 
-<pre><code>"com.novus" %% "salat" % "1.9.6-SNAPSHOT"
+<pre><code>"com.novus" %% "salat" % "1.9.8-SNAPSHOT"
 </code></pre>
 
 <p>If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:</p>
@@ -79,10 +80,31 @@
 <pre><code>resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 </code></pre>
 
-<p><a href="https://github.com/novus/salat/blob/master/notes/1.9.5.markdown">Release Notes (In Progress)</a></p>
+<p><a href="https://github.com/novus/salat/blob/master/notes/1.9.8.markdown">Release Notes (In Progress)</a></p>
 
 <h2>
-<a name="legacy-support-for-scala-281--based-on-casbah-215-1" class="anchor" href="#legacy-support-for-scala-281--based-on-casbah-215-1"><span class="octicon octicon-link"></span></a>Legacy support for Scala 2.8.1.  Based on Casbah 2.1.5-1.</h2>
+<a name="legacy-support" class="anchor" href="#legacy-support"><span class="octicon octicon-link"></span></a>Legacy support</h2>
+
+<h3>
+<a name="scala-293" class="anchor" href="#scala-293"><span class="octicon octicon-link"></span></a>Scala 2.9.3</h3>
+
+<p>Based on Casbah 2.7.0.</p>
+
+<pre><code>"com.novus" %% "salat" % "1.9.7"
+</code></pre>
+
+<h3>
+<a name="scala-292" class="anchor" href="#scala-292"><span class="octicon octicon-link"></span></a>Scala 2.9.2</h3>
+
+<p>Based on Casbah 2.6.4.</p>
+
+<pre><code>"com.novus" %% "salat" % "1.9.5"
+</code></pre>
+
+<h3>
+<a name="scala-281" class="anchor" href="#scala-281"><span class="octicon octicon-link"></span></a>Scala 2.8.1</h3>
+
+<p>Based on Casbah 2.1.5-1.</p>
 
 <pre><code>"com.novus" %% "salat" % "0.0.8"
 </code></pre>
@@ -136,15 +158,11 @@
 </ul>
       </section>
     </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Salat maintained by <a href="https://github.com/novus">novus</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
+    <footer>
+      <p>Project maintained by <a href="https://github.com/novus">novus</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
               <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
@@ -155,7 +173,6 @@
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
-
 
   </body>
 </html>
