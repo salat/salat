@@ -20,27 +20,41 @@ Salat publishes snapshots and releases to OSS Sontatype.
 
 Please remove all references to `repo.novus.com` from your build files.  After 0.0.8, Salat will be hosted exclusively by Sonatype.
 
+## Scala 2.11 support
+
+_Pending Casbah release built for 2.11_
+
 ## Stable Release
 
-Available for Scala 2.10, 2.9.3, and 2.9.2.  Based on Casbah 2.6.4.
+Available for Scala 2.10, 2.9.3, and 2.9.2.  Based on Casbah 2.7.0.
 
-    "com.novus" %% "salat" % "1.9.6"
+    "com.novus" %% "salat" % "1.9.7"
 
-[Release Notes](http://notes.implicit.ly/post/73549426765/salat-1-9-5)
+[Release Notes](https://github.com/novus/salat/blob/master/notes/1.9.7.markdown)
 
 ## Snapshot
 
-[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.10 and 2.9.2. Based on Casbah 2.7.0.
+[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.10. Based on Casbah 2.7.0.
 
-    "com.novus" %% "salat" % "1.9.7-SNAPSHOT"
+    "com.novus" %% "salat" % "1.9.8-SNAPSHOT"
 
 If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
     resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-[Release Notes (In Progress)](https://github.com/novus/salat/blob/master/notes/1.9.5.markdown)
+[Release Notes (In Progress)](https://github.com/novus/salat/blob/master/notes/1.9.8.markdown)
 
-## Legacy support for Scala 2.8.1.  Based on Casbah 2.1.5-1.
+## Legacy support
+
+### Scala 2.9.x.
+
+Available for Scala 2.9.3 and 2.9.2.  Based on Casbah 2.7.0.
+
+    "com.novus" %% "salat" % "1.9.7"
+
+### Scala 2.8.1
+
+Based on Casbah 2.1.5-1.
 
     "com.novus" %% "salat" % "0.0.8"
 

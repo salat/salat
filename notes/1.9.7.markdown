@@ -1,0 +1,4 @@
+Salat 1.9.7 is a bugfix release:
+
+- upgrade Casbah dependency to 2.7.0
+- fix bug where JSON context specified null values should be output, but JSON serialization was sometimes omitting nulls
