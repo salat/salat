@@ -26,7 +26,7 @@ _Pending Casbah release built for 2.11_
 
 ## Stable Release
 
-Available for Scala 2.10, 2.9.3, and 2.9.2.  Based on Casbah 2.7.0.
+Available for Scala 2.10 and 2.9.3 (this will be the last release with 2.9 support).  Based on Casbah 2.7.0.
 
     "com.novus" %% "salat" % "1.9.7"
 
@@ -46,11 +46,17 @@ If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
 ## Legacy support
 
-### Scala 2.9.x.
+### Scala 2.9.3
 
-Available for Scala 2.9.3 and 2.9.2.  Based on Casbah 2.7.0.
+Based on Casbah 2.7.0.
 
     "com.novus" %% "salat" % "1.9.7"
+
+### Scala 2.9.2
+
+Based on Casbah 2.6.4.
+
+    "com.novus" %% "salat" % "1.9.5"
 
 ### Scala 2.8.1
 
