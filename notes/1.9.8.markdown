@@ -1,0 +1,3 @@
+Salat 1.9.7 is a bugfix release:
+
+- TODO
