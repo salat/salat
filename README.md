@@ -22,7 +22,7 @@ Please remove all references to `repo.novus.com` from your build files.  After 0
 
 ## Scala 2.11 support
 
-_Pending Casbah release built for 2.11_
+_Pending Casbah release built for 2.11_ [ETA 23 April 2014](https://groups.google.com/forum/#!topic/mongodb-casbah-users/KtxWk-XpCcM)
 
 ## Stable Release
 
