@@ -64,7 +64,7 @@ class CustomTransformerSpec extends SalatSpec {
       val dbo = grater[FooListBar].asDBObject(foo)
       dbo should haveEntry("_t" -> foo.getClass.getName)
       dbo must haveField("bar")
-      dbo.getAsOrElse[MongoDBList]("bar", DBList.empty) must haveTheSameElementsAs(List(Some("b1"), Some("b2")))
+      dbo.getAsOrElse[MongoDBList]("bar", DBList.empty).toList must_== List(Some("b1"), Some("b2"))
       dbo should haveEntry("baz._t" -> baz.getClass.getName)
       dbo should haveEntry("baz.a" -> 1)
       dbo should haveEntry("baz.b" -> 3.14)

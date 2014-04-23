@@ -18,12 +18,6 @@ Your model there and back again should just work.
 
 Salat publishes snapshots and releases to OSS Sontatype.
 
-Please remove all references to `repo.novus.com` from your build files.  After 0.0.8, Salat will be hosted exclusively by Sonatype.
-
-## Scala 2.11 support
-
-_Pending Casbah release built for 2.11_ [ETA 23 April 2014](https://groups.google.com/forum/#!topic/mongodb-casbah-users/KtxWk-XpCcM)
-
 ## Stable Release
 
 Available for Scala 2.10 and 2.9.3 (this will be the last release with 2.9 support).  Based on Casbah 2.7.0.
@@ -34,17 +28,19 @@ Available for Scala 2.10 and 2.9.3 (this will be the last release with 2.9 suppo
 
 ## Snapshot
 
-[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.10. Based on Casbah 2.7.0.
+[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1-SNAPSHOT.  Once Casbah 2.7.1 is released, I will release Salat 1.9.8.
 
     "com.novus" %% "salat" % "1.9.8-SNAPSHOT"
-
-If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
-
-    resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 [Release Notes (In Progress)](https://github.com/novus/salat/blob/master/notes/1.9.8.markdown)
 
 ## Legacy support
+
+Please remove all references to `repo.novus.com` from your build files.  After 0.0.8, Salat will be hosted exclusively by Sonatype.
+
+If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
+
+    resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 ### Scala 2.9.3
 

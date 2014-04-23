@@ -1,3 +1,4 @@
-Salat 1.9.7 is a bugfix release:
+Features in Salat 1.9.8 include:
 
-- TODO
+- Provisional Scala 2.11.0 support, based on Casbah 2.7.1-SNAPSHOT
+  - TODO: update to Casbah 2.7.1 final when it is released

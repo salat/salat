@@ -27,7 +27,7 @@ package com.novus.salat
 
 import java.lang.annotation.Annotation
 import java.lang.reflect.AnnotatedElement
-import scala.annotation.target.getter
+import scala.annotation.meta.getter
 
 package object annotations {
   type Key = com.novus.salat.annotations.raw.Key @getter
