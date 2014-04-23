@@ -97,10 +97,10 @@ class ModelCompanionSpec extends SalatSpec {
 
       "save" in new myModelScope {
         MyModel.insert(m) must beSome(_id)
-        val z_* = 0d :: z
+        val z_* : List[Double] = 0d :: z
         MyModel.save(m.copy(z = z_*))
         val m_* = MyModel.findOneById(_id)
-        m_*.map(_.z) must beSome(z_*)
+        m_*.map(_.z).getOrElse(List.empty[Double]) must_== z_*
       }
 
       "update" in new myModelScope {
