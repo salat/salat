@@ -20,17 +20,15 @@ Salat publishes snapshots and releases to OSS Sontatype.
 
 ## Stable Release
 
-Available for Scala 2.10 and 2.9.3 (this will be the last release with 2.9 support).  Based on Casbah 2.7.0.
+Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
 
-    "com.novus" %% "salat" % "1.9.7"
+    "com.novus" %% "salat" % "1.9.8-SNAPSHOT"
 
-[Release Notes](https://github.com/novus/salat/blob/master/notes/1.9.7.markdown)
+[Release Notes](https://github.com/novus/salat/blob/master/notes/1.9.8.markdown)
 
 ## Snapshot
 
-[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)  Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1-SNAPSHOT.  Once Casbah 2.7.1 is released, I will release Salat 1.9.8.
-
-    "com.novus" %% "salat" % "1.9.8-SNAPSHOT"
+[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)
 
 [Release Notes (In Progress)](https://github.com/novus/salat/blob/master/notes/1.9.8.markdown)
 

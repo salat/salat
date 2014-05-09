@@ -1,4 +1,3 @@
-Features in Salat 1.9.8 include:
+Salat 1.9.8 is a maintenance release that provides:
 
-- Provisional Scala 2.11.0 support, based on Casbah 2.7.1-SNAPSHOT
-  - TODO: update to Casbah 2.7.1 final when it is released
+- Scala 2.11.0 support, based on Casbah 2.7.1

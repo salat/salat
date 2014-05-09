@@ -69,7 +69,7 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "1.9.8-SNAPSHOT"
+  val buildVersion = "1.9.8"
   val buildScalaVersion = "2.11.0"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
@@ -148,7 +148,7 @@ object Publish {
 object Dependencies {
 
   private val LogbackVersion = "1.0.9"
-  private val CasbahVersion = "2.7.1-SNAPSHOT"
+  private val CasbahVersion = "2.7.1"
 
   val specs2 = "org.specs2" %% "specs2" % "2.3.11" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
