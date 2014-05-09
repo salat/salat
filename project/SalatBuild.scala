@@ -69,7 +69,7 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "1.9.8"
+  val buildVersion = "1.9.9-SNAPSHOT"
   val buildScalaVersion = "2.11.0"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
@@ -117,7 +117,8 @@ object Format {
 }
 
 object Publish {
-  lazy val settings = Seq(
+
+  lazy val settings = xerial.sbt.Sonatype.sonatypeSettings ++ Seq(
     publishMavenStyle := true,
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
