@@ -143,7 +143,7 @@ object Publish {
           <url>http://github.com/rktoomey</url>
         </developer>
       </developers>)
-  )
+  ) ++ scoverage.ScoverageSbtPlugin.instrumentSettings
 }
 
 object Dependencies {
