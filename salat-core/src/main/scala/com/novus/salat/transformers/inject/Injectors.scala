@@ -518,8 +518,9 @@ package in {
       }
 
       (strategy, value) match {
-        case (EnumStrategy.BY_VALUE, name: String) => withName.invoke(companion, name)
-        case (EnumStrategy.BY_ID, id: Int)         => applyInt.invoke(companion, id.asInstanceOf[Integer])
+        case (EnumStrategy.BY_VALUE, name: String)       => withName.invoke(companion, name)
+        case (EnumStrategy.BY_VALUE, Some(name: String)) => withName.invoke(companion, name)
+        case (EnumStrategy.BY_ID, id: Int)               => applyInt.invoke(companion, id.asInstanceOf[Integer])
         case (EnumStrategy.BY_ID, idAsString: String) => idAsString match {
           case s: String if s != null && s.nonEmpty => try {
             applyInt.invoke(companion, s.toInt.asInstanceOf[Integer])
