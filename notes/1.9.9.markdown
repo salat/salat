@@ -1,3 +1,4 @@
-Salat 1.9.8 is a maintenance release that provides:
+Salat 1.9.9 is a maintenance release that provides:
 
-- TODO
+- Bugfix to support optional Enums (thanks to [Konstantin Abakumov](https://github.com/rusabakumov))
+- Bugfix to address default argument for `ObjectId` when deserializing JSON (thanks to [Alex Wajda](https://github.com/wajda))
