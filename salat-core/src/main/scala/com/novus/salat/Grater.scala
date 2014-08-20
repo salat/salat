@@ -405,14 +405,14 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   }
 
   def defaultArg(field: SField): DefaultArg = {
-    if (field.name == "_id") {
-      DefaultArg(clazz, field, Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)).invoke(ca.companionObject)))
+    // always invoke default methods typed to object id
+    if (field.tf.isOid) {
+      DefaultArg(clazz, field, Some(ca.companionClass.getMethod(s"apply$$default$$${field.idx + 1}").invoke(ca.companionObject)))
     }
     else if (betterDefaults.contains(field)) {
       betterDefaults(field)
     }
-    else sys.error("Grater error: clazz='%s' field '%s' needs to register presence or absence of default values".
-      format(clazz, field.name))
+    else sys.error(s"Grater error: clazz='$clazz' field '${field.name}' needs to register presence or absence of default values")
   }
 
   protected[salat] def safeDefault(field: SField) = {
