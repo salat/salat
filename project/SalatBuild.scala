@@ -69,7 +69,7 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "1.9.9"
+  val buildVersion = "2.0.0-SNAPSHOT"
   val buildScalaVersion = "2.11.2"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
