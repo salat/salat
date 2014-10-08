@@ -10,7 +10,7 @@ import org.specs2.mutable.Specification
  */
 class JsonDefaultValuesSpec extends Specification with Logging with JsonMatchers {
 
-  "JSON support" should {
+  "JSON support with default arg suppression disabled (the default)" should {
     "evaluate default constructor argument when corresponding JSON property is missing" in {
 
       val deserializedObj1 = grater[Probe].fromJSON("{}")
