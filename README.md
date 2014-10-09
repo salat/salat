@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/novus/salat.png?label=ready&title=Ready)](https://waffle.io/novus/salat)
 # Salat
 
 Salat is a simple serialization library for case classes.
