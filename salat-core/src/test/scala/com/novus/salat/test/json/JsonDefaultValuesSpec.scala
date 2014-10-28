@@ -32,8 +32,20 @@ class JsonDefaultValuesSpec extends Specification with Logging with JsonMatchers
       val result = grater[ChildProbe].toCompactJSON(child)
       result must not(throwA[NoSuchMethodException]) and beAnInstanceOf[String]
     }
+    "serialize instances with Optional ObjectId fields that do not have default values" in {
+      val child = ChildProbeParentOptional(id = new ObjectId, parent = None)
+      val result = grater[ChildProbeParentOptional].toCompactJSON(child)
+      result must not(throwA[NoSuchMethodException]) and beAnInstanceOf[String]
+    }
+    "serialize instances with lists of ObjectIds that do not have default values" in {
+      val child = ChildProbeManyParents(id = new ObjectId, parents = Nil)
+      val result = grater[ChildProbeManyParents].toCompactJSON(child)
+      result must not(throwA[NoSuchMethodException]) and beAnInstanceOf[String]
+    }
   }
 }
 
 case class Probe(id: ObjectId = new ObjectId())
 case class ChildProbe(id: ObjectId, parent: ObjectId)
+case class ChildProbeParentOptional(id: ObjectId, parent: Option[ObjectId])
+case class ChildProbeManyParents(id: ObjectId, parents: List[ObjectId])

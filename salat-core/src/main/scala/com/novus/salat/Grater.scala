@@ -404,10 +404,16 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       }
   }
 
+  private def defaultValueInitializerName(idx: Int) = s"""apply$$default$$${idx}"""
+  private def methodExists(name: String) = ca.companionClass.getMethods.exists(m => m.getName.equals(name))
+
   def defaultArg(field: SField): DefaultArg = {
+
+    val companionObjFieldInitializer = defaultValueInitializerName(field.idx + 1)
+
     // always invoke default methods typed to object id
-    if (field.tf.isOid) {
-      DefaultArg(clazz, field, Some(ca.companionClass.getMethod(s"apply$$default$$${field.idx + 1}").invoke(ca.companionObject)))
+    if (field.tf.isOid && methodExists(companionObjFieldInitializer)) {
+      DefaultArg(clazz, field, Some(ca.companionClass.getMethod(companionObjFieldInitializer).invoke(ca.companionObject)))
     }
     else if (betterDefaults.contains(field)) {
       betterDefaults(field)
@@ -422,13 +428,19 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
   protected[salat] lazy val betterDefaults = {
     val builder = Map.newBuilder[SField, DefaultArg]
     for (field <- indexedFields.filterNot(_.name == "_id")) {
-      val defaultMethod = try {
+
+      val companionObjFieldInitializer = defaultValueInitializerName(field.idx + 1)
+
+      val defaultMethod = if (methodExists(companionObjFieldInitializer)) {
         // Some(null) is actually "desirable" here because it allows using null as a default value for an ignored field
-        Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)).invoke(ca.companionObject))
+        try {
+          Some(ca.companionClass.getMethod(companionObjFieldInitializer).invoke(ca.companionObject))
+        }
+        catch {
+          case ex: ReflectiveOperationException => None // Indicates no default value was supplied
+        }
       }
-      catch {
-        case _: Throwable => None // indicates no default value was supplied
-      }
+      else None
 
       builder += field -> DefaultArg(clazz, field, defaultMethod)
     }
