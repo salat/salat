@@ -68,11 +68,11 @@ object BuildSettings {
 
   import Repos._
 
-  val buildOrganization = "com.novus"
+  val buildOrganization = "com.github.salat"
   val buildVersion = "2.0.0-SNAPSHOT"
   val buildScalaVersion = "2.11.4"
 
-  val buildSettings = Defaults.defaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
+  val buildSettings = Defaults.coreDefaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
@@ -119,19 +119,22 @@ object Publish {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
     licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-    homepage := Some(url("https://github.com/novus/salat")),
-    pomExtra := (
-      <scm>
-        <url>git://github.com/novus/salat.git</url>
-        <connection>scm:git://github.com/novus/salat.git</connection>
-      </scm>
+    homepage := Some(url("https://github.com/salat/salat")),
+    pomExtra := <scm>
+      <url>git://github.com/salat/salat.git</url>
+      <connection>scm:git://github.com/salat/salat.git</connection>
+    </scm>
       <developers>
         <developer>
           <id>rktoomey</id>
           <name>Rose Toomey</name>
           <url>http://github.com/rktoomey</url>
         </developer>
-      </developers>)
+        <developer>
+          <id>Noah Zucker</id>
+          <url>https://github.com/noahlz</url>
+        </developer>
+      </developers>
   )
 }
 
