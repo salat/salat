@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2015 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         JsonSpec.scala
- * Last modified: 2013-02-25 21:07:26 EST
+ * Last modified: 2015-06-23 20:48:17 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.github.salat.test.json
 
