@@ -1,6 +1,6 @@
 package com.novus.salat.test
 
-import com.novus.salat.{TypeHintFrequency, StringTypeHintStrategy, Context}
+import com.novus.salat.{Context, StringTypeHintStrategy, TypeHintFrequency}
 
 package object custom {
   implicit val ctx = new Context() {

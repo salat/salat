@@ -24,19 +24,13 @@
 
 package com.novus.salat
 
-import com.novus.salat._
-import com.novus.salat.util._
-import scala.tools.scalap.scalax.rules.scalasig._
+import java.lang.reflect.{Constructor, Method}
+
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
-import java.lang.reflect.{Constructor, Method}
-import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
-import scala.tools.scalap.scalax.rules.scalasig.MethodSymbol
-import com.novus.salat.util.MissingExpectedType
-import com.novus.salat.util.MissingPickledSig
-import scala.Some
-import scala.tools.scalap.scalax.rules.scalasig.PolyType
-import scala.tools.scalap.scalax.rules.scalasig.NullaryMethodType
+import com.novus.salat.util.{MissingExpectedType, MissingPickledSig, _}
+
+import scala.tools.scalap.scalax.rules.scalasig.{MethodSymbol, NullaryMethodType, PolyType, TypeRefType, _}
 
 object ClassAnalyzer extends Logging {
 
@@ -129,8 +123,8 @@ object ClassAnalyzer extends Logging {
 }
 
 case class ClassAnalyzer[A](
-  clazz:        Class[A],
-  classLoaders: Iterable[ClassLoader] = ClassAnalyzer.ClassLoaders
+    clazz:        Class[A],
+    classLoaders: Iterable[ClassLoader] = ClassAnalyzer.ClassLoaders
 ) extends Logging {
 
   import ClassAnalyzer._

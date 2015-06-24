@@ -25,8 +25,9 @@
 
 package com.novus.salat.test
 
-import org.joda.time.{DateTimeZone, Period, DateTime}
-import org.joda.time.format.{PeriodFormatterBuilder, PeriodFormat}
+import org.joda.time.format.{PeriodFormat, PeriodFormatterBuilder}
+import org.joda.time.{DateTime, DateTimeZone, Period}
+
 import scala.collection.mutable.ArrayBuffer
 
 object RichDuration {

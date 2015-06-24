@@ -25,8 +25,9 @@
 
 package com.novus.salat
 
-import com.novus.salat.util.Logging
 import java.math.{BigInteger, MathContext}
+
+import com.novus.salat.util.Logging
 
 sealed trait BigDecimalStrategy extends Logging {
 

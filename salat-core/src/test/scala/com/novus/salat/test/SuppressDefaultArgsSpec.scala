@@ -25,13 +25,10 @@
 
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.commons.MongoDBList
 import com.novus.salat._
 import com.novus.salat.test.model._
-import com.mongodb.casbah.Imports._
-import org.specs2.mutable._
-import org.specs2.specification.Scope
-import com.novus.salat.util.MapPrettyPrinter
-import com.mongodb.casbah.commons.MongoDBList
 
 class SuppressDefaultArgsSpec extends SalatSpec {
 

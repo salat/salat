@@ -24,10 +24,10 @@
  */
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.annotations._
 import com.novus.salat.test.model._
-import com.mongodb.casbah.Imports._
 
 class EnumSupportSpec extends SalatSpec {
 

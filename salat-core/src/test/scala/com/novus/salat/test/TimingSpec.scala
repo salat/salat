@@ -24,18 +24,18 @@
  */
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
-import scala.collection.mutable.ArrayBuffer
-import scala.math.{BigDecimal => ScalaBigDecimal}
-
-import org.specs2.mutable._
+import com.novus.salat.util.Logging
 import org.apache.commons.lang.RandomStringUtils.{randomAscii => rs}
 import org.apache.commons.lang.math.RandomUtils.{nextInt => rn}
-import com.novus.salat.util.Logging
-import org.specs2.execute.{Success, PendingUntilFixed}
-import com.mongodb.casbah.Imports._
+import org.specs2.execute.{PendingUntilFixed, Success}
+import org.specs2.mutable._
+
+import scala.collection.mutable.ArrayBuffer
+import scala.math.{BigDecimal => ScalaBigDecimal}
 
 class TimingSpec extends Specification with PendingUntilFixed with Logging {
 

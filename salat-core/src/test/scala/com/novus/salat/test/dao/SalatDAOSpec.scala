@@ -24,15 +24,12 @@
  */
 package com.novus.salat.test.dao
 
-import com.novus.salat.test._
-import com.novus.salat._
-import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
-import org.specs2.specification.Scope
-import com.novus.salat.util.MapPrettyPrinter
-import org.specs2.matcher.MustExpectable._
 import com.mongodb.casbah.commons.MongoDBObject
-import com.mongodb.DBObject
+import com.novus.salat._
+import com.novus.salat.test._
+import com.novus.salat.test.global._
+import org.specs2.specification.Scope
 
 class SalatDAOSpec extends SalatSpec {
 

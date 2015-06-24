@@ -30,12 +30,11 @@ package com.novus.salat.test.model
 import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.annotations._
-import org.joda.time._
+import org.joda.time.{DateTime, DateTimeZone, LocalDateTime}
+
 import scala.collection.immutable.{Map => IMap}
 import scala.collection.mutable.{Map => MMap}
 import scala.math.{BigDecimal => ScalaBigDecimal}
-import com.mongodb.casbah.Imports._
-import org.joda.time.{DateTimeZone, DateTime, LocalDateTime}
 
 case class Alice(x: String, y: Option[String] = Some("default y"), z: Basil)
 case class Basil(p: Option[Int], q: Int = 1067, r: Clara)

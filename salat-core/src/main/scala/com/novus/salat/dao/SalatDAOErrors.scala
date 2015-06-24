@@ -24,8 +24,8 @@
  */
 package com.novus.salat.dao
 
-import com.mongodb.{DBObject, WriteConcern}
 import com.mongodb.casbah.TypeImports._
+import com.mongodb.{DBObject, WriteConcern}
 
 abstract class SalatDAOError(
   whichDAO:        String,

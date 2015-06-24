@@ -24,11 +24,13 @@
  */
 package com.novus.salat.test
 
+import java.math.{MathContext, RoundingMode}
+
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
-import com.mongodb.casbah.Imports._
-import java.math.{RoundingMode, MathContext}
+
 import scala.math.{BigDecimal => ScalaBigDecimal}
 
 class BigDecimalPrecisionTest extends SalatSpec {

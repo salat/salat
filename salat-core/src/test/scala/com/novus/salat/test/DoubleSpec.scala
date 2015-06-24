@@ -1,9 +1,9 @@
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
-import com.mongodb.casbah.Imports._
 
 class DoubleSpec extends SalatSpec {
   "Salat" should {

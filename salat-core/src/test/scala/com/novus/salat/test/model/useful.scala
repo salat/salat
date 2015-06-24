@@ -25,8 +25,8 @@
 
 package com.novus.salat.test.model
 
-import org.joda.time.{DateTimeZone, DateTime}
 import org.joda.time.DateTimeConstants._
+import org.joda.time.{DateTime, DateTimeZone}
 
 object useful {
   val TestString = "Test"

@@ -25,9 +25,10 @@
 package com.novus.salat.transformers
 
 import com.novus.salat._
-import com.novus.salat.transformers.in.{MapInjector, TraversableInjector, OptionInjector}
-import com.novus.salat.transformers.out.{MapExtractor, TraversableExtractor, OptionExtractor}
+import com.novus.salat.transformers.in.{MapInjector, OptionInjector, TraversableInjector}
+import com.novus.salat.transformers.out.{MapExtractor, OptionExtractor, TraversableExtractor}
 import com.novus.salat.util.Logging
+
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
 object `package` {

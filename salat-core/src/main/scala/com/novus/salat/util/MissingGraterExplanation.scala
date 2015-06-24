@@ -24,9 +24,10 @@
  */
 package com.novus.salat.util
 
-import com.novus.salat._
 import java.lang.reflect.Modifier
+
 import com.mongodb.casbah.commons.Imports._
+import com.novus.salat._
 
 object MissingGraterExplanation extends Logging {
 

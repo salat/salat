@@ -24,11 +24,13 @@
  */
 package com.novus.salat
 
+import java.lang.reflect.Method
+
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
 import com.novus.salat.transformers._
 import com.novus.salat.util.Logging
-import java.lang.reflect.Method
+
 import scala.tools.scalap.scalax.rules.scalasig._
 
 object Field {
@@ -56,12 +58,12 @@ object Field {
 }
 
 sealed abstract class Field(
-  val idx:         Int,
-  val name:        String,
-  val typeRefType: TypeRefType,
-  val in:          Transformer,
-  val out:         Transformer,
-  val ignore:      Boolean
+    val idx:         Int,
+    val name:        String,
+    val typeRefType: TypeRefType,
+    val in:          Transformer,
+    val out:         Transformer,
+    val ignore:      Boolean
 )(implicit val ctx: Context) extends Logging {
 
   def in_!(value: Any) = {

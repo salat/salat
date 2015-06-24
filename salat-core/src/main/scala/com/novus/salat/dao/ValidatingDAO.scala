@@ -25,10 +25,9 @@
 
 package com.novus.salat.dao
 
-import com.mongodb.casbah.Imports._
-import scala.Right
-import com.novus.salat.Context
 import com.mongodb
+import com.mongodb.casbah.Imports._
+import com.novus.salat.Context
 
 case class ValidationError[T](t: T, iter: Iterable[Throwable]) extends Error(
   """

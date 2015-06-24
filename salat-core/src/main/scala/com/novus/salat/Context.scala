@@ -24,15 +24,16 @@
  */
 package com.novus.salat
 
+import java.lang.reflect.Modifier
+import java.util.concurrent.ConcurrentHashMap
+
 import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations.util._
 import com.novus.salat.json.JSONConfig
+import com.novus.salat.transformers.CustomTransformer
 import com.novus.salat.util._
 import com.novus.salat.{Field => SField}
-import java.lang.reflect.Modifier
-import java.util.concurrent.ConcurrentHashMap
 import org.json4s.JsonAST.JObject
-import com.novus.salat.transformers.CustomTransformer
 
 trait Context extends ContextLifecycle with Logging {
 

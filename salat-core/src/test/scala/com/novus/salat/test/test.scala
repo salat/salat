@@ -26,6 +26,7 @@ package com.novus.salat
 
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
+
 import scala.collection.immutable.{Map => IMap}
 import scala.collection.mutable.{Map => MMap}
 import scala.math.{BigDecimal => ScalaBigDecimal}
@@ -52,9 +53,9 @@ package object test {
       Clara(Seq("l1", "l2"), List(1, 2), List(
         Desmond(
           IMap(
-          "foo1" -> Alice("foo", None, Basil(p = None, r = Clara(m = Nil, n = Nil))),
-          "baz1" -> Alice("baz", Some("quux"), Basil(p = None, r = Clara(m = Nil, n = Nil)))
-        ),
+            "foo1" -> Alice("foo", None, Basil(p = None, r = Clara(m = Nil, n = Nil))),
+            "baz1" -> Alice("baz", Some("quux"), Basil(p = None, r = Clara(m = Nil, n = Nil)))
+          ),
           MMap("a1" -> 1, "c1" -> 2),
           Some(Basil(
             None, 24, Clara(

@@ -24,10 +24,12 @@
  */
 package com.novus.salat.util
 
-import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 import java.lang.reflect.{ParameterizedType, Type}
-import com.novus.salat.{DefaultArg, ConcreteGrater, Field => SField}
-import scala.reflect.{Manifest, ClassManifest}
+
+import com.novus.salat.{ConcreteGrater, DefaultArg, Field => SField}
+
+import scala.reflect.Manifest
+import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
 object FieldPrettyPrinter {
   // scala transliteration of java.lang.reflect.Field.getTypeName 

@@ -26,9 +26,9 @@ package com.novus.salat.dao
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoCursorBase
+import com.mongodb.casbah.commons.{Logging, MongoDBObject}
+import com.mongodb.{DBObject, WriteConcern}
 import com.novus.salat._
-import com.mongodb.casbah.commons.{MongoDBObject, Logging}
-import com.mongodb.{WriteConcern, DBObject}
 
 /**
  * Sample DAO implementation.

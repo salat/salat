@@ -24,11 +24,10 @@
  */
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.test.always._
 import com.novus.salat.test.model._
-import com.mongodb.casbah.Imports._
-import com.novus.salat.util.MapPrettyPrinter
 
 class CaseObjectSupport extends SalatSpec {
   "a grater" should {

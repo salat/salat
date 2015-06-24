@@ -25,11 +25,11 @@
 
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.test.global._
-import com.mongodb.casbah.Imports._
 import com.novus.salat.test.model._
-import org.specs2.execute.{Success, PendingUntilFixed}
+import org.specs2.execute.PendingUntilFixed
 
 class ProxySpec extends SalatSpec with PendingUntilFixed {
   "a proxy grater" should {

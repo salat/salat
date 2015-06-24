@@ -25,14 +25,14 @@
 
 package com.novus.salat.test.performance
 
-import com.novus.salat.test._
-import com.novus.salat.test.RichDuration._
-import com.novus.salat.util.Logging
 import com.mongodb.casbah.Imports._
-import org.specs2.mutable._
-import org.specs2.specification.Scope
 import com.novus.salat._
 import com.novus.salat.dao.SalatDAO
+import com.novus.salat.test.RichDuration._
+import com.novus.salat.util.Logging
+import org.specs2.mutable._
+import org.specs2.specification.Scope
+
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 

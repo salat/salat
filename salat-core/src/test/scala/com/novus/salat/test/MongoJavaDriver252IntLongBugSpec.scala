@@ -24,12 +24,11 @@
  */
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
+import com.mongodb.util.JSON.parse
 import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
-
-import com.mongodb.casbah.Imports._
-import com.mongodb.util.JSON.parse
 
 class MongoJavaDriver252IntLongBugSpec extends SalatSpec {
   "mongo-java-driver 2.5.2" should {

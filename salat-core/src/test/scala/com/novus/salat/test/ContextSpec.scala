@@ -24,12 +24,9 @@
  */
 package com.novus.salat.test
 
-import com.novus.salat.test.model._
-import com.novus.salat._
 import com.mongodb.casbah.Imports._
-import com.novus.salat.util.GraterGlitch
-import java.lang.reflect.Modifier
-import org.specs2.specification.Scope
+import com.novus.salat._
+import com.novus.salat.test.model._
 
 class ContextSpec extends SalatSpec {
 
@@ -334,8 +331,8 @@ class ContextSpec extends SalatSpec {
 
   "The context" should {
     "support suppressing default args" in {
-      import com.novus.salat.test.model.suppress_default_args._
       import com.novus.salat.test.model.sda._
+      import com.novus.salat.test.model.suppress_default_args._
       grater[Bar].asDBObject(Bar()) must beEmpty
     }
   }

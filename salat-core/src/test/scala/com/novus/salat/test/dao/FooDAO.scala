@@ -25,14 +25,12 @@
 
 package com.novus.salat.test.dao
 
-import com.novus.salat.annotations._
-import org.bson.types.ObjectId
-import com.novus.salat.{TypeHintFrequency, StringTypeHintStrategy, Context}
-import com.novus.salat.dao.{ConcreteSubclassDAO, SalatDAO}
 import com.mongodb.casbah.Imports._
-import com.novus.salat.StringTypeHintStrategy
+import com.novus.salat.annotations._
+import com.novus.salat.dao.{ConcreteSubclassDAO, SalatDAO}
 import com.novus.salat.test._
-import com.novus.salat.StringTypeHintStrategy
+import com.novus.salat.{Context, StringTypeHintStrategy, TypeHintFrequency}
+import org.bson.types.ObjectId
 
 package object when_necessary {
   implicit val ctx = new Context {

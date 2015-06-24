@@ -24,21 +24,19 @@
  */
 package com.novus.salat
 
-import scala.tools.scalap.scalax.rules.scalasig._
-import com.novus.salat.{Field => SField}
-
 import java.lang.reflect.{InvocationTargetException, Method}
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
-import com.novus.salat.util._
-
-import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
+import com.novus.salat.json.{FromJValue, ToJField}
+import com.novus.salat.util.{Logging, _}
+import com.novus.salat.{Field => SField}
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import com.novus.salat.json.{FromJValue, ToJField}
 import org.json4s.native.JsonParser
+
+import scala.tools.scalap.scalax.rules.scalasig._
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context

@@ -25,10 +25,9 @@
 
 package com.novus.salat.test.model
 
-import org.bson.types.ObjectId
 import com.novus.salat.annotations._
-import org.joda.time.{DateTimeZone, DateTime}
-import org.joda.time.DateTimeConstants._
+import org.bson.types.ObjectId
+import org.joda.time.{DateTime, DateTimeZone}
 
 // a reboot of test model using the Nearly Anacrophonic Phonetic Alphabet
 

@@ -25,8 +25,8 @@
 
 package com.novus.salat.test.model
 
-import com.novus.salat.annotations._
 import com.novus.salat.Context
+import com.novus.salat.annotations._
 
 package object suppress_default_args {
   implicit val ctx = new Context {

@@ -24,10 +24,8 @@
 
 package com.novus.salat.util
 
-import org.specs2.mutable.Specification
-
-import com.novus.salat.util._
 import com.novus.salat.util.model._
+import org.specs2.mutable.Specification
 
 class BestAvailableConstructorSpec extends Specification with Logging {
 

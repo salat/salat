@@ -1,10 +1,10 @@
 package com.novus.salat.test.json
 
-import org.specs2.mutable.Specification
+import com.novus.salat.json.StringTimeZoneStrategy
 import com.novus.salat.util.Logging
 import org.joda.time.DateTimeZone
-import com.novus.salat.json.StringTimeZoneStrategy
 import org.json4s.JsonAST.{JInt, JString}
+import org.specs2.mutable.Specification
 
 class TimeZoneStrategySpec extends Specification with Logging {
   val z = DateTimeZone.forID("US/Eastern")

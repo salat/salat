@@ -25,10 +25,10 @@
 package com.novus.salat.test.json
 
 import com.novus.salat._
+import com.novus.salat.json.{JSONConfig, StringDateStrategy}
 import org.joda.time.DateTimeConstants._
-import com.novus.salat.json.{StringDateStrategy, JSONConfig}
-import org.joda.time.{DateTimeZone, DateTime}
 import org.joda.time.format.ISODateTimeFormat
+import org.joda.time.{DateTime, DateTimeZone}
 
 object `package` {
 
