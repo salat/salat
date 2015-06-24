@@ -1,4 +1,4 @@
-[![Stories in Ready](https://badge.waffle.io/novus/salat.png?label=ready&title=Ready)](https://waffle.io/novus/salat)
+[![Stories in Ready](https://badge.waffle.io/salat/salat.png?label=ready&title=Ready)](https://waffle.io/salat/salat)
 # Salat
 
 Salat is a simple serialization library for case classes.
@@ -25,17 +25,17 @@ Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
 
     "com.novus" %% "salat" % "1.9.9"
 
-[Release Notes](https://github.com/novus/salat/blob/master/notes/1.9.9.markdown)
+[Release Notes](https://github.com/salat/salat/blob/master/notes/1.9.9.markdown)
 
 ## Snapshot
 
-[![Build Status](https://secure.travis-ci.org/novus/salat.png)](http://travis-ci.org/novus/salat)
+[![Build Status](https://secure.travis-ci.org/salat/salat.png)](http://travis-ci.org/salat/salat)
 
 Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
 
     "com.novus" %% "salat" % "2.0.0-SNAPSHOT"
 
-[Release Notes (In Progress)](https://github.com/novus/salat/blob/master/notes/2.0.0.markdown)
+[Release Notes (In Progress)](https://github.com/salat/salat/blob/master/notes/2.0.0.markdown)
 
 ## Legacy support
 
