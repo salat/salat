@@ -1,16 +1,39 @@
-out/
-.idea/
-.idea_modules/
+# build files
+/project/project
 target/
-reports/
-lib_managed/
-src_managed/
-project/boot/
-project/plugins/project
-java_pid*.hprof
-*.swp
-tags
+
+# hide IntelliJ files except shared Run Configurations
+!/.idea
+/.idea/*
+!/.idea/copyright
+
+/*.iml
+/out
+/.idea_modules
+/.classpath
+/.project
+/.settings
+
+/tmp
+/.history
+
+.DS_Store
+
+/tags
+
+*.sublime-workspace
 .ensime
-*.iml
-.history
-*~
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+.envrc
+prod.envrc
+dev.envrc
+
+# ignore IntelliJ scala worksheet files
+*.sc
+
+# CTAGS
+.tags
+.tags_sorted_by_file

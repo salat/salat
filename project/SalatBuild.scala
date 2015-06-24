@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2015 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-build
  * Class:         SalatBuild.scala
- * Last modified: 2013-01-07 22:28:16 EST
+ * Last modified: 2015-06-23 20:34:57 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 
 import sbt._
@@ -68,11 +71,11 @@ object BuildSettings {
 
   import Repos._
 
-  val buildOrganization = "com.novus"
+  val buildOrganization = "com.github.salat"
   val buildVersion = "2.0.0-SNAPSHOT"
-  val buildScalaVersion = "2.11.2"
+  val buildScalaVersion = "2.11.4"
 
-  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
+  val buildSettings = Defaults.coreDefaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
@@ -86,34 +89,23 @@ object BuildSettings {
   )
 }
 
-object Format {
+object Scalariform {
 
-  import com.typesafe.sbt.SbtScalariform._
+import com.typesafe.sbt.SbtScalariform._
+import scalariform.formatter.preferences._
 
-  lazy val settings = scalariformSettings ++ Seq(
-    ScalariformKeys.preferences := formattingPreferences
-  )
-
-  lazy val formattingPreferences = {
-    import scalariform.formatter.preferences._
-    FormattingPreferences().
+  val settings = scalariformSettings ++ Seq(
+    ScalariformKeys.preferences := FormattingPreferences().
+      setPreference(AlignArguments, true).
       setPreference(AlignParameters, true).
       setPreference(AlignSingleLineCaseStatements, true).
       setPreference(CompactControlReadability, true).
-      setPreference(CompactStringConcatenation, true).
       setPreference(DoubleIndentClassDeclaration, true).
       setPreference(FormatXml, true).
       setPreference(IndentLocalDefs, true).
-      setPreference(IndentPackageBlocks, true).
-      setPreference(IndentSpaces, 2).
-      setPreference(MultilineScaladocCommentsStartOnFirstLine, true).
-      setPreference(PreserveSpaceBeforeArguments, false).
-      setPreference(PreserveDanglingCloseParenthesis, false).
-      setPreference(RewriteArrowSymbols, false).
-      setPreference(SpaceBeforeColon, false).
-      setPreference(SpaceInsideBrackets, false).
-      setPreference(SpacesWithinPatternBinders, true)
-  }
+      setPreference(PreserveSpaceBeforeArguments, true). // otherwise scalatest DSL gets mangled
+      setPreference(SpacesAroundMultiImports, false) // this agrees with IntelliJ defaults
+  )
 }
 
 object Publish {
@@ -130,19 +122,22 @@ object Publish {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
     licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-    homepage := Some(url("https://github.com/novus/salat")),
-    pomExtra := (
-      <scm>
-        <url>git://github.com/novus/salat.git</url>
-        <connection>scm:git://github.com/novus/salat.git</connection>
-      </scm>
+    homepage := Some(url("https://github.com/salat/salat")),
+    pomExtra := <scm>
+      <url>git://github.com/salat/salat.git</url>
+      <connection>scm:git://github.com/salat/salat.git</connection>
+    </scm>
       <developers>
         <developer>
           <id>rktoomey</id>
           <name>Rose Toomey</name>
           <url>http://github.com/rktoomey</url>
         </developer>
-      </developers>)
+        <developer>
+          <id>Noah Zucker</id>
+          <url>https://github.com/noahlz</url>
+        </developer>
+      </developers>
   )
 }
 
@@ -167,26 +162,4 @@ object Repos {
   val typeSafeSnapsRepo = "Typesafe Snaps Repo" at "http://repo.typesafe.com/typesafe/snapshots/"
   val oss = "OSS Sonatype" at "http://oss.sonatype.org/content/repositories/releases/"
   val ossSnaps = "OSS Sonatype Snaps" at "http://oss.sonatype.org/content/repositories/snapshots/"
-}
-
-// Shell prompt which show the current project, git branch and build version
-object ShellPrompt {
-  object devnull extends ProcessLogger {
-    def info (s: => String) {}
-    def error (s: => String) { }
-    def buffer[T] (f: => T): T = f
-  }
-  def currBranch = (
-    ("git status -sb" lines_! devnull headOption)
-      getOrElse "-" stripPrefix "## "
-  )
-
-  val buildShellPrompt = {
-    (state: State) => {
-      val currProject = Project.extract (state).currentProject.id
-      "%s:%s:%s> ".format (
-        currProject, currBranch, BuildSettings.buildVersion
-      )
-    }
-  }
 }
