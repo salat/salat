@@ -101,13 +101,13 @@ Details are thin on the ground, but here's where we got started:
 - the source code for `scala.tools.scalap.scalax.rules.scalasig.ScalaSigParser`
 - SID # 10 (draft) - [Storage of pickled Scala signatures in class files][sid10]
 
-[types]: https://github.com/novus/salat/wiki/SupportedTypes
-[wiki]: https://github.com/novus/salat/wiki
+[types]: https://github.com/salat/salat/wiki/SupportedTypes
+[wiki]: https://github.com/salat/salat/wiki
 [casbah]: https://github.com/mongodb/casbah/
 [JSON4S]: http://json4s.org/
 [group]: http://groups.google.com/group/scala-salat
-[play-salat]: https://github.com/novus/salat/wiki/SalatWithPlay2
+[play-salat]: https://github.com/salat/salat/wiki/SalatWithPlay2
 [play-salat-plugin]: https://github.com/leon/play-salat
 [sid10]: http://www.scala-lang.org/sid/10
-[typehint]: https://github.com/novus/salat/wiki/TypeHints
-[collections]: https://github.com/novus/salat/wiki/Collections
+[typehint]: https://github.com/salat/salat/wiki/TypeHints
+[collections]: https://github.com/salat/salat/wiki/Collections
