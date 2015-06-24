@@ -23,8 +23,8 @@
  */
 package com.novus.salat
 
-import scala.math.{ BigDecimal => SBigDecimal, BigInt }
-import tools.scalap.scalax.rules.scalasig.{ TypeRefType, Type, Symbol }
+import scala.math.{BigDecimal => SBigDecimal, BigInt}
+import tools.scalap.scalax.rules.scalasig.{TypeRefType, Type, Symbol}
 
 protected[salat] object Types {
   val Date = "java.util.Date"

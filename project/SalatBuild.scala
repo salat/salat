@@ -69,7 +69,7 @@ object BuildSettings {
   val buildVersion = "1.9.10-SNAPSHOT"
   val buildScalaVersion = "2.11.2"
 
-  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
+  val buildSettings = Defaults.defaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
@@ -83,34 +83,23 @@ object BuildSettings {
   )
 }
 
-object Format {
+object Scalariform {
 
-  import com.typesafe.sbt.SbtScalariform._
+import com.typesafe.sbt.SbtScalariform._
+import scalariform.formatter.preferences._
 
-  lazy val settings = scalariformSettings ++ Seq(
-    ScalariformKeys.preferences := formattingPreferences
-  )
-
-  lazy val formattingPreferences = {
-    import scalariform.formatter.preferences._
-    FormattingPreferences().
+  val settings = scalariformSettings ++ Seq(
+    ScalariformKeys.preferences := FormattingPreferences().
+      setPreference(AlignArguments, true).
       setPreference(AlignParameters, true).
       setPreference(AlignSingleLineCaseStatements, true).
       setPreference(CompactControlReadability, true).
-      setPreference(CompactStringConcatenation, true).
       setPreference(DoubleIndentClassDeclaration, true).
       setPreference(FormatXml, true).
       setPreference(IndentLocalDefs, true).
-      setPreference(IndentPackageBlocks, true).
-      setPreference(IndentSpaces, 2).
-      setPreference(MultilineScaladocCommentsStartOnFirstLine, true).
-      setPreference(PreserveSpaceBeforeArguments, false).
-      setPreference(PreserveDanglingCloseParenthesis, false).
-      setPreference(RewriteArrowSymbols, false).
-      setPreference(SpaceBeforeColon, false).
-      setPreference(SpaceInsideBrackets, false).
-      setPreference(SpacesWithinPatternBinders, true)
-  }
+      setPreference(PreserveSpaceBeforeArguments, true). // otherwise scalatest DSL gets mangled
+      setPreference(SpacesAroundMultiImports, false) // this agrees with IntelliJ defaults
+  )
 }
 
 object Publish {

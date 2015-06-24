@@ -24,7 +24,8 @@
  */
 package com.novus.salat.util
 
-/** Helper class for running Salat with Android.
+/**
+ * Helper class for running Salat with Android.
  *  @param f function returning Any
  *  @param r function that takes an Either outcome as input and does something by side effect
  */

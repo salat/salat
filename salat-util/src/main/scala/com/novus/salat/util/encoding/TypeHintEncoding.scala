@@ -69,7 +69,8 @@ protected[salat] object CharSets {
 
 object TypeHintEncoding {
 
-  /** JLS 3.8 (http://java.sun.com/docs/books/jls/third_edition/html/lexical.html#3.8)
+  /**
+   * JLS 3.8 (http://java.sun.com/docs/books/jls/third_edition/html/lexical.html#3.8)
    *
    *  Every character that is legally part of a Java identifier at any point, plus the . separator.
    *
@@ -77,7 +78,8 @@ object TypeHintEncoding {
    */
   lazy val FullJavaLangSpec = TypeHintEncoding(CharSets.FullJLS)
 
-  /** Representing the smallest set of most likely class names: US ASCII, dot, dollar, underscore, and 0-9
+  /**
+   * Representing the smallest set of most likely class names: US ASCII, dot, dollar, underscore, and 0-9
    */
   val UsAsciiEncoding = TypeHintEncoding(CharSets.UsAscii)
 
@@ -104,7 +106,8 @@ case class TypeHintEncoding(chars: List[Char]) extends Logging {
       case (c, i) => {
         // TODO: better error here
         val num = c2n.get(c).getOrElse(
-          throw new Error("Char '%s' is missing from input chars='%s'".format(c, chars.mkString("")))) * base.pow(i)
+          throw new Error("Char '%s' is missing from input chars='%s'".format(c, chars.mkString("")))
+        ) * base.pow(i)
         //        sb ++= "encode[%d]: '%s' ---> '%s'\n".format(i, c, num)
         num
       }

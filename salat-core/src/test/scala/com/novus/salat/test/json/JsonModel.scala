@@ -58,15 +58,17 @@ import com.novus.salat.annotations._
 //  Ä	Ärlig
 //  Ö	Östen
 
-case class Adam(a: String,
-                b: Int,
-                c: Double,
-                d: Boolean,
-                e: DateTime,
-                u: java.net.URL,
-                bd: BigDecimal,
-                bi: BigInt,
-                o: ObjectId)
+case class Adam(
+  a:  String,
+  b:  Int,
+  c:  Double,
+  d:  Boolean,
+  e:  DateTime,
+  u:  java.net.URL,
+  bd: BigDecimal,
+  bi: BigInt,
+  o:  ObjectId
+)
 
 case class Bertil(ints: List[Int], strings: List[String])
 case class Caesar(l: List[Bertil])

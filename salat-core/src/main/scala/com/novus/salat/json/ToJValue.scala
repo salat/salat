@@ -28,14 +28,14 @@ package com.novus.salat.json
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import com.mongodb.casbah.Imports._
-import org.joda.time.{ DateTimeZone, DateTime, LocalDateTime }
-import com.novus.salat.{ Field => SField, _ }
+import org.joda.time.{DateTimeZone, DateTime, LocalDateTime}
+import com.novus.salat.{Field => SField, _}
 import com.novus.salat.util.Logging
 import java.net.URL
 import com.novus.salat.TypeFinder
 import com.novus.salat.StringTypeHintStrategy
-import scala.tools.scalap.scalax.rules.scalasig.{ SingleType, TypeRefType }
-import org.bson.types.{ BasicBSONList, BSONTimestamp }
+import scala.tools.scalap.scalax.rules.scalasig.{SingleType, TypeRefType}
+import org.bson.types.{BasicBSONList, BSONTimestamp}
 
 /** The target type of the JValue value was not resolvable, either due to insufficient
  *  type hinting, or unsupported data structure, such as nested collections (as of 1.9.10)

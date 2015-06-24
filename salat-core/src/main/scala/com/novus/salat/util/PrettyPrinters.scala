@@ -25,9 +25,9 @@
 package com.novus.salat.util
 
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
-import java.lang.reflect.{ ParameterizedType, Type }
-import com.novus.salat.{ DefaultArg, ConcreteGrater, Field => SField }
-import scala.reflect.{ Manifest, ClassManifest }
+import java.lang.reflect.{ParameterizedType, Type}
+import com.novus.salat.{DefaultArg, ConcreteGrater, Field => SField}
+import scala.reflect.{Manifest, ClassManifest}
 
 object FieldPrettyPrinter {
   // scala transliteration of java.lang.reflect.Field.getTypeName 
@@ -94,11 +94,13 @@ object ConstructorPrettyPrinter extends GraterPrettyPrinter {
     val p = "PARAM\t[%d]\nNAME\t%s\nTYPE\t%s\nDEFAULT ARG\t%s\n@Ignore\t%s\n"
     for (param <- constructor.getGenericParameterTypes) {
       val field = getField(indexedFields, arity)
-      builder += p.format(arity,
+      builder += p.format(
+        arity,
         fieldName(field),
         FieldPrettyPrinter(param),
         safeDefault(field, defaultArgs),
-        ignore(field))
+        ignore(field)
+      )
       arity += 1
     }
 
@@ -129,13 +131,15 @@ DEFAULT ARG   %s
     for (param <- constructor.getGenericParameterTypes) {
       val field = getField(indexedFields, arity)
       val arg = if (args.isDefinedAt(arity)) Option(args(arity)) else None
-      builder += p.format(arity,
+      builder += p.format(
+        arity,
         fieldName(field),
         FieldPrettyPrinter(param),
         safeDefault(field, defaultArgs),
         ignore(field),
         //        (if (ClassPrettyPrinter(param) == ClassPrettyPrinter(arg)) "GOOD" else "BAD"),
-        ArgPrettyPrinter(arg))
+        ArgPrettyPrinter(arg)
+      )
       arity += 1
     }
 
@@ -246,12 +250,14 @@ object TransformPrettyPrinter {
     [BEFORE] %s:     '%s'
         --[%s]-->
     [AFTER] %s:     '%s'
-    """.format(which,
+    """.format(
+      which,
       ClassPrettyPrinter(value.asInstanceOf[AnyRef]),
       value,
       t.symbol.path,
       ClassPrettyPrinter(xformed.asInstanceOf[AnyRef]),
-      xformed)
+      xformed
+    )
   }
 }
 

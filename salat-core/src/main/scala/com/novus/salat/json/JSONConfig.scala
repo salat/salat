@@ -25,21 +25,23 @@
 
 package com.novus.salat.json
 
-import java.util.{ TimeZone, Date }
-import org.bson.types.{ BSONTimestamp, ObjectId }
-import org.joda.time.format.{ DateTimeFormatter, ISODateTimeFormat }
-import org.joda.time.{ DateTime, LocalDateTime, DateTimeZone }
+import java.util.{TimeZone, Date}
+import org.bson.types.{BSONTimestamp, ObjectId}
+import org.joda.time.format.{DateTimeFormatter, ISODateTimeFormat}
+import org.joda.time.{DateTime, LocalDateTime, DateTimeZone}
 import org.json4s._
 
 object JSONConfig {
   val ISO8601 = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC)
 }
 
-case class JSONConfig(dateStrategy: JSONDateStrategy = StringDateStrategy(),
-                      timeZoneStrategy: JSONTimeZoneStrategy = StringTimeZoneStrategy(),
-                      objectIdStrategy: JSONObjectIdStrategy = StrictJSONObjectIdStrategy,
-                      bsonTimestampStrategy: JSONbsTimesampStrategy = StrictBSONTimestampStrategy,
-                      outputNullValues: Boolean = false)
+case class JSONConfig(
+  dateStrategy:          JSONDateStrategy       = StringDateStrategy(),
+  timeZoneStrategy:      JSONTimeZoneStrategy   = StringTimeZoneStrategy(),
+  objectIdStrategy:      JSONObjectIdStrategy   = StrictJSONObjectIdStrategy,
+  bsonTimestampStrategy: JSONbsTimesampStrategy = StrictBSONTimestampStrategy,
+  outputNullValues:      Boolean                = false
+)
 
 trait JSONObjectIdStrategy {
   def in(j: JValue): ObjectId

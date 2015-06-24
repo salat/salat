@@ -44,21 +44,25 @@ object Field {
     val _out = if (customTransformer.isDefined) new CustomDeserializer(customTransformer.get, t.symbol.path, t, ctx) else out.select(t, method.annotated_?[Salat])
     val ignore = method.annotation[Ignore].isDefined
 
-    new Field(idx = idx,
-      name = _name,
+    new Field(
+      idx         = idx,
+      name        = _name,
       typeRefType = t,
-      in = _in,
-      out = _out,
-      ignore = ignore) {}
+      in          = _in,
+      out         = _out,
+      ignore      = ignore
+    ) {}
   }
 }
 
-sealed abstract class Field(val idx: Int,
-                            val name: String,
-                            val typeRefType: TypeRefType,
-                            val in: Transformer,
-                            val out: Transformer,
-                            val ignore: Boolean)(implicit val ctx: Context) extends Logging {
+sealed abstract class Field(
+  val idx:         Int,
+  val name:        String,
+  val typeRefType: TypeRefType,
+  val in:          Transformer,
+  val out:         Transformer,
+  val ignore:      Boolean
+)(implicit val ctx: Context) extends Logging {
 
   def in_!(value: Any) = {
     val xformed = in.transform_!(value)

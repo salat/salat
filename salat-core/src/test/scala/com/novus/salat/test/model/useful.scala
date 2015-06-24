@@ -25,7 +25,7 @@
 
 package com.novus.salat.test.model
 
-import org.joda.time.{ DateTimeZone, DateTime }
+import org.joda.time.{DateTimeZone, DateTime}
 import org.joda.time.DateTimeConstants._
 
 object useful {

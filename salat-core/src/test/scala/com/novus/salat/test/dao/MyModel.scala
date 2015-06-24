@@ -27,7 +27,7 @@ package com.novus.salat.test.dao
 
 import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations._
-import com.novus.salat.dao.{ SalatDAO, ModelCompanion }
+import com.novus.salat.dao.{SalatDAO, ModelCompanion}
 import org.joda.time._
 import com.novus.salat.test._
 import com.novus.salat.test.global._
@@ -37,8 +37,10 @@ object MyModel extends ModelCompanion[MyModel, ObjectId] {
   val dao = new SalatDAO[MyModel, ObjectId](collection = collection) {}
 }
 
-case class MyModel(@Key("_id") id: ObjectId,
-                   x: String,
-                   y: Int,
-                   z: List[Double],
-                   d: DateTime)
+case class MyModel(
+  @Key("_id") id: ObjectId,
+  x:              String,
+  y:              Int,
+  z:              List[Double],
+  d:              DateTime
+)

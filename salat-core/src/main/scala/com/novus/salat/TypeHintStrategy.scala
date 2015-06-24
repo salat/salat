@@ -25,7 +25,7 @@
 package com.novus.salat
 
 import com.novus.salat.util.encoding.TypeHintEncoding
-import com.novus.salat.util.{ Logging, ClassPrettyPrinter }
+import com.novus.salat.util.{Logging, ClassPrettyPrinter}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
@@ -51,8 +51,10 @@ object NeverTypeHint extends TypeHintStrategy {
 
 case class StringTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint) extends TypeHintStrategy {
 
-  assume(when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
-    "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when))
+  assume(
+    when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
+    "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when)
+  )
 
   override def toString = when match {
     case TypeHintFrequency.Never => "StringTypeHintStrategy: when='%s'".format(when)
@@ -75,8 +77,10 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
   protected[salat] val toTypeHint: scala.collection.concurrent.Map[String, BigInt] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, BigInt]())
   protected[salat] val fromTypeHint: scala.collection.concurrent.Map[BigInt, String] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[BigInt, String]())
 
-  assume(when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
-    "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when))
+  assume(
+    when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
+    "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when)
+  )
 
   override def toString = when match {
     case TypeHintFrequency.Never => "BinaryTypeHintStrategy: when='%s'".format(when)

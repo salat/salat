@@ -7,7 +7,8 @@ import org.bson.types.ObjectId
 import org.specs2.matcher.JsonMatchers
 import org.specs2.mutable.Specification
 
-/** @see https://github.com/novus/salat/issues/130
+/**
+ * @see https://github.com/novus/salat/issues/130
  */
 class JsonDefaultValuesSpec extends Specification with Logging with JsonMatchers {
   private val SuppressDefaults = new Context {

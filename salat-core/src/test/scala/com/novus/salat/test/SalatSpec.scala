@@ -25,8 +25,8 @@
 package com.novus.salat.test
 
 import com.mongodb.casbah.Imports._
-import org.specs2.specification.{ Scope, Step }
-import com.novus.salat.{ BigDecimalStrategy, Context }
+import org.specs2.specification.{Scope, Step}
+import com.novus.salat.{BigDecimalStrategy, Context}
 import com.novus.salat.conversions.RegisterJodaTimeZoneConversionHelpers
 import com.mongodb.casbah.commons.test.CasbahMutableSpecification
 

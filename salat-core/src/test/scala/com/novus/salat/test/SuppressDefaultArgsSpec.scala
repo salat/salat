@@ -57,10 +57,12 @@ class SuppressDefaultArgsSpec extends SalatSpec {
     }
 
     "don't suppress fields without default values from being serialized to output" in {
-      val s = Susan(how = "why",
+      val s = Susan(
+        how      = "why",
         perished = false,
-        fits = List(Fit(1), Fit(2), Fit(3)),
-        about = Map("a" -> "ants", "b" -> "bears"))
+        fits     = List(Fit(1), Fit(2), Fit(3)),
+        about    = Map("a" -> "ants", "b" -> "bears")
+      )
       s.how must_!= SuppressDefaults.HowDefault
       s.perished must_!= SuppressDefaults.PerishedDefault
       s.fits must_!= SuppressDefaults.FitsDefault
@@ -75,7 +77,7 @@ class SuppressDefaultArgsSpec extends SalatSpec {
         MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Fit", "length" -> 1),
         MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Fit", "length" -> 2),
         MongoDBObject("_typeHint" -> "com.novus.salat.test.model.Fit") // 3 is a default arg for Fit: suppressed
-        ))
+      ))
       grater[Susan].asObject(dbo) must_== s
     }
   }

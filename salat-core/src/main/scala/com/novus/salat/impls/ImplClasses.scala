@@ -24,10 +24,10 @@
  */
 package com.novus.salat
 
-import scala.collection.mutable.{ Map => MMap, Set => MSet, Seq => MSeq, IndexedSeq => MIndexedSeq }
-import scala.collection.mutable.{ Buffer, ArrayBuffer, LinkedList, DoubleLinkedList }
+import scala.collection.mutable.{Map => MMap, Set => MSet, Seq => MSeq, IndexedSeq => MIndexedSeq}
+import scala.collection.mutable.{Buffer, ArrayBuffer, LinkedList, DoubleLinkedList}
 import scala.tools.scalap.scalax.rules.scalasig._
-import scala.collection.immutable.{ List => IList, Map => IMap, Set => ISet, Seq => ISeq, IndexedSeq => IIndexedSeq }
+import scala.collection.immutable.{List => IList, Map => IMap, Set => ISet, Seq => ISeq, IndexedSeq => IIndexedSeq}
 
 package object impls {
   def traversableImpl(name: String, real: collection.Traversable[_]): scala.collection.Traversable[_] = name match {

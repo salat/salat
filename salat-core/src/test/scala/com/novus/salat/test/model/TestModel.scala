@@ -31,11 +31,11 @@ import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.annotations._
 import org.joda.time._
-import scala.collection.immutable.{ Map => IMap }
-import scala.collection.mutable.{ Map => MMap }
-import scala.math.{ BigDecimal => ScalaBigDecimal }
+import scala.collection.immutable.{Map => IMap}
+import scala.collection.mutable.{Map => MMap}
+import scala.math.{BigDecimal => ScalaBigDecimal}
 import com.mongodb.casbah.Imports._
-import org.joda.time.{ DateTimeZone, DateTime, LocalDateTime }
+import org.joda.time.{DateTimeZone, DateTime, LocalDateTime}
 
 case class Alice(x: String, y: Option[String] = Some("default y"), z: Basil)
 case class Basil(p: Option[Int], q: Int = 1067, r: Clara)
@@ -195,10 +195,12 @@ case class Fit(length: Int = 3)
 object Susan {
   val empty = Susan()
 }
-case class Susan(how: String = SuppressDefaults.HowDefault,
-                 perished: Boolean = SuppressDefaults.PerishedDefault,
-                 fits: List[Fit] = SuppressDefaults.FitsDefault,
-                 about: Map[String, String] = SuppressDefaults.AboutDefault)
+case class Susan(
+  how:      String              = SuppressDefaults.HowDefault,
+  perished: Boolean             = SuppressDefaults.PerishedDefault,
+  fits:     List[Fit]           = SuppressDefaults.FitsDefault,
+  about:    Map[String, String] = SuppressDefaults.AboutDefault
+)
 
 case class Susan2(how: String = "who", perished: Boolean = true, fits: List[Fit])
 
@@ -270,11 +272,12 @@ case class VertebrateList(vList: List[Vertebrate]);
 case class Ad(slogan: String)
 case class Page(
   @Key("_id") uri: java.net.URI,
-  crawled: List[DateTime] = Nil,
-  ads: Option[Set[Ad]] = None,
-  title: Option[String] = None,
-  description: Option[String] = None,
-  keywords: Option[String] = None)
+  crawled:         List[DateTime]  = Nil,
+  ads:             Option[Set[Ad]] = None,
+  title:           Option[String]  = None,
+  description:     Option[String]  = None,
+  keywords:        Option[String]  = None
+)
 
 class NotACaseClass(x: String)
 
@@ -301,29 +304,34 @@ case class Investments(contracts: List[Contract])
 
 case class Titus(@Ignore ignoreMe: String = "bits", dontIgnoreMe: Int)
 case class Titus2(@Ignore ignoreMe: String = null, dontIgnoreMe: Int)
-case class SomeClassWithUnsupportedField(@Key("_id") val id: ObjectId = new ObjectId,
-                                         text: Option[String] = None,
-                                         @Ignore unsupportedType: java.io.File = null)
+case class SomeClassWithUnsupportedField(
+  @Key("_id") val id:      ObjectId       = new ObjectId,
+  text:                    Option[String] = None,
+  @Ignore unsupportedType: java.io.File   = null
+)
 
 @Salat
 sealed trait SomeStatus
 case object Borked extends SomeStatus
 
-case class SomeClassWithUnsupportedField2(@Key("_id") val id: ObjectId = new ObjectId,
-                                          email: String,
-                                          status: SomeStatus,
-                                          @Ignore cascade: Map[Int, Set[Int]] = Map.empty,
-                                          thingy: Option[Int] = None,
-                                          created: DateTime = DateTime.now,
-                                          updated: DateTime = DateTime.now)
+case class SomeClassWithUnsupportedField2(
+  @Key("_id") val id: ObjectId           = new ObjectId,
+  email:              String,
+  status:             SomeStatus,
+  @Ignore cascade:    Map[Int, Set[Int]] = Map.empty,
+  thingy:             Option[Int]        = None,
+  created:            DateTime           = DateTime.now,
+  updated:            DateTime           = DateTime.now
+)
 
 // Issue #24
 case class MetadataRecord(
   validOutputFormats: List[String] = List.empty[String], // valid formats this records can be mapped to
-  transferIdx: Option[Int] = None, // 0-based index for the transfer order
-  deleted: Boolean = false // if the record has been deleted
-  )
+  transferIdx:        Option[Int]  = None, // 0-based index for the transfer order
+  deleted:            Boolean      = false // if the record has been deleted
+)
 
 case class Order(
-  id: Long,
-  ordStatus: OrderStatus)
+  id:        Long,
+  ordStatus: OrderStatus
+)

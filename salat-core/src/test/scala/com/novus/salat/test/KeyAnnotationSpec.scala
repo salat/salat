@@ -72,12 +72,13 @@ class KeyAnnotationSpec extends SalatSpec {
       val date = new DateTime(2011, 3, 26, 11, 45, 22, 5)
       val uri = new java.net.URI("http://slashdot.org")
       val p = Page(
-        uri = uri,
-        crawled = List(date),
-        ads = None,
-        title = Some("title"),
+        uri         = uri,
+        crawled     = List(date),
+        ads         = None,
+        title       = Some("title"),
         description = Some("description"),
-        keywords = Some("very clever minus two"))
+        keywords    = Some("very clever minus two")
+      )
       val dbo: MongoDBObject = grater[Page].asDBObject(p)
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Page")
       // @Key overrides field name "uri" with "_id"

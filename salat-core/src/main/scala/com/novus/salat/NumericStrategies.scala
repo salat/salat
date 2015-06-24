@@ -26,7 +26,7 @@
 package com.novus.salat
 
 import com.novus.salat.util.Logging
-import java.math.{ BigInteger, MathContext }
+import java.math.{BigInteger, MathContext}
 
 sealed trait BigDecimalStrategy extends Logging {
 
@@ -48,7 +48,8 @@ sealed trait BigDecimalStrategy extends Logging {
     case s: String                => out0(BigDecimal(s, mathCtx))
   }
 
-  /** To provide backward compatibility with different serialization output, be as forgiving as possible when deserializing
+  /**
+   * To provide backward compatibility with different serialization output, be as forgiving as possible when deserializing
    *  @param x anything that could reasonably be coerced into BigDecimal-hood
    *  @return BigDecimal
    */

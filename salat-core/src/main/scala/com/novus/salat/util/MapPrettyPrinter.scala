@@ -27,7 +27,8 @@ package com.novus.salat.util
 import com.novus.salat._
 import com.mongodb.casbah.commons.Imports._
 
-/** Hello, is this thing on?  If you are having trouble using Salat to serialize your thingy, dump it in here
+/**
+ * Hello, is this thing on?  If you are having trouble using Salat to serialize your thingy, dump it in here
  *  and get real debug output!
  */
 object MapPrettyPrinter {

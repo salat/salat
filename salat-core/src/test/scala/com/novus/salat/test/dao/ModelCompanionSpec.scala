@@ -71,10 +71,10 @@ class ModelCompanionSpec extends SalatSpec {
       }
 
       "toCompactJson" in new myModelScope {
-        val expected = "{\"_typeHint\":\"com.novus.salat.test.dao.MyModel\",\"_id\":{\"$oid\":\""+
-          _id.toString+
-          "\"},\"x\":\"Test\",\"y\":99,\"z\":[1.0,2.0,3.0],\"d\":\""+
-          JSONConfig.ISO8601.print(d.getMillis)+
+        val expected = "{\"_typeHint\":\"com.novus.salat.test.dao.MyModel\",\"_id\":{\"$oid\":\"" +
+          _id.toString +
+          "\"},\"x\":\"Test\",\"y\":99,\"z\":[1.0,2.0,3.0],\"d\":\"" +
+          JSONConfig.ISO8601.print(d.getMillis) +
           "\"}"
         MyModel.toCompactJson(m) must_== expected
       }

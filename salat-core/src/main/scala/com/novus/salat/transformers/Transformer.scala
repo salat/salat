@@ -25,8 +25,8 @@
 package com.novus.salat.transformers
 
 import com.novus.salat._
-import com.novus.salat.transformers.in.{ MapInjector, TraversableInjector, OptionInjector }
-import com.novus.salat.transformers.out.{ MapExtractor, TraversableExtractor, OptionExtractor }
+import com.novus.salat.transformers.in.{MapInjector, TraversableInjector, OptionInjector}
+import com.novus.salat.transformers.out.{MapExtractor, TraversableExtractor, OptionExtractor}
 import com.novus.salat.util.Logging
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
@@ -118,20 +118,24 @@ class CustomOptionSerializer[A <: AnyRef, B <: AnyRef](override val custom: Cust
   override def transform(value: Any)(implicit ctx: Context) = custom.in(value)
 }
 
-class CustomTraversableSerializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B],
-                                                            override val path: String,
-                                                            override val t: TypeRefType,
-                                                            val parentType: TypeRefType,
-                                                            override val ctx: Context)
+class CustomTraversableSerializer[A <: AnyRef, B <: AnyRef](
+  override val custom: CustomTransformer[A, B],
+  override val path:   String,
+  override val t:      TypeRefType,
+  val parentType:      TypeRefType,
+  override val ctx:    Context
+)
     extends UseCustomTransformer(custom, path, t, ctx) with TraversableInjector {
   override protected def transformElement(el: Any) = custom.in(el)
 }
 
-class CustomMapSerializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B],
-                                                    override val path: String,
-                                                    override val t: TypeRefType,
-                                                    val parentType: TypeRefType,
-                                                    override val ctx: Context)
+class CustomMapSerializer[A <: AnyRef, B <: AnyRef](
+  override val custom: CustomTransformer[A, B],
+  override val path:   String,
+  override val t:      TypeRefType,
+  val parentType:      TypeRefType,
+  override val ctx:    Context
+)
     extends UseCustomTransformer(custom, path, t, ctx) with MapInjector {
   override protected def transformElement(el: Any) = custom.in(el)
 }

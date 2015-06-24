@@ -31,7 +31,7 @@ import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations._
 import com.novus.salat.dao._
 import com.novus.salat.test._
-import org.joda.time.{ DateTime, DateMidnight }
+import org.joda.time.{DateTime, DateMidnight}
 
 @Salat
 trait Beta {
@@ -65,17 +65,21 @@ object XiDAO extends SalatDAO[Xi, ObjectId](collection = MongoConnection()(Salat
 object KappaDAO extends SalatDAO[Kappa, ObjectId](collection = MongoConnection()(SalatSpecDb)(KappaColl))
 
 case class ChildInfo(lastUpdated: DateTime = new DateMidnight(0L).toDateTime)
-case class Child(@Key("_id") id: Int,
-                 parentId: ObjectId,
-                 x: String = "",
-                 childInfo: ChildInfo = ChildInfo(),
-                 y: Option[String] = None)
+case class Child(
+  @Key("_id") id: Int,
+  parentId:       ObjectId,
+  x:              String         = "",
+  childInfo:      ChildInfo      = ChildInfo(),
+  y:              Option[String] = None
+)
 case class Parent(@Key("_id") id: ObjectId = new ObjectId, name: String)
 
 object ParentDAO extends SalatDAO[Parent, ObjectId](collection = MongoConnection()(SalatSpecDb)(ParentColl)) {
 
-  val children = new ChildCollection[Child, Int](collection = MongoConnection()(SalatSpecDb)(ChildColl),
-    parentIdField = "parentId") {}
+  val children = new ChildCollection[Child, Int](
+    collection    = MongoConnection()(SalatSpecDb)(ChildColl),
+    parentIdField = "parentId"
+  ) {}
 
 }
 
@@ -91,8 +95,10 @@ case class Editor(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
 case class Admin(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
 
 object UserDAO extends SalatDAO[User, ObjectId](collection = MongoConnection()(SalatSpecDb)(UserColl)) {
-  val roles = new ChildCollection[Role, ObjectId](collection = MongoConnection()(SalatSpecDb)(RoleColl),
-    parentIdField = "userId") {}
+  val roles = new ChildCollection[Role, ObjectId](
+    collection    = MongoConnection()(SalatSpecDb)(RoleColl),
+    parentIdField = "userId"
+  ) {}
 
   // demonstration of how you might break apart an object graph when saving to MongoDB
   override def insert(u: User) = {

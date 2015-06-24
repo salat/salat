@@ -42,12 +42,14 @@ package annotations {
   package object util {
     implicit def whatever2annotated(x: Any) = new PimpedAnnotatedElement(x)
 
-    /** PML class that allows an element typed to Any to be checked for an arbitrary annotation.
+    /**
+     * PML class that allows an element typed to Any to be checked for an arbitrary annotation.
      *  @param x an arbitrary input element
      */
     class PimpedAnnotatedElement(x: Any) {
 
-      /** @tparam A type of annotation
+      /**
+       * @tparam A type of annotation
        *  @return Some annotation if element X is annotated with an annotation of type A; otherwise None
        */
       def annotation[A <: Annotation: Manifest]: Option[A] = x match {
@@ -55,7 +57,8 @@ package annotations {
         case _                                => None
       }
 
-      /** @tparam A type of annotation
+      /**
+       * @tparam A type of annotation
        *  @return true if element X is annotated with annotation of type A; otherwise, false
        */
       def annotated_?[A <: Annotation: Manifest]: Boolean = annotation[A](manifest[A]).isDefined

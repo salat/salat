@@ -102,7 +102,8 @@ class BigDecimalStrategyPerformanceSpec extends Specification with Logging {
     }
 
     def stats() {
-      log.info(""" 
+      log.info(
+        """ 
 
 --------------------
       
@@ -129,7 +130,8 @@ DESERIALIZATION TIMES:
         strategy.getClass.getName,
         (inTimes.sum / 1000000L).tersePrint, avg(inTimes) / 1000000d, median(inTimes) / 1000000d,
         (outTimes.sum / 1000000L).tersePrint, avg(outTimes) / 1000000d, median(outTimes) / 1000000d,
-        coll.stats)
+        coll.stats
+      )
     }
   }
 

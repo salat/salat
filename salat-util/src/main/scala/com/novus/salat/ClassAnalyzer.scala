@@ -29,7 +29,7 @@ import com.novus.salat.util._
 import scala.tools.scalap.scalax.rules.scalasig._
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
-import java.lang.reflect.{ Constructor, Method }
+import java.lang.reflect.{Constructor, Method}
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 import scala.tools.scalap.scalax.rules.scalasig.MethodSymbol
 import com.novus.salat.util.MissingExpectedType
@@ -128,8 +128,10 @@ object ClassAnalyzer extends Logging {
 
 }
 
-case class ClassAnalyzer[A](clazz: Class[A],
-                            classLoaders: Iterable[ClassLoader] = ClassAnalyzer.ClassLoaders) extends Logging {
+case class ClassAnalyzer[A](
+  clazz:        Class[A],
+  classLoaders: Iterable[ClassLoader] = ClassAnalyzer.ClassLoaders
+) extends Logging {
 
   import ClassAnalyzer._
 

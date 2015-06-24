@@ -283,7 +283,7 @@ package object in {
 package in {
 
   import java.lang.Integer
-  import org.joda.time.{ DateTime, LocalDateTime, DateTimeZone }
+  import org.joda.time.{DateTime, LocalDateTime, DateTimeZone}
   import org.json4s.JsonAST.JArray
 
   trait LongToInt extends Transformer {
