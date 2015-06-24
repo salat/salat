@@ -29,7 +29,7 @@ import com.novus.salat.test.dao.when_necessary._
 import com.mongodb.casbah.Imports._
 import org.specs2.specification.Scope
 import com.mongodb.casbah.commons.MongoDBObject
-import com.novus.salat.{ ConcreteGrater, Grater }
+import com.novus.salat.{ConcreteGrater, Grater}
 
 class PolymorphicSalatDAOSpec extends SalatSpec {
 

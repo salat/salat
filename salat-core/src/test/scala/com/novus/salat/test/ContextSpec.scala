@@ -235,28 +235,32 @@ class ContextSpec extends SalatSpec {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(annotatedAbstractClazz.getName)
         g_*.clazz.getName must_== (new ProxyGrater[AbstractMaud](
-          annotatedAbstractClazz.asInstanceOf[Class[AbstractMaud]])(ctx) {}).clazz.getName
+          annotatedAbstractClazz.asInstanceOf[Class[AbstractMaud]]
+        )(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by class name for an abstract class without @Salat annotation" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(abstractClazz.getName)
         g_*.clazz.getName must_== (new ProxyGrater[UnannotatedAbstractMaud](
-          abstractClazz.asInstanceOf[Class[UnannotatedAbstractMaud]])(ctx) {}).clazz.getName
+          abstractClazz.asInstanceOf[Class[UnannotatedAbstractMaud]]
+        )(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by class name for a trait annotated with @Salat" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(annotatedTraitClazz.getName)
         g_*.clazz.getName must_== (new ProxyGrater[AnnotatedMaud](
-          annotatedTraitClazz.asInstanceOf[Class[AnnotatedMaud]])(ctx) {}).clazz.getName
+          annotatedTraitClazz.asInstanceOf[Class[AnnotatedMaud]]
+        )(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by class name for a trait without @Salat annotation" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(traitClazz.getName)
         g_*.clazz.getName must_== (new ProxyGrater[UnannotatedMaud](
-          traitClazz.asInstanceOf[Class[UnannotatedMaud]])(ctx) {}).clazz.getName
+          traitClazz.asInstanceOf[Class[UnannotatedMaud]]
+        )(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by case class manifest" in new testContext {

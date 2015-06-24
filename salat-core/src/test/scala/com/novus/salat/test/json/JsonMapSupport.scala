@@ -7,13 +7,20 @@ class JsonMapSupport extends SalatSpec {
 
   val uglyMap = Map(
     "text" -> "root", "root" -> true, "depth" -> 0, "children" -> List(
-      Map("children" -> List(
-        Map("text" -> "Orange", "leaf" -> true, "depth" -> 2, "checked" -> true)),
-        "checked" -> true, "expanded" -> true, "text" -> "Orange", "depth" -> 1),
-      Map("children" -> List(
-        Map("text" -> "Acerola", "leaf" -> true, "depth" -> 2, "checked" -> true)),
-        "checked" -> true, "expanded" -> true, "text" -> "Acerola", "depth" -> 1),
-      Map("children" -> List(
+      Map(
+        "children" -> List(
+        Map("text" -> "Orange", "leaf" -> true, "depth" -> 2, "checked" -> true)
+      ),
+        "checked" -> true, "expanded" -> true, "text" -> "Orange", "depth" -> 1
+      ),
+      Map(
+        "children" -> List(
+        Map("text" -> "Acerola", "leaf" -> true, "depth" -> 2, "checked" -> true)
+      ),
+        "checked" -> true, "expanded" -> true, "text" -> "Acerola", "depth" -> 1
+      ),
+      Map(
+        "children" -> List(
         Map("text" -> "Apple", "leaf" -> true, "depth" -> 2, "checked" -> true),
         Map("text" -> "Strawberry", "leaf" -> true, "depth" -> 2, "checked" -> true),
         Map("text" -> "Guava", "leaf" -> true, "depth" -> 2, "checked" -> true),
@@ -25,15 +32,22 @@ class JsonMapSupport extends SalatSpec {
         Map("text" -> "Cherimoya", "leaf" -> true, "depth" -> 2, "checked" -> true),
         Map("text" -> "Citron", "leaf" -> true, "depth" -> 2, "checked" -> true),
         Map("text" -> "Apricot", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Feijoa", "leaf" -> true, "depth" -> 2, "checked" -> true)),
-        "checked" -> true, "expanded" -> true, "text" -> "Calamondin", "depth" -> 1),
-      Map("children" -> List(
+        Map("text" -> "Feijoa", "leaf" -> true, "depth" -> 2, "checked" -> true)
+      ),
+        "checked" -> true, "expanded" -> true, "text" -> "Calamondin", "depth" -> 1
+      ),
+      Map(
+        "children" -> List(
         Map("text" -> "Pear", "leaf" -> true, "depth" -> 2, "checked" -> true),
         Map("text" -> "Pumpkin", "leaf" -> true, "depth" -> 2, "checked" -> true),
         Map("text" -> "Pineapple", "leaf" -> true, "depth" -> 2, "checked" -> true),
         Map("text" -> "Blueberry", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Nance", "leaf" -> true, "depth" -> 2, "checked" -> true)),
-        "checked" -> true, "expanded" -> true, "text" -> "Persimmons", "depth" -> 1)))
+        Map("text" -> "Nance", "leaf" -> true, "depth" -> 2, "checked" -> true)
+      ),
+        "checked" -> true, "expanded" -> true, "text" -> "Persimmons", "depth" -> 1
+      )
+    )
+  )
 
   val expected = """{"text":"root","root":true,"depth":0,"children":[{"children":[{"text":"Orange","leaf":true,"depth":2,"checked":true}],"checked":true,"expanded":true,"text":"Orange","depth":1},{"children":[{"text":"Acerola","leaf":true,"depth":2,"checked":true}],"checked":true,"expanded":true,"text":"Acerola","depth":1},{"children":[{"text":"Apple","leaf":true,"depth":2,"checked":true},{"text":"Strawberry","leaf":true,"depth":2,"checked":true},{"text":"Guava","leaf":true,"depth":2,"checked":true},{"text":"Sapote","leaf":true,"depth":2,"checked":true},{"text":"Mango","leaf":true,"depth":2,"checked":true},{"text":"Limequat","leaf":true,"depth":2,"checked":true},{"text":"Langsat","leaf":true,"depth":2,"checked":true},{"text":"Papaya","leaf":true,"depth":2,"checked":true},{"text":"Cherimoya","leaf":true,"depth":2,"checked":true},{"text":"Citron","leaf":true,"depth":2,"checked":true},{"text":"Apricot","leaf":true,"depth":2,"checked":true},{"text":"Feijoa","leaf":true,"depth":2,"checked":true}],"checked":true,"expanded":true,"text":"Calamondin","depth":1},{"children":[{"text":"Pear","leaf":true,"depth":2,"checked":true},{"text":"Pumpkin","leaf":true,"depth":2,"checked":true},{"text":"Pineapple","leaf":true,"depth":2,"checked":true},{"text":"Blueberry","leaf":true,"depth":2,"checked":true},{"text":"Nance","leaf":true,"depth":2,"checked":true}],"checked":true,"expanded":true,"text":"Persimmons","depth":1}]}"""
 

@@ -27,10 +27,11 @@ package com.novus.salat.dao
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoCursorBase
 import com.novus.salat._
-import com.mongodb.casbah.commons.{ MongoDBObject, Logging }
-import com.mongodb.{ WriteConcern, DBObject }
+import com.mongodb.casbah.commons.{MongoDBObject, Logging}
+import com.mongodb.{WriteConcern, DBObject}
 
-/** Sample DAO implementation.
+/**
+ * Sample DAO implementation.
  *  @param collection MongoDB collection
  *  @param mot implicit manifest for ObjectType
  *  @param mid implicit manifest for ID
@@ -38,7 +39,8 @@ import com.mongodb.{ WriteConcern, DBObject }
  *  @tparam ObjectType class to be persisted
  *  @tparam ID _id type
  */
-abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
+abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCollection)(implicit
+  mot: Manifest[ObjectType],
                                                                                           mid: Manifest[ID], ctx: Context)
     extends com.novus.salat.dao.DAO[ObjectType, ID] with Logging {
 
@@ -47,23 +49,28 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
   /** Supplies the [[com.novus.salat.Grater]] from the implicit [[com.novus.salat.Context]] and `ObjectType` manifest */
   val _grater = grater[ObjectType](ctx, mot)
 
-  /** Force type hints when objects are persisted.  Used to support a DAO typed to an abstract superclass or trait.
+  /**
+   * Force type hints when objects are persisted.  Used to support a DAO typed to an abstract superclass or trait.
    *  Should be overriden and forced to true when you want to select
    */
   val forceTypeHints = {
     val isProxy = _grater.isInstanceOf[ProxyGrater[_]]
     // safety check - if you never type hint, then deserializing using a proxy grater is impossible
-    require(!isProxy || ctx.typeHintStrategy.when != TypeHintFrequency.Never,
-      "Abstract class hierarchies cannot be deserialized when the context '%s' type hint strategy is NeverTypeHint".format(ctx.name))
+    require(
+      !isProxy || ctx.typeHintStrategy.when != TypeHintFrequency.Never,
+      "Abstract class hierarchies cannot be deserialized when the context '%s' type hint strategy is NeverTypeHint".format(ctx.name)
+    )
     isProxy
   }
 
-  /** If you are mixing and matching abstract and concrete DAOs, turn this on in the concrete DAOs to ensure that querying on a
+  /**
+   * If you are mixing and matching abstract and concrete DAOs, turn this on in the concrete DAOs to ensure that querying on a
    *  mixed collection will only yield results in the child collection.
    */
   val appendTypeHintToQueries = false
 
-  /** A central place to modify find, count and update queries before executing them.
+  /**
+   * A central place to modify find, count and update queries before executing them.
    *  @param query query to decorate
    *  @return decorated query for execution
    */
@@ -74,7 +81,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     query
   }
 
-  /** A central place to modify DBOs before inserting, saving, or updating.
+  /**
+   * A central place to modify DBOs before inserting, saving, or updating.
    *  @param toPersist object to be serialized
    *  @return decorated DBO for persisting
    */
@@ -87,7 +95,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     dbo
   }
 
-  /** Inner abstract class to facilitate working with child collections using a typed parent id -
+  /**
+   * Inner abstract class to facilitate working with child collections using a typed parent id -
    *  no cascading support will be offered, but you can override saves and deletes in the parent DAO
    *  to manually cascade children as you like.
    *
@@ -116,25 +125,31 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @tparam ChildType type of child object
    *  @tparam ChildID type of child _id field
    */
-  abstract class ChildCollection[ChildType <: AnyRef, ChildID <: Any](override val collection: MongoCollection,
-                                                                      val parentIdField: String)(implicit mct: Manifest[ChildType],
-                                                                                                 mcid: Manifest[ChildID], ctx: Context)
+  abstract class ChildCollection[ChildType <: AnyRef, ChildID <: Any](
+    override val collection: MongoCollection,
+    val parentIdField:       String
+  )(implicit
+    mct: Manifest[ChildType],
+    mcid: Manifest[ChildID], ctx: Context)
       extends SalatDAO[ChildType, ChildID](collection) {
 
     childDao =>
 
     override lazy val description = "SalatDAO[%s,%s](%s) -> ChildCollection[%s,%s](%s)".format(
       mot.runtimeClass.getSimpleName, mid.runtimeClass.getSimpleName, dao.collection.name,
-      mct.runtimeClass.getSimpleName, mcid.runtimeClass.getSimpleName, childDao.collection.name)
+      mct.runtimeClass.getSimpleName, mcid.runtimeClass.getSimpleName, childDao.collection.name
+    )
 
-    /** @param parentId parent id
+    /**
+     * @param parentId parent id
      *  @return base query object for a single parent id
      */
     def parentIdQuery(parentId: ID): DBObject = {
       decorateQuery(MongoDBObject(parentIdField -> parentId))
     }
 
-    /** @param parentIds list of parent ids
+    /**
+     * @param parentIds list of parent ids
      *  @return base query object for a list of parent ids
      *  TODO - replace list with traversable
      */
@@ -142,7 +157,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       MongoDBObject(parentIdField -> MongoDBObject("$in" -> parentIds))
     }
 
-    /** Count the number of documents matching the parent id.
+    /**
+     * Count the number of documents matching the parent id.
      *  @param parentId parent id
      *  @param query object for which to search
      *  @param fieldsThatMustExist list of field keys that must exist
@@ -153,7 +169,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.count(parentIdQuery(parentId) ++ query, fieldsThatMustExist, fieldsThatMustNotExist)
     }
 
-    /** @param parentId parent id
+    /**
+     * @param parentId parent id
      *  @param query object for which to search
      *  @return list of child ids matching parent id and search criteria
      */
@@ -161,7 +178,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.collection.find(parentIdQuery(parentId) ++ query, MongoDBObject("_id" -> 1)).map(_.expand[ChildID]("_id").get).toList
     }
 
-    /** @param parentIds list of parent ids
+    /**
+     * @param parentIds list of parent ids
      *  @param query object for which to search
      *  @return list of child ids matching parent ids and search criteria
      */
@@ -169,7 +187,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.collection.find(parentIdsQuery(parentIds) ++ query, MongoDBObject("_id" -> 1)).map(_.expand[ChildID]("_id").get).toList
     }
 
-    /** @param parentId parent id
+    /**
+     * @param parentId parent id
      *  @param query object for which to search
      *  @return list of child objects matching parent id and search criteria
      */
@@ -177,7 +196,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.find(parentIdQuery(parentId) ++ query)
     }
 
-    /** @param parentIds list of parent ids
+    /**
+     * @param parentIds list of parent ids
      *  @param query object for which to search
      *  @return list of child objects matching parent ids and search criteria
      */
@@ -185,7 +205,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.find(parentIdsQuery(parentIds) ++ query)
     }
 
-    /** @param parentId parent id
+    /**
+     * @param parentId parent id
      *  @param query object for which to search
      *  @return list of child objects matching parent id and search criteria
      */
@@ -193,7 +214,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.find(parentIdQuery(parentId) ++ query, keys)
     }
 
-    /** @param parentIds parent ids
+    /**
+     * @param parentIds parent ids
      *  @param query object for which to search
      *  @return list of child objects matching parent ids and search criteria
      */
@@ -201,7 +223,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.find(parentIdsQuery(parentIds) ++ query, keys)
     }
 
-    /** @param parentId parent id
+    /**
+     * @param parentId parent id
      *  @param o object with which to update the document(s) matching `parentId`
      *  @param upsert if the database should create the element if it does not exist
      *  @param multi if the update should be applied to all objects matching
@@ -212,7 +235,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.update(parentIdQuery(parentId), o, upsert, multi, wc)
     }
 
-    /** @param parentIds parent ids
+    /**
+     * @param parentIds parent ids
      *  @param o object with which to update the document(s) matching `parentIds`
      *  @param upsert if the database should create the element if it does not exist
      *  @param multi if the update should be applied to all objects matching
@@ -223,7 +247,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.update(parentIdsQuery(parentIds), o, upsert, multi, wc)
     }
 
-    /** Remove documents matching parent id
+    /**
+     * Remove documents matching parent id
      *  @param parentId parent id
      *  @param wc write concern
      */
@@ -231,7 +256,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.remove(parentIdQuery(parentId), wc)
     }
 
-    /** Remove documents matching parent ids
+    /**
+     * Remove documents matching parent ids
      *  @param parentIds parent ids
      *  @param wc write concern
      */
@@ -239,7 +265,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.remove(parentIdsQuery(parentIds), wc)
     }
 
-    /** Projection typed to a case class, trait or abstract superclass.
+    /**
+     * Projection typed to a case class, trait or abstract superclass.
      *  @param parentId parent id
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -252,7 +279,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.projections(parentIdQuery(parentId) ++ query, field)(mr, ctx)
     }
 
-    /** Projection typed to a case class, trait or abstract superclass.
+    /**
+     * Projection typed to a case class, trait or abstract superclass.
      *  @param parentIds parent ids
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -265,7 +293,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.projections(parentIdsQuery(parentIds) ++ query, field)(mr, ctx)
     }
 
-    /** Projection typed to a type for which Casbah or mongo-java-driver handles conversion
+    /**
+     * Projection typed to a type for which Casbah or mongo-java-driver handles conversion
      *  @param parentId parent id
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -278,7 +307,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
       childDao.primitiveProjections(parentIdQuery(parentId) ++ query, field)(mr, ctx)
     }
 
-    /** Projection typed to a type for which Casbah or mongo-java-driver handles conversion
+    /**
+     * Projection typed to a type for which Casbah or mongo-java-driver handles conversion
      *  @param parentIds parent ids
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -292,11 +322,13 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     }
   }
 
-  /** Default description is the case class simple name and the collection.
+  /**
+   * Default description is the case class simple name and the collection.
    */
   override lazy val description = "SalatDAO[%s,%s](%s)".format(mot.runtimeClass.getSimpleName, mid.runtimeClass.getSimpleName, collection.name)
 
-  /** @param t instance of ObjectType
+  /**
+   * @param t instance of ObjectType
    *  @param wc write concern
    *  @return if insert succeeds, ID of inserted object
    */
@@ -312,7 +344,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     }
   }
 
-  /** @param docs collection of `ObjectType` instances to insert
+  /**
+   * @param docs collection of `ObjectType` instances to insert
    *  @param wc write concern
    *  @return list of object ids
    *  TODO: flatten list of IDs - why on earth didn't I do that in the first place?
@@ -333,7 +366,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
   }
   else Nil
 
-  /** @param query query
+  /**
+   * @param query query
    *  @tparam A type view bound to DBObject
    *  @return list of IDs
    */
@@ -341,19 +375,22 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     collection.find(decorateQuery(query), MongoDBObject("_id" -> 1)).map(_.expand[ID]("_id").get).toList
   }
 
-  /** @param t object for which to search
+  /**
+   * @param t object for which to search
    *  @param rp the ReadPreference used for this find
    *  @tparam A type view bound to DBObject
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
    */
   def findOne[A <% DBObject](t: A, rp: ReadPreference) = collection.findOne(o = decorateQuery(t), fields = null, readPrefs = rp).map(_grater.asObject(_))
 
-  /** @param id identifier
+  /**
+   * @param id identifier
    *  @return (Option[ObjectType]) Some() of the object found, or <code>None</code> if no such object exists
    */
   def findOneById(id: ID) = collection.findOneByID(id.asInstanceOf[AnyRef]).map(_grater.asObject(_))
 
-  /** @param t object to remove from the collection
+  /**
+   * @param t object to remove from the collection
    *  @param wc write concern
    *  @return (WriteResult) result of write operation
    */
@@ -367,7 +404,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     wr
   }
 
-  /** @param q the object that documents to be removed must match
+  /**
+   * @param q the object that documents to be removed must match
    *  @param wc write concern
    *  @return (WriteResult) result of write operation
    */
@@ -380,7 +418,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     wr
   }
 
-  /** @param id the ID of the document to be removed
+  /**
+   * @param id the ID of the document to be removed
    *  @param wc write concern
    *  @return (WriteResult) result of write operation
    */
@@ -388,7 +427,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     remove(MongoDBObject("_id" -> id), wc)
   }
 
-  /** @param ids the list of IDs identifying the list of documents to be removed
+  /**
+   * @param ids the list of IDs identifying the list of documents to be removed
    *  @param wc wrote concern
    *  @return (WriteResult) result of write operation
    */
@@ -396,7 +436,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     remove(MongoDBObject("_id" -> MongoDBObject("$in" -> MongoDBList(ids: _*))), wc)
   }
 
-  /** @param t object to save
+  /**
+   * @param t object to save
    *  @param wc write concern
    *  @return (WriteResult) result of write operation
    */
@@ -410,7 +451,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     wr
   }
 
-  /** @param q search query for old object to update
+  /**
+   * @param q search query for old object to update
    *  @param o object with which to update <tt>q</tt>
    *  @param upsert if the database should create the element if it does not exist
    *  @param multi if the update should be applied to all objects matching
@@ -426,17 +468,21 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     wr
   }
 
-  /** @param ref object for which to search
+  /**
+   * @param ref object for which to search
    *  @param keys fields to return
    *  @param rp sets the desired ReadPreference on the cursor
    *  @tparam A type view bound to DBObject
    *  @tparam B type view bound to DBObject
    *  @return a typed cursor to iterate over results
    */
-  def find[A <% DBObject, B <% DBObject](ref: A, keys: B, rp: ReadPreference) = SalatMongoCursor[ObjectType](_grater,
-    collection.find(decorateQuery(ref), keys).asInstanceOf[MongoCursorBase].underlying.setReadPreference(rp))
+  def find[A <% DBObject, B <% DBObject](ref: A, keys: B, rp: ReadPreference) = SalatMongoCursor[ObjectType](
+    _grater,
+    collection.find(decorateQuery(ref), keys).asInstanceOf[MongoCursorBase].underlying.setReadPreference(rp)
+  )
 
-  /** @param query object for which to search
+  /**
+   * @param query object for which to search
    *  @param field field to project on
    *  @param m implicit manifest typed to `P`
    *  @param ctx implicit [[com.novus.salat.Context]]
@@ -450,7 +496,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     }
   }
 
-  /** @param query object for which to search
+  /**
+   * @param query object for which to search
    *  @param field field to project on
    *  @param m implicit manifest typed to `P`
    *  @param ctx implicit [[com.novus.salat.Context]]
@@ -464,7 +511,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     }
   }
 
-  /** @param query object for which to search
+  /**
+   * @param query object for which to search
    *  @param field field to project on
    *  @param m implicit manifest typed to `P`
    *  @param ctx implicit [[com.novus.salat.Context]]
@@ -477,7 +525,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
         r.expand[DBObject](field).map(grater[P].asObject(_))
     }
 
-  /** @param query object for which to search
+  /**
+   * @param query object for which to search
    *  @param field field to project on
    *  @param m implicit manifest typed to `P`
    *  @param ctx implicit [[com.novus.salat.Context]]
@@ -488,7 +537,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     collection.find(query, MongoDBObject(field -> 1)).toList.flatMap(_.expand[P](field))
   }
 
-  /** @param q object for which to search
+  /**
+   * @param q object for which to search
    *  @param fieldsThatMustExist list of field keys that must exist
    *  @param fieldsThatMustNotExist list of field keys that must not exist
    *  @return count of documents matching the search criteria
@@ -509,7 +559,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
   }
 }
 
-/** When you use a single collection to contain an entire type hierarchy, then use this trait to make sure that type hints
+/**
+ * When you use a single collection to contain an entire type hierarchy, then use this trait to make sure that type hints
  *  are appended to find, count and update queries.  (Please note you need to make sure your indexes on this shared collection
  *  take your type hint fields into account!)
  *

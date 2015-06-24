@@ -28,7 +28,7 @@ import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations.util._
 import com.novus.salat.json.JSONConfig
 import com.novus.salat.util._
-import com.novus.salat.{ Field => SField }
+import com.novus.salat.{Field => SField}
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 import org.json4s.JsonAST.JObject
@@ -128,8 +128,10 @@ trait Context extends ContextLifecycle with Logging {
       .format(name, clazz.getName, remapThis, perClassKeyOverrides.get((clazz.getName, remapThis))))
     // think twice, register once
     assume(remapThis != null && remapThis.nonEmpty, "registerPerClassKeyOverride: clazz='%s', key remapThis must be supplied!".format(clazz.getName))
-    assume(toThisInstead != null && toThisInstead.nonEmpty,
-      "registerPerClassKeyOverride: clazz='%s', key remapThis='%s' - value toThisInstead must be supplied!".format(clazz.getName, remapThis))
+    assume(
+      toThisInstead != null && toThisInstead.nonEmpty,
+      "registerPerClassKeyOverride: clazz='%s', key remapThis='%s' - value toThisInstead must be supplied!".format(clazz.getName, remapThis)
+    )
     perClassKeyOverrides += (clazz.getName, remapThis) -> toThisInstead
     log.info("perClassKeyOverrides: context=%s will remap key='%s' to '%s' for all instance of clazz='%s'", name, remapThis, toThisInstead, clazz.getName)
   }

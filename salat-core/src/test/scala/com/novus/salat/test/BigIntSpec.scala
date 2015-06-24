@@ -38,10 +38,14 @@ class BigIntSpec extends SalatSpec {
       val dbo: MongoDBObject = grater[Leo].asDBObject(l)
       //      println(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Leo")
-      checkByteArrays(actual = dbo.expand[Array[Byte]]("swallowed").getOrElse(Array.empty[Byte]),
-        swallowed.toByteArray)
-      checkByteArrays(actual = dbo.expand[Array[Byte]]("tacks").getOrElse(Array.empty[Byte]),
-        BigInt("-9223372036854775808").toByteArray)
+      checkByteArrays(
+        actual = dbo.expand[Array[Byte]]("swallowed").getOrElse(Array.empty[Byte]),
+        swallowed.toByteArray
+      )
+      checkByteArrays(
+        actual = dbo.expand[Array[Byte]]("tacks").getOrElse(Array.empty[Byte]),
+        BigInt("-9223372036854775808").toByteArray
+      )
 
       val coll = MongoConnection()(SalatSpecDb)("scala_big_int_test_1")
       val wr = coll.insert(dbo)

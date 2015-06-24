@@ -8,8 +8,10 @@ import com.novus.salat.transformers.CustomTransformer
 import org.json4s.JsonAST.JObject
 import org.json4s._
 
-class CustomGrater[ModelObject <: AnyRef](clazz: Class[ModelObject],
-                                          transformer: CustomTransformer[ModelObject, DBObject])(implicit ctx: Context) extends Grater[ModelObject](clazz)(ctx) {
+class CustomGrater[ModelObject <: AnyRef](
+  clazz:       Class[ModelObject],
+  transformer: CustomTransformer[ModelObject, DBObject]
+)(implicit ctx: Context) extends Grater[ModelObject](clazz)(ctx) {
 
   def asDBObject(o: ModelObject) = transformer.serialize(o)
 

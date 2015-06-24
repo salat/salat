@@ -42,8 +42,10 @@ case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X], s
     cause.getMessage,
     grater.toString,
     sym.path,
-    ConstructorInputPrettyPrinter(grater, args)),
-  cause)
+    ConstructorInputPrettyPrinter(grater, args)
+  ),
+  cause
+)
 
 case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
 case class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
@@ -69,4 +71,5 @@ case class MissingTypeHint(m: Map[_, _])(implicit ctx: Context) extends Error(""
  """.format(ctx.typeHintStrategy.typeHint, m.mkString("\n")))
 
 case class EnumInflaterGlitch(clazz: Class[_], strategy: EnumStrategy, value: Any) extends Error(
-  "Not sure how to handle value='%s' as enum of class %s using strategy %s".format(value, clazz.getName, strategy))
+  "Not sure how to handle value='%s' as enum of class %s using strategy %s".format(value, clazz.getName, strategy)
+)

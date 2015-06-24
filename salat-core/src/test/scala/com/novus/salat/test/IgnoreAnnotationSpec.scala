@@ -82,13 +82,15 @@ class IgnoreAnnotationSpec extends SalatSpec {
     "ignore a field with an unsupported collection annotated with @Ignore" in {
       val _id = new ObjectId
       val now = DateTime.now
-      val s = SomeClassWithUnsupportedField2(id = _id,
-        email = "nobody@something.org",
-        status = Borked,
+      val s = SomeClassWithUnsupportedField2(
+        id      = _id,
+        email   = "nobody@something.org",
+        status  = Borked,
         cascade = Map(1 -> Set(1, 2, 3)),
-        thingy = Some(9),
+        thingy  = Some(9),
         created = now,
-        updated = now)
+        updated = now
+      )
       val dbo: MongoDBObject = grater[SomeClassWithUnsupportedField2].asDBObject(s)
       println(MapPrettyPrinter(dbo))
       dbo must havePair("_typeHint" -> "com.novus.salat.test.model.SomeClassWithUnsupportedField2")

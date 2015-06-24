@@ -36,13 +36,16 @@ class ListOfCommonTraitSpec extends SalatSpec {
   "a grater" should {
     "handle a case class containing a list typed to a common trait" in {
 
-      val scc = SomeContainerClass(e = "Tergiversation",
+      val scc = SomeContainerClass(
+        e                           = "Tergiversation",
         theListWhichNeedsToBeTested = List[SomeCommonTrait](
           SomeSubclassExtendingSaidTrait(b = 1),
           AnotherSubclassExtendingSaidTrait(d = 2.0),
           AnotherSubclassExtendingSaidTrait(d = 3.0),
           SomeSubclassExtendingSaidTrait(b = 4),
-          SomeSubclassExtendingSaidTrait(b = 5)))
+          SomeSubclassExtendingSaidTrait(b = 5)
+        )
+      )
 
       val dbo: MongoDBObject = grater[SomeContainerClass].asDBObject(scc)
       //      Map(_typeHint -> com.novus.salat.test.model.SomeContainerClass, e -> Tergiversation,

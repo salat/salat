@@ -30,7 +30,8 @@ import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.util.Logging
 
-/** Unfortunately, MongoCursorBase is typed to DBObject, but....
+/**
+ * Unfortunately, MongoCursorBase is typed to DBObject, but....
  *  Ripped off from casbah-mapper.
  *  https://github.com/maxaf/casbah-mapper/blob/master/src/main/scala/mapper/MappedCollection.scala
  *

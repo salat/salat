@@ -25,7 +25,7 @@
 package com.novus.salat.test.util
 
 import com.mongodb.casbah.commons.conversions.MongoConversionHelper
-import org.bson.{ BSON, Transformer }
+import org.bson.{BSON, Transformer}
 
 // Want to write your own custon BSON encoding?  Look no further than this excellent example:
 // https://github.com/mongodb/casbah/blob/master/casbah-commons/src/main/scala/conversions/ScalaConversions.scala
@@ -53,7 +53,8 @@ trait URISerializer extends MongoConversionHelper {
   private val transformer = new Transformer {
     log.trace("Encoding java.net.URI.")
 
-    /** Return a String object which BSON can encode
+    /**
+     * Return a String object which BSON can encode
      */
     def transform(o: AnyRef): AnyRef = o match {
       // the dumbest way to encode a URI that actually works for the purposes of my spec

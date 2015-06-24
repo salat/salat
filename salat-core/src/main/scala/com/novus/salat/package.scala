@@ -25,7 +25,7 @@
 package com.novus.salat
 
 import com.novus.salat.util._
-import java.math.{ RoundingMode, MathContext }
+import java.math.{RoundingMode, MathContext}
 
 object `package` extends Logging {
 

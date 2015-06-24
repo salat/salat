@@ -50,10 +50,12 @@ object `package` {
         result = r.asInstanceOf[Either[Throwable, T]]
       }
 
-    val th = new Thread(SalatThreads,
+    val th = new Thread(
+      SalatThreads,
       new AsyncSalatRunnable(f)(satisfy _),
       "Salat-%d".format(System.nanoTime),
-      stackSize)
+      stackSize
+    )
 
     th.start
     var done = false

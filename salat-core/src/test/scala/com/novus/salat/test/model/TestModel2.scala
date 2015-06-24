@@ -27,7 +27,7 @@ package com.novus.salat.test.model
 
 import org.bson.types.ObjectId
 import com.novus.salat.annotations._
-import org.joda.time.{ DateTimeZone, DateTime }
+import org.joda.time.{DateTimeZone, DateTime}
 import org.joda.time.DateTimeConstants._
 
 // a reboot of test model using the Nearly Anacrophonic Phonetic Alphabet
@@ -59,16 +59,18 @@ import org.joda.time.DateTimeConstants._
 //yttric
 //zwiebac
 
-case class Aural(_id: ObjectId = new ObjectId,
-                 a: String,
-                 b: Int,
-                 c: Double,
-                 d: BigDecimal,
-                 e: BigInt,
-                 f: Boolean,
-                 g: DateTime,
-                 h: Char,
-                 i: DateTimeZone)
+case class Aural(
+  _id: ObjectId     = new ObjectId,
+  a:   String,
+  b:   Int,
+  c:   Double,
+  d:   BigDecimal,
+  e:   BigInt,
+  f:   Boolean,
+  g:   DateTime,
+  h:   Char,
+  i:   DateTimeZone
+)
 
 trait Bdellatomy {
   val a: String
@@ -76,20 +78,26 @@ trait Bdellatomy {
   val c: Double
 }
 
-case class Ctenoid(a: String,
-                   b: Int,
-                   c: Double) extends Bdellatomy
+case class Ctenoid(
+  a: String,
+  b: Int,
+  c: Double
+) extends Bdellatomy
 
-case class Djinn(_id: ObjectId = new ObjectId,
-                 a: String = useful.TestString,
-                 b: Int = useful.KaprekarsConstant,
-                 c: Double = scala.math.E)
+case class Djinn(
+  _id: ObjectId = new ObjectId,
+  a:   String   = useful.TestString,
+  b:   Int      = useful.KaprekarsConstant,
+  c:   Double   = scala.math.E
+)
 
 case class Ewe(@Key("fluffy") fat: Boolean)
 
-case class Fantasm(_id: ObjectId = new ObjectId,
-                   which: String,
-                   @Ignore rationalExplanation: Option[String] = None)
+case class Fantasm(
+  _id:                         ObjectId       = new ObjectId,
+  which:                       String,
+  @Ignore rationalExplanation: Option[String] = None
+)
 
 case class Gneiss(igneous: Boolean) {
   @Persist val classification = if (igneous) "orthogneiss" else "paragneiss"

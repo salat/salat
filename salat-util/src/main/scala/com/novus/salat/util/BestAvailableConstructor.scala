@@ -25,11 +25,13 @@ package com.novus.salat.util
 
 import java.lang.reflect.Constructor
 
-/** Given multiple contructors, attempt to determine the best available constructor for instantiating the class.
+/**
+ * Given multiple contructors, attempt to determine the best available constructor for instantiating the class.
  */
 object BestAvailableConstructor extends Logging {
 
-  /** @param clazz parameterized class instance
+  /**
+   * @param clazz parameterized class instance
    *  @tparam A any ref
    *  @return parameterized constructor instance
    */

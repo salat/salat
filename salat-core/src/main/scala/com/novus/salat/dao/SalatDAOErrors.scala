@@ -24,15 +24,17 @@
  */
 package com.novus.salat.dao
 
-import com.mongodb.{ DBObject, WriteConcern }
+import com.mongodb.{DBObject, WriteConcern}
 import com.mongodb.casbah.TypeImports._
 
-abstract class SalatDAOError(whichDAO: String,
-                             thingThatFailed: String,
-                             collection: MongoCollection,
-                             wc: WriteConcern,
-                             wr: WriteResult,
-                             dbos: List[DBObject]) extends Error("""
+abstract class SalatDAOError(
+  whichDAO:        String,
+  thingThatFailed: String,
+  collection:      MongoCollection,
+  wc:              WriteConcern,
+  wr:              WriteResult,
+  dbos:            List[DBObject]
+) extends Error("""
 
     %s: %s failed!
 
@@ -50,30 +52,38 @@ abstract class SalatDAOError(whichDAO: String,
   if (dbos.size == 1) "DBO" else "DBOs",
   if (dbos.size == 1) dbos.head else dbos.mkString("\n")))
 
-case class SalatInsertError(description: String,
-                            collection: MongoCollection,
-                            wc: WriteConcern,
-                            wr: WriteResult,
-                            dbos: List[DBObject]) extends SalatDAOError(description, "insert", collection, wc, wr, dbos)
+case class SalatInsertError(
+  description: String,
+  collection:  MongoCollection,
+  wc:          WriteConcern,
+  wr:          WriteResult,
+  dbos:        List[DBObject]
+) extends SalatDAOError(description, "insert", collection, wc, wr, dbos)
 
-case class SalatRemoveError(description: String,
-                            collection: MongoCollection,
-                            wc: WriteConcern,
-                            wr: WriteResult,
-                            dbos: List[DBObject]) extends SalatDAOError(description, "remove", collection, wc, wr, dbos)
+case class SalatRemoveError(
+  description: String,
+  collection:  MongoCollection,
+  wc:          WriteConcern,
+  wr:          WriteResult,
+  dbos:        List[DBObject]
+) extends SalatDAOError(description, "remove", collection, wc, wr, dbos)
 
-case class SalatSaveError(description: String,
-                          collection: MongoCollection,
-                          wc: WriteConcern,
-                          wr: WriteResult,
-                          dbos: List[DBObject]) extends SalatDAOError(description, "save", collection, wc, wr, dbos)
+case class SalatSaveError(
+  description: String,
+  collection:  MongoCollection,
+  wc:          WriteConcern,
+  wr:          WriteResult,
+  dbos:        List[DBObject]
+) extends SalatDAOError(description, "save", collection, wc, wr, dbos)
 
-abstract class SalatDAOQueryError(whichDAO: String,
-                                  thingThatFailed: String,
-                                  collection: MongoCollection,
-                                  query: DBObject,
-                                  wc: WriteConcern,
-                                  wr: WriteResult) extends Error("""
+abstract class SalatDAOQueryError(
+  whichDAO:        String,
+  thingThatFailed: String,
+  collection:      MongoCollection,
+  query:           DBObject,
+  wc:              WriteConcern,
+  wr:              WriteResult
+) extends Error("""
 
     %s: %s failed!
 
@@ -85,20 +95,24 @@ abstract class SalatDAOQueryError(whichDAO: String,
 
  """.format(whichDAO, thingThatFailed, collection.name, wc, wr, query))
 
-case class SalatRemoveQueryError(whichDAO: String,
-                                 collection: MongoCollection,
-                                 query: DBObject,
-                                 wc: WriteConcern,
-                                 wr: WriteResult) extends SalatDAOQueryError(whichDAO, "remove", collection, query, wc, wr)
+case class SalatRemoveQueryError(
+  whichDAO:   String,
+  collection: MongoCollection,
+  query:      DBObject,
+  wc:         WriteConcern,
+  wr:         WriteResult
+) extends SalatDAOQueryError(whichDAO, "remove", collection, query, wc, wr)
 
-case class SalatDAOUpdateError(whichDAO: String,
-                               collection: MongoCollection,
-                               query: DBObject,
-                               o: DBObject,
-                               wc: WriteConcern,
-                               wr: WriteResult,
-                               upsert: Boolean,
-                               multi: Boolean) extends Error("""
+case class SalatDAOUpdateError(
+  whichDAO:   String,
+  collection: MongoCollection,
+  query:      DBObject,
+  o:          DBObject,
+  wc:         WriteConcern,
+  wr:         WriteResult,
+  upsert:     Boolean,
+  multi:      Boolean
+) extends Error("""
 
     %s: update failed!
 

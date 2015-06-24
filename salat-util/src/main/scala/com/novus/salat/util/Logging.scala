@@ -23,12 +23,14 @@
  */
 package com.novus.salat.util
 
-/** Derived from work Copyright (C) 2009-2010 Scalable Solutions AB <http://scalablesolutions.se>
+/**
+ * Derived from work Copyright (C) 2009-2010 Scalable Solutions AB <http://scalablesolutions.se>
  */
 
-import org.slf4j.{ Logger => SLFLogger, LoggerFactory => SLFLoggerFactory }
+import org.slf4j.{Logger => SLFLogger, LoggerFactory => SLFLoggerFactory}
 
-/** Base trait for all classes that wants to be able use the logging infrastructure.
+/**
+ * Base trait for all classes that wants to be able use the logging infrastructure.
  *
  *  @author <a href="http://jonasboner.com">Jonas Bon&#233;r</a>
  */
@@ -36,7 +38,8 @@ protected[salat] trait Logging {
   @transient protected lazy val log = Logger(this.getClass.getName)
 }
 
-/** Scala SLF4J wrapper
+/**
+ * Scala SLF4J wrapper
  *
  *  Example:
  *  <pre>
@@ -153,7 +156,8 @@ protected[salat] class Logger(val logger: SLFLogger) {
   }
 }
 
-/** Logger factory
+/**
+ * Logger factory
  *
  *  ex.
  *

@@ -25,7 +25,7 @@
 package com.novus.salat.test
 
 import com.novus.salat.test.model.AttributeObject
-import scala.collection.immutable.{ Map => IMap }
+import scala.collection.immutable.{Map => IMap}
 import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
@@ -38,8 +38,10 @@ class MapSupportSpec extends SalatSpec {
 
     "support objects that contain maps" in {
 
-      val urls = IMap("foo" -> UrlID(dh = 1L, ph = 2L),
-        "bar" -> UrlID(dh = 3L, ph = 4L))
+      val urls = IMap(
+        "foo" -> UrlID(dh = 1L, ph = 2L),
+        "bar" -> UrlID(dh = 3L, ph = 4L)
+      )
       val ao = AttributeObject(_id = 42L, key = "testKey1", bestDef = "bestDef1", urls)
 
       val dbo: MongoDBObject = grater[AttributeObject].asDBObject(ao)

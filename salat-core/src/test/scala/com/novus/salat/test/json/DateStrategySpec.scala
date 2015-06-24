@@ -27,8 +27,8 @@ package com.novus.salat.test.json
 
 import org.specs2.mutable.Specification
 import com.novus.salat.util.Logging
-import org.joda.time.{ DateTimeZone, DateTime }
-import com.novus.salat.json.{ StrictJSONDateStrategy, TimestampDateStrategy, StringDateStrategy }
+import org.joda.time.{DateTimeZone, DateTime}
+import com.novus.salat.json.{StrictJSONDateStrategy, TimestampDateStrategy, StringDateStrategy}
 import org.joda.time.format.ISODateTimeFormat
 import org.json4s.JsonAST._
 

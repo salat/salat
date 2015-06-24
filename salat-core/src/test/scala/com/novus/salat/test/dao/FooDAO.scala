@@ -27,8 +27,8 @@ package com.novus.salat.test.dao
 
 import com.novus.salat.annotations._
 import org.bson.types.ObjectId
-import com.novus.salat.{ TypeHintFrequency, StringTypeHintStrategy, Context }
-import com.novus.salat.dao.{ ConcreteSubclassDAO, SalatDAO }
+import com.novus.salat.{TypeHintFrequency, StringTypeHintStrategy, Context}
+import com.novus.salat.dao.{ConcreteSubclassDAO, SalatDAO}
 import com.mongodb.casbah.Imports._
 import com.novus.salat.StringTypeHintStrategy
 import com.novus.salat.test._

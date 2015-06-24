@@ -25,9 +25,9 @@
 package com.novus.salat
 
 import scala.tools.scalap.scalax.rules.scalasig._
-import com.novus.salat.{ Field => SField }
+import com.novus.salat.{Field => SField}
 
-import java.lang.reflect.{ InvocationTargetException, Method }
+import java.lang.reflect.{InvocationTargetException, Method}
 
 import com.novus.salat.annotations.raw._
 import com.novus.salat.annotations.util._
@@ -37,7 +37,7 @@ import com.mongodb.casbah.Imports._
 import com.novus.salat.util.Logging
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import com.novus.salat.json.{ FromJValue, ToJField }
+import com.novus.salat.json.{FromJValue, ToJField}
 import org.json4s.native.JsonParser
 
 // TODO: create companion object to serve as factory for grater creation - there
@@ -172,10 +172,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       .map {
         case (ms, idx) => {
           //        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
-          SField(idx = idx,
-            name = if (ca.keyOverridesFromAbove.contains(ms)) ca.keyOverridesFromAbove(ms) else ms.name,
-            t = ClassAnalyzer.typeRefType(ms),
-            method = clazz.getMethod(ms.name))
+          SField(
+            idx    = idx,
+            name   = if (ca.keyOverridesFromAbove.contains(ms)) ca.keyOverridesFromAbove(ms) else ms.name,
+            t      = ClassAnalyzer.typeRefType(ms),
+            method = clazz.getMethod(ms.name)
+          )
         }
 
       }

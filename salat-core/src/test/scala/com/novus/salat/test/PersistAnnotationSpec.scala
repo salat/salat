@@ -135,7 +135,8 @@ class PersistAnnotationSpec extends SalatSpec {
         val m = ManyMauds(mauds = List[MaudLike](
           Maud5(swept = "swept", out = "out"),
           Maud6(swept = "swept", out = "out"),
-          Maud7(swept = "swept", out = "out")))
+          Maud7(swept = "swept", out = "out")
+        ))
         val dbo: MongoDBObject = grater[ManyMauds].asDBObject(m)
         //      log.info(MapPrettyPrinter(dbo))
         dbo must havePair("_typeHint" -> "com.novus.salat.test.model.ManyMauds")
@@ -182,7 +183,8 @@ class PersistAnnotationSpec extends SalatSpec {
         val m = Maudelic(mauds = List[EvenMoreMaudLike](
           Maud8(swept = "swept", out = "out"),
           Maud9(swept = "swept", out = "out"),
-          Maud10(swept = "swept", out = "out")))
+          Maud10(swept = "swept", out = "out")
+        ))
         val dbo: MongoDBObject = grater[Maudelic].asDBObject(m)
         //        log.info(MapPrettyPrinter(dbo))
         dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Maudelic")

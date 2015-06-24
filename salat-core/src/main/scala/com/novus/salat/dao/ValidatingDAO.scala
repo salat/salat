@@ -39,7 +39,8 @@ case class ValidationError[T](t: T, iter: Iterable[Throwable]) extends Error(
     |
     |BECAUSE
     |%s
-  """.stripMargin.format(t, iter.map(_.getMessage).mkString("\n")))
+  """.stripMargin.format(t, iter.map(_.getMessage).mkString("\n"))
+)
 
 abstract class Validates[T](validators: List[T => Either[Throwable, T]]) {
   def apply(x: T) = validators.map(_.apply(x)).partition(_.isLeft) match {
@@ -52,16 +53,19 @@ case class MutilValidateError(ts: Traversable[Throwable]) extends Error(
   """
     |Multidoc insert failed with the following errors:
     |%s
-  """.stripMargin.format(ts.map(_.getMessage).mkString("\n")))
+  """.stripMargin.format(ts.map(_.getMessage).mkString("\n"))
+)
 
-abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
+abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val collection: MongoCollection)(implicit
+  mot: Manifest[ObjectType],
                                                                                                              mid: Manifest[ID], ctx: Context) extends SalatDAO[ObjectType, ID](collection)(mot, mid, ctx) {
 
   def validators: List[ObjectType => Either[Throwable, ObjectType]]
 
   object validates extends Validates[ObjectType](validators)
 
-  /** @param t instance of ObjectType
+  /**
+   * @param t instance of ObjectType
    *  @param wc write concern
    *  @return if insert succeeds, ID of inserted object
    */
@@ -72,7 +76,8 @@ abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val 
     }
   }
 
-  /** @param docs collection of `ObjectType` instances to insert
+  /**
+   * @param docs collection of `ObjectType` instances to insert
    *  @param wc write concern
    *  @return list of object ids
    *         TODO: flatten list of IDs - why on earth didn't I do that in the first place?
@@ -90,7 +95,8 @@ abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val 
   }
   else Nil
 
-  /** Performs an update operation.
+  /**
+   * Performs an update operation.
    *  @param q search query for old object to update
    *  @param t object with which to update <tt>q</tt>
    *  @param upsert if the database should create the element if it does not exist
@@ -105,7 +111,8 @@ abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val 
 
   override lazy val description = "ValidatingSalatDAO[%s,%s](%s)".format(mot.runtimeClass.getSimpleName, mid.runtimeClass.getSimpleName, collection.name)
 
-  /** @param t object to save
+  /**
+   * @param t object to save
    *  @param wc write concern
    *  @return (WriteResult) result of write operation
    */
