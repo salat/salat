@@ -1,7 +1,7 @@
 package com.novus.salat.bson
 
-import org.bson._
 import com.mongodb.casbah.Imports._
+import org.bson._
 import org.bson.types.BasicBSONList
 
 object BSONObjectToMongoDbObject {

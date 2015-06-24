@@ -25,9 +25,9 @@
 
 package com.novus.salat.test.dao
 
+import com.novus.salat.dao.ValidationError
 import com.novus.salat.test.SalatSpec
 import org.bson.types.ObjectId
-import com.novus.salat.dao.ValidationError
 
 class ValidatingSalatDAOSpec extends SalatSpec {
 

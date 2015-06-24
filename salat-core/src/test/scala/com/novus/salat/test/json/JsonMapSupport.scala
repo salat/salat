@@ -1,7 +1,7 @@
 package com.novus.salat.test.json
 
-import com.novus.salat.test.SalatSpec
 import com.novus.salat.json.MapToJSON
+import com.novus.salat.test.SalatSpec
 
 class JsonMapSupport extends SalatSpec {
 
@@ -9,41 +9,41 @@ class JsonMapSupport extends SalatSpec {
     "text" -> "root", "root" -> true, "depth" -> 0, "children" -> List(
       Map(
         "children" -> List(
-        Map("text" -> "Orange", "leaf" -> true, "depth" -> 2, "checked" -> true)
-      ),
+          Map("text" -> "Orange", "leaf" -> true, "depth" -> 2, "checked" -> true)
+        ),
         "checked" -> true, "expanded" -> true, "text" -> "Orange", "depth" -> 1
       ),
       Map(
         "children" -> List(
-        Map("text" -> "Acerola", "leaf" -> true, "depth" -> 2, "checked" -> true)
-      ),
+          Map("text" -> "Acerola", "leaf" -> true, "depth" -> 2, "checked" -> true)
+        ),
         "checked" -> true, "expanded" -> true, "text" -> "Acerola", "depth" -> 1
       ),
       Map(
         "children" -> List(
-        Map("text" -> "Apple", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Strawberry", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Guava", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Sapote", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Mango", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Limequat", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Langsat", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Papaya", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Cherimoya", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Citron", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Apricot", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Feijoa", "leaf" -> true, "depth" -> 2, "checked" -> true)
-      ),
+          Map("text" -> "Apple", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Strawberry", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Guava", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Sapote", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Mango", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Limequat", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Langsat", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Papaya", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Cherimoya", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Citron", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Apricot", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Feijoa", "leaf" -> true, "depth" -> 2, "checked" -> true)
+        ),
         "checked" -> true, "expanded" -> true, "text" -> "Calamondin", "depth" -> 1
       ),
       Map(
         "children" -> List(
-        Map("text" -> "Pear", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Pumpkin", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Pineapple", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Blueberry", "leaf" -> true, "depth" -> 2, "checked" -> true),
-        Map("text" -> "Nance", "leaf" -> true, "depth" -> 2, "checked" -> true)
-      ),
+          Map("text" -> "Pear", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Pumpkin", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Pineapple", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Blueberry", "leaf" -> true, "depth" -> 2, "checked" -> true),
+          Map("text" -> "Nance", "leaf" -> true, "depth" -> 2, "checked" -> true)
+        ),
         "checked" -> true, "expanded" -> true, "text" -> "Persimmons", "depth" -> 1
       )
     )

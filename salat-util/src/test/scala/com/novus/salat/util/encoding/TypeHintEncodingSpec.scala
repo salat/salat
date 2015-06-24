@@ -23,9 +23,9 @@
  */
 package com.novus.salat.util.encoding
 
-import org.specs2.mutable.Specification
-import com.novus.salat.util.model._
 import com.novus.salat.util.Logging
+import com.novus.salat.util.model._
+import org.specs2.mutable.Specification
 
 class TypeHintEncodingSpec extends Specification with Logging {
 

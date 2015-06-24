@@ -24,12 +24,14 @@
  */
 package com.novus.salat.transformers
 
+import java.lang.reflect.Method
+
 import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.annotations.util._
 import com.novus.salat.impls._
 import com.novus.salat.util._
-import java.lang.reflect.Method
+
 import scala.tools.scalap.scalax.rules.scalasig._
 
 package object in {
@@ -282,8 +284,7 @@ package object in {
 
 package in {
 
-  import java.lang.Integer
-  import org.joda.time.{DateTime, LocalDateTime, DateTimeZone}
+  import org.joda.time.{DateTime, DateTimeZone, LocalDateTime}
   import org.json4s.JsonAST.JArray
 
   trait LongToInt extends Transformer {

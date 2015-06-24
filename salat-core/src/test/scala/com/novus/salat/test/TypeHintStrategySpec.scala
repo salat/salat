@@ -24,12 +24,11 @@
  */
 package com.novus.salat.test
 
-import org.specs2.mutable.Specification
-import com.novus.salat._
+import com.novus.salat.{BinaryTypeHintStrategy, _}
 import com.novus.salat.test.model._
 import com.novus.salat.util.Logging
-import com.novus.salat.BinaryTypeHintStrategy
 import com.novus.salat.util.encoding.TypeHintEncoding
+import org.specs2.mutable.Specification
 
 class TypeHintStrategySpec extends Specification with Logging {
 

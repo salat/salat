@@ -25,20 +25,17 @@
 package com.novus.salat.test.json
 
 import com.novus.salat._
-import com.novus.salat.json.StrictJSONDateStrategy
-import com.novus.salat.json.StringDateStrategy
-import com.novus.salat.json.TimestampDateStrategy
-import com.novus.salat.json._
+import com.novus.salat.json.{StrictJSONDateStrategy, StringDateStrategy, TimestampDateStrategy, _}
 import com.novus.salat.util._
 import org.bson.types.ObjectId
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, DateTimeZone}
 import org.json4s._
-import org.specs2.mutable.Specification
-import scala.util.parsing.json.JSONArray
-import scala.util.parsing.json.JSONObject
 import org.specs2.matcher.JsonMatchers
+import org.specs2.mutable.Specification
+
+import scala.util.parsing.json.{JSONArray, JSONObject}
 
 class JsonSpec extends Specification with Logging with JsonMatchers {
 

@@ -24,13 +24,13 @@
  */
 package com.novus.salat.test
 
-import com.novus.salat.test.model.AttributeObject
-import scala.collection.immutable.{Map => IMap}
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.test.global._
-import com.novus.salat.test.model._
-import com.mongodb.casbah.Imports._
+import com.novus.salat.test.model.{AttributeObject, _}
 import com.novus.salat.util.MapPrettyPrinter
+
+import scala.collection.immutable.{Map => IMap}
 
 class MapSupportSpec extends SalatSpec {
 

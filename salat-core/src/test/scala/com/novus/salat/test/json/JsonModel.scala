@@ -24,9 +24,9 @@
  */
 package com.novus.salat.test.json
 
-import org.joda.time.DateTime
-import org.bson.types.ObjectId
 import com.novus.salat.annotations._
+import org.bson.types.ObjectId
+import org.joda.time.DateTime
 
 //  A	Adam
 //  B	Bertil

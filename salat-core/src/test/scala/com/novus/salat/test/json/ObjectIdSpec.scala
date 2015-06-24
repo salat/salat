@@ -25,11 +25,11 @@
 
 package com.novus.salat.test.json
 
-import org.bson.types.ObjectId
-import org.specs2.mutable.Specification
-import com.novus.salat.util.Logging
 import com.novus.salat.json.{StrictJSONObjectIdStrategy, StringObjectIdStrategy}
+import com.novus.salat.util.Logging
+import org.bson.types.ObjectId
 import org.json4s.JsonAST._
+import org.specs2.mutable.Specification
 
 class ObjectIdSpec extends Specification with Logging {
 

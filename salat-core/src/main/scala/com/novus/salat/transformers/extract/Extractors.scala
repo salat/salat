@@ -28,6 +28,7 @@ import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.annotations.util._
 import com.novus.salat.util.Logging
+
 import scala.tools.scalap.scalax.rules.scalasig._
 
 package object out {

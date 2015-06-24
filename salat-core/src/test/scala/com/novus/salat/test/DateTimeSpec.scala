@@ -29,8 +29,7 @@ import com.mongodb.util.JSON.parse
 import com.novus.salat._
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
-import org.joda.time.DateTime
-import org.joda.time.LocalDateTime
+import org.joda.time.{DateTime, LocalDateTime}
 
 class DateTimeSpec extends SalatSpec {
   "A grater" should {

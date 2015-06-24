@@ -25,13 +25,11 @@
 
 package com.novus.salat.util
 
-import com.novus.salat._
-import com.novus.salat.test.global._
-import com.novus.salat.util._
-import com.novus.salat.test.model._
 import com.mongodb.casbah.Imports._
+import com.novus.salat._
 import com.novus.salat.test.SalatSpec
-import scala.reflect.Manifest
+import com.novus.salat.test.global._
+import com.novus.salat.test.model._
 
 class PrettyPrinterSpec extends SalatSpec {
   "Constructor/input pretty printer" should {

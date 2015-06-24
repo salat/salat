@@ -24,12 +24,10 @@
  */
 package com.novus.salat.test
 
-import java.math.{MathContext, RoundingMode}
-import com.novus.salat._
 import com.mongodb.casbah.Imports._
+import com.novus.salat._
 import com.novus.salat.test.model.Rhoda
 import com.novus.salat.util.encoding.TypeHintEncoding
-import com.mongodb.casbah.Imports
 
 package object always {
 

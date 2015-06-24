@@ -25,10 +25,11 @@
 
 package com.novus.salat.json
 
-import java.util.{TimeZone, Date}
+import java.util.{Date, TimeZone}
+
 import org.bson.types.{BSONTimestamp, ObjectId}
 import org.joda.time.format.{DateTimeFormatter, ISODateTimeFormat}
-import org.joda.time.{DateTime, LocalDateTime, DateTimeZone}
+import org.joda.time.{DateTime, DateTimeZone, LocalDateTime}
 import org.json4s._
 
 object JSONConfig {

@@ -25,6 +25,7 @@
 package com.novus.salat.util
 
 import com.novus.salat.annotations.util._
+
 import scala.reflect.ScalaSignature
 import scala.reflect.internal.pickling.ByteCodecs
 import scala.tools.scalap.scalax.rules.scalasig._

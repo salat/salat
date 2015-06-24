@@ -24,10 +24,11 @@
  */
 package com.novus.salat
 
-import com.novus.salat.util.encoding.TypeHintEncoding
-import com.novus.salat.util.{Logging, ClassPrettyPrinter}
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
+
+import com.novus.salat.util.encoding.TypeHintEncoding
+import com.novus.salat.util.{ClassPrettyPrinter, Logging}
 
 // TODO: oof.  this is not OO design at its most graceful.  refactor it!
 

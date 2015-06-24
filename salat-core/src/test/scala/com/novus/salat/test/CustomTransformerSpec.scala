@@ -2,8 +2,8 @@ package com.novus.salat.test
 
 import com.mongodb.casbah.Imports._
 import com.novus.salat._
-import com.novus.salat.test.custom._
 import com.novus.salat.custom.Bicycle
+import com.novus.salat.test.custom._
 
 class CustomTransformerSpec extends SalatSpec {
 
