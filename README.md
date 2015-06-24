@@ -1,5 +1,7 @@
 # Salat
 
+[![Build Status](https://travis-ci.org/salat/salat.svg?branch=master)](https://travis-ci.org/salat/salat)
+
 Salat is a simple serialization library for case classes.
 
 Salat currently supports bidirectional serialization for:
