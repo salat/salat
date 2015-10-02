@@ -36,7 +36,7 @@ sealed trait BigDecimalStrategy extends Logging {
 
   def out(value: Any): Any = value match {
     case s: scala.math.BigDecimal => out0(s)
-    case j: java.math.BigDecimal  => out0(BigDecimal(j, mathCtx))
+    case j: java.math.BigDecimal  => out0(BigDecimal.decimal(j, mathCtx))
     case d: Double                => out0(BigDecimal(d.toString, mathCtx))
     case d: java.lang.Double      => out0(BigDecimal(d.toString, mathCtx))
     case i: Int                   => out0(BigDecimal(i.toString, mathCtx))
