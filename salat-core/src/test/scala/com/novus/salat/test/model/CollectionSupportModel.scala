@@ -70,3 +70,6 @@ case class Roger(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection
 case class XRay(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.BitSet)
 case class Yoke(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.immutable.BitSet)
 case class Zebra(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.mutable.BitSet)
+
+case class GloratArrayByte(@Key("_id") id: ObjectId = new ObjectId, coll: Array[Byte])
+case class GloratSeqByte(@Key("_id") id: ObjectId = new ObjectId, coll: scala.collection.Seq[Byte])

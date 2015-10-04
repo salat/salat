@@ -44,6 +44,7 @@ protected[salat] object Types {
   val Map = ".Map"
   val Traversables = Set(".Seq", ".List", ".Vector", ".Set", ".Buffer", ".ArrayBuffer", ".IndexedSeq", ".LinkedList", ".DoubleLinkedList")
   val BitSets = Set("scala.collection.BitSet", "scala.collection.immutable.BitSet", "scala.collection.mutable.BitSet")
+  val BinaryCollectable = Set(".Seq", ".IndexedSeq")
 
   def isOption(sym: Symbol) = sym.path == Option
 
@@ -52,6 +53,8 @@ protected[salat] object Types {
   def isTraversable(symbol: Symbol) = Traversables.exists(symbol.path.endsWith(_))
 
   def isBitSet(symbol: Symbol) = BitSets.contains(symbol.path)
+
+  def isBinaryCollectable(symbol: Symbol) = BinaryCollectable.exists(symbol.path.endsWith(_))
 
   def isBigDecimal(symbol: Symbol) = SBigDecimal.contains(symbol.path)
 
@@ -73,6 +76,7 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
   lazy val isTimeZone = TypeMatchers.matches(t, Types.TimeZone)
   lazy val isDateTimeZone = TypeMatchers.matches(t, Types.DateTimeZone)
 
+  lazy val isByte = TypeMatchers.matches(t, classOf[Byte].getName)
   lazy val isChar = TypeMatchers.matches(t, classOf[Char].getName)
   lazy val isFloat = TypeMatchers.matches(t, classOf[Float].getName)
   lazy val isDouble = TypeMatchers.matches(t, "scala.Double" :: "java.lang.Double" :: Nil)
@@ -110,6 +114,17 @@ protected[salat] object TypeMatchers {
     case _ => None
   }
 
+  def matchesBinary(t: Type): Option[Type] = t match {
+    // TypeRefType(ThisType(scala.collection),scala.collection.Seq,List(TypeRefType(ThisType(scala),scala.Byte,List())))
+    case TypeRefType(_, symbol, List(TypeRefType(_, innerSymbol, _))) => {
+      if (Types.isBinaryCollectable(symbol) && innerSymbol.path == "scala.Byte")
+        Some(t)
+      else
+        None
+    }
+    case _ => None
+  }
+
   def matchesBitSet(t: Type) = t match {
     case TypeRefType(_, symbol, _) if Types.isBitSet(symbol) => Some(symbol)
     case _ => None
@@ -124,7 +139,10 @@ protected[salat] object IsMap {
   def unapply(t: Type): Option[(Type, Type)] = TypeMatchers.matchesMap(t)
 }
 
+protected[salat] object IsBinary {
+  def unapply(t: Type): Option[Type] = TypeMatchers.matchesBinary(t)
+}
+
 protected[salat] object IsTraversable {
   def unapply(t: Type): Option[Type] = TypeMatchers.matchesTraversable(t)
 }
-

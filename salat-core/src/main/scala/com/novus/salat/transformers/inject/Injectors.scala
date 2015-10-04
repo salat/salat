@@ -83,6 +83,11 @@ package object in {
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionInjector
       }
+      case IsBinary(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _)  => {
+          new Transformer(t.symbol.path, t)(ctx) with BinaryInjector
+        }
+      }
       case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
           new Transformer(t.symbol.path, t)(ctx) with CaseObjectInjector with TraversableInjector {
@@ -472,6 +477,18 @@ package in {
     val parentType: TypeRefType
   }
 
+  trait BinaryInjector extends Transformer with Logging {
+    self: Transformer =>
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case c: Array[Byte] => {
+        val seq:Seq[Byte] = c
+        Some(seq)
+      }
+      case _                           => None
+    }
+  }
+
+  
   trait BitSetInjector extends Transformer with Logging {
     override def transform(value: Any)(implicit ctx: Context): Any = value
 
