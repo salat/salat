@@ -337,13 +337,13 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   def insert(t: ObjectType, wc: WriteConcern) = {
     val dbo = decorateDBO(t)
-    val wr = collection.insert(dbo, wc)
-    val error = wr.getCachedLastError
-    if (error == null || (error != null && error.ok())) {
+    var wr: WriteResult = null
+    try {
+      wr = collection.insert(dbo, wc)
       dbo.getAs[ID]("_id")
     }
-    else {
-      throw SalatInsertError(description, collection, wc, wr, List(dbo))
+    catch {
+      case mex: MongoException => throw SalatInsertError(description, collection, wc, wr, List(dbo))
     }
   }
 
@@ -355,16 +355,16 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   def insert(docs: Traversable[ObjectType], wc: WriteConcern = defaultWriteConcern) = if (docs.nonEmpty) {
     val dbos = docs.map(decorateDBO(_)).toList
-    val wr = collection.insert(dbos: _*)
-    val lastError = wr.getCachedLastError
-    if (lastError == null || (lastError != null && lastError.ok())) {
+    var wr: WriteResult = null
+    try {
+      wr = collection.insert(dbos: _*)
       dbos.map {
         dbo =>
           dbo.getAs[ID]("_id") orElse collection.findOne(dbo).flatMap(_.getAs[ID]("_id"))
       }
     }
-    else {
-      throw SalatInsertError(description, collection, wc, wr, dbos)
+    catch {
+      case mex: MongoException => throw SalatInsertError(description, collection, wc, wr, dbos)
     }
   }
   else Nil
@@ -399,12 +399,14 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   def remove(t: ObjectType, wc: WriteConcern) = {
     val dbo = decorateDBO(t)
-    val wr = collection.remove(dbo, wc)
-    val lastError = wr.getCachedLastError
-    if (lastError != null && !lastError.ok()) {
-      throw SalatRemoveError(description, collection, wc, wr, List(dbo))
+    var wr: WriteResult = null
+    try {
+      wr = collection.remove(dbo, wc)
+      wr
     }
-    wr
+    catch {
+      case mex: MongoException => throw SalatRemoveError(description, collection, wc, wr, List(dbo))
+    }
   }
 
   /**
@@ -413,12 +415,14 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (WriteResult) result of write operation
    */
   def remove[A <% DBObject](q: A, wc: WriteConcern) = {
-    val wr = collection.remove(q, wc)
-    val lastError = wr.getCachedLastError
-    if (lastError != null && !lastError.ok()) {
-      throw SalatRemoveQueryError(description, collection, q, wc, wr)
+    var wr: WriteResult = null
+    try {
+      wr = collection.remove(q, wc)
+      wr
     }
-    wr
+    catch {
+      case mex: MongoException => throw SalatRemoveQueryError(description, collection, q, wc, wr)
+    }
   }
 
   /**
@@ -446,12 +450,14 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   def save(t: ObjectType, wc: WriteConcern) = {
     val dbo = decorateDBO(t)
-    val wr = collection.save(dbo, wc)
-    val lastError = wr.getCachedLastError
-    if (lastError != null && !lastError.ok()) {
-      throw SalatSaveError(description, collection, wc, wr, List(dbo))
+    var wr: WriteResult = null
+    try {
+      wr = collection.save(dbo, wc)
+      wr
     }
-    wr
+    catch {
+      case mex: MongoException => throw SalatSaveError(description, collection, wc, wr, List(dbo))
+    }
   }
 
   /**
@@ -463,12 +469,14 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (WriteResult) result of write operation
    */
   def update(q: DBObject, o: DBObject, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = defaultWriteConcern): WriteResult = {
-    val wr = collection.update(decorateQuery(q), o, upsert, multi, wc)
-    val lastError = wr.getCachedLastError
-    if (lastError != null && !lastError.ok()) {
-      throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
+    var wr: WriteResult = null
+    try {
+      val wr = collection.update(decorateQuery(q), o, upsert, multi, wc)
+      wr
     }
-    wr
+    catch {
+      case mex: MongoException => throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
+    }
   }
 
   /**
