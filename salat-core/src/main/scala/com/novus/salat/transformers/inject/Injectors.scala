@@ -84,7 +84,7 @@ package object in {
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionInjector
       }
       case IsBinary(t @ TypeRefType(_, _, _)) => t match {
-        case TypeRefType(_, symbol, _)  => {
+        case TypeRefType(_, symbol, _) => {
           new Transformer(t.symbol.path, t)(ctx) with BinaryInjector
         }
       }
@@ -481,14 +481,13 @@ package in {
     self: Transformer =>
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case c: Array[Byte] => {
-        val seq:Seq[Byte] = c
+        val seq: Seq[Byte] = c
         Some(seq)
       }
-      case _                           => None
+      case _ => None
     }
   }
 
-  
   trait BitSetInjector extends Transformer with Logging {
     override def transform(value: Any)(implicit ctx: Context): Any = value
 
