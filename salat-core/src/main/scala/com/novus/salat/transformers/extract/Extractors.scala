@@ -272,7 +272,7 @@ package out {
   trait BinaryExtractor extends Transformer with Logging {
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
       case bs: Seq[Byte] => Some(bs.toArray)
-      case _                           => None
+      case _             => None
     }
   }
 
