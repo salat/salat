@@ -69,8 +69,8 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.novus"
-  val buildVersion = "2.0.0-SNAPSHOT"
-  val buildScalaVersion = "2.11.2"
+  val buildVersion = "2.1.0-SNAPSHOT"
+  val buildScalaVersion = "2.11.7"
 
   val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
@@ -149,11 +149,11 @@ object Publish {
 object Dependencies {
 
   private val LogbackVersion = "1.0.9"
-  private val CasbahVersion = "2.7.1"
+  private val CasbahVersion = "3.1.0"
 
-  val specs2 = "org.specs2" %% "specs2" % "2.3.11" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "2.3.13" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
-  val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.2"
+  val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.14"
   val logbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion % "test"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % LogbackVersion % "test"
   val casbah = "org.mongodb" %% "casbah-core" % CasbahVersion
