@@ -130,11 +130,11 @@ object Publish {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
     licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-    homepage := Some(url("https://github.com/novus/salat")),
+    homepage := Some(url("https://github.com/salat/salat")),
     pomExtra := (
       <scm>
-        <url>git://github.com/novus/salat.git</url>
-        <connection>scm:git://github.com/novus/salat.git</connection>
+        <url>git://github.com/salat/salat.git</url>
+        <connection>scm:git://github.com/salat/salat.git</connection>
       </scm>
       <developers>
         <developer>
