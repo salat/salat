@@ -1,9 +1,6 @@
 /*
- * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
- *
- * Module:        salat-build
- * Class:         SalatBuild.scala
- * Last modified: 2013-01-07 22:28:16 EST
+ * Copyright (c) 2010 - May 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) June 2015 - 2016 Rose Toomey and contributors where noted (http://github.com/salat/salat)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
  */
@@ -68,7 +65,7 @@ object BuildSettings {
 
   import Repos._
 
-  val buildOrganization = "com.novus"
+  val buildOrganization = "com.github.salat"
   val buildVersion = "1.9.10-SNAPSHOT"
   val buildScalaVersion = "2.11.2"
 
