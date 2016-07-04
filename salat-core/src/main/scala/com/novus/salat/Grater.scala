@@ -427,7 +427,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
   protected[salat] lazy val betterDefaults = {
     val builder = Map.newBuilder[SField, DefaultArg]
-    for (field <- indexedFields.filterNot(_.name == "_id")) {
+    for (field <- indexedFields) {
 
       val companionObjFieldInitializer = defaultValueInitializerName(field.idx + 1)
 
@@ -452,7 +452,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
 
 case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(implicit val ctx: Context) extends Logging {
 
-  def suppress(element: Any) = if (ctx.suppressDefaultArgs && field.name != "_id") {
+  def suppress(element: Any) = if (ctx.suppressDefaultArgs) {
     val result = value.exists {
       v =>
         element match {
@@ -471,7 +471,7 @@ case class DefaultArg(clazz: Class[_], field: SField, value: Option[AnyRef])(imp
     case v @ Some(_) => v
     case _ => field.typeRefType match {
       case IsOption(_) => Some(None)
-      case _           => throw new Exception("%s requires value for '%s'".format(clazz, field.name))
+      case _           => sys.error("%s requires value for '%s'".format(clazz, field.name))
     }
   }
 

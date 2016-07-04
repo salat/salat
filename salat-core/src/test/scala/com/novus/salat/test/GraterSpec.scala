@@ -157,13 +157,7 @@ class GraterSpec extends SalatSpec {
         //        theOrder must_== order
         todo
       }
-
-      "initialize empty _id with default 'None' if type Option" in {
-        grater[ProbeOptionalId].fromJSON("{}")._id should beNone
-      }
     }
   }
-
 }
 
-case class ProbeOptionalId(_id: Option[ObjectId] = None)
