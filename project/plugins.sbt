@@ -1,7 +1,8 @@
-resolvers ++= Seq(
-  Resolver.url("sbt-plugin-releases2", new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns),
-  "coda" at "http://repo.codahale.com"
-)
+// repo.codahale.com is not currently online (July 4, 2016)
+// resolvers ++= Seq(
+//   Resolver.url("sbt-plugin-releases2", new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns),
+//   "coda" at "http://repo.codahale.com"
+// )
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.2.0")
 
