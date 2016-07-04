@@ -139,6 +139,11 @@ object Publish {
           <name>Rose Toomey</name>
           <url>http://github.com/rktoomey</url>
         </developer>
+        <developer>
+          <id>noahlz</id>
+          <name>Noah Zucker</name>
+          <url>http://github.com/noahlz</url>
+        </developer>
       </developers>)
   )
 }
