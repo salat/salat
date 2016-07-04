@@ -1,0 +1,5 @@
+Salat 1.9.10 is a maintenance release that:
+
+- Bugfix #137 "When suppressDefaultArgs = true, ObjectId fields without default value cause runtime error"
+- Bugfix for PR #161 "add test for '\_id: Option[ObjectId] = None' 
+
