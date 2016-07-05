@@ -37,6 +37,20 @@ import com.novus.salat.StringTypeHintStrategy
 import scala.tools.scalap.scalax.rules.scalasig.{ SingleType, TypeRefType }
 import org.bson.types.{ BasicBSONList, BSONTimestamp }
 
+/** The target type of the JValue value was not resolvable, either due to insufficient
+ *  type hinting, or unsupported data structure, such as nested collections (as of 1.9.10)
+ */
+case class UnsupportedJsonTransformationException(msg: String) extends RuntimeException(
+  s"""$msg
+  |
+  |NOTE: salat has certain limitations. It cannot deserialize JSON into case classes having fields such as:
+  |- Arrays such as Array[String]
+  |- Nested collections such as Map[String, List[String]]
+  |- Optional collections such as Option[List[String]]
+  |
+  |For more information, please visit: https://github.com/salat/salat/wiki/SupportedTypes
+  """.stripMargin)
+
 object MapToJSON extends Logging {
 
   val empty = compact(render(JObject(Nil)))
@@ -106,7 +120,9 @@ object ToJValue extends Logging {
       case o: ObjectId => ctx.jsonConfig.objectIdStrategy.out(o)
       case u: java.net.URL => JString(u.toString) // might as well
       case ts: BSONTimestamp => ctx.jsonConfig.bsonTimestampStrategy.out(ts)
-      case x: AnyRef => sys.error("serialize: Unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
+      case x: AnyRef =>
+        throw new UnsupportedJsonTransformationException(
+          s"serialize: Unsupported JSON transformation for class='${x.getClass.getName}', value='$x'")
     }
 
     //    log.debug(
@@ -143,7 +159,9 @@ object FromJValue extends Logging {
           v
         }
         case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
-        case notTraversable                        => sys.error("FromJValue: expected types for Traversable but instead got:\n%s".format(notTraversable))
+        case notTraversable =>
+          throw new UnsupportedJsonTransformationException(
+            s"FromJValue: expected types for Traversable but instead got:\n$notTraversable")
       }
       case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
         case IsMap(_, childType: TypeRefType) => {
@@ -151,15 +169,21 @@ object FromJValue extends Logging {
             case (key, Some(value)) => key -> value
           }.toMap
         }
-        case notMap => sys.error("FromJValue: expected types for Map but instead got:\n%s".format(notMap))
+        case notMap =>
+          throw new UnsupportedJsonTransformationException(
+            s"FromJValue: expected types for Map but instead got:\n$notMap")
       }
+
       case v: JValue if field.tf.isOption && childType.isEmpty => field.typeRefType.typeArgs.toList match {
         case List(ct: TypeRefType) => {
           val childTf = TypeFinder(ct)
           if (childTf.directlyDeserialize) deserialize(v, childTf) else apply(j, field, Some(ct))
         }
-        case notOption => sys.error("FromJValue: expected type for Option but instead got:\n%s".format(notOption))
+        case notOption =>
+          throw new UnsupportedJsonTransformationException(
+            s"FromJValue: expected type for Option but instead got:\n$notOption")
       }
+
       case o: JObject if field.tf.isOid => deserialize(o, field.tf)
       case v: JValue if field.tf.isDate || field.tf.isDateTime || field.tf.isLocalDateTime => deserialize(v, field.tf)
       case tz: JValue if field.tf.isTimeZone || field.tf.isDateTimeZone => deserialize(tz, field.tf)
@@ -209,7 +233,9 @@ object FromJValue extends Logging {
       case b: JBool                      => b.values
       case JsonAST.JNull if tf.isDouble  => Double.NaN
       case JsonAST.JNull                 => null
-      case x: AnyRef                     => sys.error("deserialize: unsupported JSON transformation for class='%s', value='%s'".format(x.getClass.getName, x))
+      case x: AnyRef =>
+        throw new UnsupportedJsonTransformationException(
+          s"deserialize: unsupported JSON transformation for class='${x.getClass.getName}', value='$x'")
     }
     //    log.debug(
     //      """
