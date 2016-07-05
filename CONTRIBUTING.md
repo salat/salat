@@ -2,19 +2,19 @@
 
 See also: [Contributing to Open Source on GitHub](https://guides.github.com/activities/contributing-to-open-source/)
 
-1) Fork the salat project on github (https://github.com/salat/salat)
-2) Identify the correct target branch (see "Which Version/Branch?" below)
-3) Create a branch in your fork.
-4) Make your changes. Be sure that unit tests still pass! (Run `sbt test:test`)
-5) Open a pull request for review. 
+1. Fork the salat project on github (https://github.com/salat/salat)
+2. Identify the correct target branch (see "Which Version/Branch?" below)
+3. Create a branch in your fork.
+4. Make your changes. Be sure that unit tests still pass! (Run `sbt test:test`)
+5. Open a pull request for review. 
 
 # Getting Started 
 
 Getting up to develop Salat requires three high-level steps
 
-1) Install SBT (recommended: sbt: the rebel cut: https://github.com/paulp/sbt-extras)
-2) Install MongoDB (this is required for unit tests): https://docs.mongodb.com/v2.6/installation/
-3) `sbt test:test` to ensure the project compiles and all unit tests pass.
+1. Install SBT (recommended: sbt: the rebel cut: https://github.com/paulp/sbt-extras)
+2. Install MongoDB (this is required for unit tests): https://docs.mongodb.com/v2.6/installation/
+3. `sbt test:test` to ensure the project compiles and all unit tests pass.
 
 # Which Version/Branch?
 
