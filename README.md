@@ -35,7 +35,7 @@ Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
 
     "com.github.salat" %% "salat" % "1.9.10-SNAPSHOT"
 
-[Release Notes (In Progress)](https://github.com/salat/salat/blob/master/notes/2.0.0.markdown)
+[SNAPSHOT Release Notes](https://github.com/salat/salat/blob/master/notes/1.9.10.markdown)
 
 ## Legacy support
 
