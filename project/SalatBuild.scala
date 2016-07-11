@@ -69,7 +69,7 @@ object BuildSettings {
   val buildVersion = "1.9.10-SNAPSHOT"
   val buildScalaVersion = "2.11.2"
 
-  val buildSettings = Defaults.defaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
+  val buildSettings = Defaults.coreDefaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,

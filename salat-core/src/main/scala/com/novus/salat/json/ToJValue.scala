@@ -37,7 +37,8 @@ import org.json4s.native.JsonMethods._
 
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
-/** The target type of the JValue value was not resolvable, either due to insufficient
+/**
+ * The target type of the JValue value was not resolvable, either due to insufficient
  *  type hinting, or unsupported data structure, such as nested collections (as of 1.9.10)
  */
 case class UnsupportedJsonTransformationException(msg: String) extends RuntimeException(
@@ -49,7 +50,8 @@ case class UnsupportedJsonTransformationException(msg: String) extends RuntimeEx
   |- Optional collections such as Option[List[String]]
   |
   |For more information, please visit: https://github.com/salat/salat/wiki/SupportedTypes
-  """.stripMargin)
+  """.stripMargin
+)
 
 object MapToJSON extends Logging {
 
@@ -122,7 +124,8 @@ object ToJValue extends Logging {
       case ts: BSONTimestamp => ctx.jsonConfig.bsonTimestampStrategy.out(ts)
       case x: AnyRef =>
         throw new UnsupportedJsonTransformationException(
-          s"serialize: Unsupported JSON transformation for class='${x.getClass.getName}', value='$x'")
+          s"serialize: Unsupported JSON transformation for class='${x.getClass.getName}', value='$x'"
+        )
     }
 
     //    log.debug(
@@ -161,7 +164,8 @@ object FromJValue extends Logging {
         case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
         case notTraversable =>
           throw new UnsupportedJsonTransformationException(
-            s"FromJValue: expected types for Traversable but instead got:\n$notTraversable")
+            s"FromJValue: expected types for Traversable but instead got:\n$notTraversable"
+          )
       }
       case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
         case IsMap(_, childType: TypeRefType) => {
@@ -171,7 +175,8 @@ object FromJValue extends Logging {
         }
         case notMap =>
           throw new UnsupportedJsonTransformationException(
-            s"FromJValue: expected types for Map but instead got:\n$notMap")
+            s"FromJValue: expected types for Map but instead got:\n$notMap"
+          )
       }
 
       case v: JValue if field.tf.isOption && childType.isEmpty => field.typeRefType.typeArgs.toList match {
@@ -181,7 +186,8 @@ object FromJValue extends Logging {
         }
         case notOption =>
           throw new UnsupportedJsonTransformationException(
-            s"FromJValue: expected type for Option but instead got:\n$notOption")
+            s"FromJValue: expected type for Option but instead got:\n$notOption"
+          )
       }
 
       case o: JObject if field.tf.isOid => deserialize(o, field.tf)
@@ -235,7 +241,8 @@ object FromJValue extends Logging {
       case JsonAST.JNull                 => null
       case x: AnyRef =>
         throw new UnsupportedJsonTransformationException(
-          s"deserialize: unsupported JSON transformation for class='${x.getClass.getName}', value='$x'")
+          s"deserialize: unsupported JSON transformation for class='${x.getClass.getName}', value='$x'"
+        )
     }
     //    log.debug(
     //      """
