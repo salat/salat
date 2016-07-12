@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         Grater.scala
- * Last modified: 2012-12-06 22:29:03 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +18,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat
 
-import scala.tools.scalap.scalax.rules.scalasig._
-import com.novus.salat.{ Field => SField }
-
-import java.lang.reflect.{ InvocationTargetException, Method }
-
-import com.novus.salat.annotations.raw._
-import com.novus.salat.annotations.util._
-import com.novus.salat.util._
+import java.lang.reflect.{InvocationTargetException, Method}
 
 import com.mongodb.casbah.Imports._
-import com.novus.salat.util.Logging
+import com.novus.salat.annotations.raw._
+import com.novus.salat.annotations.util._
+import com.novus.salat.json.{FromJValue, ToJField}
+import com.novus.salat.util.{Logging, _}
+import com.novus.salat.{Field => SField}
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import com.novus.salat.json.{ FromJValue, ToJField }
 import org.json4s.native.JsonParser
+
+import scala.tools.scalap.scalax.rules.scalasig._
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -172,10 +173,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
       .map {
         case (ms, idx) => {
           //        log.info("indexedFields: clazz=%s, ms=%s, idx=%s", clazz, ms, idx)
-          SField(idx = idx,
-            name = if (ca.keyOverridesFromAbove.contains(ms)) ca.keyOverridesFromAbove(ms) else ms.name,
-            t = ClassAnalyzer.typeRefType(ms),
-            method = clazz.getMethod(ms.name))
+          SField(
+            idx    = idx,
+            name   = if (ca.keyOverridesFromAbove.contains(ms)) ca.keyOverridesFromAbove(ms) else ms.name,
+            t      = ClassAnalyzer.typeRefType(ms),
+            method = clazz.getMethod(ms.name)
+          )
         }
 
       }

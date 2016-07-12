@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         testctx.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +18,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.test
 
-import java.math.{ MathContext, RoundingMode }
-import com.novus.salat._
 import com.mongodb.casbah.Imports._
+import com.novus.salat._
 import com.novus.salat.test.model.Rhoda
 import com.novus.salat.util.encoding.TypeHintEncoding
-import com.mongodb.casbah.Imports
 
 package object always {
 
@@ -95,18 +96,22 @@ package object per_class_key_remapping {
 package object when_necessary_binary_type_hint_encoding {
   implicit val ctx = new Context {
     val name = "WhenNecessary-BinaryTypeHint"
-    override val typeHintStrategy = BinaryTypeHintStrategy(when = TypeHintFrequency.WhenNecessary,
+    override val typeHintStrategy = BinaryTypeHintStrategy(
+      when     = TypeHintFrequency.WhenNecessary,
       typeHint = "t",
-      encoding = TypeHintEncoding.UsAsciiEncoding)
+      encoding = TypeHintEncoding.UsAsciiEncoding
+    )
   }
 }
 
 package object always_binary_type_hint_encoding {
   implicit val ctx = new Context {
     val name = "Always-BinaryTypeHint"
-    override val typeHintStrategy = BinaryTypeHintStrategy(when = TypeHintFrequency.Always,
+    override val typeHintStrategy = BinaryTypeHintStrategy(
+      when     = TypeHintFrequency.Always,
       typeHint = "t",
-      encoding = TypeHintEncoding.UsAsciiEncoding)
+      encoding = TypeHintEncoding.UsAsciiEncoding
+    )
   }
 }
 

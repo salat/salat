@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         RichDuration.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +18,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 
 package com.novus.salat.test
 
-import org.joda.time.{ DateTimeZone, Period, DateTime }
-import org.joda.time.format.{ PeriodFormatterBuilder, PeriodFormat }
+import org.joda.time.format.{PeriodFormat, PeriodFormatterBuilder}
+import org.joda.time.{DateTime, DateTimeZone, Period}
+
 import scala.collection.mutable.ArrayBuffer
 
 object RichDuration {

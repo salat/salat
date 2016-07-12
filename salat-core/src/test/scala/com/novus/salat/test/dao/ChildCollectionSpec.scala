@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         ChildCollectionSpec.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2016-07-10 23:45:43 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.test.dao
 
@@ -49,10 +52,12 @@ class ChildCollectionSpec extends SalatSpec {
       ParentDAO.children.findByParentId(parentId = parent1.id, query = MongoDBObject.empty, keys = MongoDBObject("parentId" -> 1, "y" -> 1)).toList must contain(exactly(
         child1Parent1.copy(x = "", childInfo = ChildInfo()),
         child2Parent1.copy(x = "", childInfo = ChildInfo()),
-        child3Parent1.copy(x = "", childInfo = ChildInfo())))
+        child3Parent1.copy(x = "", childInfo = ChildInfo())
+      ))
       ParentDAO.children.findByParentId(parentId = parent2.id, query = MongoDBObject.empty, keys = MongoDBObject("parentId" -> 1, "y" -> 1)).toList must contain(exactly(
         child1Parent2.copy(x = "", childInfo = ChildInfo()),
-        child2Parent2.copy(x = "", childInfo = ChildInfo())))
+        child2Parent2.copy(x = "", childInfo = ChildInfo())
+      ))
       ParentDAO.children.findByParentId(parent3.id).toList must beEmpty
     }
 
@@ -73,7 +78,8 @@ class ChildCollectionSpec extends SalatSpec {
       ParentDAO.children.findByParentId(parent1.id).toList must contain(exactly(
         child1Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated)),
         child2Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated)),
-        child3Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated))))
+        child3Parent1.copy(childInfo = ChildInfo(lastUpdated = newLastUpdated))
+      ))
       // child collection is otherwise unchanged
       ParentDAO.children.findByParentId(parent2.id).toList must contain(exactly(child1Parent2, child2Parent2))
       ParentDAO.children.findByParentId(parent3.id).toList must beEmpty
@@ -91,18 +97,26 @@ class ChildCollectionSpec extends SalatSpec {
     }
 
     "support primitive projections by parent id" in new parentChildContext {
-      ParentDAO.children.primitiveProjectionsByParentId[String](parent1.id, "x") must contain(exactly("child1Parent1",
-        "child2Parent1", "child3Parent1"))
-      ParentDAO.children.primitiveProjectionsByParentId[String](parent2.id, "x") must contain(exactly("child1Parent2",
-        "child2Parent2"))
+      ParentDAO.children.primitiveProjectionsByParentId[String](parent1.id, "x") must contain(exactly(
+        "child1Parent1",
+        "child2Parent1", "child3Parent1"
+      ))
+      ParentDAO.children.primitiveProjectionsByParentId[String](parent2.id, "x") must contain(exactly(
+        "child1Parent2",
+        "child2Parent2"
+      ))
       ParentDAO.children.primitiveProjectionsByParentId[String](parent3.id, "x") must beEmpty
     }
 
     "support case class projections by parent id" in new parentChildContext {
-      ParentDAO.children.projectionsByParentId[ChildInfo](parent1.id, "childInfo") must contain(exactly(child1Parent1.childInfo,
-        child2Parent1.childInfo, child3Parent1.childInfo))
-      ParentDAO.children.projectionsByParentId[ChildInfo](parent2.id, "childInfo") must contain(exactly(child1Parent2.childInfo,
-        child2Parent2.childInfo))
+      ParentDAO.children.projectionsByParentId[ChildInfo](parent1.id, "childInfo") must contain(exactly(
+        child1Parent1.childInfo,
+        child2Parent1.childInfo, child3Parent1.childInfo
+      ))
+      ParentDAO.children.projectionsByParentId[ChildInfo](parent2.id, "childInfo") must contain(exactly(
+        child1Parent2.childInfo,
+        child2Parent2.childInfo
+      ))
       ParentDAO.children.projectionsByParentId[ChildInfo](parent3.id, "childInfo") must beEmpty
     }
 
@@ -113,13 +127,19 @@ class ChildCollectionSpec extends SalatSpec {
     }
 
     "support counting by parent id with fields" in new parentChildContext {
-      ParentDAO.children.countByParentId(parentId = parent1.id,
-        fieldsThatMustExist = List("x")) must_== 3L
-      ParentDAO.children.countByParentId(parentId = parent1.id,
-        fieldsThatMustExist = List("x"),
-        fieldsThatMustNotExist = List("y")) must_== 2L
-      ParentDAO.children.countByParentId(parentId = parent1.id,
-        fieldsThatMustExist = List("x", "y")) must_== 1L
+      ParentDAO.children.countByParentId(
+        parentId            = parent1.id,
+        fieldsThatMustExist = List("x")
+      ) must_== 3L
+      ParentDAO.children.countByParentId(
+        parentId               = parent1.id,
+        fieldsThatMustExist    = List("x"),
+        fieldsThatMustNotExist = List("y")
+      ) must_== 2L
+      ParentDAO.children.countByParentId(
+        parentId            = parent1.id,
+        fieldsThatMustExist = List("x", "y")
+      ) must_== 1L
     }
 
   }

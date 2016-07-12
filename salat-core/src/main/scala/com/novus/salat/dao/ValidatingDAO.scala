@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         ValidatingDAO.scala
- * Last modified: 2012-12-06 22:51:54 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +18,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 
 package com.novus.salat.dao
 
-import com.mongodb.casbah.Imports._
-import scala.Right
-import com.novus.salat.Context
 import com.mongodb
+import com.mongodb.casbah.Imports._
+import com.novus.salat.Context
 
 case class ValidationError[T](t: T, iter: Iterable[Throwable]) extends Error(
   """
@@ -39,7 +41,8 @@ case class ValidationError[T](t: T, iter: Iterable[Throwable]) extends Error(
     |
     |BECAUSE
     |%s
-  """.stripMargin.format(t, iter.map(_.getMessage).mkString("\n")))
+  """.stripMargin.format(t, iter.map(_.getMessage).mkString("\n"))
+)
 
 abstract class Validates[T](validators: List[T => Either[Throwable, T]]) {
   def apply(x: T) = validators.map(_.apply(x)).partition(_.isLeft) match {
@@ -52,16 +55,19 @@ case class MutilValidateError(ts: Traversable[Throwable]) extends Error(
   """
     |Multidoc insert failed with the following errors:
     |%s
-  """.stripMargin.format(ts.map(_.getMessage).mkString("\n")))
+  """.stripMargin.format(ts.map(_.getMessage).mkString("\n"))
+)
 
-abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val collection: MongoCollection)(implicit mot: Manifest[ObjectType],
+abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val collection: MongoCollection)(implicit
+  mot: Manifest[ObjectType],
                                                                                                              mid: Manifest[ID], ctx: Context) extends SalatDAO[ObjectType, ID](collection)(mot, mid, ctx) {
 
   def validators: List[ObjectType => Either[Throwable, ObjectType]]
 
   object validates extends Validates[ObjectType](validators)
 
-  /** @param t instance of ObjectType
+  /**
+   * @param t instance of ObjectType
    *  @param wc write concern
    *  @return if insert succeeds, ID of inserted object
    */
@@ -72,7 +78,8 @@ abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val 
     }
   }
 
-  /** @param docs collection of `ObjectType` instances to insert
+  /**
+   * @param docs collection of `ObjectType` instances to insert
    *  @param wc write concern
    *  @return list of object ids
    *         TODO: flatten list of IDs - why on earth didn't I do that in the first place?
@@ -90,7 +97,8 @@ abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val 
   }
   else Nil
 
-  /** Performs an update operation.
+  /**
+   * Performs an update operation.
    *  @param q search query for old object to update
    *  @param t object with which to update <tt>q</tt>
    *  @param upsert if the database should create the element if it does not exist
@@ -105,7 +113,8 @@ abstract class ValidatingSalatDAO[ObjectType <: AnyRef, ID <: Any](override val 
 
   override lazy val description = "ValidatingSalatDAO[%s,%s](%s)".format(mot.runtimeClass.getSimpleName, mid.runtimeClass.getSimpleName, collection.name)
 
-  /** @param t object to save
+  /**
+   * @param t object to save
    *  @param wc write concern
    *  @return (WriteResult) result of write operation
    */

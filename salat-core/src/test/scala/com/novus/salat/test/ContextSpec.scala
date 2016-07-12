@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         ContextSpec.scala
- * Last modified: 2012-10-15 20:40:59 EDT
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +18,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.test
 
-import com.novus.salat.test.model._
-import com.novus.salat._
 import com.mongodb.casbah.Imports._
-import com.novus.salat.util.GraterGlitch
-import java.lang.reflect.Modifier
-import org.specs2.specification.Scope
+import com.novus.salat._
+import com.novus.salat.test.model._
 
 class ContextSpec extends SalatSpec {
 
@@ -235,28 +235,32 @@ class ContextSpec extends SalatSpec {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(annotatedAbstractClazz.getName)
         g_*.clazz.getName must_== (new ProxyGrater[AbstractMaud](
-          annotatedAbstractClazz.asInstanceOf[Class[AbstractMaud]])(ctx) {}).clazz.getName
+          annotatedAbstractClazz.asInstanceOf[Class[AbstractMaud]]
+        )(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by class name for an abstract class without @Salat annotation" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(abstractClazz.getName)
         g_*.clazz.getName must_== (new ProxyGrater[UnannotatedAbstractMaud](
-          abstractClazz.asInstanceOf[Class[UnannotatedAbstractMaud]])(ctx) {}).clazz.getName
+          abstractClazz.asInstanceOf[Class[UnannotatedAbstractMaud]]
+        )(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by class name for a trait annotated with @Salat" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(annotatedTraitClazz.getName)
         g_*.clazz.getName must_== (new ProxyGrater[AnnotatedMaud](
-          annotatedTraitClazz.asInstanceOf[Class[AnnotatedMaud]])(ctx) {}).clazz.getName
+          annotatedTraitClazz.asInstanceOf[Class[AnnotatedMaud]]
+        )(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by class name for a trait without @Salat annotation" in new testContext {
         ctx.graters must beEmpty
         val g_* = ctx.lookup(traitClazz.getName)
         g_*.clazz.getName must_== (new ProxyGrater[UnannotatedMaud](
-          traitClazz.asInstanceOf[Class[UnannotatedMaud]])(ctx) {}).clazz.getName
+          traitClazz.asInstanceOf[Class[UnannotatedMaud]]
+        )(ctx) {}).clazz.getName
         ctx.graters must have size (1)
       }
       "by case class manifest" in new testContext {
@@ -330,8 +334,8 @@ class ContextSpec extends SalatSpec {
 
   "The context" should {
     "support suppressing default args" in {
-      import com.novus.salat.test.model.suppress_default_args._
       import com.novus.salat.test.model.sda._
+      import com.novus.salat.test.model.suppress_default_args._
       grater[Bar].asDBObject(Bar()) must beEmpty
     }
   }

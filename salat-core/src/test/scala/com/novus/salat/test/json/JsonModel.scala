@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         JsonModel.scala
- * Last modified: 2013-02-25 18:56:50 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +18,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.test.json
 
-import org.joda.time.DateTime
-import org.bson.types.ObjectId
 import com.novus.salat.annotations._
+import org.bson.types.ObjectId
+import org.joda.time.DateTime
 
 //  A	Adam
 //  B	Bertil
@@ -58,15 +61,17 @@ import com.novus.salat.annotations._
 //  Ä	Ärlig
 //  Ö	Östen
 
-case class Adam(a: String,
-                b: Int,
-                c: Double,
-                d: Boolean,
-                e: DateTime,
-                u: java.net.URL,
-                bd: BigDecimal,
-                bi: BigInt,
-                o: ObjectId)
+case class Adam(
+  a:  String,
+  b:  Int,
+  c:  Double,
+  d:  Boolean,
+  e:  DateTime,
+  u:  java.net.URL,
+  bd: BigDecimal,
+  bi: BigInt,
+  o:  ObjectId
+)
 
 case class Bertil(ints: List[Int], strings: List[String])
 case class Caesar(l: List[Bertil])

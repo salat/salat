@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         ToObjectGlitch.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +18,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.util
 
-import com.novus.salat._
-import scala.tools.scalap.scalax.rules.scalasig.SymbolInfoSymbol
 import java.lang.reflect.Constructor
+
 import com.mongodb.casbah.commons.TypeImports._
+import com.novus.salat._
+
+import scala.tools.scalap.scalax.rules.scalasig.SymbolInfoSymbol
 
 case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X], sym: SymbolInfoSymbol, constructor: Constructor[X], args: Seq[AnyRef], cause: Throwable) extends Error(
   """
@@ -42,8 +47,10 @@ case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X], s
     cause.getMessage,
     grater.toString,
     sym.path,
-    ConstructorInputPrettyPrinter(grater, args)),
-  cause)
+    ConstructorInputPrettyPrinter(grater, args)
+  ),
+  cause
+)
 
 case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
 case class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
@@ -69,4 +76,5 @@ case class MissingTypeHint(m: Map[_, _])(implicit ctx: Context) extends Error(""
  """.format(ctx.typeHintStrategy.typeHint, m.mkString("\n")))
 
 case class EnumInflaterGlitch(clazz: Class[_], strategy: EnumStrategy, value: Any) extends Error(
-  "Not sure how to handle value='%s' as enum of class %s using strategy %s".format(value, clazz.getName, strategy))
+  "Not sure how to handle value='%s' as enum of class %s using strategy %s".format(value, clazz.getName, strategy)
+)

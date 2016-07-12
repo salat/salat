@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         ImplClasses.scala
- * Last modified: 2012-12-06 22:51:08 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +18,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat
 
-import scala.collection.mutable.{ Map => MMap, Set => MSet, Seq => MSeq, IndexedSeq => MIndexedSeq }
-import scala.collection.mutable.{ Buffer, ArrayBuffer, LinkedList, DoubleLinkedList }
+import scala.collection.immutable.{IndexedSeq => IIndexedSeq, List => IList, Map => IMap, Seq => ISeq, Set => ISet}
+import scala.collection.mutable.{ArrayBuffer, Buffer, DoubleLinkedList, IndexedSeq => MIndexedSeq, LinkedList, Map => MMap, Seq => MSeq, Set => MSet}
 import scala.tools.scalap.scalax.rules.scalasig._
-import scala.collection.immutable.{ List => IList, Map => IMap, Set => ISet, Seq => ISeq, IndexedSeq => IIndexedSeq }
 
 package object impls {
   def traversableImpl(name: String, real: collection.Traversable[_]): scala.collection.Traversable[_] = name match {

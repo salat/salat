@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-util
  * Class:         glitch.scala
- * Last modified: 2012-08-08 13:27:16 EDT
+ * Last modified: 2016-07-10 23:45:43 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 
 package com.novus.salat.util
@@ -28,25 +32,30 @@ import java.lang.reflect.Constructor
 // a useful place to be when things go pear-shaped
 // p.s. could more people throw exceptions like these?
 
-/** Runtime error indicating that a class defines more than one constructor with args.
+/**
+ * Runtime error indicating that a class defines more than one constructor with args.
  *  @param clazz parameterized class instance
  *  @param cl list of parameterized constructors found for this class
  *  @tparam X any reft
  */
 case class TooManyConstructorsWithArgs[X](clazz: Class[X], cl: List[Constructor[X]]) extends Error(
-  "constructor: clazz=%s ---> expected 1 constructor with args but found %d\n%s".format(clazz, cl.size, cl.mkString("\n")))
+  "constructor: clazz=%s ---> expected 1 constructor with args but found %d\n%s".format(clazz, cl.size, cl.mkString("\n"))
+)
 
-/** Runtime error indicating that Salat can't identify any constructor for this class.
+/**
+ * Runtime error indicating that Salat can't identify any constructor for this class.
  *  @param clazz class instance
  */
 case class MissingConstructor(clazz: Class[_]) extends Error("Couldn't find a constructor for %s".format(clazz.getName))
 
-/** Runtime error indicating that Salat can't find the pickled Scala signature for this class.
+/**
+ * Runtime error indicating that Salat can't find the pickled Scala signature for this class.
  *  @param clazz class instance
  */
 case class MissingPickledSig(clazz: Class[_]) extends Error("FAIL: class '%s' is missing both @ScalaSig and .class file!".format(clazz))
 
-/** Runtime error indicating that class' pickled Scala signature does not define any top-level classes or objects.
+/**
+ * Runtime error indicating that class' pickled Scala signature does not define any top-level classes or objects.
  *  @param clazz class instance
  */
 case class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Scala signature, but no expected type found: %s"
@@ -57,4 +66,5 @@ case class MissingExpectedType(clazz: Class[_]) extends Error("Parsed pickled Sc
 
 case class MissingCaseObjectOverride(path: String, value: Any, ctxName: String) extends Error(
   "Ctx='%s' does not define a case object override that can be used with class='%s' and value='%s'".
-    format(ctxName, path, value))
+    format(ctxName, path, value)
+)

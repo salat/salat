@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-util
  * Class:         SalatDAOUtils.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2016-07-10 23:45:43 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +18,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.util
 
-/** Some useful utilities for extracting a single result from a list of results.
+/**
+ * Some useful utilities for extracting a single result from a list of results.
  */
 object SalatDAOUtils {
 
-  /** Return one or blow up.  You could just use the head method, but the value added here is an error message explaining
+  /**
+   * Return one or blow up.  You could just use the head method, but the value added here is an error message explaining
    *  how what you thought was a unique selection criteria is... not.
    *  @param list a list expected to contain a single entry
    *  @tparam Z parameterized type of list
@@ -40,7 +46,8 @@ object SalatDAOUtils {
       format(list.size, list.mkString("\n"))) // how long is the list?  that depends on how badly things went wrong back in your collection....
   }
 
-  /** Guarantee one or none.
+  /**
+   * Guarantee one or none.
    *  @param list a list expected to contain a single entry or no entries
    *  @tparam Z parameterized type of list
    *  @return Some for a single entry list; None for an empty list

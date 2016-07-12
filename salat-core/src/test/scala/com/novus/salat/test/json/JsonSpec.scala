@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2013 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         JsonSpec.scala
- * Last modified: 2013-02-25 21:07:26 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +18,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.test.json
 
 import com.novus.salat._
-import com.novus.salat.json.StrictJSONDateStrategy
-import com.novus.salat.json.StringDateStrategy
-import com.novus.salat.json.TimestampDateStrategy
-import com.novus.salat.json._
+import com.novus.salat.json.{StrictJSONDateStrategy, StringDateStrategy, TimestampDateStrategy, _}
 import com.novus.salat.util._
 import org.bson.types.ObjectId
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.ISODateTimeFormat
-import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.{DateTime, DateTimeZone}
 import org.json4s._
-import org.specs2.mutable.Specification
-import scala.util.parsing.json.JSONArray
-import scala.util.parsing.json.JSONObject
 import org.specs2.matcher.JsonMatchers
+import org.specs2.mutable.Specification
+
+import scala.util.parsing.json.{JSONArray, JSONObject}
 
 class JsonSpec extends Specification with Logging with JsonMatchers {
 
@@ -87,7 +87,8 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
           val rendered = grater[Caesar].toPrettyJSON(c)
           rendered must /("l" -> JSONArray(List(
             JSONObject(Map("ints" -> JSONArray(ints), "strings" -> JSONArray(strings))),
-            JSONObject(Map("ints" -> JSONArray(ints.map(_ * 2)), "strings" -> JSONArray(strings.map(_.capitalize)))))))
+            JSONObject(Map("ints" -> JSONArray(ints.map(_ * 2)), "strings" -> JSONArray(strings.map(_.capitalize))))
+          )))
         }
       }
       "serialize maps" in {
@@ -183,20 +184,24 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
           val o = Olof(null)
           grater[Olof].toJSON(o) must_== JObject(
             JField("d", JNull) ::
-              Nil)
+              Nil
+          )
           grater[Olof].toCompactJSON(o) must_== "{\"d\":null}"
 
           grater[Wilhelm].toJSON(Wilhelm(null, Olof(null))) must_== JObject(
             JField("w", JNull) ::
               JField("o", JObject(JField("d", JNull))) ::
-              Nil)
+              Nil
+          )
         }
       }
       "serialize case object override" in {
         implicit val ctx = new Context {
           val name = "coo-json-test-context"
-          override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary,
-            typeHint = TestTypeHint)
+          override val typeHintStrategy = StringTypeHintStrategy(
+            when     = TypeHintFrequency.WhenNecessary,
+            typeHint = TestTypeHint
+          )
           override val jsonConfig = JSONConfig(dateStrategy = StringDateStrategy(dateFormatter = TestDateFormatter))
           override val bigIntStrategy = BigIntToLongStrategy
           registerCaseObjectOverride[Foo, Bar.type]("B")
@@ -242,7 +247,8 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
       jarr.arr must contain(exactly(
         JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("one")) :: JField("d", JDouble(1.1)) :: Nil).asInstanceOf[JValue],
         JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("two")) :: JField("d", JDouble(2.2)) :: Nil).asInstanceOf[JValue],
-        JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("three")) :: JField("d", JDouble(3.3)) :: Nil).asInstanceOf[JValue])).inOrder
+        JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("three")) :: JField("d", JDouble(3.3)) :: Nil).asInstanceOf[JValue]
+      )).inOrder
     }
     "deserialize JObjects containing simple types" in {
       val j = JObject(
@@ -255,7 +261,8 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
           JField("bd", JDouble(bd.doubleValue())) ::
           JField("bi", JInt(bi)) ::
           JField("o", JObject(JField("$oid", JString("4fd0bead4ceab231e6f3220b")) :: Nil)) ::
-          Nil)
+          Nil
+      )
       grater[Adam].fromJSON(j) must_== a
     }
     "deserialize null to Double.NaN when Double is expected" in {
@@ -303,19 +310,26 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
         val j = JObject(
           JField("ints", JArray(ints.map(JInt(_)))) ::
             JField("strings", JArray(strings.map(JString(_)))) ::
-            Nil)
+            Nil
+        )
         grater[Bertil].fromJSON(j) must_== b
       }
       "of case classes" in {
-        val j = JObject(JField("l",
+        val j = JObject(JField(
+          "l",
           JArray(
             JObject(JField("ints", JArray(ints.map(JInt(_)))) :: JField("strings", JArray(strings.map(JString(_)))) :: Nil) ::
               JObject(JField("ints", JArray(ints.map(i => JInt(i * 2)))) :: JField("strings", JArray(strings.map(s => JString(s.capitalize)))) :: Nil) ::
-              Nil))
+              Nil
+          )
+        )
           :: Nil)
         val c = Caesar(l = List(
-          Bertil(ints = ints, strings = strings), Bertil(ints = ints.map(_ * 2),
-            strings = strings.map(_.capitalize))))
+          Bertil(ints = ints, strings = strings), Bertil(
+            ints    = ints.map(_ * 2),
+            strings = strings.map(_.capitalize)
+          )
+        ))
         grater[Caesar].fromJSON(j) must_== c
       }
     }
@@ -326,8 +340,10 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
             JField("a", JInt(1)) ::
               JField("b", JInt(2)) ::
               JField("c", JInt(3)) ::
-              Nil)) ::
-            Nil)
+              Nil
+          )) ::
+            Nil
+        )
         grater[David].fromJSON(j) must_== David(m = Map("a" -> 1, "b" -> 2, "c" -> 3))
       }
       "of case classes" in {
@@ -335,8 +351,10 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
           JField("m", JObject(
             JField("e1", JObject(JField("e", JString("Erik")) :: Nil)) ::
               JField("e2", JObject(JField("e", JString("Another Erik")) :: Nil)) ::
-              Nil)) ::
-            Nil)
+              Nil
+          )) ::
+            Nil
+        )
         grater[Filip].fromJSON(j) must_== Filip(m = Map("e1" -> Erik(e = "Erik"), "e2" -> Erik(e = "Another Erik")))
       }
     }
@@ -368,7 +386,8 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
 
         "case class" in {
           grater[Niklas].fromJSON(JObject(
-            JField("g", JObject(JField("o", JString("OG")) :: Nil)) :: Nil)) must_== n
+            JField("g", JObject(JField("o", JString("OG")) :: Nil)) :: Nil
+          )) must_== n
         }
       }
       "None" in {
@@ -380,8 +399,10 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
     "deserialize case object override" in {
       implicit val ctx = new Context {
         val name = "coo-json-test-context"
-        override val typeHintStrategy = StringTypeHintStrategy(when = TypeHintFrequency.WhenNecessary,
-          typeHint = TestTypeHint)
+        override val typeHintStrategy = StringTypeHintStrategy(
+          when     = TypeHintFrequency.WhenNecessary,
+          typeHint = TestTypeHint
+        )
         override val jsonConfig = JSONConfig(dateStrategy = StringDateStrategy(dateFormatter = TestDateFormatter))
         override val bigIntStrategy = BigIntToLongStrategy
         registerCaseObjectOverride[Foo, Bar.type]("B")
@@ -394,23 +415,27 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
         grater[Helge].fromJSON(JObject(
           JField("_t", JString("com.novus.salat.test.json.Ivar")) ::
             JField("s", JString("Hello")) ::
-            Nil)) must_== Ivar(s = "Hello")
+            Nil
+        )) must_== Ivar(s = "Hello")
         grater[Helge].fromJSON(JObject(
           JField("_t", JString("com.novus.salat.test.json.Johan")) ::
             JField("s", JString("Hello")) ::
             JField("d", JDouble(3.14)) ::
-            Nil)) must_== Johan(s = "Hello", d = 3.14)
+            Nil
+        )) must_== Johan(s = "Hello", d = 3.14)
       }
       "with an abstract superclass" in {
         grater[Kalle].fromJSON(JObject(
           JField("_t", JString("com.novus.salat.test.json.Ludvig")) ::
             JField("s", JString("Hello")) ::
-            Nil)) must_== Ludvig(s = "Hello")
+            Nil
+        )) must_== Ludvig(s = "Hello")
         grater[Kalle].fromJSON(JObject(
           JField("_t", JString("com.novus.salat.test.json.Martin")) ::
             JField("s", JString("Hello")) ::
             JField("d", JDouble(3.14)) ::
-            Nil)) must_== Martin(s = "Hello", d = 3.14)
+            Nil
+        )) must_== Martin(s = "Hello", d = 3.14)
       }
     }
     "strings" in {
@@ -437,7 +462,8 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
         JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("one")) :: JField("d", JDouble(1.1)) :: Nil) ::
           JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("two")) :: JField("d", JDouble(2.2)) :: Nil) ::
           JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("three")) :: JField("d", JDouble(3.3)) :: Nil) ::
-          Nil)
+          Nil
+      )
       grater[Kalle].fromJSONArray(j) must_== List(Martin("one", 1.1), Martin("two", 2.2), Martin("three", 3.3))
     }
   }

@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         SalatDAOSpec.scala
- * Last modified: 2012-12-06 22:58:08 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +18,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.test.dao
 
-import com.novus.salat.test._
-import com.novus.salat._
-import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
-import org.specs2.specification.Scope
-import com.novus.salat.util.MapPrettyPrinter
-import org.specs2.matcher.MustExpectable._
 import com.mongodb.casbah.commons.MongoDBObject
-import com.mongodb.DBObject
+import com.novus.salat._
+import com.novus.salat.test._
+import com.novus.salat.test.global._
+import org.specs2.specification.Scope
 
 class SalatDAOSpec extends SalatSpec {
 
@@ -117,11 +117,13 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.collection.count() must_== 1L
 
       // need to explicitly specify upsert and multi when updating using an object instead of dbo
-      val wr = AlphaDAO.update(q = MongoDBObject("_id" -> 3),
-        t = alpha3.copy(beta = List[Beta](Gamma("gamma3"))),
+      val wr = AlphaDAO.update(
+        q      = MongoDBObject("_id" -> 3),
+        t      = alpha3.copy(beta = List[Beta](Gamma("gamma3"))),
         upsert = false,
-        multi = false,
-        wc = new WriteConcern())
+        multi  = false,
+        wc     = new WriteConcern()
+      )
       wr.getN must_== 1L
 
       AlphaDAO.collection.count() must_== 1L
@@ -217,8 +219,10 @@ class SalatDAOSpec extends SalatSpec {
     }
 
     "support find with a set of keys" in new alphaContextWithData {
-      val salatCursor = AlphaDAO.find(ref = MongoDBObject("_id" -> MongoDBObject("$lt" -> 3)),
-        keys = MongoDBObject("beta" -> 0)) // forces beta key to be excluded
+      val salatCursor = AlphaDAO.find(
+        ref  = MongoDBObject("_id" -> MongoDBObject("$lt" -> 3)),
+        keys = MongoDBObject("beta" -> 0)
+      ) // forces beta key to be excluded
       salatCursor.next must_== alpha1.copy(beta = Nil)
       salatCursor.next must_== alpha2.copy(beta = Nil)
       salatCursor.hasNext must beFalse

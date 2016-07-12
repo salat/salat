@@ -32,3 +32,16 @@ The `1.10.x-branch` is the site of ongoing, active development of Salat, via com
 
 Finally, the branch `1.9.x-branch` is a "legacy-support" branch for simple bug fixes and enhancements on the 1.9.x codebase. No major, earth-shattering code changes occur on this branch. Major enhancements on the 1.10.x and 2.x.x branches will generally not be backported to this branch.
 
+# Copyright
+
+Each source file should have the project copyright text as a header. Template text (as a Velocity Templates file) is found in `notes/copyright.vm`. The most conventient method of using this template file (aside from the requisite yak-shaving) is the IntelliJ IDEA "Copyright Manager" plugin.
+
+See: https://www.jetbrains.com/help/idea/2016.1/generating-and-updating-copyright-notice.html
+
+If adding new files to the project, please either copy/paste/tweak the copyright header comments into the file, or (if using IntellliJ) use the Copyright Manager plugin.
+
+# Code Formatting and Style
+
+Salat uses [Scalariform](http://scala-ide.org/scalariform/) to enforce consistent formatting of source code. So, after compilation, you might discover that Scalariform has changed whitespace formatting of your source code. As such, please at least run `sbt test:compile` at least once before commiting your changes and submitting a PR.
+
+You can find the Scalariform configuration in the project build file, `project/SalatBuild.scala`.

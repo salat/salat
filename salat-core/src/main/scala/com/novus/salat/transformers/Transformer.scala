@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         Transformer.scala
- * Last modified: 2012-10-15 20:40:59 EDT
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +18,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.transformers
 
 import com.novus.salat._
-import com.novus.salat.transformers.in.{ MapInjector, TraversableInjector, OptionInjector }
-import com.novus.salat.transformers.out.{ MapExtractor, TraversableExtractor, OptionExtractor }
+import com.novus.salat.transformers.in.{MapInjector, OptionInjector, TraversableInjector}
+import com.novus.salat.transformers.out.{MapExtractor, OptionExtractor, TraversableExtractor}
 import com.novus.salat.util.Logging
+
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
 
 object `package` {
@@ -118,20 +122,24 @@ class CustomOptionSerializer[A <: AnyRef, B <: AnyRef](override val custom: Cust
   override def transform(value: Any)(implicit ctx: Context) = custom.in(value)
 }
 
-class CustomTraversableSerializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B],
-                                                            override val path: String,
-                                                            override val t: TypeRefType,
-                                                            val parentType: TypeRefType,
-                                                            override val ctx: Context)
+class CustomTraversableSerializer[A <: AnyRef, B <: AnyRef](
+  override val custom: CustomTransformer[A, B],
+  override val path:   String,
+  override val t:      TypeRefType,
+  val parentType:      TypeRefType,
+  override val ctx:    Context
+)
     extends UseCustomTransformer(custom, path, t, ctx) with TraversableInjector {
   override protected def transformElement(el: Any) = custom.in(el)
 }
 
-class CustomMapSerializer[A <: AnyRef, B <: AnyRef](override val custom: CustomTransformer[A, B],
-                                                    override val path: String,
-                                                    override val t: TypeRefType,
-                                                    val parentType: TypeRefType,
-                                                    override val ctx: Context)
+class CustomMapSerializer[A <: AnyRef, B <: AnyRef](
+  override val custom: CustomTransformer[A, B],
+  override val path:   String,
+  override val t:      TypeRefType,
+  val parentType:      TypeRefType,
+  override val ctx:    Context
+)
     extends UseCustomTransformer(custom, path, t, ctx) with MapInjector {
   override protected def transformElement(el: Any) = custom.in(el)
 }

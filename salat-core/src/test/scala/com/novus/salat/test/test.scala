@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         test.scala
- * Last modified: 2012-12-05 12:24:47 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +18,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat
 
 import com.novus.salat.test.global._
 import com.novus.salat.test.model._
-import scala.collection.immutable.{ Map => IMap }
-import scala.collection.mutable.{ Map => MMap }
-import scala.math.{ BigDecimal => ScalaBigDecimal }
+
+import scala.collection.immutable.{Map => IMap}
+import scala.collection.mutable.{Map => MMap}
+import scala.math.{BigDecimal => ScalaBigDecimal}
 
 package object test {
 
@@ -50,38 +54,55 @@ package object test {
   def graph = Alice("x", Some("y"),
     Basil(Some(80), 81,
       Clara(Seq("l1", "l2"), List(1, 2), List(
-        Desmond(IMap("foo1" -> Alice("foo", None, Basil(p = None, r = Clara(m = Nil, n = Nil))),
-          "baz1" -> Alice("baz", Some("quux"), Basil(p = None, r = Clara(m = Nil, n = Nil)))),
+        Desmond(
+          IMap(
+            "foo1" -> Alice("foo", None, Basil(p = None, r = Clara(m = Nil, n = Nil))),
+            "baz1" -> Alice("baz", Some("quux"), Basil(p = None, r = Clara(m = Nil, n = Nil)))
+          ),
           MMap("a1" -> 1, "c1" -> 2),
           Some(Basil(
             None, 24, Clara(
-              List("l3", "l4"), List(1, 2, 3), Nil))))))))
+            List("l3", "l4"), List(1, 2, 3), Nil
+          )
+          ))
+        )
+      ))))
 
   def numbers = Edward(a = "a value", aa = None, aaa = Some("aaa value"),
-    b = 2, bb = None, bbb = Some(22),
-    c = ScalaBigDecimal(3.30003), cc = None, ccc = Some(ScalaBigDecimal(33.30003)))
+    b   = 2, bb = None, bbb = Some(22),
+    c   = ScalaBigDecimal(3.30003), cc = None, ccc = Some(ScalaBigDecimal(33.30003)))
 
   def mucho_numbers(factor: Long = 10) = Fanny((0L until factor).toList.map {
     i =>
       Edward(
-        a = "a %d".format(i), aa = Some("aa %d".format(i)), aaa = None,
-        b = (i * i * 123 / 1000).toInt, bb = None, bbb = Some((i * i * 321 / 100).toInt),
-        c = ScalaBigDecimal((i * i).toDouble / 123d, ctx.bigDecimalStrategy.mathCtx), cc = None, ccc = None)
+        a   = "a %d".format(i), aa = Some("aa %d".format(i)), aaa = None,
+        b   = (i * i * 123 / 1000).toInt, bb = None, bbb = Some((i * i * 321 / 100).toInt),
+        c   = ScalaBigDecimal((i * i).toDouble / 123d, ctx.bigDecimalStrategy.mathCtx), cc = None, ccc = None
+      )
   })
 
-  def evil_empire = Company(name = "Evil Empire, Inc.",
+  def evil_empire = Company(
+    name              = "Evil Empire, Inc.",
     year_of_inception = 2000,
-    departments = Map(
-      "MoK" -> Department(name = "Murder of Kittens",
+    departments       = Map(
+      "MoK" -> Department(
+        name        = "Murder of Kittens",
         head_honcho = Some(Employee("Dick Cheney", None, Some(ScalaBigDecimal(12345.6789)))),
-        cya_factor = ScalaBigDecimal(0.01980082),
-        minions = List(
+        cya_factor  = ScalaBigDecimal(0.01980082),
+        minions     = List(
           Employee("George W. Bush", Some(66), None),
-          Employee(name = "Michael Eisner", age = None, annual_salary = None))),
-      "FOSS_Sabotage" -> Department(name = "Sabotage of F/OSS projects",
+          Employee(name = "Michael Eisner", age = None, annual_salary = None)
+        )
+      ),
+      "FOSS_Sabotage" -> Department(
+        name        = "Sabotage of F/OSS projects",
         head_honcho = Some(Employee("Bill Gates", None, Some(ScalaBigDecimal(28823.772383)))),
-        cya_factor = ScalaBigDecimal(14.982023002),
-        minions = List(
+        cya_factor  = ScalaBigDecimal(14.982023002),
+        minions     = List(
           Employee(name = "Darl McBridge", age = Some(123), annual_salary = None),
-          Employee(name = "Patent Trolls Everywhere", age = None, annual_salary = Some(ScalaBigDecimal(1000000.00022303)))))))
+          Employee(name = "Patent Trolls Everywhere", age = None, annual_salary = Some(ScalaBigDecimal(1000000.00022303)))
+        )
+      )
+    )
+  )
 }

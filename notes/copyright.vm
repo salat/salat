@@ -1,4 +1,5 @@
-Copyright (c) 2010 - $today.year Novus Partners, Inc. (http://www.novus.com)
+Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+Copyright (c) 2015 - $today.year Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
 
 Module:        $module.name
 Class:         $file.fileName
@@ -16,7 +17,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-          Project:  http://github.com/novus/salat
-             Wiki:  http://github.com/novus/salat/wiki
+          Project:  http://github.com/salat/salat
+             Wiki:  http://github.com/salat/salat/wiki
+            Slack:  https://scala-salat.slack.com
      Mailing list:  http://groups.google.com/group/scala-salat
     StackOverflow:  http://stackoverflow.com/questions/tagged/salat

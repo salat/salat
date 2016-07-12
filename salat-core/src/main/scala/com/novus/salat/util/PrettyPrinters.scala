@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         PrettyPrinters.scala
- * Last modified: 2012-12-06 22:32:50 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +18,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.util
 
+import java.lang.reflect.{ParameterizedType, Type}
+
+import com.novus.salat.{ConcreteGrater, DefaultArg, Field => SField}
+
+import scala.reflect.Manifest
 import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
-import java.lang.reflect.{ ParameterizedType, Type }
-import com.novus.salat.{ DefaultArg, ConcreteGrater, Field => SField }
-import scala.reflect.{ Manifest, ClassManifest }
 
 object FieldPrettyPrinter {
   // scala transliteration of java.lang.reflect.Field.getTypeName 
@@ -94,11 +99,13 @@ object ConstructorPrettyPrinter extends GraterPrettyPrinter {
     val p = "PARAM\t[%d]\nNAME\t%s\nTYPE\t%s\nDEFAULT ARG\t%s\n@Ignore\t%s\n"
     for (param <- constructor.getGenericParameterTypes) {
       val field = getField(indexedFields, arity)
-      builder += p.format(arity,
+      builder += p.format(
+        arity,
         fieldName(field),
         FieldPrettyPrinter(param),
         safeDefault(field, defaultArgs),
-        ignore(field))
+        ignore(field)
+      )
       arity += 1
     }
 
@@ -129,13 +136,15 @@ DEFAULT ARG   %s
     for (param <- constructor.getGenericParameterTypes) {
       val field = getField(indexedFields, arity)
       val arg = if (args.isDefinedAt(arity)) Option(args(arity)) else None
-      builder += p.format(arity,
+      builder += p.format(
+        arity,
         fieldName(field),
         FieldPrettyPrinter(param),
         safeDefault(field, defaultArgs),
         ignore(field),
         //        (if (ClassPrettyPrinter(param) == ClassPrettyPrinter(arg)) "GOOD" else "BAD"),
-        ArgPrettyPrinter(arg))
+        ArgPrettyPrinter(arg)
+      )
       arity += 1
     }
 
@@ -246,12 +255,14 @@ object TransformPrettyPrinter {
     [BEFORE] %s:     '%s'
         --[%s]-->
     [AFTER] %s:     '%s'
-    """.format(which,
+    """.format(
+      which,
       ClassPrettyPrinter(value.asInstanceOf[AnyRef]),
       value,
       t.symbol.path,
       ClassPrettyPrinter(xformed.asInstanceOf[AnyRef]),
-      xformed)
+      xformed
+    )
   }
 }
 

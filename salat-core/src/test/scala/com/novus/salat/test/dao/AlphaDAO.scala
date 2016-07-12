@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         AlphaDAO.scala
- * Last modified: 2012-12-05 09:30:14 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +18,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.test.dao
 
-import com.novus.salat._
-import com.novus.salat.test._
-import com.novus.salat.test.global._
 import com.mongodb.casbah.Imports._
 import com.novus.salat.annotations._
 import com.novus.salat.dao._
 import com.novus.salat.test._
-import org.joda.time.{ DateTime, DateMidnight }
+import com.novus.salat.test.global._
+import org.joda.time.{DateMidnight, DateTime}
 
 @Salat
 trait Beta {
@@ -65,17 +66,21 @@ object XiDAO extends SalatDAO[Xi, ObjectId](collection = MongoConnection()(Salat
 object KappaDAO extends SalatDAO[Kappa, ObjectId](collection = MongoConnection()(SalatSpecDb)(KappaColl))
 
 case class ChildInfo(lastUpdated: DateTime = new DateMidnight(0L).toDateTime)
-case class Child(@Key("_id") id: Int,
-                 parentId: ObjectId,
-                 x: String = "",
-                 childInfo: ChildInfo = ChildInfo(),
-                 y: Option[String] = None)
+case class Child(
+  @Key("_id") id: Int,
+  parentId:       ObjectId,
+  x:              String         = "",
+  childInfo:      ChildInfo      = ChildInfo(),
+  y:              Option[String] = None
+)
 case class Parent(@Key("_id") id: ObjectId = new ObjectId, name: String)
 
 object ParentDAO extends SalatDAO[Parent, ObjectId](collection = MongoConnection()(SalatSpecDb)(ParentColl)) {
 
-  val children = new ChildCollection[Child, Int](collection = MongoConnection()(SalatSpecDb)(ChildColl),
-    parentIdField = "parentId") {}
+  val children = new ChildCollection[Child, Int](
+    collection    = MongoConnection()(SalatSpecDb)(ChildColl),
+    parentIdField = "parentId"
+  ) {}
 
 }
 
@@ -91,8 +96,10 @@ case class Editor(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
 case class Admin(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
 
 object UserDAO extends SalatDAO[User, ObjectId](collection = MongoConnection()(SalatSpecDb)(UserColl)) {
-  val roles = new ChildCollection[Role, ObjectId](collection = MongoConnection()(SalatSpecDb)(RoleColl),
-    parentIdField = "userId") {}
+  val roles = new ChildCollection[Role, ObjectId](
+    collection    = MongoConnection()(SalatSpecDb)(RoleColl),
+    parentIdField = "userId"
+  ) {}
 
   // demonstration of how you might break apart an object graph when saving to MongoDB
   override def insert(u: User) = {

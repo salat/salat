@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         TypeHintStrategy.scala
- * Last modified: 2012-12-06 22:18:28 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +18,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat
 
-import com.novus.salat.util.encoding.TypeHintEncoding
-import com.novus.salat.util.{ Logging, ClassPrettyPrinter }
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
+
+import com.novus.salat.util.encoding.TypeHintEncoding
+import com.novus.salat.util.{ClassPrettyPrinter, Logging}
 
 // TODO: oof.  this is not OO design at its most graceful.  refactor it!
 
@@ -51,8 +55,10 @@ object NeverTypeHint extends TypeHintStrategy {
 
 case class StringTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: String = TypeHint) extends TypeHintStrategy {
 
-  assume(when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
-    "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when))
+  assume(
+    when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
+    "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when)
+  )
 
   override def toString = when match {
     case TypeHintFrequency.Never => "StringTypeHintStrategy: when='%s'".format(when)
@@ -75,8 +81,10 @@ case class BinaryTypeHintStrategy(when: TypeHintFrequency.Value, typeHint: Strin
   protected[salat] val toTypeHint: scala.collection.concurrent.Map[String, BigInt] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[String, BigInt]())
   protected[salat] val fromTypeHint: scala.collection.concurrent.Map[BigInt, String] = scala.collection.convert.Wrappers.JConcurrentMapWrapper(new ConcurrentHashMap[BigInt, String]())
 
-  assume(when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
-    "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when))
+  assume(
+    when == TypeHintFrequency.Never || (typeHint != null && typeHint.nonEmpty),
+    "Type hint stratregy '%s' requires a type hint but you have supplied none!".format(when)
+  )
 
   override def toString = when match {
     case TypeHintFrequency.Never => "BinaryTypeHintStrategy: when='%s'".format(when)

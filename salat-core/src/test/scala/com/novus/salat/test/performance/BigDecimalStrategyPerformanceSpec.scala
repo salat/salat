@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         BigDecimalStrategyPerformanceSpec.scala
- * Last modified: 2012-12-06 22:58:43 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +18,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 
 package com.novus.salat.test.performance
 
-import com.novus.salat.test._
-import com.novus.salat.test.RichDuration._
-import com.novus.salat.util.Logging
 import com.mongodb.casbah.Imports._
-import org.specs2.mutable._
-import org.specs2.specification.Scope
 import com.novus.salat._
 import com.novus.salat.dao.SalatDAO
+import com.novus.salat.test.RichDuration._
+import com.novus.salat.util.Logging
+import org.specs2.mutable._
+import org.specs2.specification.Scope
+
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
@@ -102,7 +105,8 @@ class BigDecimalStrategyPerformanceSpec extends Specification with Logging {
     }
 
     def stats() {
-      log.info(""" 
+      log.info(
+        """ 
 
 --------------------
       
@@ -129,7 +133,8 @@ DESERIALIZATION TIMES:
         strategy.getClass.getName,
         (inTimes.sum / 1000000L).tersePrint, avg(inTimes) / 1000000d, median(inTimes) / 1000000d,
         (outTimes.sum / 1000000L).tersePrint, avg(outTimes) / 1000000d, median(outTimes) / 1000000d,
-        coll.stats)
+        coll.stats
+      )
     }
   }
 

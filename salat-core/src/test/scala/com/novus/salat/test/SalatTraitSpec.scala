@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         SalatTraitSpec.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +18,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 
 package com.novus.salat.test
 
+import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.test.global._
-import com.mongodb.casbah.Imports._
 import com.novus.salat.test.model._
 
 class SalatTraitSpec extends SalatSpec {
@@ -68,7 +71,8 @@ class SalatTraitSpec extends SalatSpec {
         Bird("Sammy Sparrow"),
         Bird("Oscar Ostrich", false),
         Squirrel("Joe"),
-        Squirrel("Rocky", true)))
+        Squirrel("Rocky", true)
+      ))
       //      println(MapPrettyPrinter(container))
       val dbo: MongoDBObject = grater[VertebrateList].asDBObject(container)
       //      println(MapPrettyPrinter(dbo))
@@ -136,9 +140,13 @@ class SalatTraitSpec extends SalatSpec {
 
       val obj_* = grater[SomeContainerClass].asObject(dbo)
 
-      val obj = SomeContainerClass("some value for e",
-        List(SomeSubclassExtendingSaidTrait(2),
-          AnotherSubclassExtendingSaidTrait(3.0)))
+      val obj = SomeContainerClass(
+        "some value for e",
+        List(
+          SomeSubclassExtendingSaidTrait(2),
+          AnotherSubclassExtendingSaidTrait(3.0)
+        )
+      )
 
       obj_* must_== obj
     }
@@ -151,8 +159,10 @@ class SalatTraitSpec extends SalatSpec {
     dbo1 must havePair("_typeHint" -> "com.novus.salat.test.model.ContainsFieldTypedToTrait")
     dbo1 must havePair("someTrait" -> {
       // _typeHint shows that @Salat annotation on SomeTrait is working
-      MongoDBObject("_typeHint" -> "com.novus.salat.test.model.SomeTraitImpl1",
-        "x" -> "Hello")
+      MongoDBObject(
+        "_typeHint" -> "com.novus.salat.test.model.SomeTraitImpl1",
+        "x" -> "Hello"
+      )
     })
     grater[ContainsFieldTypedToTrait].asObject(dbo1) must_== container1
 
@@ -161,8 +171,10 @@ class SalatTraitSpec extends SalatSpec {
     dbo2 must havePair("_typeHint" -> "com.novus.salat.test.model.ContainsFieldTypedToTrait")
     dbo2 must havePair("someTrait" -> {
       // _typeHint shows that @Salat annotation on SomeTrait is working
-      MongoDBObject("_typeHint" -> "com.novus.salat.test.model.SomeTraitImpl2",
-        "y" -> 33)
+      MongoDBObject(
+        "_typeHint" -> "com.novus.salat.test.model.SomeTraitImpl2",
+        "y" -> 33
+      )
     })
     grater[ContainsFieldTypedToTrait].asObject(dbo2) must_== container2
   }
@@ -171,7 +183,8 @@ class SalatTraitSpec extends SalatSpec {
     val investments = Investments(contracts = List[Contract](
       Stock(name = "Apple", ticker = "AAPL"),
       Turbo(name = "Knock out", ticker = "ASX"),
-      Index(name = "FTSE 100")))
+      Index(name = "FTSE 100")
+    ))
     val dbo: MongoDBObject = grater[Investments].asDBObject(investments)
     dbo must havePair("_typeHint" -> "com.novus.salat.test.model.Investments")
     dbo must havePair("contracts" -> {

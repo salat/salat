@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         UriConversionHelper.scala
- * Last modified: 2012-10-15 20:40:58 EDT
+ * Last modified: 2016-07-10 23:45:43 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +18,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.test.util
 
 import com.mongodb.casbah.commons.conversions.MongoConversionHelper
-import org.bson.{ BSON, Transformer }
+import org.bson.{BSON, Transformer}
 
 // Want to write your own custon BSON encoding?  Look no further than this excellent example:
 // https://github.com/mongodb/casbah/blob/master/casbah-commons/src/main/scala/conversions/ScalaConversions.scala
@@ -53,7 +56,8 @@ trait URISerializer extends MongoConversionHelper {
   private val transformer = new Transformer {
     log.trace("Encoding java.net.URI.")
 
-    /** Return a String object which BSON can encode
+    /**
+     * Return a String object which BSON can encode
      */
     def transform(o: AnyRef): AnyRef = o match {
       // the dumbest way to encode a URI that actually works for the purposes of my spec

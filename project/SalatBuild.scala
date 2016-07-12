@@ -69,7 +69,7 @@ object BuildSettings {
   val buildVersion = "1.9.10-SNAPSHOT"
   val buildScalaVersion = "2.11.2"
 
-  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
+  val buildSettings = Defaults.coreDefaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
@@ -83,34 +83,23 @@ object BuildSettings {
   )
 }
 
-object Format {
+object Scalariform {
 
-  import com.typesafe.sbt.SbtScalariform._
+import com.typesafe.sbt.SbtScalariform._
+import scalariform.formatter.preferences._
 
-  lazy val settings = scalariformSettings ++ Seq(
-    ScalariformKeys.preferences := formattingPreferences
-  )
-
-  lazy val formattingPreferences = {
-    import scalariform.formatter.preferences._
-    FormattingPreferences().
+  val settings = scalariformSettings ++ Seq(
+    ScalariformKeys.preferences := FormattingPreferences().
+      setPreference(AlignArguments, true).
       setPreference(AlignParameters, true).
       setPreference(AlignSingleLineCaseStatements, true).
       setPreference(CompactControlReadability, true).
-      setPreference(CompactStringConcatenation, true).
       setPreference(DoubleIndentClassDeclaration, true).
       setPreference(FormatXml, true).
       setPreference(IndentLocalDefs, true).
-      setPreference(IndentPackageBlocks, true).
-      setPreference(IndentSpaces, 2).
-      setPreference(MultilineScaladocCommentsStartOnFirstLine, true).
-      setPreference(PreserveSpaceBeforeArguments, false).
-      setPreference(PreserveDanglingCloseParenthesis, false).
-      setPreference(RewriteArrowSymbols, false).
-      setPreference(SpaceBeforeColon, false).
-      setPreference(SpaceInsideBrackets, false).
-      setPreference(SpacesWithinPatternBinders, true)
-  }
+      setPreference(PreserveSpaceBeforeArguments, true). // otherwise scalatest DSL gets mangled
+      setPreference(SpacesAroundMultiImports, false) // this agrees with IntelliJ defaults
+  )
 }
 
 object Publish {
@@ -169,26 +158,4 @@ object Repos {
   val typeSafeSnapsRepo = "Typesafe Snaps Repo" at "http://repo.typesafe.com/typesafe/snapshots/"
   val oss = "OSS Sonatype" at "http://oss.sonatype.org/content/repositories/releases/"
   val ossSnaps = "OSS Sonatype Snaps" at "http://oss.sonatype.org/content/repositories/snapshots/"
-}
-
-// Shell prompt which show the current project, git branch and build version
-object ShellPrompt {
-  object devnull extends ProcessLogger {
-    def info (s: => String) {}
-    def error (s: => String) { }
-    def buffer[T] (f: => T): T = f
-  }
-  def currBranch = (
-    ("git status -sb" lines_! devnull headOption)
-      getOrElse "-" stripPrefix "## "
-  )
-
-  val buildShellPrompt = {
-    (state: State) => {
-      val currProject = Project.extract (state).currentProject.id
-      "%s:%s:%s> ".format (
-        currProject, currBranch, BuildSettings.buildVersion
-      )
-    }
-  }
 }

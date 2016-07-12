@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-core
  * Class:         ToJValue.scala
- * Last modified: 2012-12-06 22:49:46 EST
+ * Last modified: 2016-07-10 23:53:02 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,27 +18,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 
 package com.novus.salat.json
 
+import java.net.URL
+
+import com.mongodb.casbah.Imports._
+import com.novus.salat.util.Logging
+import com.novus.salat.{Field => SField, StringTypeHintStrategy, TypeFinder, _}
+import org.bson.types.BSONTimestamp
+import org.joda.time.{DateTime, DateTimeZone}
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import com.mongodb.casbah.Imports._
-import org.joda.time.{ DateTimeZone, DateTime, LocalDateTime }
-import com.novus.salat.{ Field => SField, _ }
-import com.novus.salat.util.Logging
-import java.net.URL
-import com.novus.salat.TypeFinder
-import com.novus.salat.StringTypeHintStrategy
-import scala.tools.scalap.scalax.rules.scalasig.{ SingleType, TypeRefType }
-import org.bson.types.{ BasicBSONList, BSONTimestamp }
 
-/** The target type of the JValue value was not resolvable, either due to insufficient
+import scala.tools.scalap.scalax.rules.scalasig.TypeRefType
+
+/**
+ * The target type of the JValue value was not resolvable, either due to insufficient
  *  type hinting, or unsupported data structure, such as nested collections (as of 1.9.10)
  */
 case class UnsupportedJsonTransformationException(msg: String) extends RuntimeException(
@@ -49,7 +53,8 @@ case class UnsupportedJsonTransformationException(msg: String) extends RuntimeEx
   |- Optional collections such as Option[List[String]]
   |
   |For more information, please visit: https://github.com/salat/salat/wiki/SupportedTypes
-  """.stripMargin)
+  """.stripMargin
+)
 
 object MapToJSON extends Logging {
 
@@ -122,7 +127,8 @@ object ToJValue extends Logging {
       case ts: BSONTimestamp => ctx.jsonConfig.bsonTimestampStrategy.out(ts)
       case x: AnyRef =>
         throw new UnsupportedJsonTransformationException(
-          s"serialize: Unsupported JSON transformation for class='${x.getClass.getName}', value='$x'")
+          s"serialize: Unsupported JSON transformation for class='${x.getClass.getName}', value='$x'"
+        )
     }
 
     //    log.debug(
@@ -161,7 +167,8 @@ object FromJValue extends Logging {
         case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
         case notTraversable =>
           throw new UnsupportedJsonTransformationException(
-            s"FromJValue: expected types for Traversable but instead got:\n$notTraversable")
+            s"FromJValue: expected types for Traversable but instead got:\n$notTraversable"
+          )
       }
       case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
         case IsMap(_, childType: TypeRefType) => {
@@ -171,7 +178,8 @@ object FromJValue extends Logging {
         }
         case notMap =>
           throw new UnsupportedJsonTransformationException(
-            s"FromJValue: expected types for Map but instead got:\n$notMap")
+            s"FromJValue: expected types for Map but instead got:\n$notMap"
+          )
       }
 
       case v: JValue if field.tf.isOption && childType.isEmpty => field.typeRefType.typeArgs.toList match {
@@ -181,7 +189,8 @@ object FromJValue extends Logging {
         }
         case notOption =>
           throw new UnsupportedJsonTransformationException(
-            s"FromJValue: expected type for Option but instead got:\n$notOption")
+            s"FromJValue: expected type for Option but instead got:\n$notOption"
+          )
       }
 
       case o: JObject if field.tf.isOid => deserialize(o, field.tf)
@@ -235,7 +244,8 @@ object FromJValue extends Logging {
       case JsonAST.JNull                 => null
       case x: AnyRef =>
         throw new UnsupportedJsonTransformationException(
-          s"deserialize: unsupported JSON transformation for class='${x.getClass.getName}', value='$x'")
+          s"deserialize: unsupported JSON transformation for class='${x.getClass.getName}', value='$x'"
+        )
     }
     //    log.debug(
     //      """

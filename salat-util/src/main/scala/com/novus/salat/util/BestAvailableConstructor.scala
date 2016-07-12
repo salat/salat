@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-util
  * Class:         BestAvailableConstructor.scala
- * Last modified: 2012-06-28 15:37:34 EDT
+ * Last modified: 2016-07-10 23:45:43 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +18,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Project:      http://github.com/novus/salat
- * Wiki:         http://github.com/novus/salat/wiki
- * Mailing list: http://groups.google.com/group/scala-salat
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
+ *      Mailing list:  http://groups.google.com/group/scala-salat
+ *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 package com.novus.salat.util
 
 import java.lang.reflect.Constructor
 
-/** Given multiple contructors, attempt to determine the best available constructor for instantiating the class.
+/**
+ * Given multiple contructors, attempt to determine the best available constructor for instantiating the class.
  */
 object BestAvailableConstructor extends Logging {
 
-  /** @param clazz parameterized class instance
+  /**
+   * @param clazz parameterized class instance
    *  @tparam A any ref
    *  @return parameterized constructor instance
    */

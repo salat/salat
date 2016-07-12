@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2010 - 2012 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2010 - 2015 Novus Partners, Inc. (http://www.novus.com)
+ * Copyright (c) 2015 - 2016 Rose Toomey (https://github.com/rktoomey) and other individual contributors where noted
  *
  * Module:        salat-util
  * Class:         annotations.scala
- * Last modified: 2012-12-06 22:09:59 EST
+ * Last modified: 2016-07-10 23:49:08 EDT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +18,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *           Project:  http://github.com/novus/salat
- *              Wiki:  http://github.com/novus/salat/wiki
+ *           Project:  http://github.com/salat/salat
+ *              Wiki:  http://github.com/salat/salat/wiki
+ *             Slack:  https://scala-salat.slack.com
  *      Mailing list:  http://groups.google.com/group/scala-salat
  *     StackOverflow:  http://stackoverflow.com/questions/tagged/salat
+ *
  */
 
 package com.novus.salat
 
 import java.lang.annotation.Annotation
 import java.lang.reflect.AnnotatedElement
+
 import scala.annotation.meta.getter
 
 package object annotations {
@@ -42,12 +46,14 @@ package annotations {
   package object util {
     implicit def whatever2annotated(x: Any) = new PimpedAnnotatedElement(x)
 
-    /** PML class that allows an element typed to Any to be checked for an arbitrary annotation.
+    /**
+     * PML class that allows an element typed to Any to be checked for an arbitrary annotation.
      *  @param x an arbitrary input element
      */
     class PimpedAnnotatedElement(x: Any) {
 
-      /** @tparam A type of annotation
+      /**
+       * @tparam A type of annotation
        *  @return Some annotation if element X is annotated with an annotation of type A; otherwise None
        */
       def annotation[A <: Annotation: Manifest]: Option[A] = x match {
@@ -55,7 +61,8 @@ package annotations {
         case _                                => None
       }
 
-      /** @tparam A type of annotation
+      /**
+       * @tparam A type of annotation
        *  @return true if element X is annotated with annotation of type A; otherwise, false
        */
       def annotated_?[A <: Annotation: Manifest]: Boolean = annotation[A](manifest[A]).isDefined

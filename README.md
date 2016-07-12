@@ -1,5 +1,6 @@
-[![Stories in Ready](https://badge.waffle.io/salat/salat.png?label=ready&title=Ready)](https://waffle.io/salat/salat)
 # Salat
+
+[![Build Status](https://travis-ci.org/salat/salat.svg?branch=master)](https://travis-ci.org/salat/salat)
 
 Salat is a simple serialization library for case classes.
 
