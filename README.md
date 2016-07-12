@@ -1,6 +1,6 @@
 # Salat
 
-[![Build Status](https://travis-ci.org/salat/salat.svg?branch=master)](https://travis-ci.org/salat/salat)
+[![Build Status](https://travis-ci.org/salat/salat.svg?branch=1.9.x-branch)](https://travis-ci.org/salat/salat)
 
 Salat is a simple serialization library for case classes.
 
@@ -29,8 +29,6 @@ Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
 [Release Notes](https://github.com/salat/salat/blob/1.9.x-branch/notes/1.9.9.markdown)
 
 ## Snapshot
-
-[![Build Status](https://secure.travis-ci.org/salat/salat.png)](http://travis-ci.org/salat/salat)
 
 Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
 
