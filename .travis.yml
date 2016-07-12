@@ -6,10 +6,12 @@ scala:
 branches:
   only:
     - master
+    - 1.9.x-branch
 notifications:
   email:
     recipients:
       - prasinous@gmail.com
+      - nzucker@gmail.com
 jdk:
   - oraclejdk7
   - oraclejdk8
