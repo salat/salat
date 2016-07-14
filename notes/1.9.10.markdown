@@ -1,0 +1,14 @@
+Salat 1.9.10 is a maintenance release that includes:
+
+- Change #142 Project coordiantes are now com.github.salat
+- Bugfix #137 "When suppressDefaultArgs = true, ObjectId fields without default value cause runtime error"
+- Bugfix for PR #161 "add test for '\_id: Option[ObjectId] = None' 
+- Various changes integrating waffle.io and travisCI that were previously made in the 2.0.0-SNAPSHOT branch.
+- TravisCI tests now also test against JDK 8 as well as JDK 7
+
+
+NOTES:
+
+With 1.9.10, all changes targeting a 1.9.x version must be made against the branch 1.9.x-branch:
+
+https://github.com/salat/salat/tree/1.9.x-branch
