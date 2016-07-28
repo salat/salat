@@ -7,6 +7,7 @@ branches:
   only:
     - master
     - 1.9.x-branch
+    - 1.10.x-branch
 notifications:
   email:
     recipients:
