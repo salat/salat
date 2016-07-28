@@ -67,9 +67,9 @@ object BuildSettings {
 
   val buildOrganization = "com.github.salat"
   val buildVersion = "2.0.0-SNAPSHOT"
-  val buildScalaVersion = "2.11.2"
+  val buildScalaVersion = "2.11.7"
 
-  val buildSettings = Defaults.defaultSettings ++ Format.settings ++ Publish.settings ++ Seq(
+  val buildSettings = Format.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
     version := buildVersion,
     scalaVersion := buildScalaVersion,
@@ -79,7 +79,7 @@ object BuildSettings {
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"), 
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:_"),
-    crossScalaVersions ++= Seq("2.10.4")
+    crossScalaVersions ++= Seq("2.10.6")
   )
 }
 
@@ -145,8 +145,8 @@ object Publish {
 
 object Dependencies {
 
-  private val LogbackVersion = "1.0.9"
-  private val CasbahVersion = "2.7.1"
+  private val LogbackVersion = "1.1.3"
+  private val CasbahVersion = "2.8.2"
 
   val specs2 = "org.specs2" %% "specs2" % "2.3.11" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
