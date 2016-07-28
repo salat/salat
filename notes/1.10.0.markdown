@@ -1,0 +1,9 @@
+# DRAFT
+
+1.10.0 is a major release of Salat with breaking changes.
+
+Noteably, the package has changed from `com.novus.salat._` to `salat._`
+
+Additional changes:
+
+- #145 Upgrade to Casbah 2.8

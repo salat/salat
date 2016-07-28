@@ -1,6 +1,6 @@
 # Salat
 
-[![Build Status](https://travis-ci.org/salat/salat.svg?branch=1.9.x-branch)](https://travis-ci.org/salat/salat)
+[![Build Status](https://travis-ci.org/salat/salat.svg?branch=1.10.x-branch)](https://travis-ci.org/salat/salat)
 
 Salat is a simple serialization library for case classes.
 
@@ -30,19 +30,39 @@ Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
 
 ## Snapshot
 
-Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
+Available for Scala 2.10 and 2.11. Based on Casbah 2.8.2.
 
-    "com.github.salat" %% "salat" % "1.9.11-SNAPSHOT"
+    "com.github.salat" %% "salat" % "1.10.0-SNAPSHOT"
 
-[SNAPSHOT Release Notes](https://github.com/salat/salat/blob/1.9.x-branch/notes/1.9.11.markdown)
+[SNAPSHOT Release Notes](https://github.com/salat/salat/blob/1.10.x-branch/notes/1.10.0.markdown)
 
 ## Legacy support
+
+### Package
+
+Starting with version 1.10.0, the package for Salat has changed.
+
+**Version 1.10.x and Later**
+
+`import salat._`
+
+**Version 1.9.x and Earlier**
+
+`import com.novus.salat._`
+
+### Repositories
 
 Please remove all references to `repo.novus.com` from your build files.  After 0.0.8, Salat will be hosted exclusively by Sonatype.
 
 If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
     resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+
+### Scala 2.10.4
+
+Based on Casbah 2.7.1.
+
+    "com.novus" %% "salat" % "1.9.10"
 
 ### Scala 2.9.3
 
