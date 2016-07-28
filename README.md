@@ -1,5 +1,7 @@
 # Salat
 
+[![Build Status](https://secure.travis-ci.org/salat/salat.png)](http://travis-ci.org/salat/salat)
+
 Salat is a simple serialization library for case classes.
 
 Salat currently supports bidirectional serialization for:
@@ -27,8 +29,6 @@ Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
 [Release Notes](https://github.com/salat/salat/blob/master/notes/1.9.10.markdown)
 
 ## Snapshot
-
-[![Build Status](https://secure.travis-ci.org/salat/salat.png)](http://travis-ci.org/salat/salat)
 
 Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
 
