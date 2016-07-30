@@ -337,14 +337,8 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   def insert(t: ObjectType, wc: WriteConcern) = {
     val dbo = decorateDBO(t)
-    var wr: WriteResult = null
-    try {
-      wr = collection.insert(dbo, wc)
-      dbo.getAs[ID]("_id")
-    }
-    catch {
-      case mex: MongoException => throw SalatInsertError(description, collection, wc, wr, List(dbo))
-    }
+    collection.insert(dbo, wc)
+    dbo.getAs[ID]("_id")
   }
 
   /**
@@ -355,16 +349,10 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   def insert(docs: Traversable[ObjectType], wc: WriteConcern = defaultWriteConcern) = if (docs.nonEmpty) {
     val dbos = docs.map(decorateDBO(_)).toList
-    var wr: WriteResult = null
-    try {
-      wr = collection.insert(dbos: _*)
-      dbos.map {
-        dbo =>
-          dbo.getAs[ID]("_id") orElse collection.findOne(dbo).flatMap(_.getAs[ID]("_id"))
-      }
-    }
-    catch {
-      case mex: MongoException => throw SalatInsertError(description, collection, wc, wr, dbos)
+    collection.insert(dbos: _*)
+    dbos.map {
+      dbo =>
+        dbo.getAs[ID]("_id") orElse collection.findOne(dbo).flatMap(_.getAs[ID]("_id"))
     }
   }
   else Nil
@@ -399,14 +387,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   def remove(t: ObjectType, wc: WriteConcern) = {
     val dbo = decorateDBO(t)
-    var wr: WriteResult = null
-    try {
-      wr = collection.remove(dbo, wc)
-      wr
-    }
-    catch {
-      case mex: MongoException => throw SalatRemoveError(description, collection, wc, wr, List(dbo))
-    }
+    collection.remove(dbo, wc)
   }
 
   /**
@@ -415,14 +396,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (WriteResult) result of write operation
    */
   def remove[A <% DBObject](q: A, wc: WriteConcern) = {
-    var wr: WriteResult = null
-    try {
-      wr = collection.remove(q, wc)
-      wr
-    }
-    catch {
-      case mex: MongoException => throw SalatRemoveQueryError(description, collection, q, wc, wr)
-    }
+    collection.remove(q, wc)
   }
 
   /**
@@ -450,14 +424,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   def save(t: ObjectType, wc: WriteConcern) = {
     val dbo = decorateDBO(t)
-    var wr: WriteResult = null
-    try {
-      wr = collection.save(dbo, wc)
-      wr
-    }
-    catch {
-      case mex: MongoException => throw SalatSaveError(description, collection, wc, wr, List(dbo))
-    }
+    collection.save(dbo, wc)
   }
 
   /**
@@ -469,14 +436,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    *  @return (WriteResult) result of write operation
    */
   def update(q: DBObject, o: DBObject, upsert: Boolean = false, multi: Boolean = false, wc: WriteConcern = defaultWriteConcern): WriteResult = {
-    var wr: WriteResult = null
-    try {
-      val wr = collection.update(decorateQuery(q), o, upsert, multi, wc)
-      wr
-    }
-    catch {
-      case mex: MongoException => throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
-    }
+    collection.update(decorateQuery(q), o, upsert, multi, wc)
   }
 
   /**
