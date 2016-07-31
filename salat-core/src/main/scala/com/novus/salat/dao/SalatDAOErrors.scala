@@ -36,9 +36,19 @@ protected[dao] object SalatDAOError {
   implicit class SomeKindOfMongoError(val cause: SalatDAOMongoError) extends AnyVal {
     def toErrorString: String = cause.fold({ wr => s"$wr" }, { ex => s"$ex" })
   }
+
+  private val MulitDboFailureMsg = "ONE OR MORE OF YOUR DBOs FAILED"
+
+  def dboFailures(dbos: List[DBObject], opThatFailed: String) = {
+    val single = dbos.size == 1
+    s"""
+       |FAILED TO ${opThatFailed.toUpperCase()} ${if (single) "DBO" else s"ONE OR MORE OF YOUR DBOs (SEE Error FOR DETAILS)"}:
+       |${if (single) dbos.head else dbos.mkString("\n")}
+     """.stripMargin
+  }
 }
 
-import SalatDAOError.{SalatDAOMongoError, SomeKindOfMongoError}
+import SalatDAOError._
 
 abstract class SalatDAOError(
   whichDAO:        String,
@@ -55,9 +65,7 @@ abstract class SalatDAOError(
     WriteConcern: $wc
     Error: ${cause.toErrorString}
 
-    FAILED TO ${thingThatFailed.toUpperCase} ${if (dbos.size == 1) "DBO" else "DBOs"}
-    ${if (dbos.size == 1) dbos.head else dbos.mkString("\n")}
-
+    ${dboFailures(dbos, thingThatFailed)}
  """, cause.right.toOption.orNull)
 
 object SalatInsertError {

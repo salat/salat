@@ -29,9 +29,9 @@ package com.novus.salat.test.dao
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.MongoDBObject
-import com.mongodb.DuplicateKeyException
+import com.mongodb.{DuplicateKeyException, WriteConcernException}
 import com.novus.salat._
-import com.novus.salat.dao.SalatInsertError
+import com.novus.salat.dao.{SalatDAOUpdateError, SalatInsertError}
 import com.novus.salat.test._
 import com.novus.salat.test.global._
 import org.specs2.specification.Scope
@@ -94,17 +94,53 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.insert() must_== Nil
     }
 
-    "handle MongoExceptions for duplicate key inserts" in new alphaContext {
+    "handle MongoExceptions due to inserting records having duplicate keys" in new alphaContext {
       AlphaDAO.insert(alpha7)
       AlphaDAO.insert(alpha7) must throwA[SalatInsertError].like {
         case ex: SalatInsertError => ex.getCause must beAnInstanceOf[DuplicateKeyException]
       }
     }
 
-    "handle DAOs using deprecated MongoConnection, throwing an exception on a WriteResult error" in new alphaContext {
+    "handle MongoExceptions for bulk inserts having a duplicate key" in new alphaContext {
+      AlphaDAO.insert(alpha7)
+
+      // Note: Mongo stops processing at the first dup in the list
+      AlphaDAO.insert(List(alpha7, alpha1, alpha2, alpha3)) must throwA[SalatInsertError].like {
+        case ex: SalatInsertError =>
+          val mustBeMongoException = ex.getCause must beAnInstanceOf[DuplicateKeyException]
+          val onlyOneRecord = AlphaDAO.collection.count() must_== 1
+
+          mustBeMongoException and onlyOneRecord
+      }
+    }
+
+    "handle legacy errors due to inserting records having duplicate keys" in new alphaContext {
       DeprecatedAlphaDAO.insert(alpha7)
       DeprecatedAlphaDAO.insert(alpha7) must throwA[SalatInsertError]
-    }.pendingUntilFixed("duplicate insert fails silently when SalatDAO uses a MongoConnection instead of a MongoClient?!?")
+    }
+
+    "handle legacy errors for bulk inserts having a duplicate key" in new alphaContext {
+      DeprecatedAlphaDAO.insert(alpha7)
+
+      // Note: Mongo stops processing at the first dup in the list
+      val errorMustOccur = DeprecatedAlphaDAO.insert(List(alpha7, alpha1, alpha2, alpha3)) must throwA[SalatInsertError]
+      val onlyOneRecord = DeprecatedAlphaDAO.collection.count() must_== 1
+
+      errorMustOccur and onlyOneRecord
+    }
+
+    "handle MongoExceptions for invalid updates" in new alphaContext {
+      AlphaDAO.insert(alpha7)
+      AlphaDAO.update(MongoDBObject.empty, MongoDBObject("_id" -> 1)) must throwA[SalatDAOUpdateError].like {
+        case ex: SalatDAOUpdateError =>
+          ex.getCause must beAnInstanceOf[WriteConcernException]
+      }
+    }
+
+    "handle legacy for invalid updates" in new alphaContext {
+      DeprecatedAlphaDAO.insert(alpha7)
+      DeprecatedAlphaDAO.update(MongoDBObject.empty, MongoDBObject("_id" -> 1)) must throwA[SalatDAOUpdateError]
+    }
 
     "support findOne returning Option[T]" in new alphaContext {
       val _ids = AlphaDAO.insert(alpha4, alpha5, alpha6)

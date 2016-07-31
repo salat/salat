@@ -334,11 +334,20 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   override lazy val description = "SalatDAO[%s,%s](%s)".format(mot.runtimeClass.getSimpleName, mid.runtimeClass.getSimpleName, collection.name)
 
-  /** Legacy support. Code using MongoCollection instead of MongoClient might not throw MongoException */
-  private def handleLegacyErrors[T](wr: WriteResult)(failure: => Nothing)(success: => T) = {
+  /**
+   * Checks the "err" field in the write result, or the cached last error.
+   * "There should be no reason to use getError" - we found one.
+   */
+  private def defaultWriteResultErrorCheck(wr: WriteResult) = wr.getError != null || {
     val lastError = wr.getCachedLastError
-    if (lastError != null && !lastError.ok()) failure
-    else success
+    lastError != null && !lastError.ok()
+  }
+  /**
+   * Safety net for legacy code that is still using MongoConnection instead
+   * of MongoClient, and so will not reliably throw a MongoException.
+   */
+  private def handleLegacyErrors[T](wr: WriteResult, hasError: WriteResult => Boolean = defaultWriteResultErrorCheck _)(failure: => Nothing)(success: => T) = {
+    if (hasError(wr)) failure else success
   }
 
   /**
