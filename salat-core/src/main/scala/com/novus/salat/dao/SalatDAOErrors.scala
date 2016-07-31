@@ -31,9 +31,9 @@ import com.mongodb.casbah.TypeImports._
 import com.mongodb.{DBObject, WriteConcern}
 
 protected[dao] object SalatDAOError {
-  type SalatDAOMongoError = Either[WriteResult, MongoException]
+  type LegacyErrorOrMongoException = Either[WriteResult, MongoException]
 
-  implicit class SomeKindOfMongoError(val cause: SalatDAOMongoError) extends AnyVal {
+  implicit class SomeKindOfMongoError(val cause: LegacyErrorOrMongoException) extends AnyVal {
     def toErrorString: String = cause.fold({ wr => s"$wr" }, { ex => s"$ex" })
   }
 
@@ -55,7 +55,7 @@ abstract class SalatDAOError(
   thingThatFailed: String,
   collection:      MongoCollection,
   wc:              WriteConcern,
-  cause:           SalatDAOMongoError,
+  cause:           LegacyErrorOrMongoException,
   dbos:            List[DBObject]
 ) extends RuntimeException(s"""
 
@@ -69,7 +69,7 @@ abstract class SalatDAOError(
  """, cause.right.toOption.orNull)
 
 object SalatInsertError {
-  @deprecated("Use MongoClient instead of MongoCollection", "1.10.0")
+  @deprecated("Use MongoClient instead of MongoConnection", "1.10.0")
   def apply(
     description: String,
     collection:  MongoCollection,
@@ -84,12 +84,12 @@ case class SalatInsertError(
   description: String,
   collection:  MongoCollection,
   wc:          WriteConcern,
-  cause:       SalatDAOMongoError,
+  cause:       LegacyErrorOrMongoException,
   dbos:        List[DBObject]
 ) extends SalatDAOError(description, "insert", collection, wc, cause, dbos)
 
 object SalatRemoveError {
-  @deprecated("Use MongoClient instead of MongoCollection", "1.10.0")
+  @deprecated("Use MongoClient instead of MongoConnection", "1.10.0")
   def apply(
     description: String,
     collection:  MongoCollection,
@@ -104,12 +104,12 @@ case class SalatRemoveError(
   description: String,
   collection:  MongoCollection,
   wc:          WriteConcern,
-  cause:       SalatDAOMongoError,
+  cause:       LegacyErrorOrMongoException,
   dbos:        List[DBObject]
 ) extends SalatDAOError(description, "remove", collection, wc, cause, dbos)
 
 object SalatSaveError {
-  @deprecated("Use MongoClient instead of MongoCollection", "1.10.0")
+  @deprecated("Use MongoClient instead of MongoConnection", "1.10.0")
   def apply(
     description: String,
     collection:  MongoCollection,
@@ -124,7 +124,7 @@ case class SalatSaveError(
   description: String,
   collection:  MongoCollection,
   wc:          WriteConcern,
-  cause:       SalatDAOMongoError,
+  cause:       LegacyErrorOrMongoException,
   dbos:        List[DBObject]
 ) extends SalatDAOError(description, "save", collection, wc, cause, dbos)
 
@@ -134,7 +134,7 @@ abstract class SalatDAOQueryError(
   collection:      MongoCollection,
   query:           DBObject,
   wc:              WriteConcern,
-  cause:           SalatDAOMongoError
+  cause:           LegacyErrorOrMongoException
 ) extends RuntimeException(s"""
 
     $whichDAO: $thingThatFailed failed!
@@ -164,7 +164,7 @@ case class SalatRemoveQueryError(
   collection: MongoCollection,
   query:      DBObject,
   wc:         WriteConcern,
-  cause:      SalatDAOMongoError
+  cause:      LegacyErrorOrMongoException
 ) extends SalatDAOQueryError(whichDAO, "remove", collection, query, wc, cause)
 
 object SalatDAOUpdateError {
@@ -188,7 +188,7 @@ case class SalatDAOUpdateError(
   query:      DBObject,
   o:          DBObject,
   wc:         WriteConcern,
-  cause:      SalatDAOMongoError,
+  cause:      LegacyErrorOrMongoException,
   upsert:     Boolean,
   multi:      Boolean
 ) extends RuntimeException(s"""
