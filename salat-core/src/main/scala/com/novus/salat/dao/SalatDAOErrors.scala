@@ -30,16 +30,22 @@ package com.novus.salat.dao
 import com.mongodb.casbah.TypeImports._
 import com.mongodb.{DBObject, WriteConcern}
 
-case class MongoErrorAdapter(wr: WriteResult, ex: Option[MongoException]) {
-  def bestAvailableToString = ex.fold(s"$wr")(ex => s"$ex")
+protected[dao] object SalatDAOError {
+  type SalatDAOMongoError = Either[WriteResult, MongoException]
+
+  implicit class SomeKindOfMongoError(val cause: SalatDAOMongoError) extends AnyVal {
+    def toErrorString: String = cause.fold({ wr => s"$wr" }, { ex => s"$ex" })
+  }
 }
+
+import SalatDAOError.{SalatDAOMongoError, SomeKindOfMongoError}
 
 abstract class SalatDAOError(
   whichDAO:        String,
   thingThatFailed: String,
   collection:      MongoCollection,
   wc:              WriteConcern,
-  cause:           MongoErrorAdapter,
+  cause:           SalatDAOMongoError,
   dbos:            List[DBObject]
 ) extends RuntimeException(s"""
 
@@ -47,12 +53,12 @@ abstract class SalatDAOError(
 
     Collection: ${collection.name}
     WriteConcern: $wc
-    Error: ${cause.bestAvailableToString}
+    Error: ${cause.toErrorString}
 
     FAILED TO ${thingThatFailed.toUpperCase} ${if (dbos.size == 1) "DBO" else "DBOs"}
     ${if (dbos.size == 1) dbos.head else dbos.mkString("\n")}
 
- """, cause.ex.orNull)
+ """, cause.right.toOption.orNull)
 
 object SalatInsertError {
   @deprecated("Use MongoClient instead of MongoCollection", "1.10.0")
@@ -63,14 +69,14 @@ object SalatInsertError {
     wr:          WriteResult,
     dbos:        List[DBObject]
   ): SalatInsertError =
-    SalatInsertError(description, collection, wc, MongoErrorAdapter(wr, None), dbos)
+    SalatInsertError(description, collection, wc, Left(wr), dbos)
 }
 
 case class SalatInsertError(
   description: String,
   collection:  MongoCollection,
   wc:          WriteConcern,
-  cause:       MongoErrorAdapter,
+  cause:       SalatDAOMongoError,
   dbos:        List[DBObject]
 ) extends SalatDAOError(description, "insert", collection, wc, cause, dbos)
 
@@ -83,14 +89,14 @@ object SalatRemoveError {
     wr:          WriteResult,
     dbos:        List[DBObject]
   ): SalatRemoveError =
-    SalatRemoveError(description, collection, wc, MongoErrorAdapter(wr, None), dbos)
+    SalatRemoveError(description, collection, wc, Left(wr), dbos)
 }
 
 case class SalatRemoveError(
   description: String,
   collection:  MongoCollection,
   wc:          WriteConcern,
-  cause:       MongoErrorAdapter,
+  cause:       SalatDAOMongoError,
   dbos:        List[DBObject]
 ) extends SalatDAOError(description, "remove", collection, wc, cause, dbos)
 
@@ -103,14 +109,14 @@ object SalatSaveError {
     wr:          WriteResult,
     dbos:        List[DBObject]
   ): SalatSaveError =
-    SalatSaveError(description, collection, wc, MongoErrorAdapter(wr, None), dbos)
+    SalatSaveError(description, collection, wc, Left(wr), dbos)
 }
 
 case class SalatSaveError(
   description: String,
   collection:  MongoCollection,
   wc:          WriteConcern,
-  cause:       MongoErrorAdapter,
+  cause:       SalatDAOMongoError,
   dbos:        List[DBObject]
 ) extends SalatDAOError(description, "save", collection, wc, cause, dbos)
 
@@ -120,18 +126,18 @@ abstract class SalatDAOQueryError(
   collection:      MongoCollection,
   query:           DBObject,
   wc:              WriteConcern,
-  cause:           MongoErrorAdapter
+  cause:           SalatDAOMongoError
 ) extends RuntimeException(s"""
 
     $whichDAO: $thingThatFailed failed!
 
     Collection: ${collection.name}
     WriteConcern: $wc
-    Error: ${cause.bestAvailableToString}
+    Error: ${cause.toErrorString}
 
     QUERY: $query
 
- """, cause.ex.orNull)
+ """, cause.right.toOption.orNull)
 
 object SalatRemoveQueryError {
   @deprecated("Use MongoClient instead of MongoCollection", "1.10.0")
@@ -142,7 +148,7 @@ object SalatRemoveQueryError {
     wc:         WriteConcern,
     wr:         WriteResult
   ): SalatRemoveQueryError =
-    SalatRemoveQueryError(whichDAO, collection, query, wc, MongoErrorAdapter(wr, None))
+    SalatRemoveQueryError(whichDAO, collection, query, wc, Left(wr))
 }
 
 case class SalatRemoveQueryError(
@@ -150,7 +156,7 @@ case class SalatRemoveQueryError(
   collection: MongoCollection,
   query:      DBObject,
   wc:         WriteConcern,
-  cause:      MongoErrorAdapter
+  cause:      SalatDAOMongoError
 ) extends SalatDAOQueryError(whichDAO, "remove", collection, query, wc, cause)
 
 object SalatDAOUpdateError {
@@ -165,7 +171,7 @@ object SalatDAOUpdateError {
     upsert:     Boolean,
     multi:      Boolean
   ): SalatDAOUpdateError =
-    SalatDAOUpdateError(whichDAO, collection, query, o, wc, MongoErrorAdapter(wr, None), upsert, multi)
+    SalatDAOUpdateError(whichDAO, collection, query, o, wc, Left(wr), upsert, multi)
 }
 
 case class SalatDAOUpdateError(
@@ -174,7 +180,7 @@ case class SalatDAOUpdateError(
   query:      DBObject,
   o:          DBObject,
   wc:         WriteConcern,
-  cause:      MongoErrorAdapter,
+  cause:      SalatDAOMongoError,
   upsert:     Boolean,
   multi:      Boolean
 ) extends RuntimeException(s"""
@@ -183,7 +189,7 @@ case class SalatDAOUpdateError(
 
     Collection: ${collection.name}
     WriteConcern: $wc
-    Error: ${cause.bestAvailableToString}
+    Error: ${cause.toErrorString}
     Upsert: $upsert
     Multi: $multi
 
@@ -191,4 +197,4 @@ case class SalatDAOUpdateError(
 
     OBJECT TO UPDATE: $o
 
- """, cause.ex.orNull)
+ """, cause.right.toOption.orNull)
