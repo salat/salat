@@ -50,7 +50,7 @@ case class Alpha(@Key("_id") id: Int, beta: List[Beta] = Nil)
 //
 object AlphaDAO extends SalatDAO[Alpha, Int](collection = MongoClient()(SalatSpecDb)(AlphaColl))
 
-/** Uses MongoCollection, and so won't throw MongoException */
+/** Uses MongoConnection (deprecated) instead of MongoClient, and so won't throw MongoException on errors. */
 object DeprecatedAlphaDAO extends SalatDAO[Alpha, Int](collection = MongoConnection()(SalatSpecDb)(AlphaColl))
 
 case class Epsilon(@Key("_id") id: ObjectId = new ObjectId, notes: String)
