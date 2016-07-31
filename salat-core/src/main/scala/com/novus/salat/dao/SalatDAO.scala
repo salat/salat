@@ -256,7 +256,6 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Remove documents matching parent id
-     *
      *  @param parentId parent id
      *  @param wc write concern
      */
@@ -266,7 +265,6 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Remove documents matching parent ids
-     *
      *  @param parentIds parent ids
      *  @param wc write concern
      */
@@ -276,7 +274,6 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Projection typed to a case class, trait or abstract superclass.
-     *
      *  @param parentId parent id
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -291,7 +288,6 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Projection typed to a case class, trait or abstract superclass.
-     *
      *  @param parentIds parent ids
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -306,7 +302,6 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Projection typed to a type for which Casbah or mongo-java-driver handles conversion
-     *
      *  @param parentId parent id
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -321,7 +316,6 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Projection typed to a type for which Casbah or mongo-java-driver handles conversion
-     *
      *  @param parentIds parent ids
      *  @param field field to project on
      *  @param query (optional) object for which to search
