@@ -35,6 +35,7 @@ import com.novus.salat._
 
 /**
  * Sample DAO implementation.
+ *
  *  @param collection MongoDB collection
  *  @param mot implicit manifest for ObjectType
  *  @param mid implicit manifest for ID
@@ -74,6 +75,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
   /**
    * A central place to modify find, count and update queries before executing them.
+   *
    *  @param query query to decorate
    *  @return decorated query for execution
    */
@@ -86,6 +88,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
   /**
    * A central place to modify DBOs before inserting, saving, or updating.
+   *
    *  @param toPersist object to be serialized
    *  @return decorated DBO for persisting
    */
@@ -162,6 +165,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Count the number of documents matching the parent id.
+     *
      *  @param parentId parent id
      *  @param query object for which to search
      *  @param fieldsThatMustExist list of field keys that must exist
@@ -252,6 +256,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Remove documents matching parent id
+     *
      *  @param parentId parent id
      *  @param wc write concern
      */
@@ -261,6 +266,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Remove documents matching parent ids
+     *
      *  @param parentIds parent ids
      *  @param wc write concern
      */
@@ -270,6 +276,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Projection typed to a case class, trait or abstract superclass.
+     *
      *  @param parentId parent id
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -284,6 +291,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Projection typed to a case class, trait or abstract superclass.
+     *
      *  @param parentIds parent ids
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -298,6 +306,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Projection typed to a type for which Casbah or mongo-java-driver handles conversion
+     *
      *  @param parentId parent id
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -312,6 +321,7 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
 
     /**
      * Projection typed to a type for which Casbah or mongo-java-driver handles conversion
+     *
      *  @param parentIds parent ids
      *  @param field field to project on
      *  @param query (optional) object for which to search
@@ -330,6 +340,13 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
    */
   override lazy val description = "SalatDAO[%s,%s](%s)".format(mot.runtimeClass.getSimpleName, mid.runtimeClass.getSimpleName, collection.name)
 
+  /** Legacy support. Code using MongoCollection instead of MongoClient might not throw MongoException */
+  private def handleLegacyErrors[T](wr: WriteResult)(failure: => Nothing)(success: => T) = {
+    val lastError = wr.getCachedLastError
+    if (lastError != null && !lastError.ok()) failure
+    else success
+  }
+
   /**
    * @param t instance of ObjectType
    *  @param wc write concern
@@ -338,12 +355,18 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
   def insert(t: ObjectType, wc: WriteConcern) = {
     val dbo = decorateDBO(t)
     var wr: WriteResult = null
+
     try {
       wr = collection.insert(dbo, wc)
-      dbo.getAs[ID]("_id")
+      handleLegacyErrors(wr) {
+        throw SalatInsertError(description, collection, wc, wr, List(dbo))
+      } {
+        dbo.getAs[ID]("_id")
+      }
     }
     catch {
-      case mex: MongoException => throw SalatInsertError(description, collection, wc, wr, List(dbo))
+      case mex: MongoException =>
+        throw SalatInsertError(description, collection, wc, MongoErrorAdapter(wr, Option(mex)), List(dbo))
     }
   }
 
@@ -356,15 +379,20 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
   def insert(docs: Traversable[ObjectType], wc: WriteConcern = defaultWriteConcern) = if (docs.nonEmpty) {
     val dbos = docs.map(decorateDBO(_)).toList
     var wr: WriteResult = null
+
     try {
       wr = collection.insert(dbos: _*)
-      dbos.map {
-        dbo =>
-          dbo.getAs[ID]("_id") orElse collection.findOne(dbo).flatMap(_.getAs[ID]("_id"))
+      handleLegacyErrors(wr) {
+        throw SalatInsertError(description, collection, wc, wr, dbos)
+      } {
+        dbos.map {
+          dbo =>
+            dbo.getAs[ID]("_id") orElse collection.findOne(dbo).flatMap(_.getAs[ID]("_id"))
+        }
       }
     }
     catch {
-      case mex: MongoException => throw SalatInsertError(description, collection, wc, wr, dbos)
+      case mex: MongoException => throw SalatInsertError(description, collection, wc, MongoErrorAdapter(wr, Option(mex)), dbos)
     }
   }
   else Nil
@@ -402,10 +430,16 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     var wr: WriteResult = null
     try {
       wr = collection.remove(dbo, wc)
-      wr
+
+      handleLegacyErrors(wr) {
+        throw SalatRemoveError(description, collection, wc, wr, List(dbo))
+      } {
+        wr
+      }
     }
     catch {
-      case mex: MongoException => throw SalatRemoveError(description, collection, wc, wr, List(dbo))
+      case mex: MongoException =>
+        throw SalatRemoveError(description, collection, wc, MongoErrorAdapter(wr, Option(mex)), List(dbo))
     }
   }
 
@@ -418,10 +452,16 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     var wr: WriteResult = null
     try {
       wr = collection.remove(q, wc)
-      wr
+
+      handleLegacyErrors(wr) {
+        throw SalatRemoveQueryError(description, collection, q, wc, wr)
+      } {
+        wr
+      }
     }
     catch {
-      case mex: MongoException => throw SalatRemoveQueryError(description, collection, q, wc, wr)
+      case mex: MongoException =>
+        throw SalatRemoveQueryError(description, collection, q, wc, MongoErrorAdapter(wr, Option(mex)))
     }
   }
 
@@ -451,12 +491,18 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
   def save(t: ObjectType, wc: WriteConcern) = {
     val dbo = decorateDBO(t)
     var wr: WriteResult = null
+
     try {
       wr = collection.save(dbo, wc)
-      wr
+
+      handleLegacyErrors(wr) {
+        throw SalatSaveError(description, collection, wc, wr, List(dbo))
+      } {
+        wr
+      }
     }
     catch {
-      case mex: MongoException => throw SalatSaveError(description, collection, wc, wr, List(dbo))
+      case mex: MongoException => throw SalatSaveError(description, collection, wc, MongoErrorAdapter(wr, Option(mex)), List(dbo))
     }
   }
 
@@ -472,10 +518,16 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
     var wr: WriteResult = null
     try {
       val wr = collection.update(decorateQuery(q), o, upsert, multi, wc)
-      wr
+
+      handleLegacyErrors(wr) {
+        throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
+      } {
+        wr
+      }
     }
     catch {
-      case mex: MongoException => throw SalatDAOUpdateError(description, collection, q, o, wc, wr, upsert, multi)
+      case mex: MongoException =>
+        throw SalatDAOUpdateError(description, collection, q, o, wc, MongoErrorAdapter(wr, Option(mex)), upsert, multi)
     }
   }
 

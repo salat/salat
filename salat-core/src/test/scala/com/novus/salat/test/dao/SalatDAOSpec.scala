@@ -29,7 +29,9 @@ package com.novus.salat.test.dao
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.DuplicateKeyException
 import com.novus.salat._
+import com.novus.salat.dao.SalatInsertError
 import com.novus.salat.test._
 import com.novus.salat.test.global._
 import org.specs2.specification.Scope
@@ -48,6 +50,7 @@ class SalatDAOSpec extends SalatSpec {
   val alpha4 = Alpha(id = 4, beta = List[Beta](Delta("delta4", "koppa4")))
   val alpha5 = Alpha(id = 5, beta = List[Beta](Gamma("gamma5"), Gamma("gamma5-1")))
   val alpha6 = Alpha(id = 6, beta = List[Beta](Delta("delta6", "heta2"), Gamma("gamma6")))
+  val alpha7 = Alpha(id = 7, beta = List[Beta](Delta("delta7a", "delta7b")))
 
   "Salat simple DAO" should {
 
@@ -88,6 +91,18 @@ class SalatDAOSpec extends SalatSpec {
 
     "no-op inserting an empty collection of objects" in {
       AlphaDAO.insert() must_== Nil
+    }
+
+    "handle MongoExceptions for duplicate key inserts" in new alphaContext {
+      AlphaDAO.insert(alpha7)
+      AlphaDAO.insert(alpha7) must throwA[SalatInsertError].like {
+        case ex: SalatInsertError => ex.getCause must beAnInstanceOf[DuplicateKeyException]
+      }
+    }
+
+    "handle DAOs using deprecated MongoConnection, throwing an exception on a WriteResult error" in new alphaContext {
+      DeprecatedAlphaDAO.insert(alpha7)
+      AlphaDAO.insert(alpha7) must throwA[SalatInsertError]
     }
 
     "support findOne returning Option[T]" in new alphaContext {

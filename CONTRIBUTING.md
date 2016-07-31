@@ -13,7 +13,7 @@ See also: [Contributing to Open Source on GitHub](https://guides.github.com/acti
 Getting up to develop Salat requires three high-level steps
 
 1. Install SBT (recommended: sbt: the rebel cut: https://github.com/paulp/sbt-extras)
-2. Install MongoDB (this is required for unit tests): https://docs.mongodb.com/v2.6/installation/
+2. Install the appropriate MongoDB version (this is required for unit tests): https://docs.mongodb.com/manual/installation/
 3. `sbt test:test` to ensure the project compiles and all unit tests pass.
 
 # Which Version/Branch?
