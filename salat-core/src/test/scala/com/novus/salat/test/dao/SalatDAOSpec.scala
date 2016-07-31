@@ -94,14 +94,14 @@ class SalatDAOSpec extends SalatSpec {
       AlphaDAO.insert() must_== Nil
     }
 
-    "handle MongoExceptions due to inserting records having duplicate keys" in new alphaContext {
+    "handle MongoExceptions when inserting an object having a duplicate key" in new alphaContext {
       AlphaDAO.insert(alpha7)
       AlphaDAO.insert(alpha7) must throwA[SalatInsertError].like {
         case ex: SalatInsertError => ex.getCause must beAnInstanceOf[DuplicateKeyException]
       }
     }
 
-    "handle MongoExceptions for bulk inserts having a duplicate key" in new alphaContext {
+    "handle MongoExceptions for bulk inserts where an object has a duplicate key" in new alphaContext {
       AlphaDAO.insert(alpha7)
 
       // Note: Mongo stops processing at the first dup in the list
@@ -114,12 +114,12 @@ class SalatDAOSpec extends SalatSpec {
       }
     }
 
-    "handle legacy errors due to inserting records having duplicate keys" in new alphaContext {
+    "handle legacy errors when inserting an object having a duplicate key" in new alphaContext {
       DeprecatedAlphaDAO.insert(alpha7)
       DeprecatedAlphaDAO.insert(alpha7) must throwA[SalatInsertError]
     }
 
-    "handle legacy errors for bulk inserts having a duplicate key" in new alphaContext {
+    "handle legacy errors for bulk inserts where an object has a duplicate key" in new alphaContext {
       DeprecatedAlphaDAO.insert(alpha7)
 
       // Note: Mongo stops processing at the first dup in the list
@@ -137,7 +137,7 @@ class SalatDAOSpec extends SalatSpec {
       }
     }
 
-    "handle legacy for invalid updates" in new alphaContext {
+    "handle legacy errors for invalid updates" in new alphaContext {
       DeprecatedAlphaDAO.insert(alpha7)
       DeprecatedAlphaDAO.update(MongoDBObject.empty, MongoDBObject("_id" -> 1)) must throwA[SalatDAOUpdateError]
     }
