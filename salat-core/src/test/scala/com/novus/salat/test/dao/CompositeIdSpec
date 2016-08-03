@@ -1,0 +1,29 @@
+package com.novus.salat.test.dao
+
+import org.scalatest.{Matchers, WordSpecLike}
+import com.novus.salat.global._
+import com.novus.salat.dao._
+import com.novus.salat.annotations._
+import com.mongodb.casbah.{MongoCollection, MongoURI, MongoConnection}
+
+
+class CompositeIdSpec extends WordSpecLike with Matchers {
+  val o = MyPersistedObject(MyCompositeId("some", "key"), "my data")
+  val dao = new MyDAO(MongoConnection(MongoURI("mongodb://localhost"))("test")("myPersistedObjects"))
+
+  "MyDAO" should {
+    "persist an object to MongoDB" in {
+      dao.insert(o) should be('defined)
+    }
+
+    "retrieve the same object from MongoDB" in {
+      dao.findOneById(o.id) should be(Some(o))
+    }
+  }
+}
+
+case class MyCompositeId(x: String, y: String)
+
+case class MyPersistedObject(@Key("_id") id: MyCompositeId, data: String)
+
+class MyDAO(collection: MongoCollection) extends SalatDAO[MyPersistedObject, MyCompositeId](collection)
