@@ -30,7 +30,7 @@ Available for Scala 2.10 and 2.11. Based on Casbah 2.7.1.
 
 ## Snapshot
 
-Available for Scala 2.10 and 2.11. Based on Casbah 2.8.2.
+Available for Scala 2.10 and 2.11. Based on Casbah 2.8.2, with support for Mongo 3.x
 
     "com.github.salat" %% "salat" % "1.10.0-SNAPSHOT"
 
@@ -88,7 +88,7 @@ Based on Casbah 2.1.5-1.
 
 ## Play 2 plugin
 
-Are you using Play framework?  Make sure to see our [Play support][play-salat] wiki page, and check out Leon Radley's plugin at [leon/play-salat][play-salat-plugin].
+Are you using Play framework?  Make sure to see our [Play support][play-salat] wiki page, and check out the play-salat plugin at [cloudinsights/play-salat][play-salat-plugin].
 
 # Documentation
 
@@ -128,7 +128,7 @@ Details are thin on the ground, but here's where we got started:
 [JSON4S]: http://json4s.org/
 [group]: http://groups.google.com/group/scala-salat
 [play-salat]: https://github.com/salat/salat/wiki/SalatWithPlay2
-[play-salat-plugin]: https://github.com/leon/play-salat
+[play-salat-plugin]: https://github.com/cloudinsights/play-salat
 [sid10]: http://www.scala-lang.org/sid/10
 [typehint]: https://github.com/salat/salat/wiki/TypeHints
 [collections]: https://github.com/salat/salat/wiki/Collections
