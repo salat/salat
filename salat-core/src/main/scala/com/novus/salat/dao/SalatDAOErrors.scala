@@ -30,54 +30,103 @@ package com.novus.salat.dao
 import com.mongodb.casbah.TypeImports._
 import com.mongodb.{DBObject, WriteConcern}
 
+protected[dao] object SalatDAOError {
+  type LegacyErrorOrMongoException = Either[WriteResult, MongoException]
+
+  implicit class SomeKindOfMongoError(val cause: LegacyErrorOrMongoException) extends AnyVal {
+    def toErrorString: String = cause.fold({ wr => s"$wr" }, { ex => s"$ex" })
+  }
+
+  private val MulitDboFailureMsg = "ONE OR MORE OF YOUR DBOs FAILED"
+
+  def dboFailures(dbos: List[DBObject], opThatFailed: String) = {
+    val single = dbos.size == 1
+    s"""
+       |FAILED TO ${opThatFailed.toUpperCase()} ${if (single) "DBO" else s"ONE OR MORE OF YOUR DBOs (SEE Error FOR DETAILS)"}:
+       |${if (single) dbos.head else dbos.mkString("\n")}
+     """.stripMargin
+  }
+}
+
+import SalatDAOError._
+
 abstract class SalatDAOError(
   whichDAO:        String,
   thingThatFailed: String,
   collection:      MongoCollection,
   wc:              WriteConcern,
-  wr:              WriteResult,
+  cause:           LegacyErrorOrMongoException,
   dbos:            List[DBObject]
-) extends Error("""
+) extends RuntimeException(s"""
 
-    %s: %s failed!
+    $whichDAO: $thingThatFailed failed!
 
-    Collection: %s
-    WriteConcern: %s
-    WriteResult: %s
+    Collection: ${collection.name}
+    WriteConcern: $wc
+    Error: ${cause.toErrorString}
 
-    FAILED TO %s %s
-    %s
+    ${dboFailures(dbos, thingThatFailed)}
+ """, cause.right.toOption.orNull)
 
-
- """.format(whichDAO, thingThatFailed,
-  collection.name, wc, wr,
-  thingThatFailed.toUpperCase,
-  if (dbos.size == 1) "DBO" else "DBOs",
-  if (dbos.size == 1) dbos.head else dbos.mkString("\n")))
+object SalatInsertError {
+  @deprecated("Use MongoClient instead of MongoConnection", "1.10.0")
+  def apply(
+    description: String,
+    collection:  MongoCollection,
+    wc:          WriteConcern,
+    wr:          WriteResult,
+    dbos:        List[DBObject]
+  ): SalatInsertError =
+    SalatInsertError(description, collection, wc, Left(wr), dbos)
+}
 
 case class SalatInsertError(
   description: String,
   collection:  MongoCollection,
   wc:          WriteConcern,
-  wr:          WriteResult,
+  cause:       LegacyErrorOrMongoException,
   dbos:        List[DBObject]
-) extends SalatDAOError(description, "insert", collection, wc, wr, dbos)
+) extends SalatDAOError(description, "insert", collection, wc, cause, dbos)
+
+object SalatRemoveError {
+  @deprecated("Use MongoClient instead of MongoConnection", "1.10.0")
+  def apply(
+    description: String,
+    collection:  MongoCollection,
+    wc:          WriteConcern,
+    wr:          WriteResult,
+    dbos:        List[DBObject]
+  ): SalatRemoveError =
+    SalatRemoveError(description, collection, wc, Left(wr), dbos)
+}
 
 case class SalatRemoveError(
   description: String,
   collection:  MongoCollection,
   wc:          WriteConcern,
-  wr:          WriteResult,
+  cause:       LegacyErrorOrMongoException,
   dbos:        List[DBObject]
-) extends SalatDAOError(description, "remove", collection, wc, wr, dbos)
+) extends SalatDAOError(description, "remove", collection, wc, cause, dbos)
+
+object SalatSaveError {
+  @deprecated("Use MongoClient instead of MongoConnection", "1.10.0")
+  def apply(
+    description: String,
+    collection:  MongoCollection,
+    wc:          WriteConcern,
+    wr:          WriteResult,
+    dbos:        List[DBObject]
+  ): SalatSaveError =
+    SalatSaveError(description, collection, wc, Left(wr), dbos)
+}
 
 case class SalatSaveError(
   description: String,
   collection:  MongoCollection,
   wc:          WriteConcern,
-  wr:          WriteResult,
+  cause:       LegacyErrorOrMongoException,
   dbos:        List[DBObject]
-) extends SalatDAOError(description, "save", collection, wc, wr, dbos)
+) extends SalatDAOError(description, "save", collection, wc, cause, dbos)
 
 abstract class SalatDAOQueryError(
   whichDAO:        String,
@@ -85,26 +134,53 @@ abstract class SalatDAOQueryError(
   collection:      MongoCollection,
   query:           DBObject,
   wc:              WriteConcern,
-  wr:              WriteResult
-) extends Error("""
+  cause:           LegacyErrorOrMongoException
+) extends RuntimeException(s"""
 
-    %s: %s failed!
+    $whichDAO: $thingThatFailed failed!
 
-    Collection: %s
-    WriteConcern: %s
-    WriteResult: %s
+    Collection: ${collection.name}
+    WriteConcern: $wc
+    Error: ${cause.toErrorString}
 
-    QUERY: %s
+    QUERY: $query
 
- """.format(whichDAO, thingThatFailed, collection.name, wc, wr, query))
+ """, cause.right.toOption.orNull)
+
+object SalatRemoveQueryError {
+  @deprecated("Use MongoClient instead of MongoCollection", "1.10.0")
+  def apply(
+    whichDAO:   String,
+    collection: MongoCollection,
+    query:      DBObject,
+    wc:         WriteConcern,
+    wr:         WriteResult
+  ): SalatRemoveQueryError =
+    SalatRemoveQueryError(whichDAO, collection, query, wc, Left(wr))
+}
 
 case class SalatRemoveQueryError(
   whichDAO:   String,
   collection: MongoCollection,
   query:      DBObject,
   wc:         WriteConcern,
-  wr:         WriteResult
-) extends SalatDAOQueryError(whichDAO, "remove", collection, query, wc, wr)
+  cause:      LegacyErrorOrMongoException
+) extends SalatDAOQueryError(whichDAO, "remove", collection, query, wc, cause)
+
+object SalatDAOUpdateError {
+  @deprecated("Use MongoClient instead of MongoCollection", "1.10.0")
+  def apply(
+    whichDAO:   String,
+    collection: MongoCollection,
+    query:      DBObject,
+    o:          DBObject,
+    wc:         WriteConcern,
+    wr:         WriteResult,
+    upsert:     Boolean,
+    multi:      Boolean
+  ): SalatDAOUpdateError =
+    SalatDAOUpdateError(whichDAO, collection, query, o, wc, Left(wr), upsert, multi)
+}
 
 case class SalatDAOUpdateError(
   whichDAO:   String,
@@ -112,21 +188,21 @@ case class SalatDAOUpdateError(
   query:      DBObject,
   o:          DBObject,
   wc:         WriteConcern,
-  wr:         WriteResult,
+  cause:      LegacyErrorOrMongoException,
   upsert:     Boolean,
   multi:      Boolean
-) extends Error("""
+) extends RuntimeException(s"""
 
-    %s: update failed!
+    $whichDAO: update failed!
 
-    Collection: %s
-    WriteConcern: %s
-    WriteResult: %s
-    Upsert: %s
-    Multi: %s
+    Collection: ${collection.name}
+    WriteConcern: $wc
+    Error: ${cause.toErrorString}
+    Upsert: $upsert
+    Multi: $multi
 
-    QUERY: %s
+    QUERY: $query
 
-    OBJECT TO UPDATE: %s
+    OBJECT TO UPDATE: $o
 
- """.format(whichDAO, collection.name, wc, wr, upsert, multi, query, o))
+ """, cause.right.toOption.orNull)

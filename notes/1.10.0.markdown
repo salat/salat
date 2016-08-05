@@ -2,8 +2,16 @@
 
 1.10.0 is a major release of Salat with breaking changes.
 
-Noteably, the package has changed from `com.novus.salat._` to `salat._`
+Notably, the package has changed from `com.novus.salat._` to `salat._`
 
-Additional changes:
+# Change Log
 
-- #145 Upgrade to Casbah 2.8
+- \#145 Upgrade to Casbah 2.8.2
+
+# Compatibility
+
+- If you create a `SalatDAO` using a collection created from a `MongoClient`, its methods may throw a `SalatDAOError` having a `MongoException` root cause. `SalatDAOError` now extends `RuntimeException` instead of `java.lang.Error`, and the constructor signature has changed accordingly.
+
+- A `SalatDAO` created using a `MongoCollection` from a `MongoConnection` will attempt attempt to detect errors from the `WriteResult`, but is not guaranteed (from the Mongo 3.x upgrade notes: "[getLastError] does not work reliably in the 2.x series and there is no way to make it work reliably" - http://mongodb.github.io/mongo-java-driver/3.0/whats-new/upgrading/). Be sure to use `MongoClient`.
+
+

@@ -29,7 +29,9 @@ package com.novus.salat.test.dao
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.{DuplicateKeyException, WriteConcernException}
 import com.novus.salat._
+import com.novus.salat.dao.{SalatDAOUpdateError, SalatInsertError}
 import com.novus.salat.test._
 import com.novus.salat.test.global._
 import org.specs2.specification.Scope
@@ -39,6 +41,7 @@ class SalatDAOSpec extends SalatSpec {
   // which most specs can execute concurrently, this particular spec needs to execute sequentially to avoid mutating shared state,
   // namely, the MongoDB collection referenced by the AlphaDAO
   sequential
+  isolated
 
   implicit val wc = AlphaDAO.defaultWriteConcern
 
@@ -48,6 +51,7 @@ class SalatDAOSpec extends SalatSpec {
   val alpha4 = Alpha(id = 4, beta = List[Beta](Delta("delta4", "koppa4")))
   val alpha5 = Alpha(id = 5, beta = List[Beta](Gamma("gamma5"), Gamma("gamma5-1")))
   val alpha6 = Alpha(id = 6, beta = List[Beta](Delta("delta6", "heta2"), Gamma("gamma6")))
+  val alpha7 = Alpha(id = 7, beta = List[Beta](Delta("delta7a", "delta7b")))
 
   "Salat simple DAO" should {
 
@@ -88,6 +92,54 @@ class SalatDAOSpec extends SalatSpec {
 
     "no-op inserting an empty collection of objects" in {
       AlphaDAO.insert() must_== Nil
+    }
+
+    "handle MongoExceptions when inserting an object having a duplicate key" in new alphaContext {
+      AlphaDAO.insert(alpha7)
+      AlphaDAO.insert(alpha7) must throwA[SalatInsertError].like {
+        case ex: SalatInsertError => ex.getCause must beAnInstanceOf[DuplicateKeyException]
+      }
+    }
+
+    "handle MongoExceptions for bulk inserts where an object has a duplicate key" in new alphaContext {
+      AlphaDAO.insert(alpha7)
+
+      // Note: Mongo stops processing at the first dup in the list
+      AlphaDAO.insert(List(alpha7, alpha1, alpha2, alpha3)) must throwA[SalatInsertError].like {
+        case ex: SalatInsertError =>
+          val mustBeMongoException = ex.getCause must beAnInstanceOf[DuplicateKeyException]
+          val onlyOneRecord = AlphaDAO.collection.count() must_== 1
+
+          mustBeMongoException and onlyOneRecord
+      }
+    }
+
+    "handle legacy errors when inserting an object having a duplicate key" in new alphaContext {
+      DeprecatedAlphaDAO.insert(alpha7)
+      DeprecatedAlphaDAO.insert(alpha7) must throwA[SalatInsertError]
+    }
+
+    "handle legacy errors for bulk inserts where an object has a duplicate key" in new alphaContext {
+      DeprecatedAlphaDAO.insert(alpha7)
+
+      // Note: Mongo stops processing at the first dup in the list
+      val errorMustOccur = DeprecatedAlphaDAO.insert(List(alpha7, alpha1, alpha2, alpha3)) must throwA[SalatInsertError]
+      val onlyOneRecord = DeprecatedAlphaDAO.collection.count() must_== 1
+
+      errorMustOccur and onlyOneRecord
+    }
+
+    "handle MongoExceptions for invalid updates" in new alphaContext {
+      AlphaDAO.insert(alpha7)
+      AlphaDAO.update(MongoDBObject.empty, MongoDBObject("_id" -> 1)) must throwA[SalatDAOUpdateError].like {
+        case ex: SalatDAOUpdateError =>
+          ex.getCause must beAnInstanceOf[WriteConcernException]
+      }
+    }
+
+    "handle legacy errors for invalid updates" in new alphaContext {
+      DeprecatedAlphaDAO.insert(alpha7)
+      DeprecatedAlphaDAO.update(MongoDBObject.empty, MongoDBObject("_id" -> 1)) must throwA[SalatDAOUpdateError]
     }
 
     "support findOne returning Option[T]" in new alphaContext {
@@ -292,29 +344,29 @@ class SalatDAOSpec extends SalatSpec {
   trait alphaContext extends Scope {
     log.debug("before: dropping %s", AlphaDAO.collection.fullName)
     AlphaDAO.collection.drop()
-    AlphaDAO.collection.count() must_== 0L
+    AlphaDAO.collection.isEmpty aka "alpha collection must be empty before test" must beTrue
   }
 
   trait alphaContextWithData extends Scope {
     log.debug("before: dropping %s", AlphaDAO.collection.fullName)
     AlphaDAO.collection.drop()
-    AlphaDAO.collection.count() must_== 0L
+    AlphaDAO.collection.isEmpty aka "alpha collection must be empty before test" must beTrue
 
     val _ids = AlphaDAO.insert(alpha1, alpha2, alpha3, alpha4, alpha5, alpha6)
     _ids must contain(Option(alpha1.id), Option(alpha2.id), Option(alpha3.id), Option(alpha4.id), Option(alpha5.id), Option(alpha6.id))
-    AlphaDAO.collection.count() must_== 6L
+    AlphaDAO.collection.count() aka "alpha collection must have 6 records before test" must_== 6L
   }
 
   trait epsilonContext extends Scope {
     log.debug("before: dropping %s", EpsilonDAO.collection.fullName)
     EpsilonDAO.collection.drop()
-    EpsilonDAO.collection.count() must_== 0L
+    EpsilonDAO.collection.isEmpty aka "epsilon collection must be empty before test" must beTrue
   }
 
   trait thetaContext extends Scope {
     log.debug("before: dropping %s", ThetaDAO.collection.fullName)
     ThetaDAO.collection.drop()
-    ThetaDAO.collection.count() must_== 0L
+    ThetaDAO.collection.isEmpty aka "theta collection must be empty before test" must beTrue
 
     val theta1 = Theta(x = "x1", y = "y1")
     val theta2 = Theta(x = "x2", y = "y2")
@@ -323,13 +375,13 @@ class SalatDAOSpec extends SalatSpec {
     val theta5 = Theta(x = "x5", y = null)
     val _ids = ThetaDAO.insert(theta1, theta2, theta3, theta4, theta5)
     _ids must contain(Option(theta1.id), Option(theta2.id), Option(theta3.id), Option(theta4.id), Option(theta5.id))
-    ThetaDAO.collection.count() must_== 5L
+    ThetaDAO.collection.count() aka "theta collection must have 5 records before test" must_== 5L
   }
 
   trait xiContext extends Scope {
     log.debug("before: dropping %s", XiDAO.collection.fullName)
     XiDAO.collection.drop()
-    XiDAO.collection.count() must_== 0L
+    XiDAO.collection.isEmpty aka "xi collection must be empty before test" must beTrue
 
     val xi1 = Xi(x = "x1", y = Some("y1"))
     val xi2 = Xi(x = "x2", y = Some("y2"))
@@ -338,13 +390,13 @@ class SalatDAOSpec extends SalatSpec {
     val xi5 = Xi(x = "x5", y = None)
     val _ids = XiDAO.insert(xi1, xi2, xi3, xi4, xi5)
     _ids must contain(Option(xi1.id), Option(xi2.id), Option(xi3.id), Option(xi4.id), Option(xi5.id))
-    XiDAO.collection.count() must_== 5L
+    XiDAO.collection.count() aka "xi collection must have 5 records before test" must_== 5L
   }
 
   trait kappaContext extends Scope {
     log.debug("before: dropping %s", KappaDAO.collection.fullName)
     KappaDAO.collection.drop()
-    KappaDAO.collection.count() must_== 0L
+    KappaDAO.collection.isEmpty aka "kappa collection must be empty before test" must beTrue
 
     val nu1 = Nu(x = "x1", y = "y1")
     val nu2 = Nu(x = "x2", y = "y2")
@@ -355,6 +407,6 @@ class SalatDAOSpec extends SalatSpec {
     val kappa3 = Kappa(k = "k3", nu = nu3)
     val _ids = KappaDAO.insert(kappa1, kappa2, kappa3)
     _ids must contain(Option(kappa1.id), Option(kappa2.id), Option(kappa3.id))
-    KappaDAO.collection.count() must_== 3L
+    KappaDAO.collection.count() aka "kappa collection must have 3 records before test" must_== 3L
   }
 }

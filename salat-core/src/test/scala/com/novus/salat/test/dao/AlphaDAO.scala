@@ -48,22 +48,25 @@ case class Alpha(@Key("_id") id: Int, beta: List[Beta] = Nil)
 // 2.  define a grater for the class
 // 3.  specify a collection
 //
-object AlphaDAO extends SalatDAO[Alpha, Int](collection = MongoConnection()(SalatSpecDb)(AlphaColl))
+object AlphaDAO extends SalatDAO[Alpha, Int](collection = MongoClient()(SalatSpecDb)(AlphaColl))
+
+/** Uses MongoConnection (deprecated) instead of MongoClient, and so won't throw MongoException on errors. */
+object DeprecatedAlphaDAO extends SalatDAO[Alpha, Int](collection = MongoConnection()(SalatSpecDb)(AlphaColl))
 
 case class Epsilon(@Key("_id") id: ObjectId = new ObjectId, notes: String)
 
-object EpsilonDAO extends SalatDAO[Epsilon, ObjectId](collection = MongoConnection()(SalatSpecDb)(EpsilonColl))
+object EpsilonDAO extends SalatDAO[Epsilon, ObjectId](collection = MongoClient()(SalatSpecDb)(EpsilonColl))
 
 case class Theta(@Key("_id") id: ObjectId = new ObjectId, x: String, y: String)
 case class Xi(@Key("_id") id: ObjectId = new ObjectId, x: String, y: Option[String])
 case class Nu(x: String, y: String)
 case class Kappa(@Key("_id") id: ObjectId = new ObjectId, k: String, nu: Nu)
 
-object ThetaDAO extends SalatDAO[Theta, ObjectId](collection = MongoConnection()(SalatSpecDb)(ThetaColl))
+object ThetaDAO extends SalatDAO[Theta, ObjectId](collection = MongoClient()(SalatSpecDb)(ThetaColl))
 
-object XiDAO extends SalatDAO[Xi, ObjectId](collection = MongoConnection()(SalatSpecDb)(XiColl))
+object XiDAO extends SalatDAO[Xi, ObjectId](collection = MongoClient()(SalatSpecDb)(XiColl))
 
-object KappaDAO extends SalatDAO[Kappa, ObjectId](collection = MongoConnection()(SalatSpecDb)(KappaColl))
+object KappaDAO extends SalatDAO[Kappa, ObjectId](collection = MongoClient()(SalatSpecDb)(KappaColl))
 
 case class ChildInfo(lastUpdated: DateTime = new DateMidnight(0L).toDateTime)
 case class Child(
@@ -75,10 +78,10 @@ case class Child(
 )
 case class Parent(@Key("_id") id: ObjectId = new ObjectId, name: String)
 
-object ParentDAO extends SalatDAO[Parent, ObjectId](collection = MongoConnection()(SalatSpecDb)(ParentColl)) {
+object ParentDAO extends SalatDAO[Parent, ObjectId](collection = MongoClient()(SalatSpecDb)(ParentColl)) {
 
   val children = new ChildCollection[Child, Int](
-    collection    = MongoConnection()(SalatSpecDb)(ChildColl),
+    collection    = MongoClient()(SalatSpecDb)(ChildColl),
     parentIdField = "parentId"
   ) {}
 
@@ -95,9 +98,9 @@ case class Author(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
 case class Editor(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
 case class Admin(_id: ObjectId = new ObjectId, userId: ObjectId) extends Role
 
-object UserDAO extends SalatDAO[User, ObjectId](collection = MongoConnection()(SalatSpecDb)(UserColl)) {
+object UserDAO extends SalatDAO[User, ObjectId](collection = MongoClient()(SalatSpecDb)(UserColl)) {
   val roles = new ChildCollection[Role, ObjectId](
-    collection    = MongoConnection()(SalatSpecDb)(RoleColl),
+    collection    = MongoClient()(SalatSpecDb)(RoleColl),
     parentIdField = "userId"
   ) {}
 
