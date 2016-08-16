@@ -197,7 +197,7 @@ object FromJValue extends Logging {
           val childTf = TypeFinder(ct)
           if (childTf.directlyDeserialize) deserialize(v, childTf) else apply(j, field, Some(ct))
         }
-        case optionTypeArgs: List[Type] =>
+        case optionTypeArgs =>
           throw new UnsupportedJsonTransformationException(
             s"FromJValue: Option field '${field.name}' had multiple type args?!? typeArgs: $optionTypeArgs"
           )
