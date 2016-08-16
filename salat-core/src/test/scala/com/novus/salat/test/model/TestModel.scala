@@ -333,6 +333,16 @@ case class MetadataRecord(
   deleted:            Boolean      = false // if the record has been deleted
 )
 
+case class SimpleClass(value: String = "")
+
+case class Parameter(name: String, value: Option[Any], map: Map[String, Any], list: List[Any] = Nil)
+
+case class Data(name: String, parameters: List[Any])
+
+case class MetaData(name: String, parameters: List[Parameter], data: List[Data])
+
+case class ViewMetaData(@Key("_id") id: String, metadata: MetaData)
+
 case class Order(
   id:        Long,
   ordStatus: OrderStatus

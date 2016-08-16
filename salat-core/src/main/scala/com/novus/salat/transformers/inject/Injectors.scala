@@ -290,6 +290,18 @@ package in {
   import org.joda.time.{DateTime, DateTimeZone, LocalDateTime}
   import org.json4s.JsonAST.JArray
 
+  object UtilsInjector {
+    def toObject(value: Any)(implicit ctx: Context): Any = value match {
+      case y: BasicDBObject if ctx.extractTypeHint(y).isDefined => ctx.lookup(y).asObject(y)
+      case y: BasicDBObject => y.mapValues(toObject(_)).toMap
+      case y: BasicDBList => y.map(toObject(_)).toList
+      case x: scala.collection.Map[_, _] => x.mapValues(toObject(_))
+      case x: scala.collection.Traversable[_] => x.map(toObject(_))
+      case Some(x) => Some(toObject(x))
+      case _ => value
+    }
+  }
+
   trait LongToInt extends Transformer {
     self: Transformer =>
     override def transform(value: Any)(implicit ctx: Context) = value match {
@@ -426,8 +438,8 @@ package in {
   trait OptionInjector extends Transformer {
     self: Transformer =>
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
-      case value @ Some(x) if x != null => Some(value)
-      case value if value != null       => Some(Some(value))
+      case value @ Some(x) if x != null => Some(UtilsInjector.toObject(value))
+      case value if value != null       => Some(Some(UtilsInjector.toObject(value)))
       case _                            => Some(None)
     }
   }
@@ -451,8 +463,10 @@ package in {
     }
 
     override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
-      case traversable: Traversable[_] => Some(traversableImpl(parentType, traversable.map(transformElement(_))))
-      case _                           => None
+      case traversable: Traversable[_] => Some(traversableImpl(parentType, traversable.map {
+        el => UtilsInjector.toObject(transformElement(el))
+      }))
+      case _ => None
     }
 
     val parentType: TypeRefType
@@ -494,7 +508,7 @@ package in {
       case mdbo: MongoDBObject => {
         val builder = MongoDBObject.newBuilder
         mdbo.foreach {
-          case (k, v) => builder += k -> transformElement(v)
+          case (k, v) => builder += k -> UtilsInjector.toObject(transformElement(v))
         }
         Some(mapImpl(parentType, builder.result()))
       }
