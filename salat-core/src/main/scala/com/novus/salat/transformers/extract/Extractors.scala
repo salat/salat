@@ -194,25 +194,25 @@ package out {
 
     override def transform(value: Any)(implicit ctx: Context): Any = {
       val name = value.asInstanceOf[AnyRef].getClass.getName
-      ctx.caseObjectOverrides.get(name).getOrElse {
+      ctx.caseObjectOverrides.getOrElse(name, {
         MongoDBObject(ctx.typeHintStrategy.typeHint -> ctx.typeHintStrategy.encode(name))
-      }
+      })
     }
   }
 
   object UtilsExtractor {
     def toDBObject(value: Any)(implicit ctx: Context): Any = value match {
-      case x: BasicDBObject                         => map2DBObject(x)
-      case x: BasicDBList                           => list2DBList(x)
-      case x: scala.collection.Map[_, AnyRef]       => map2DBObject(x)
-      case x: scala.collection.Traversable[AnyRef]  => list2DBList(x)
-      case Some(x: AnyRef)                          => Some(toDBObject(x))
+      case x: BasicDBObject                   => map2DBObject(x)
+      case x: BasicDBList                     => list2DBList(x)
+      case x: scala.collection.Map[_, _]      => map2DBObject(x)
+      case x: scala.collection.Traversable[_] => list2DBList(x)
+      case Some(x)                            => Some(toDBObject(x))
       case y: AnyRef if ctx.lookup_?(Some(y.getClass.getCanonicalName).getOrElse(y.getClass.getName)).isDefined =>
         grater[y.type].asDBObject(y)
-      case _                                        => value
+      case _ => value
     }
 
-    private def map2DBObject(x: scala.collection.Map[_, AnyRef])(implicit ctx: Context) = {
+    private def map2DBObject(x: scala.collection.Map[_, _])(implicit ctx: Context) = {
       val builder = MongoDBObject.newBuilder
       x.foreach {
         case (k, el) =>
@@ -222,7 +222,7 @@ package out {
       builder.result()
     }
 
-    private def list2DBList(x: scala.collection.Traversable[AnyRef])(implicit cxt: Context) = {
+    private def list2DBList(x: scala.collection.Traversable[_])(implicit cxt: Context) = {
       MongoDBList(x.map(toDBObject(_)).toList: _*)
     }
   }

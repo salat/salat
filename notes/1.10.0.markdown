@@ -6,7 +6,8 @@ Notably, the package has changed from `com.novus.salat._` to `salat._`
 
 # Change Log
 
-- \#145 Upgrade to Casbah 2.8.2
+- \#145 Feature: Upgrade to Casbah 2.8.2
+- \#171 Feature: Support Map[String, Any], List[Any], Option[Any]
 
 # Compatibility
 

@@ -73,16 +73,14 @@ class MapSupportSpec extends SalatSpec {
         builder.result
       })
 
-      val coll = MongoConnection()(SalatSpecDb)("map_support_test_1")
+      val coll = MongoClient()(SalatSpecDb)("map_support_test_1")
       val wr = coll.insert(dbo)
-      //      log.info("WR: %s", wr)
-      wr.getCachedLastError must beNull
 
       val ao_* = grater[AttributeObject].asObject(coll.findOne().get)
       ao_* must_== ao
     }
 
-    "support complex map" in {
+    "support objects that contains of types: Map[String, Any], List[Any] and Option[Any]" in {
       val parameter1 = Parameter("parameter1", Some(Map("map1" -> SimpleClass())), Map("key1" -> "value1", "key2" -> 2))
       val parameter2 = Parameter("parameter2", Some(List(parameter1)), Map("key1" -> "value1", "key2" -> 2))
       val parameter3 = Parameter("parameter3", Some(SimpleClass()), Map("key1" -> "value1", "key2" -> 2, "key3" -> parameter1))
@@ -99,10 +97,8 @@ class MapSupportSpec extends SalatSpec {
       val dbo: MongoDBObject = grater[ViewMetaData].asDBObject(view)
       log.info(MapPrettyPrinter(dbo))
 
-      val coll = MongoConnection()(SalatSpecDb)("map_support_test_2")
+      val coll = MongoClient()(SalatSpecDb)("map_support_test_2")
       val wr = coll.insert(dbo)
-      //      log.info("WR: %s", wr)
-      wr.getCachedLastError must beNull
 
       val view_* = grater[ViewMetaData].asObject(coll.findOne().get)
       view_* must_== view
