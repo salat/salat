@@ -7,7 +7,8 @@ Notably, the package has changed from `com.novus.salat._` to `salat._`
 # Change Log
 
 - \#145 Feature: Upgrade to Casbah 2.8.2
-- \#171 Feature: Support Map[String, Any], List[Any], Option[Any]
+- \#171 Feature: Support `Map[String, Any]`, `List[Any], Option[Any]`
+- \#173 Feature: Improve error message for `Map[String, List[_]` de-serialization error.
 
 # Compatibility
 

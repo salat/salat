@@ -165,20 +165,30 @@ object FromJValue extends Logging {
           v
         }
         case IsTraversable(childType: TypeRefType) => j.arr.flatMap(v => apply(Some(v), field, Some(childType)))
-        case notTraversable =>
+        case TypeRefType(prefix, symbol, typeArgs) =>
           throw new UnsupportedJsonTransformationException(
-            s"FromJValue: expected types for Traversable but instead got:\n$notTraversable"
+            s"FromJValue: incoming field '${field.name}' is a JSON array, but the field in the target case clas is not a Traversable. Found: '$symbol' (expected one of [${Types.Traversables.toList.sorted.mkString("|")}])"
           )
       }
       case o: JObject if field.tf.isMap && childType.isEmpty => field.typeRefType match {
         case IsMap(_, childType: TypeRefType) => {
-          o.obj.map(v => (v._1, apply(Some(v._2), field, Some(childType)))).collect {
+          o.obj.map {
+            case (key, value) =>
+              // TODO: Support Maps with nested collections (PRs accepted!)
+              if (Types.isTraversable(childType.symbol)) {
+                throw new UnsupportedJsonTransformationException(
+                  s"FromJValue: incoming field '${field.name}' is a JSON object, but entries with Traversable values are not currently supported (field is something like Map[_, ${childType.symbol}] in target case class)."
+                )
+              }
+              val extractedValue = apply(Some(value), field, Some(childType))
+              (key, extractedValue)
+          }.collect {
             case (key, Some(value)) => key -> value
           }.toMap
         }
-        case notMap =>
+        case TypeRefType(prefix, symbol, typeArgs) =>
           throw new UnsupportedJsonTransformationException(
-            s"FromJValue: expected types for Map but instead got:\n$notMap"
+            s"FromJValue: field '${field.name}' was a JSON object, but not a Map in the target case class. Found: '$symbol' (expected type ending in ${Types.Map})"
           )
       }
 
@@ -187,9 +197,9 @@ object FromJValue extends Logging {
           val childTf = TypeFinder(ct)
           if (childTf.directlyDeserialize) deserialize(v, childTf) else apply(j, field, Some(ct))
         }
-        case notOption =>
+        case optionTypeArgs =>
           throw new UnsupportedJsonTransformationException(
-            s"FromJValue: expected type for Option but instead got:\n$notOption"
+            s"FromJValue: Option field '${field.name}' had multiple type args?!? typeArgs: $optionTypeArgs"
           )
       }
 
