@@ -73,7 +73,11 @@ package object out {
 
         case TypeRefType(_, symbol, _) => new Transformer(symbol.path, t)(ctx) with OptionExtractor
       }
-
+      case IsBinary(t @ TypeRefType(_, _, _)) => t match {
+        case TypeRefType(_, symbol, _) => {
+          new Transformer(symbol.path, t)(ctx) with BinaryExtractor
+        }
+      }
       case IsTraversable(t @ TypeRefType(_, _, _)) => t match {
         case TypeRefType(_, symbol, _) if ctx.caseObjectHierarchy.contains(symbol.path) => {
           new Transformer(t.symbol.path, t)(ctx) with CaseObjectExtractor with TraversableExtractor
@@ -298,6 +302,13 @@ package out {
       case traversable: Traversable[_] =>
         Some(MongoDBList(traversable.map(transformElem).map(UtilsExtractor.toDBObject).toList: _*))
       case _ => None
+    }
+  }
+
+  trait BinaryExtractor extends Transformer with Logging {
+    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+      case bs: Seq[Byte] => Some(bs.toArray)
+      case _             => None
     }
   }
 
