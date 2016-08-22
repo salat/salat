@@ -8,6 +8,7 @@ Notably, the package has changed from `com.novus.salat._` to `salat._`
 
 ## Features
 
+- \#143 Log more error details in case of deserialization problem (@noahlz, @slorber)
 - \#145 Upgrade to Casbah 2.8.2 (@danslapman, @sief, @noahlz)
 - \#155 Improve support for binary data such as `Seq[Byte]` in case classes. (@glorat)
 - \#171 Support `Map[String, Any]`, `List[Any], Option[Any]` (@dieu, @noahlz)

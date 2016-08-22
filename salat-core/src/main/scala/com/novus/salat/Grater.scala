@@ -40,6 +40,7 @@ import org.json4s.native.JsonMethods._
 import org.json4s.native.JsonParser
 
 import scala.tools.scalap.scalax.rules.scalasig._
+import scala.util.control.NonFatal
 
 // TODO: create companion object to serve as factory for grater creation - there
 // is not reason for this logic to be wodged in Context
@@ -346,11 +347,12 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     catch {
       // when something bad happens feeding args into constructor, catch these exceptions and
       // wrap them in a custom exception that will provide detailed information about what's happening.
+      case e: SalatGlitch               => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
       case e: InstantiationException    => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
       case e: IllegalAccessException    => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
       case e: IllegalArgumentException  => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
       case e: InvocationTargetException => throw ToObjectGlitch(this, ca.sym, ca.constructor, args, e)
-      case e: Throwable                 => throw e
+      case NonFatal(e)                  => throw e
     }
   }
 
