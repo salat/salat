@@ -529,38 +529,22 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
   /**
    * Performs a find and update operation.
    * @param q search query to find and modify
-   * @param o object with which to modify <tt>q</tt>
+   * @param t object with which to modify <tt>q</tt>
    *  @return (Option[ObjectType]) Some() of the object found (before, or after, the update)
    */
-  def findAndModify[A <% DBObject, B <% DBObject](q: A, o: B): Option[ObjectType] =
-    collection.findAndModify(q, o).map(_grater.asObject(_))
+  def findAndModify[A <% DBObject](q: A, t: ObjectType): Option[ObjectType] =
+    collection.findAndModify(q, toDBObject(t)).map(_grater.asObject(_))
 
   /**
    * Finds the first document in the query (sorted) and updates it.
    * @param q query to match
    * @param sort sort to apply before picking first document
-   * @param o object with which to modify <tt>q</tt>
+   * @param t object with which to modify <tt>q</tt>
    *
    * @return (Option[ObjectType]) Some() of the old document, or <code>None</code> if no such object exists
    */
-  def findAndModify[A <% DBObject, B <% DBObject, C <% DBObject](q: A, sort: B, o: C): Option[ObjectType] =
-    collection.findAndModify(q, sort, o).map(_grater.asObject(_))
-
-  /**
-   * Finds the first document in the query and updates it.
-   *
-   * @param q query to match
-   * @param fields fields to be returned
-   * @param sort sort to apply before picking first document
-   * @param remove if true, document found will be removed
-   * @param o object with which to modify <tt>q</tt>
-   * @param returnNew if true, the updated document is returned, otherwise the old document is returned (or it would be lost forever)
-   * @param upsert do upsert (insert if document not present)
-   *
-   * @return (Option[ObjectType]) Some() of the old document, or <code>None</code> if no such object exists
-   */
-  def findAndModify[A <% DBObject, B <% DBObject, C <% DBObject, D <% DBObject](q: A, fields: B, sort: C, remove: Boolean, o: D, returnNew: Boolean, upsert: Boolean): Option[ObjectType] =
-    collection.findAndModify(q, fields, sort, remove, o, returnNew, upsert).map(_grater.asObject(_))
+  def findAndModify[A <% DBObject, B <% DBObject](q: A, sort: B, t: ObjectType): Option[ObjectType] =
+    collection.findAndModify(q, sort, toDBObject(t)).map(_grater.asObject(_))
 
   /**
    * @param ref object for which to search
