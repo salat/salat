@@ -6,13 +6,17 @@ Notably, the package has changed from `com.novus.salat._` to `salat._`
 
 # Change Log
 
-## Features
+## Dependency Upgrades
 
 - \#145 Upgrade to Casbah 2.8.2 (@danslapman, @sief, @noahlz)
+
+## Features
+
+- \#115 Add `findAndModify` to BaseDAOMethods (@noahlz)
+- \#143 Log more error details in case of deserialization problem (@noahlz, @slorber)
 - \#155 Improve support for binary data such as `Seq[Byte]` in case classes. (@glorat)
 - \#171 Support `Map[String, Any]`, `List[Any], Option[Any]` (@dieu, @noahlz)
 - \#173 Improve error message for `Map[String, List[_]` de-serialization error. (@noahlz)
-- \#115 Add `findAndModify` to BaseDAOMethods
 
 # Compatibility
 
@@ -20,4 +24,5 @@ Notably, the package has changed from `com.novus.salat._` to `salat._`
 
 - A `SalatDAO` created using a `MongoCollection` from a `MongoConnection` will attempt attempt to detect errors from the `WriteResult`, but is not guaranteed (from the Mongo 3.x upgrade notes: "[getLastError] does not work reliably in the 2.x series and there is no way to make it work reliably" - http://mongodb.github.io/mongo-java-driver/3.0/whats-new/upgrading/). Be sure to use `MongoClient`.
 
+- Introduced a new subclass of `Error`, `SalatGlitch`, that specifically identifies errors that occur during serialization / deserialization. Note that there are still many points in code that throw RuntimeException (via sys.error) - overhaul/normalization of Salat's errors remains an outstanding TODO.
 

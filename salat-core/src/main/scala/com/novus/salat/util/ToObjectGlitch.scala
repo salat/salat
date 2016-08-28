@@ -52,8 +52,9 @@ case class ToObjectGlitch[X <: AnyRef with Product](grater: ConcreteGrater[X], s
   cause
 )
 
-case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends Error(MissingGraterExplanation(path, dbo)(ctx))
-case class GraterGlitch(path: String)(implicit ctx: Context) extends Error(MissingGraterExplanation(path)(ctx))
+case class GraterFromDboGlitch(path: String, dbo: MongoDBObject)(implicit ctx: Context) extends SalatGlitch(MissingGraterExplanation(path, dbo)(ctx))
+
+case class GraterGlitch(path: String)(implicit ctx: Context) extends SalatGlitch(MissingGraterExplanation(path)(ctx))
 
 object MissingTypeHint {
   def apply(x: Any): MissingTypeHint = x match {
@@ -75,6 +76,8 @@ case class MissingTypeHint(m: Map[_, _])(implicit ctx: Context) extends Error(""
 
  """.format(ctx.typeHintStrategy.typeHint, m.mkString("\n")))
 
-case class EnumInflaterGlitch(clazz: Class[_], strategy: EnumStrategy, value: Any) extends Error(
+case class EnumInflaterGlitch(clazz: Class[_], strategy: EnumStrategy, value: Any) extends SalatGlitch(
   "Not sure how to handle value='%s' as enum of class %s using strategy %s".format(value, clazz.getName, strategy)
 )
+
+case class EnumInflaterCompanionObjectGlitch(clazz: Class[_], missingMethod: String) extends SalatGlitch(s"required method '$missingMethod' missing from companion object for $clazz")

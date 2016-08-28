@@ -542,8 +542,14 @@ package in {
 
     val clazz = getClassNamed_!(path)
     val companion: Any = clazz.companionObject
-    val withName: Method = clazz.getDeclaredMethods.filter(_.getName == "withName").head
-    val applyInt: Method = clazz.getDeclaredMethods.filter(_.getName == "apply").head
+
+    val withName: Method = clazz.getDeclaredMethods.find(_.getName == "withName").getOrElse(
+      throw EnumInflaterCompanionObjectGlitch(clazz, "withName")
+    )
+
+    val applyInt: Method = clazz.getDeclaredMethods.find(_.getName == "apply").getOrElse(
+      throw EnumInflaterCompanionObjectGlitch(clazz, "apply")
+    )
 
     override def transform(value: Any)(implicit ctx: Context): Any = {
       val strategy = {
