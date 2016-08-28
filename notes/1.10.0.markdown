@@ -12,8 +12,9 @@ Notably, the package has changed from `com.novus.salat._` to `salat._`
 
 ## Features
 
-- \#115 Add `findAndModify` to BaseDAOMethods (@noahlz)
-- \#143 Log more error details in case of deserialization problem (@noahlz, @slorber)
+- \#115 Add `findAndModify` to BaseDAOMethods. (@noahlz)
+- \#143 Log more error details in case of deserialization problem. (@noahlz, @slorber)
+- \#148 Fail faster during deserialization when narrowing type conversion would lose information. (@noahlz)
 - \#155 Improve support for binary data such as `Seq[Byte]` in case classes. (@glorat)
 - \#171 Support `Map[String, Any]`, `List[Any], Option[Any]` (@dieu, @noahlz)
 - \#173 Improve error message for `Map[String, List[_]` de-serialization error. (@noahlz)
@@ -26,3 +27,4 @@ Notably, the package has changed from `com.novus.salat._` to `salat._`
 
 - Introduced a new subclass of `Error`, `SalatGlitch`, that specifically identifies errors that occur during serialization / deserialization. Note that there are still many points in code that throw RuntimeException (via sys.error) - overhaul/normalization of Salat's errors remains an outstanding TODO.
 
+- Previously case classes with fields of type `Int`, `Option[Int]`, `Seq[Int]`, or `Map[Int]` would experience narrowing with information loss, or a classcast exception when attempting to unbox the field value, if the deserialized a JSON or Mongo document contained a Double value in the field. In addition, a JSON document with goofy contents like `{"foo":"nine-point-oh"}` would return a `None`, swallowing the `NumberFormatException`, if `"foo"` was an `Option[Double]` or somesuch.  With this version, deserialization will fail more agressively if the JSON document has a field with a String in an invalid number format, or a Double literal that cannot be narrowed without loss of information (9.0001). Doubles that can be narrowed without loss will be converted to an Int, however (`9.0` converted to `9`, for example).

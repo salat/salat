@@ -96,6 +96,7 @@ case class Qvintus(bd: Option[BigDecimal])
 case class Rudolf(bi: Option[BigInt])
 case class Sigurd(o: Option[ObjectId])
 case class Tore(i: Int, d: Double, od: Option[Double])
+case class Ulrich(i: Int, oi: Option[Int], mi: Map[String, Int], list: List[Int])
 
 trait Foo
 case object Bar extends Foo

@@ -241,6 +241,7 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
         }
       }
     }
+
     "handle converting a list of model objects to a JArray" in {
       val jarr = grater[Kalle].toJSONArray(List(Martin("one", 1.1), Martin("two", 2.2), Martin("three", 3.3)))
       jarr.arr must have size (3)
@@ -250,6 +251,7 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
         JObject(JField("_t", JString("com.novus.salat.test.json.Martin")) :: JField("s", JString("three")) :: JField("d", JDouble(3.3)) :: Nil).asInstanceOf[JValue]
       )).inOrder
     }
+
     "deserialize JObjects containing simple types" in {
       val j = JObject(
         JField("a", JString("string")) ::
@@ -265,15 +267,50 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
       )
       grater[Adam].fromJSON(j) must_== a
     }
+
     "deserialize null to Double.NaN when Double is expected" in {
       val aa = Adam(a = "string", b = 99, c = Double.NaN, d = false, e = testDate, u = testURL, bd = bd, bi = bi, o = o)
       grater[Adam].fromJSON(grater[Adam].toJSON(aa)).c.isNaN must beTrue
     }
-    "be flexible about coercing Double <-> Int when deserializing" in {
+
+    "be flexible about coercing Double <-> Int when deserializing, when the conversion would not lose values due to precision" in {
       val t = Tore(i = 9, d = 9d, od = Some(9d))
-      grater[Tore].fromJSON("{\"i\":9.0,\"d\":9,\"od\":9}") must_== t
+      grater[Tore].fromJSON("{\"i\":9.0,\"d\":9.0,\"od\":9.0}") must_== t
       grater[Tore].fromJSON(JObject(JField("i", JDouble(9d)) :: JField("d", JInt(9)) :: JField("od", JInt(9)) :: Nil)) must_== t
     }
+
+    "be flexible about coercing string Doubles -> Int when deserializing, when the conversion would not lose values due to precision" in {
+      val t = Tore(i = 9, d = 9d, od = Some(9d))
+
+      grater[Tore].fromJSON(JObject(JField("i", JString("9.0")) :: JField("d", JInt(9)) :: JField("od", JInt(9)) :: Nil)) must_== t
+    }
+
+    "fail fast when Double field does not contain a double value" in {
+      grater[Ulrich].fromJSON("{\"i\":\"nine point oh\", \"oi\":9, \"mi\":{\"x\":9}}") must throwAn[IncompatibleTargetFieldType]
+
+      grater[Ulrich].fromJSON(JObject(JField("i", JString("nine point oh")) :: JField("oi", JDouble(9)) :: JField("mi", JObject(JField("x", JDouble(9)) :: Nil)) :: Nil)) must throwAn[IncompatibleTargetFieldType]
+    }
+
+    "fail fast when coercing Double -> Int in a conversion that would lose precision" in {
+      grater[Ulrich].fromJSON("{\"i\":9.001, \"oi\":9, \"mi\":{\"x\":9}, \"list\":[1]}") must throwAn[IncompatibleTargetFieldType]
+
+      grater[Ulrich].fromJSON("{\"i\":9, \"oi\":9.001, \"mi\":{\"x\":9}, \"list\":[1]}") must throwAn[IncompatibleTargetFieldType]
+
+      grater[Ulrich].fromJSON(JObject(JField("i", JDouble(9.001d)) :: JField("oi", JDouble(9)) :: JField("mi", JObject(JField("x", JDouble(9)) :: Nil)) :: JField("list", JArray(JInt(9) :: Nil)) :: Nil)) must throwAn[IncompatibleTargetFieldType]
+
+      grater[Ulrich].fromJSON(JObject(JField("i", JDouble(9)) :: JField("oi", JDouble(9.001)) :: JField("mi", JObject(JField("x", JDouble(9)) :: Nil)) :: JField("list", JArray(JInt(9) :: Nil)) :: Nil)) must throwAn[IncompatibleTargetFieldType]
+    }
+
+    "fail fast when coercing Double -> In in a conversion that would lose precision - for Map and List fields" in {
+      grater[Ulrich].fromJSON("{\"i\":9, \"oi\":9, \"mi\": {\"x\":9.001}, \"list\":[1] }") must throwAn[IncompatibleTargetFieldType]
+
+      grater[Ulrich].fromJSON("{\"i\":9, \"oi\":9, \"mi\": {\"x\":9}, \"list\":[1.001] }") must throwAn[IncompatibleTargetFieldType]
+
+      grater[Ulrich].fromJSON(JObject(JField("i", JDouble(9)) :: JField("oi", JDouble(9)) :: JField("mi", JObject(JField("x", JDouble(9.001)) :: Nil)) :: JField("list", JArray(JInt(9) :: Nil)) :: Nil)) must throwAn[IncompatibleTargetFieldType]
+
+      grater[Ulrich].fromJSON(JObject(JField("i", JDouble(9)) :: JField("oi", JDouble(9)) :: JField("mi", JObject(JField("x", JDouble(9)) :: Nil)) :: JField("list", JArray(JDouble(9.001) :: Nil)) :: Nil)) must throwAn[IncompatibleTargetFieldType]
+    }.pendingUntilFixed("SKIPPED: Maps and List contents get narrowed with information loss. Issue #148")
+
     "deserialize JObjects containing DateTimes" in {
       val olof = Olof(date)
       val petter = Petter(Some(date))
