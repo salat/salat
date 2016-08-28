@@ -195,6 +195,24 @@ trait BaseDAOMethods[ObjectType <: AnyRef, ID <: Any] {
   }
 
   /**
+   * Performs a find and update operation.
+   * @param q search query to find and modify
+   * @param t object with which to modify <tt>q</tt>
+   *  @return (Option[ObjectType]) Some() of the object found (before, or after, the update)
+   */
+  def findAndModify[A <% DBObject](q: A, t: ObjectType): Option[ObjectType]
+
+  /**
+   * Finds the first document in the query (sorted) and updates it.
+   * @param q query to match
+   * @param sort sort to apply before picking first document
+   * @param t object with which to modify <tt>q</tt>
+   *
+   * @return (Option[ObjectType]) Some() of the old document, or <code>None</code> if no such object exists
+   */
+  def findAndModify[A <% DBObject, B <% DBObject](q: A, sort: B, t: ObjectType): Option[ObjectType]
+
+  /**
    * Remove a matching object from the collection
    *  @param t object to remove from the collection
    *  @return (WriteResult) result of write operation

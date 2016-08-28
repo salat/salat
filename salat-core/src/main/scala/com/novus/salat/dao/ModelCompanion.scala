@@ -63,12 +63,14 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
 
   /**
    * In the absence of a specified write concern, supplies a default write concern.
+   *
    *  @return default write concern to use for insert, update, save and remove operations
    */
   def defaultWriteConcern = dao.defaultWriteConcern
 
   /**
    * In the absence of a specified read preference, supplies a default read preference.
+   *
    *  @return default read preference for all find and count operations.
    */
   def defaultReadPreference = dao.defaultReadPreference
@@ -171,6 +173,7 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
 
   /**
    * Count the number of documents matching the search criteria.
+   *
    *  @param q object for which to search
    *  @param fieldsThatMustExist list of field keys that must exist
    *  @param fieldsThatMustNotExist list of field keys that must not exist
@@ -327,6 +330,27 @@ trait ModelCompanion[ObjectType <: AnyRef, ID <: Any] extends BaseDAOMethods[Obj
   def update(q: DBObject, o: DBObject, upsert: Boolean, multi: Boolean, wc: WriteConcern = defaultWriteConcern) = {
     dao.update(q, o, upsert, multi, wc)
   }
+
+  /**
+   * Performs a find and update operation.
+   *
+   * @param q search query to find and modify
+   * @param t object with which to modify <tt>q</tt>
+   * @return (Option[ObjectType]) Some() of the object found (before, or after, the update)
+   */
+  def findAndModify[A <% DBObject](q: A, t: ObjectType): Option[ObjectType] =
+    dao.findAndModify(q, t)
+
+  /**
+   * Finds the first document in the query (sorted) and updates it.
+   *
+   * @param q    query to match
+   * @param sort sort to apply before picking first document
+   * @param t    object with which to modify <tt>q</tt>
+   * @return (Option[ObjectType]) Some() of the old document, or <code>None</code> if no such object exists
+   */
+  def findAndModify[A <% DBObject, B <% DBObject](q: A, sort: B, t: ObjectType): Option[ObjectType] =
+    dao.findAndModify(q, sort, t)
 
   //
   // methods I can't see the point of personally, but which pay some distant obeisance to the Platonic DAO carried

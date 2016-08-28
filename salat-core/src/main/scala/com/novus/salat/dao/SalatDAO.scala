@@ -527,6 +527,26 @@ abstract class SalatDAO[ObjectType <: AnyRef, ID <: Any](val collection: MongoCo
   }
 
   /**
+   * Performs a find and update operation.
+   * @param q search query to find and modify
+   * @param t object with which to modify <tt>q</tt>
+   *  @return (Option[ObjectType]) Some() of the object found (before, or after, the update)
+   */
+  def findAndModify[A <% DBObject](q: A, t: ObjectType): Option[ObjectType] =
+    collection.findAndModify(q, toDBObject(t)).map(_grater.asObject(_))
+
+  /**
+   * Finds the first document in the query (sorted) and updates it.
+   * @param q query to match
+   * @param sort sort to apply before picking first document
+   * @param t object with which to modify <tt>q</tt>
+   *
+   * @return (Option[ObjectType]) Some() of the old document, or <code>None</code> if no such object exists
+   */
+  def findAndModify[A <% DBObject, B <% DBObject](q: A, sort: B, t: ObjectType): Option[ObjectType] =
+    collection.findAndModify(q, sort, toDBObject(t)).map(_grater.asObject(_))
+
+  /**
    * @param ref object for which to search
    *  @param keys fields to return
    *  @param rp sets the desired ReadPreference on the cursor

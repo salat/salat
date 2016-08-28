@@ -184,6 +184,46 @@ class SalatDAOSpec extends SalatSpec {
       grater[Alpha].asObject(dbo) must_== alpha3.copy(beta = List[Beta](Gamma("gamma3")))
     }
 
+    "support finding and modifying an existing record for a case class" in new alphaContext {
+      val _id = AlphaDAO.insert(alpha3)
+      _id must beSome(alpha3.id)
+      AlphaDAO.collection.count() must_== 1l
+
+      val gammaList = List[Beta](Gamma("gamma4"))
+      val newAlpha3 = alpha3.copy(beta = gammaList)
+
+      val result = AlphaDAO.findAndModify(MongoDBObject("_id" -> alpha3.id), newAlpha3)
+      result must beSome(alpha3)
+
+      AlphaDAO.findOneById(alpha3.id) must beSome(newAlpha3)
+    }
+
+    "support find and modifying a non-existing record for a case class, returning None" in new alphaContext {
+      val gammaList = List[Beta](Gamma("gamma4"))
+      val newAlpha3 = alpha3.copy(beta = gammaList)
+
+      val result = AlphaDAO.findAndModify(MongoDBObject("_id" -> 4), newAlpha3)
+      result must beNone
+
+      // Also, no new record was inserted, because it didn't exist.
+      AlphaDAO.findOneById(alpha3.id) should beNone
+    }
+
+    "support find and modifying one record for a case class from multiple records, " +
+      "using sorting to modify only one" in new alphaContext {
+        val _ids = AlphaDAO.insert(alpha3, alpha4, alpha5, alpha6)
+        _ids must contain(Some(alpha3.id))
+        _ids must contain(Some(alpha4.id))
+        _ids must contain(Some(alpha5.id))
+        _ids must contain(Some(alpha6.id))
+        AlphaDAO.collection.count() must_== 4L
+
+        val gammaList = List[Beta](Gamma("gamma4"))
+        val newAlpha3 = alpha3.copy(beta = gammaList)
+
+        val result = AlphaDAO.findAndModify(MongoDBObject(), MongoDBObject("_id" -> 1), newAlpha3)
+      }
+
     "support saving a case class" in new alphaContext {
       val _id = AlphaDAO.insert(alpha3)
       _id must beSome(alpha3.id)
