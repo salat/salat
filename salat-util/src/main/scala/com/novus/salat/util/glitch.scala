@@ -33,7 +33,7 @@ import java.lang.reflect.Constructor
 /** A Salat transformation error that does not have an underlying cause. */
 class SalatGlitch(msg: String) extends Error(msg)
 
-// NOTE: There are places all over this codebase where we use sys.error (RuntimException) rather
+// NOTE: There are places all over this codebase where we use sys.error (RuntimeException) rather
 // than throwing a specific subclass of Error or RuntimeException. An outstanding cleanup TODO
 // (at risk of breaking production code in the wild) could be to normalize all these ad-hoc errors to
 // specific, actionable errors.
