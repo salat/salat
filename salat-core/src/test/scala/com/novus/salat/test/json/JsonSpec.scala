@@ -285,7 +285,7 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
       grater[Tore].fromJSON(JObject(JField("i", JString("9.0")) :: JField("d", JInt(9)) :: JField("od", JInt(9)) :: Nil)) must_== t
     }
 
-    "fail fast when Double field does not contain a double value" in {
+    "fail fast when Int field does not contain an int format value" in {
       grater[Ulrich].fromJSON("{\"i\":\"nine point oh\", \"oi\":9, \"mi\":{\"x\":9}}") must throwAn[IncompatibleTargetFieldType]
 
       grater[Ulrich].fromJSON(JObject(JField("i", JString("nine point oh")) :: JField("oi", JDouble(9)) :: JField("mi", JObject(JField("x", JDouble(9)) :: Nil)) :: Nil)) must throwAn[IncompatibleTargetFieldType]
