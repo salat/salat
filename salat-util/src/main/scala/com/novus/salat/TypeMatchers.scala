@@ -80,6 +80,7 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
   lazy val isChar = TypeMatchers.matches(t, classOf[Char].getName)
   lazy val isFloat = TypeMatchers.matches(t, classOf[Float].getName)
   lazy val isDouble = TypeMatchers.matches(t, "scala.Double" :: "java.lang.Double" :: Nil)
+  lazy val isInt = TypeMatchers.matches(t, "scala.Int" :: "java.lang.Intger" :: Nil)
   lazy val isShort = TypeMatchers.matches(t, classOf[Short].getName)
   lazy val isBigDecimal = Types.isBigDecimal(t.symbol)
   lazy val isBigInt = Types.isBigInt(t.symbol)
@@ -90,7 +91,7 @@ protected[salat] case class TypeFinder(t: TypeRefType) {
   lazy val isURL = TypeMatchers.matches(t, classOf[java.net.URL].getName)
   lazy val isBSONTimestamp = TypeMatchers.matches(t, Types.BsonTimestamp)
 
-  lazy val directlyDeserialize = isDate || isDateTime || isLocalDateTime || isBSONTimestamp || isOid || isBigDecimal || isBigInt || isDouble
+  lazy val directlyDeserialize = isDate || isDateTime || isLocalDateTime || isBSONTimestamp || isOid || isBigDecimal || isBigInt || isDouble || isInt
 }
 
 protected[salat] object TypeMatchers {

@@ -63,6 +63,9 @@ package object in {
         case TypeRefType(_, symbol, _) if isFloat(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DoubleToFloat
 
+        case TypeRefType(_, symbol, _) if isInt(symbol.path) =>
+          new Transformer(symbol.path, t)(ctx) with OptionInjector with LongToInt
+
         case TypeRefType(_, symbol, _) if isJodaLocalDateTime(symbol.path) =>
           new Transformer(symbol.path, t)(ctx) with OptionInjector with DateToJodaLocalDateTime
 
@@ -295,6 +298,24 @@ package in {
   import org.joda.time.{DateTime, DateTimeZone, LocalDateTime}
   import org.json4s.JsonAST.JArray
 
+  /** Issue #148 Don't allow silent loss of precision for bad data. */
+  private object conversions {
+    def narrow_!(value: Any, converted: Int): Int =
+      if (value == converted) converted else
+        throw IncompatibleTargetFieldType(s"will not narrow value to Int: $value")
+
+    def narrow_!(value: Any, converted: Float): Float =
+      if (value == converted) converted else
+        throw IncompatibleTargetFieldType(s"will not narrow value to Int: $value")
+
+    def narrow_!(parsed: Double): Int = {
+      val asInt = parsed.intValue
+      if (parsed == asInt) asInt else
+        throw IncompatibleTargetFieldType(s"will not narrow value to Int: $parsed")
+    }
+
+  }
+
   object UtilsInjector {
     def toObject(value: Any)(implicit ctx: Context): Any = value match {
       case y: BasicDBObject if ctx.extractTypeHint(y).isDefined => ctx.lookup(y).asObject(y)
@@ -309,17 +330,21 @@ package in {
 
   trait LongToInt extends Transformer {
     self: Transformer =>
-    override def transform(value: Any)(implicit ctx: Context) = value match {
-      case l: Long   => l.intValue
-      case d: Double => d.intValue // Mongo 1.8.3 shell quirk - fixed with NumberInt in 1.9.1 (see https://jira.mongodb.org/browse/SERVER-854)
-      case f: Float  => f.intValue // Mongo 1.8.3 shell quirk - fixed with NumberInt in 1.9.1 (see https://jira.mongodb.org/browse/SERVER-854)
-      case i: Int    => i
-      case s: Short  => s.intValue
-      case x: String => try {
-        Integer.valueOf(x)
-      }
-      catch {
-        case e: Throwable => None
+    override def transform(value: Any)(implicit ctx: Context) = {
+      value match {
+        case d: Double => conversions.narrow_!(value, d.intValue)
+        case l: Long   => conversions.narrow_!(value, l.intValue)
+        case f: Float  => conversions.narrow_!(value, f.intValue)
+        case i: Int    => i
+        case s: Short  => s.intValue
+        case x: String => try {
+          val maybeDouble = java.lang.Double.valueOf(x)
+          conversions.narrow_!(maybeDouble)
+        }
+        catch {
+          case nfe: NumberFormatException =>
+            throw new IncompatibleTargetFieldType(s"could not coerce value to Int '$value' (${nfe.getClass.getName})", nfe)
+        }
       }
     }
   }
@@ -348,9 +373,9 @@ package in {
     self: Transformer =>
 
     override def transform(value: Any)(implicit ctx: Context): Any = value match {
-      case d: Double            => d.toFloat
+      case d: Double            => conversions.narrow_!(value, d.toFloat)
       case i: Int               => i.toFloat
-      case l: Long              => l.toFloat
+      case l: Long              => conversions.narrow_!(value, l.toFloat)
       case s: Short             => s.toFloat
       case d: java.lang.Double  => d.toFloat
       case i: java.lang.Integer => i.toFloat

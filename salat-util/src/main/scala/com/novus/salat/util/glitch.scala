@@ -38,6 +38,12 @@ class SalatGlitch(msg: String) extends Error(msg)
 // (at risk of breaking production code in the wild) could be to normalize all these ad-hoc errors to
 // specific, actionable errors.
 
+/** The target type of the value was incompatible with the type of the field. */
+case class IncompatibleTargetFieldType(msg: String, cause: Throwable) extends Error(msg, cause)
+object IncompatibleTargetFieldType {
+  def apply(msg: String): IncompatibleTargetFieldType = IncompatibleTargetFieldType(msg, null)
+}
+
 /**
  * Runtime error indicating that a class defines more than one constructor with args.
  *  @param clazz parameterized class instance
