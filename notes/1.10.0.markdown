@@ -1,10 +1,12 @@
-# DRAFT
+1.10.0 is a major release of Salat with breaking changes. It includes support for Casbah 2.8.2 / Mongo 3.0, various bug fixes, and better error messages for common serialization issues.
 
-1.10.0 is a major release of Salat with breaking changes.
-
-Notably, the package has changed from `com.novus.salat._` to `salat._`
+Most notably, the package has changed from `com.novus.salat._` to `salat._`
 
 # Change Log
+
+## Major Changes
+
+- \#177 Change package from `com.nouvs.salat._` to just `salat._`
 
 ## Dependency Upgrades
 
@@ -27,4 +29,4 @@ Notably, the package has changed from `com.novus.salat._` to `salat._`
 
 - Introduced a new subclass of `Error`, `SalatGlitch`, that specifically identifies errors that occur during serialization / deserialization. Note that there are still many points in code that throw RuntimeException (via sys.error) - overhaul/normalization of Salat's errors remains an outstanding TODO.
 
-- Previously case classes with fields of type `Int`, `Option[Int]`, `Seq[Int]`, or `Map[Int]` would experience narrowing with information loss, or a classcast exception when attempting to unbox the field value, if the deserialized a JSON or Mongo document contained a Double value in the field. In addition, a JSON document with goofy contents like `{"foo":"nine-point-oh"}` would return a `None`, swallowing the `NumberFormatException`, if `"foo"` was an `Option[Double]` or somesuch.  With this version, deserialization will fail more agressively if the JSON document has a field with a String in an invalid number format, or a Double literal that cannot be narrowed without loss of information (9.0001). Doubles that can be narrowed without loss will be converted to an Int, however (`9.0` converted to `9`, for example).
+- Previously case classes with fields of type `Int`, `Option[Int]`, `Seq[Int]`, or `Map[Int]` would experience narrowing with information loss, or a classcast exception when attempting to unbox the field value, if the deserialized a JSON or Mongo document contained a Double value in the field. In addition, a JSON document with goofy contents like `{"foo":"nine-point-oh"}` would return a `None`, swallowing the `NumberFormatException`, if `"foo"` was an `Option[Double]` or somesuch.  With this version, deserialization will fail more agressively if the JSON document has a field with a String in an invalid number format, or a Double literal that cannot be narrowed without loss of information (9.0001). However, in an attempt to account for the fact that JavaScript only has a float numeric type, Doubles that can be narrowed without loss will be converted to an Int (`9.0` converted to `9`, for example).
