@@ -7,7 +7,7 @@
     </appender>
 
     <logger name="ch.qos" level="ERROR"/>
-    <logger name="com.novus" level="DEBUG"/>
+    <logger name="salat" level="DEBUG"/>
     <logger name="com.mongodb" level="DEBUG"/>
     <logger name="com.mongodb.casbah" level="ERROR"/>
 
