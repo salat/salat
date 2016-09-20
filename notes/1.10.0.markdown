@@ -1,4 +1,4 @@
-1.10.0 is a major release of Salat with breaking changes. It includes support for Casbah 2.8.2 / Mongo 3.0, various bug fixes, and better error messages for common serialization issues.
+Salat v1.10.0 is a major release with some non-backwards compatible changes. It includes support for Casbah 2.8.2 / Mongo 3.0, various bug fixes, and better error messages for common serialization issues.
 
 Most notably, the package has changed from `com.novus.salat._` to `salat._`
 
@@ -6,7 +6,7 @@ Most notably, the package has changed from `com.novus.salat._` to `salat._`
 
 ## Major Changes
 
-- \#177 Change package from `com.nouvs.salat._` to just `salat._`
+- \#177 Change package from `com.novus.salat._` to just `salat._`
 
 ## Dependency Upgrades
 
@@ -14,8 +14,8 @@ Most notably, the package has changed from `com.novus.salat._` to `salat._`
 
 ## Features
 
-- \#115 Add `findAndModify` to BaseDAOMethods. (@noahlz)
-- \#143 Log more error details in case of deserialization problem. (@noahlz, @slorber)
+- \#115 Add `findAndModify` to `BaseDAOMethods`. (@noahlz)
+- \#143 Log more details with deserialization errors. (@noahlz, @slorber)
 - \#148 Fail faster during deserialization when narrowing type conversion would lose information. (@noahlz)
 - \#155 Improve support for binary data such as `Seq[Byte]` in case classes. (@glorat)
 - \#171 Support `Map[String, Any]`, `List[Any], Option[Any]` (@dieu, @noahlz)
@@ -25,8 +25,8 @@ Most notably, the package has changed from `com.novus.salat._` to `salat._`
 
 - If you create a `SalatDAO` using a collection created from a `MongoClient`, its methods may throw a `SalatDAOError` having a `MongoException` root cause. `SalatDAOError` now extends `RuntimeException` instead of `java.lang.Error`, and the constructor signature has changed accordingly.
 
-- A `SalatDAO` created using a `MongoCollection` from a `MongoConnection` will attempt attempt to detect errors from the `WriteResult`, but is not guaranteed (from the Mongo 3.x upgrade notes: "[getLastError] does not work reliably in the 2.x series and there is no way to make it work reliably" - http://mongodb.github.io/mongo-java-driver/3.0/whats-new/upgrading/). Be sure to use `MongoClient`.
+- A `SalatDAO` created using a `MongoCollection` from a `MongoConnection` will attempt attempt to detect errors from the `WriteResult`. However, this is not guaranteed to work (from the Mongo 3.x upgrade notes: "[getLastError] does not work reliably in the 2.x series and there is no way to make it work reliably" - http://mongodb.github.io/mongo-java-driver/3.0/whats-new/upgrading/). Be sure to use `MongoClient`.
 
-- Introduced a new subclass of `Error`, `SalatGlitch`, that specifically identifies errors that occur during serialization / deserialization. Note that there are still many points in code that throw RuntimeException (via sys.error) - overhaul/normalization of Salat's errors remains an outstanding TODO.
+- Introduced a new subclass of `Error`: `SalatGlitch`. This class specifically identifies errors that occur during serialization / deserialization. Note that there are still many points in code that throw RuntimeException (via `sys.error`) - overhaul/normalization of Salat's errors remains an outstanding TODO.
 
-- Previously case classes with fields of type `Int`, `Option[Int]`, `Seq[Int]`, or `Map[Int]` would experience narrowing with information loss, or a classcast exception when attempting to unbox the field value, if the deserialized a JSON or Mongo document contained a Double value in the field. In addition, a JSON document with goofy contents like `{"foo":"nine-point-oh"}` would return a `None`, swallowing the `NumberFormatException`, if `"foo"` was an `Option[Double]` or somesuch.  With this version, deserialization will fail more agressively if the JSON document has a field with a String in an invalid number format, or a Double literal that cannot be narrowed without loss of information (9.0001). However, in an attempt to account for the fact that JavaScript only has a float numeric type, Doubles that can be narrowed without loss will be converted to an Int (`9.0` converted to `9`, for example).
+- Previously case classes with fields containing Integer data, such as `Int`, `Option[Int]`, `Seq[Int]`, or `Map[String, Int]`, would experience narrowing with information loss, or a `ClassCastException` when attempting to unbox the field value, if the deserialized JSON or Mongo document contained a `Double` value in the field. In addition, a JSON document with goofy contents like `{"foo":"nine-point-oh"}` would return a `None`, swallowing the `NumberFormatException` (if the `foo` field of the case class was an `Option[Double]` or somesuch).  With this version, deserialization will fail-fast when the JSON document has a field with a String in an invalid number format, or a Double literal that cannot be narrowed without loss of information (such as `9.0001`). However, as JavaScript only has a float numeric type, Doubles that can be narrowed without information loss will be converted to an Int (`9.0` converted to `9`, for example).
