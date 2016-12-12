@@ -67,7 +67,7 @@ object BuildSettings {
 
   val buildOrganization = "com.github.salat"
   val buildVersion = "1.10.1-SNAPSHOT"
-  val buildScalaVersion = "2.11.7"
+  val buildScalaVersion = "2.11.8"
 
   val buildSettings = Defaults.coreDefaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
