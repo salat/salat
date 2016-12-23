@@ -415,8 +415,15 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     if (field.tf.isOid && methodExists(companionObjFieldInitializer)) {
       DefaultArg(clazz, field, Some(ca.companionClass.getMethod(companionObjFieldInitializer).invoke(ca.companionObject)))
     }
-    else if (betterDefaults.contains(field)) {
-      betterDefaults(field)
+    else if (indexedFields.contains(field)) {
+      val defaultMethod = try {
+        // Some(null) is actually "desirable" here because it allows using null as a default value for an ignored field
+        Some(ca.companionClass.getMethod("apply$default$%d".format(field.idx + 1)).invoke(ca.companionObject))
+      }
+      catch {
+        case _: Throwable => None // indicates no default value was supplied
+      }
+      DefaultArg(clazz, field, defaultMethod)
     }
     else sys.error(s"Grater error: clazz='$clazz' field '${field.name}' needs to register presence or absence of default values")
   }
