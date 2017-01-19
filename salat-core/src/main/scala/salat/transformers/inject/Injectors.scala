@@ -306,7 +306,7 @@ package in {
 
     def narrow_!(value: Any, converted: Float): Float =
       if (value == converted) converted else
-        throw IncompatibleTargetFieldType(s"will not narrow value to Int: $value")
+        throw IncompatibleTargetFieldType(s"will not narrow value to Float: $value")
 
     def narrow_!(parsed: Double): Int = {
       val asInt = parsed.intValue
