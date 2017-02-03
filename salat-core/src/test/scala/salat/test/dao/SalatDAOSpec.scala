@@ -114,32 +114,12 @@ class SalatDAOSpec extends SalatSpec {
       }
     }
 
-    "handle legacy errors when inserting an object having a duplicate key" in new alphaContext {
-      DeprecatedAlphaDAO.insert(alpha7)
-      DeprecatedAlphaDAO.insert(alpha7) must throwA[SalatInsertError]
-    }
-
-    "handle legacy errors for bulk inserts where an object has a duplicate key" in new alphaContext {
-      DeprecatedAlphaDAO.insert(alpha7)
-
-      // Note: Mongo stops processing at the first dup in the list
-      val errorMustOccur = DeprecatedAlphaDAO.insert(List(alpha7, alpha1, alpha2, alpha3)) must throwA[SalatInsertError]
-      val onlyOneRecord = DeprecatedAlphaDAO.collection.count() must_== 1
-
-      errorMustOccur and onlyOneRecord
-    }
-
     "handle MongoExceptions for invalid updates" in new alphaContext {
       AlphaDAO.insert(alpha7)
       AlphaDAO.update(MongoDBObject.empty, MongoDBObject("_id" -> 1)) must throwA[SalatDAOUpdateError].like {
         case ex: SalatDAOUpdateError =>
           ex.getCause must beAnInstanceOf[WriteConcernException]
       }
-    }
-
-    "handle legacy errors for invalid updates" in new alphaContext {
-      DeprecatedAlphaDAO.insert(alpha7)
-      DeprecatedAlphaDAO.update(MongoDBObject.empty, MongoDBObject("_id" -> 1)) must throwA[SalatDAOUpdateError]
     }
 
     "support findOne returning Option[T]" in new alphaContext {
@@ -174,7 +154,7 @@ class SalatDAOSpec extends SalatSpec {
         t      = alpha3.copy(beta = List[Beta](Gamma("gamma3"))),
         upsert = false,
         multi  = false,
-        wc     = new WriteConcern()
+        wc     = WriteConcern.Acknowledged
       )
       wr.getN must_== 1L
 
