@@ -77,7 +77,7 @@ object BuildSettings {
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
-    javacOptions ++= Seq("-source", "1.6", "-target", "1.6"), 
+    javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:_"),
     crossScalaVersions ++= Seq("2.10.6")
   )
@@ -85,10 +85,11 @@ object BuildSettings {
 
 object Scalariform {
 
-import com.typesafe.sbt.SbtScalariform._
-import scalariform.formatter.preferences._
+  import scalariform.formatter.preferences._
+  import com.typesafe.sbt.SbtScalariform
+  import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 
-  val settings = scalariformSettings ++ Seq(
+  val settings = SbtScalariform.defaultScalariformSettings ++ Seq(
     ScalariformKeys.preferences := FormattingPreferences().
       setPreference(AlignArguments, true).
       setPreference(AlignParameters, true).
