@@ -30,11 +30,11 @@ Available for Scala 2.10 and 2.11. Based on Casbah 2.8.2, with support for Mongo
 
 ## Snapshot
 
-Available for Scala 2.10 and 2.11. Based on Casbah 2.8.2, with support for Mongo 3.x
+Available for Scala 2.11 and 2.12. Based on Casbah 3.1.x, with support for Mongo 3.x
 
-    "com.github.salat" %% "salat" % "1.10.1-SNAPSHOT"
+    "com.github.salat" %% "salat" % "1.11.0-SNAPSHOT"
 
-[SNAPSHOT Release Notes](https://github.com/salat/salat/blob/1.10.x-branch/notes/1.10.1.markdown)
+[SNAPSHOT Release Notes](https://github.com/salat/salat/blob/1.11.x-branch/notes/1.11.0.markdown)
 
 ## Legacy support
 
@@ -57,6 +57,12 @@ Salat has been hosted exclusively by Sonatype since version 0.0.8. Please remove
 If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
     resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+
+### Scala 2.12.x
+
+Based on Casbah 3.1.1.
+
+    "org.github.salat" %% "salat" % "1.11.0"
 
 ### Scala 2.10.4
 
