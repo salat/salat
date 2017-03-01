@@ -1,4 +1,4 @@
-# Salat
+# Salat for Casbah 3.x and scala 2.11
 
 [![Build Status](https://travis-ci.org/salat/salat.svg?branch=1.10.x-branch)](https://travis-ci.org/salat/salat)
 
