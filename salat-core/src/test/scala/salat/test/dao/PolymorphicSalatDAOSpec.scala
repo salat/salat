@@ -130,7 +130,7 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
       FooDAO.findOneById(bazId) must beSome(baz)
     }
     "update common fields across subclasses" in new fooContext {
-      FooDAO.update(q = DBObject.empty, o = DBObject("$inc" -> DBObject("x" -> 1)), upsert = false, multi = true).getN must_== 2
+      FooDAO.update(q = DBObject.empty, o = DBObject("$inc" -> DBObject("x" -> 1)), upsert = false, multi = true, wc = WriteConcern.Acknowledged).getN must_== 2
       FooDAO.findOneById(barId).map(_.x) must beSome(2)
       FooDAO.findOneById(bazId).map(_.x) must beSome(0)
     }
@@ -173,7 +173,7 @@ class PolymorphicSalatDAOSpec extends SalatSpec {
       val bar2Id = new ObjectId
       val bar2 = Bar(_id = bar2Id, x = 5, y = "flight", z = 89.8)
       BarDAO.insert(bar2) must beSome(bar2Id)
-      BarDAO.update(q = DBObject.empty, o = DBObject("$inc" -> DBObject("x" -> 1)), upsert = false, multi = true).getN must_== 2
+      BarDAO.update(q = DBObject.empty, o = DBObject("$inc" -> DBObject("x" -> 1)), upsert = false, multi = true, wc = WriteConcern.Acknowledged).getN must_== 2
       BarDAO.findOneById(barId).map(_.x) must beSome(bar.x + 1)
       BarDAO.findOneById(bar2Id).map(_.x) must beSome(bar2.x + 1)
       FooDAO.findOneById(bazId).map(_.x) must beSome(baz.x) // BarDAO update query did not affect instances of Baz!

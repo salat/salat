@@ -66,8 +66,8 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.github.salat"
-  val buildVersion = "1.10.1-SNAPSHOT"
-  val buildScalaVersion = "2.11.8"
+  val buildVersion = "1.11.0-SNAPSHOT"
+  val buildScalaVersion = "2.12.1"
 
   val buildSettings = Defaults.coreDefaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
@@ -77,9 +77,9 @@ object BuildSettings {
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
-    javacOptions ++= Seq("-source", "1.6", "-target", "1.6"), 
+    javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:_"),
-    crossScalaVersions ++= Seq("2.10.6")
+    crossScalaVersions ++= Seq("2.11.8")
   )
 }
 
@@ -140,9 +140,9 @@ object Publish {
 object Dependencies {
 
   private val LogbackVersion = "1.1.8"
-  private val CasbahVersion = "2.8.2"
+  private val CasbahVersion = "3.1.1"
 
-  val specs2 = "org.specs2" %% "specs2" % "2.3.11" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "2.4.17" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.21"
   val logbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion % "test"
@@ -150,7 +150,7 @@ object Dependencies {
   val casbah = "org.mongodb" %% "casbah-core" % CasbahVersion
   val casbah_commons = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test"
   val casbah_specs = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test" classifier "tests"
-  val json4sNative = "org.json4s" %% "json4s-native" % "3.2.9"
+  val json4sNative = "org.json4s" %% "json4s-native" % "3.4.2"
 }
 
 object Repos {
