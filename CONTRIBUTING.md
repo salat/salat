@@ -24,7 +24,7 @@ Salat currently has three branches:
 |-----------------|----------------|-------------|
 | `1.9.x-branch`  | `1.9.10`       | Legacy support for the 1.9.x releases - conservative bug fixes and enhancements. |
 | `1.10.x-branch` | `1.10.0`       | Home of `1.10.x` versions, and all community-submitted fixes / enhancements. Legacy support for older Scala and Casbah releases. Scala 2.10 / 2.11 and Casbah 2.8.2 support. |
-| `1.11.x-branch` | None           | Home of `1.11.x` versions, and all community-submitted fixes / enhancements. Scala 2.11 / 2.12 and Casbah 3.1.x support. |
+| `1.11.x-branch` | None           | Home of `1.11.x` versions, and all community-submitted fixes / enhancements. Scala 2.11 and Casbah 3.1.x support. |
 | `master`        | None           | Home of `2.0.0-SNAPSHOT` - mysterious future development. |
 
 In general, you shouldn't submit PRs against `master` (well, you can, but we'll likely re-direct them to the `1.10.x-branch` - see below). `master`, which as of July 2016 is on version `2.x.x`, is reserved for any future development by Salat project lead @rktoomey as she sees fit, on her development schedule.
