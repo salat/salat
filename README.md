@@ -1,4 +1,4 @@
-# Salat for Casbah 3.x and scala 2.11
+# Salat
 
 [![Build Status](https://travis-ci.org/salat/salat.svg?branch=1.10.x-branch)](https://travis-ci.org/salat/salat)
 
@@ -58,13 +58,15 @@ If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
     resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-### Scala 2.11.x 
-
-**Note:** this is currently in snapshot form, not sure it this is actually published on github or what the version number would be.
+### Scala 2.11.x
 
 Based on Casbah 3.1.1.
 
-    "org.github.salat" %% "salat" % "1.11.0"
+    "org.github.salat" %% "salat" % "1.11.0-SNAPSHOT"
+
+Based on Casbah 2.8.2.
+
+    "org.github.salat" %% "salat" % "1.10.0"
 
 ### Scala 2.10.4
 
