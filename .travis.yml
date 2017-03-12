@@ -3,12 +3,8 @@ language: scala
 scala:
    - 2.10.4
    - 2.11.8
-   - 2.12.1
 branches:
   only:
-    - master
-    - 1.9.x-branch
-    - 1.10.x-branch
     - 1.11.x-branch
 notifications:
   email:
