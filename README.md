@@ -1,4 +1,4 @@
-# Salat
+# Salat for Casbah 3.x and scala 2.11
 
 [![Build Status](https://travis-ci.org/salat/salat.svg?branch=1.10.x-branch)](https://travis-ci.org/salat/salat)
 
@@ -30,7 +30,7 @@ Available for Scala 2.10 and 2.11. Based on Casbah 2.8.2, with support for Mongo
 
 ## Snapshot
 
-Available for Scala 2.11 and 2.12. Based on Casbah 3.1.x, with support for Mongo 3.x
+Available for Scala 2.11. Based on Casbah 3.1.x, with support for Mongo 3.x
 
     "com.github.salat" %% "salat" % "1.11.0-SNAPSHOT"
 
@@ -58,7 +58,9 @@ If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
     resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-### Scala 2.12.x
+### Scala 2.11.x 
+
+**Note:** this is currently in snapshot form, not sure it this is actually published on github or what the version number would be.
 
 Based on Casbah 3.1.1.
 
