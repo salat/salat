@@ -5,6 +5,9 @@ scala:
    - 2.11.8
 branches:
   only:
+    - master
+    - 1.9.x-branch
+    - 1.10.x-branch
     - 1.11.x-branch
 notifications:
   email:
