@@ -6,6 +6,13 @@ Salat v1.11.0 is a major release with some non-backwards compatible changes. It 
 
 - \#188 Casbah 3.1.1
 
+## Additional Changes
+
+- \#184 Scala 2.11.8
+- \#185 SLF4J 1.7.21 and Logback 1.1.8
+- \#186 Fix error message for narrowing Double value to Float
+
 # Compatibility
 
+Versions of Salat prior to this one used earlier versions of Casbah. As mentioned in the official Casbah documentation (http://mongodb.github.io/casbah/3.1/upgrade/), various deprecatd methods were removed in the 3.0.0 release. If you attempt to use Salat 1.11+ with an older version of Casbah, you will likely encounter `java.lang.NoSuchMethodError` when errors occur and at other inopportune moments.
 
