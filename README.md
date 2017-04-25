@@ -1,6 +1,6 @@
 # Salat
 
-[![Build Status](https://travis-ci.org/salat/salat.svg?branch=1.10.x-branch)](https://travis-ci.org/salat/salat)
+[![Build Status](https://travis-ci.org/salat/salat.svg?branch=1.11.x-branch)](https://travis-ci.org/salat/salat)
 
 Salat is a simple serialization library for case classes.
 
@@ -22,19 +22,19 @@ Salat publishes snapshots and releases to OSS Sontatype.
 
 ## Stable Release
 
-Available for Scala 2.10 and 2.11. Based on Casbah 2.8.2, with support for Mongo 3.x
+Available for Scala 2.10 and 2.11. Based on Casbah 3.1.1, with support for Mongo 3.x
 
-    "com.github.salat" %% "salat" % "1.10.0"
+    "com.github.salat" %% "salat" % "1.11.0"
 
-[Release Notes](https://github.com/salat/salat/blob/1.10.x-branch/notes/1.10.0.markdown)
+[Release Notes](https://github.com/salat/salat/blob/1.11.x-branch/notes/1.11.1.markdown)
 
 ## Snapshot
 
-Available for Scala 2.11. Based on Casbah 3.1.x, with support for Mongo 3.x
+Available for Scala 2.11. Based on Casbah 3.1.1, with support for Mongo 3.x
 
     "com.github.salat" %% "salat" % "1.11.0-SNAPSHOT"
 
-[SNAPSHOT Release Notes](https://github.com/salat/salat/blob/1.11.x-branch/notes/1.11.0.markdown)
+[SNAPSHOT Release Notes](https://github.com/salat/salat/blob/1.11.x-branch/notes/1.11.1.markdown)
 
 ## Legacy support
 
@@ -62,7 +62,7 @@ If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
 Based on Casbah 3.1.1.
 
-    "org.github.salat" %% "salat" % "1.11.0-SNAPSHOT"
+    "org.github.salat" %% "salat" % "1.11.0"
 
 Based on Casbah 2.8.2.
 
