@@ -400,6 +400,9 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
         "simple type" in {
           grater[Gustav].fromJSON(JObject(JField("o", JString("OG")) :: Nil)) must_== g
         }
+        "simple type with null" in {
+          grater[Gustav].fromJSON("{\"o\": null}") must_== Gustav(None)
+        }
         "BigDecimal using Double strategy" in {
           grater[Qvintus].fromJSON("{\"bd\":-9.123456789}") must_== Qvintus(Some(bd))
         }
