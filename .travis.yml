@@ -3,6 +3,7 @@ language: scala
 scala:
    - 2.10.4
    - 2.11.8
+   - 2.12.2
 branches:
   only:
     - master
