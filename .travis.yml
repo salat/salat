@@ -20,3 +20,8 @@ jdk:
   - oraclejdk8
 services:
   - mongodb
+
+matrix:
+  exclude:
+  - jdk: oraclejdk7
+    scala: 2.12.2
