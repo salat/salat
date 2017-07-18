@@ -28,9 +28,9 @@ object SalatBuild extends Build {
   import Dependencies._
   import BuildSettings._
 
-  val testDeps = Seq(specs2, logbackCore, logbackClassic, casbah_specs, casbah_commons)
+  val testDeps = Seq(logbackCore, specs2, logbackClassic, casbah_specs, casbah_commons)
   val utilDeps = Seq(slf4jApi) ++ testDeps
-  val coreDeps = Seq(casbah, json4sNative, commonsLang) ++ testDeps
+  val coreDeps = Seq(casbah, commonsLang) ++ testDeps
 
   lazy val salat = Project(
     id = "salat",
@@ -48,7 +48,8 @@ object SalatBuild extends Build {
     val base = file("salat-util")
     val settings = buildSettings ++ Seq(
       libraryDependencies ++= utilDeps,
-      libraryDependencies <+= scalaVersion("org.scala-lang" % "scalap" % _)
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scalap" % _),
+      libraryDependencies <++= scalaVersion(sv => Seq(Helpers.json4sNative(sv)))
     )
     Project(id = id, base = base, settings = settings)
   }
@@ -56,7 +57,10 @@ object SalatBuild extends Build {
   lazy val core = Project(
     id = "salat-core",
     base = file("salat-core"),
-    settings = buildSettings ++ Seq(libraryDependencies ++= coreDeps)
+    settings = buildSettings ++ Seq(
+      libraryDependencies ++= coreDeps,
+      libraryDependencies <++= scalaVersion(sv => Seq(Helpers.json4sNative(sv)))
+    )
   ) dependsOn (util)
 
 }
@@ -76,10 +80,10 @@ object BuildSettings {
     shellPrompt := ShellPrompt.buildShellPrompt,
     parallelExecution in Test := false,
     testFrameworks += TestFrameworks.Specs2,
-    resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps),
+    resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps, scalazBintrayRepo),
     javacOptions ++= Seq("-source", "1.7", "-target", "1.7"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:_"),
-    crossScalaVersions ++= Seq("2.10.6", "2.11.8")
+    crossScalaVersions ++= Seq("2.10.6", "2.11.8", "2.12.2")
   )
 }
 
@@ -142,7 +146,7 @@ object Dependencies {
   private val LogbackVersion = "1.1.8"
   private val CasbahVersion = "3.1.1"
 
-  val specs2 = "org.specs2" %% "specs2" % "2.3.11" % "test"
+  val specs2 = "org.specs2" %% "specs2" % "2.4.17" % "test"
   val commonsLang = "commons-lang" % "commons-lang" % "2.6" % "test"
   val slf4jApi = "org.slf4j" % "slf4j-api" % "1.7.21"
   val logbackCore = "ch.qos.logback" % "logback-core" % LogbackVersion % "test"
@@ -150,12 +154,20 @@ object Dependencies {
   val casbah = "org.mongodb" %% "casbah-core" % CasbahVersion
   val casbah_commons = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test"
   val casbah_specs = "org.mongodb" %% "casbah-commons" % CasbahVersion % "test" classifier "tests"
-  val json4sNative = "org.json4s" %% "json4s-native" % "3.2.9"
 }
 
 object Repos {
+  val scalazBintrayRepo = "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
   val typeSafeRepo = "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
   val typeSafeSnapsRepo = "Typesafe Snaps Repo" at "http://repo.typesafe.com/typesafe/snapshots/"
   val oss = "OSS Sonatype" at "http://oss.sonatype.org/content/repositories/releases/"
   val ossSnaps = "OSS Sonatype Snaps" at "http://oss.sonatype.org/content/repositories/snapshots/"
+}
+
+object Helpers {
+  def json4sNative(scalaVersion: String) =
+    scalaVersion match {
+      case "2.12.2" => "org.json4s" %% "json4s-native" % "3.4.2"
+      case _ => "org.json4s" %% "json4s-native" % "3.2.9"
+    }
 }
