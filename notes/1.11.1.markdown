@@ -1,1 +1,11 @@
-Placeholder for 1.11.1 release notes.
+Salat v1.11.1 adds support and cross-compile for Scala 2.12.2
+
+# Change Log
+
+## Major Changes
+
+- \#198 Scala 2.12 (@theunforgiven)
+
+## Additional Changes
+
+None.
