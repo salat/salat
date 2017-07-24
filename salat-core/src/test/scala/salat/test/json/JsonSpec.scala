@@ -73,6 +73,18 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
         rendered must /("bi" -> 123456)
         rendered must /("o") / ("$oid" -> "4fd0bead4ceab231e6f3220b")
       }
+      "serialize simple types having null values" in {
+        "omitting null fields (default)" in {
+          grater[Erik].toCompactJSON(Erik(null)) mustEqual "{}"
+        }
+        "including null fields (with json config)" in {
+          implicit val ctx = new Context {
+            val name = "test_output_null"
+            override val jsonConfig = JSONConfig(outputNullValues = true)
+          }
+          grater[Erik].toCompactJSON(Erik(null)) mustEqual """{"e":null}"""
+        }
+      }
       "serialize lists" in {
         "of simple types" in {
           val rendered = grater[Bertil].toPrettyJSON(b)
@@ -402,8 +414,9 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
           grater[Gustav].fromJSON(JObject(JField("o", JString("OG")) :: Nil)) must_== g
         }
         "simple type with null" in {
-          grater[Gustav].fromJSON("{\"o\": null}") must_== Gustav(None)
-        }
+          val fromJson = grater[Gustav].fromJSON("{\"o\": null}")
+          fromJson must_== Gustav(Some(null))
+        }.pendingUntilFixed("issue #200")
         "BigDecimal using Double strategy" in {
           grater[Qvintus].fromJSON("{\"bd\":-9.123456789}") must_== Qvintus(Some(bd))
         }
