@@ -1,19 +1,12 @@
-package com.novus.salat.test
+package salat.test
 
 import org.specs2.mutable.Specification
-import com.novus.salat.transformers.CustomTransformer
+import salat.transformers.CustomTransformer
 import com.mongodb.casbah.commons.MongoDBObject
-import com.novus.salat.Context
-import com.novus.salat._
+import salat.Context
+import salat._
 import com.mongodb.casbah.Imports._
-import scala.reflect.ClassTag
 
-/** Created with IntelliJ IDEA.
- *  Author: Edmondo Porcu
- *  Date: 17/07/13
- *  Time: 15:52
- *
- */
 final class MyClass(val values: Array[Double]) {
   override def equals(other: Any): Boolean = {
     other match {
@@ -24,37 +17,68 @@ final class MyClass(val values: Array[Double]) {
 
 }
 
-case class MyClass2(values: Array[Double]) {
+case class MyCaseClass(values: Array[Double]) {
   override def equals(other: Any): Boolean = {
     other match {
-      case otherMyClass: MyClass2 => values.deep == otherMyClass.values.deep
+      case otherMyClass: MyCaseClass => values.deep == otherMyClass.values.deep
       case _                      => false
     }
   }
 
 }
 
-class SingleCustomGraterSpecification[T <: AnyRef](item: T, transformer: CustomTransformer[T, DBObject])(implicit context: Context, manifest: Manifest[T]) extends Specification {
-  context registerCustomTransformer transformer
+case class TypicalCaseClass(name: String, value: Option[Double], attrs: Map[String, Any])
 
-  s"A class ${manifest.runtimeClass.toString} for which exist a custom transformation to DBObject" should {
+/**
+  * Created with IntelliJ IDEA.
+  *  Author: Edmondo Porcu
+  *  Date: 17/07/13
+  *  Time: 15:52
+  *
+  */
+class SingleCustomGraterSpecification[T <: AnyRef](item: T, transformer: CustomTransformer[T, DBObject])(
+  implicit context: Context, manifest: Manifest[T]) extends Specification {
+
+  context.registerCustomTransformer(transformer)
+
+  s"A class ${manifest.runtimeClass} for which exists a custom transformation to DBObject" should {
 
     val myGrater = grater[T]
-    "Have a special grater " in {
 
-      "Capable of  (de)serializing to dbObject" in {
-        val dbObjectVersion = myGrater asDBObject item
-        val deserializedMyInstance = myGrater asObject dbObjectVersion
+    "Have a grater with a custom transformer" in {
+      "capable of (de)serializing its target classes to dbObject" in {
+        val dbObjectVersion = myGrater.asDBObject(item)
+        val deserializedMyInstance = myGrater.asObject(dbObjectVersion)
+
         deserializedMyInstance must_== item
       }
-      "Capable of  (de)serializing to json" in {
-        val jsonVersion = myGrater toPrettyJSON item
-        val deserializedJsonMyInstance = myGrater fromJSON jsonVersion
+
+      "capable of (de)serializing its target classes to json" in {
+        val jsonVersion = myGrater.toPrettyJSON(item)
+        val deserializedJsonMyInstance = myGrater.fromJSON(jsonVersion)
+
         deserializedJsonMyInstance must_== item
       }
-    }
 
-  }
+      "capable of (de)serializing other case classes as normal to dbObject" in {
+        val other = TypicalCaseClass("foo", Some(1.0d), Map("A" -> 1, "B" -> 2))
+        val dbObjectVersion = myGrater.asDBObject()
+        val deserializedMyInstance = myGrater.asObject(dbObjectVersion)
+
+        deserializedMyInstance must_== other
+      }
+
+      "that transforms other case classes as normal to dbObject" in {
+        val other = TypicalCaseClass("foo", Some(1.0d), Map("A" -> 1, "B" -> 2))
+
+        val jsonVersion = myGrater.toPrettyJSON()
+        val deserializedJsonMyInstance = myGrater.fromJSON(jsonVersion)
+
+        deserializedJsonMyInstance must_== other
+      }
+
+    }
+}
 
 }
 
@@ -71,26 +95,26 @@ class CustomGraterSpec extends Specification {
 
   }
 
-  val customTransformer2 = new CustomTransformer[MyClass2, DBObject] {
+  val customTransformer2 = new CustomTransformer[MyCaseClass, DBObject] {
 
-    def deserialize(b: DBObject): MyClass2 = {
+    def deserialize(b: DBObject): MyCaseClass = {
       val betterApi = new MongoDBObject(b)
-      new MyClass2(betterApi.getAs[List[Double]]("values").get.toArray)
+      new MyCaseClass(betterApi.getAs[List[Double]]("values").get.toArray)
     }
 
-    def serialize(a: MyClass2): DBObject = MongoDBObject("values" -> a.values.toList)
+    def serialize(a: MyCaseClass): DBObject = MongoDBObject("values" -> a.values.toList)
 
   }
 
   implicit val context = new Context {
-    val name: String = "MYTextContext"
-
+    val name: String = "MyCustomContext"
   }
+
   val myInstance = new MyClass(Array(1d, 2d))
-  val myInstance2 = MyClass2(Array(1d, 2d))
+  val myCaseClassInstance = MyCaseClass(Array(1d, 2d))
 
   include(new SingleCustomGraterSpecification(myInstance, customTransformer))
 
-  include(new SingleCustomGraterSpecification(myInstance2, customTransformer2))
+  include(new SingleCustomGraterSpecification(myCaseClassInstance, customTransformer2))
 
 }
