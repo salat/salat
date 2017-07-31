@@ -46,13 +46,29 @@ class OptionSpec extends SalatSpec {
       grater[OptionSpecExample].asObject(dbo) must_== a
 
     }
-    "support option not there" in {
+    "support option values from MongoDB object missing the optional fields" in {
       val a = OptionSpecExample(None, None)
+
       val dbo: MongoDBObject = grater[OptionSpecExample].asDBObject(a)
       dbo must havePair("_typeHint" -> "salat.test.model.OptionSpecExample")
 
-      val json = dbo.toString()
+      grater[OptionSpecExample].asObject(dbo) must_== a
+
+      val json = s"$dbo"
       grater[OptionSpecExample].fromJSON(json) must_== a
+    }
+    "support MongoDB objects with explicitly null values (issue #200)" in {
+      val expected = OptionSpecExample()
+
+      val dbo = MongoDBObject("_typeHint" -> "salat.test.model.OptionSpecExample")
+      dbo += ("timestamp" -> null)
+      dbo += ("valueInt" -> null)
+      dbo += ("valueDouble" -> null)
+      dbo += ("valueFloat" -> null)
+
+      val result = grater[OptionSpecExample].asObject(dbo)
+
+      result must_== expected
     }
 
   }
