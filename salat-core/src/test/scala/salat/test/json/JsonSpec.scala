@@ -415,8 +415,8 @@ class JsonSpec extends Specification with Logging with JsonMatchers {
         }
         "simple type with null" in {
           val fromJson = grater[Gustav].fromJSON("{\"o\": null}")
-          fromJson must_== Gustav(Some(null))
-        }.pendingUntilFixed("issue #200")
+          fromJson must_== Gustav(None)
+        }
         "BigDecimal using Double strategy" in {
           grater[Qvintus].fromJSON("{\"bd\":-9.123456789}") must_== Qvintus(Some(bd))
         }
