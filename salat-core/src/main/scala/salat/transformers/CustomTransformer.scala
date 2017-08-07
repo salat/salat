@@ -37,6 +37,14 @@ abstract class CustomTransformer[ModelObject <: AnyRef: Manifest, SerializedRepr
     value match {
       case Some(o: SerializedRepr) => deserialize(o)
       case o: SerializedRepr       => deserialize(o)
+
+      // Issue #92 / #203 Case classes that have nested fields that non-case classes with custom transformers.
+      // The custom transformer will have already parsed the DBObject or JSON field into the standard class
+      // instance, so if we receive an actual instance of the model object here, we are likely parsing
+      // one of these nested custom-transformed objects.
+      case Some(o: ModelObject)    => o
+      case o: ModelObject          => o
+
       case _                       => None
     }
 
