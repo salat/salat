@@ -1,1 +1,25 @@
-Placeholder for 1.11.2 release notes.
+Salat v1.11.2 fixes several bugs.
+
+# Change Log
+
+## Bug Fixes 
+
+- \#92 / \#203 Custom transformers never get applied to case classes. (@edmondo1984) 
+- \#199 Map JNull fields to None when the target field is an Option (@Panshin)
+- \#200 Optional field in MongoDBObject with null value causing MatchError. (@niwic)
+
+## Additional Changes
+
+None.
+
+# Technical Notes
+
+A change in Casbah 3.1.1 to getAs precipitated #200. Specifically, Casbah changed its handling of Mongo objects that contain explicit `null` values:
+
+> If the value is present and `null`, the method will now return > `Some(None)`, if it is not present, it will return `None`.
+
+See: 
+
+[Casbah 3.1 Changelog](http://mongodb.github.io/casbah/3.1/changelog/)
+
+[CASBAH-169](https://jira.mongodb.org/browse/CASBAH-169)
