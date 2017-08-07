@@ -219,7 +219,7 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     val withPersist = extraFieldsToPersist.iterator.map {
       case (m, field) => m.invoke(o) -> field
     }
-    (fromConstructor ++ withPersist).map {
+    val possibleFieldsToSerialize = (fromConstructor ++ withPersist).map {
       case x @ (fieldVal, field) =>
         val out = {
           val o = outField(outputNulls)(x)
@@ -236,7 +236,9 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
         //            |
         //          """.stripMargin, clazz.getName, field, fieldVal, out)
         out
-    }.filter(_.isDefined).map(_.get).map(f)
+    }
+
+    possibleFieldsToSerialize.collect { case Some(value) => f(value) }
   }
 
   lazy val fieldNameMap = (indexedFields.filterNot(_.ignore) ++ extraFieldsToPersist.map(_._2)).map {
@@ -250,6 +252,9 @@ abstract class ConcreteGrater[X <: CaseClass](clazz: Class[X])(implicit ctx: Con
     val builder = List.newBuilder[JField]
     builder ++= ToJField.typeHint(clazz, useTypeHint)
     iterateOut(o, ctx.jsonConfig.outputNullValues) {
+      case (_, null) if !ctx.jsonConfig.outputNullValues =>
+      // skip field...
+      // NOTE: https://stackoverflow.com/questions/21120999/representing-null-in-json
       case (key, value) => {
         val jField = ToJField(key, value)
 

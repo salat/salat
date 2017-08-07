@@ -192,6 +192,8 @@ object FromJValue extends Logging {
           )
       }
 
+      case JNull if field.tf.isOption && childType.isEmpty => None
+
       case v: JValue if field.tf.isOption && childType.isEmpty => field.typeRefType.typeArgs.toList match {
         case List(ct: TypeRefType) => {
           val childTf = TypeFinder(ct)

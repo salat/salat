@@ -467,8 +467,9 @@ package in {
 
   trait OptionInjector extends Transformer {
     self: Transformer =>
-    override def after(value: Any)(implicit ctx: Context): Option[Any] = value match {
+    override def after(inputValue: Any)(implicit ctx: Context): Option[Any] = inputValue match {
       case value @ Some(x) if x != null => Some(UtilsInjector.toObject(value))
+      case None                         => None // #199 JNull should get injected as None for option fields.
       case value if value != null       => Some(Some(UtilsInjector.toObject(value)))
       case _                            => Some(None)
     }
