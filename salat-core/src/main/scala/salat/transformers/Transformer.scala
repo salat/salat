@@ -98,7 +98,10 @@ abstract class Transformer(val path: String, val t: TypeRefType)(implicit val ct
   def before(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
   def after(value: Any)(implicit ctx: Context): Option[Any] = Some(value)
   def transform_!(x: Any)(implicit ctx: Context): Option[Any] = {
-    val x_! = before(x).flatMap(x => after(transform(x)))
+    val x_! = before(x).flatMap {
+      case None  => None // Issue #200 sometimes casbah's getAs returns Some(None)
+      case value => after(transform(value))
+    }
     //    log.debug("\n%s#transform_!:\nINPUT:\n%s\nOUTPUT:\n%s\n", this.getClass.getName, x, x_!)
     x_!
   }
