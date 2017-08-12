@@ -70,7 +70,7 @@ object BuildSettings {
   import Repos._
 
   val buildOrganization = "com.github.salat"
-  val buildVersion = "1.11.2"
+  val buildVersion = "1.11.3-SNAPSHOT"
   val buildScalaVersion = "2.11.8"
 
   val buildSettings = Defaults.coreDefaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
