@@ -24,17 +24,17 @@ Salat publishes snapshots and releases to OSS Sontatype.
 
 Available for Scala 2.10, 2.11 and 2.12. Based on Casbah 3.1.1, with support for Mongo 3.x
 
-    "com.github.salat" %% "salat" % "1.11.1"
+    "com.github.salat" %% "salat" % "1.11.2"
 
-[Release Notes](https://github.com/salat/salat/blob/1.11.x-branch/notes/1.11.1.markdown)
+[Release Notes](https://github.com/salat/salat/blob/1.11.x-branch/notes/1.11.2.markdown)
 
 ## Snapshot
 
 Available for Scala 2.11 and 2.12. Based on Casbah 3.1.1, with support for Mongo 3.x
 
-    "com.github.salat" %% "salat" % "1.11.2-SNAPSHOT"
+    "com.github.salat" %% "salat" % "1.11.3-SNAPSHOT"
 
-[SNAPSHOT Release Notes](https://github.com/salat/salat/blob/1.11.x-branch/notes/1.11.2.markdown)
+[SNAPSHOT Release Notes](https://github.com/salat/salat/blob/1.11.x-branch/notes/1.11.3.markdown)
 
 ## Legacy support
 
@@ -54,7 +54,7 @@ Starting with version 1.10.0, the package for Salat has changed.
 
 Salat has been hosted exclusively by Sonatype since version 0.0.8. Please remove all references to `repo.novus.com` from your build files.
 
-If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
+If you are not using sbt 0.11.2+, or you need a SNAPSHOT release, explicitly add OSS Sonatype to your resolvers:
 
     resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
@@ -62,13 +62,13 @@ If you are not using sbt 0.11.2+, explicitly add OSS Sonatype to your resolvers:
 
 Based on Casbah 3.1.1.
 
-    "org.github.salat" %% "salat" % "1.11.1"
+    "org.github.salat" %% "salat" % "1.11.2"
 
 ### Scala 2.11.x
 
 Based on Casbah 3.1.1.
 
-    "org.github.salat" %% "salat" % "1.11.1"
+    "org.github.salat" %% "salat" % "1.11.2"
 
 Based on Casbah 2.8.2.
 
