@@ -1,9 +1,9 @@
 # See http://about.travis-ci.org/docs/user/build-configuration/
 language: scala
 scala:
-   - 2.10.4
-   - 2.11.8
-   - 2.12.2
+   - 2.10.7
+   - 2.11.12
+   - 2.12.8
 branches:
   only:
     - master
@@ -24,4 +24,4 @@ services:
 matrix:
   exclude:
   - jdk: oraclejdk7
-    scala: 2.12.2
+    scala: 2.12.8

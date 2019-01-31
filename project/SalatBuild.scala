@@ -71,7 +71,7 @@ object BuildSettings {
 
   val buildOrganization = "com.github.salat"
   val buildVersion = "1.11.3-SNAPSHOT"
-  val buildScalaVersion = "2.11.8"
+  val buildScalaVersion = "2.11.12"
 
   val buildSettings = Defaults.coreDefaultSettings ++ Scalariform.settings ++ Publish.settings ++ Seq(
     organization := buildOrganization,
@@ -83,7 +83,7 @@ object BuildSettings {
     resolvers ++= Seq(typeSafeRepo, typeSafeSnapsRepo, oss, ossSnaps, scalazBintrayRepo),
     javacOptions ++= Seq("-source", "1.7", "-target", "1.7"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:_"),
-    crossScalaVersions ++= Seq("2.10.6", "2.11.8", "2.12.2")
+    crossScalaVersions ++= Seq("2.10.7", "2.11.12", "2.12.8")
   )
 }
 
@@ -167,7 +167,7 @@ object Repos {
 object Helpers {
   def json4sNative(scalaVersion: String) =
     scalaVersion match {
-      case "2.12.2" => "org.json4s" %% "json4s-native" % "3.4.2"
+      case "2.12.8" => "org.json4s" %% "json4s-native" % "3.4.2"
       case _ => "org.json4s" %% "json4s-native" % "3.2.9"
     }
 }
